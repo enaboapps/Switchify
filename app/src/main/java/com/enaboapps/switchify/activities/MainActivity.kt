@@ -1,4 +1,4 @@
-package com.enaboapps.switchify
+package com.enaboapps.switchify.activities
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
