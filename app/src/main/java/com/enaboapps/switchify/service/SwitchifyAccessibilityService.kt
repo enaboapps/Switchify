@@ -1,11 +1,15 @@
 package com.enaboapps.switchify.service
 
 import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.GestureDescription
+import android.graphics.PointF
 import android.util.Log
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
+import android.widget.Toast
+import com.enaboapps.switchify.service.utils.GestureUtils
 
-class SwitchifyAccessibilityService : AccessibilityService() {
+class SwitchifyAccessibilityService : AccessibilityService(), TapGestureListener {
 
     private val TAG = "SwitchifyAccessibilityService"
 
@@ -23,14 +27,31 @@ class SwitchifyAccessibilityService : AccessibilityService() {
         Log.d(TAG, "onServiceConnected")
         super.onServiceConnected()
 
-        cursorManager.setupLayout()
-        cursorManager.start()
+        cursorManager.setup()
+        cursorManager.tapGestureListener = this
     }
 
 
     override fun onKeyEvent(event: KeyEvent?): Boolean {
-        cursorManager.performAction()
+        if (event?.action == KeyEvent.ACTION_UP) {
+            cursorManager.performAction()
+        }
         return true
+    }
+
+
+
+    override fun onTap(point: PointF) {
+        try {
+            dispatchGesture(GestureUtils().createTap(point), object : GestureResultCallback() {
+                override fun onCompleted(gestureDescription: GestureDescription?) {
+                    super.onCompleted(gestureDescription)
+                    Log.d(TAG, "onCompleted")
+                }
+            }, null)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
 
 }
