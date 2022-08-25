@@ -6,10 +6,12 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Point
 import android.graphics.PointF
+import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
 import android.view.Gravity
 import android.view.WindowManager
+import android.widget.ImageView
 import android.widget.LinearLayout
 import java.util.*
 
@@ -20,6 +22,8 @@ interface TapGestureListener {
 class CursorManager(private val context: Context) {
 
     private val TAG = "CursorManager"
+
+    private val cursorLineThickness = 10
 
     public var tapGestureListener: TapGestureListener? = null
 
@@ -45,6 +49,8 @@ class CursorManager(private val context: Context) {
 
     fun setup() {
         windowManager = context.getSystemService(WINDOW_SERVICE) as WindowManager
+        xLayoutParams = WindowManager.LayoutParams()
+        yLayoutParams = WindowManager.LayoutParams()
     }
 
 
@@ -52,10 +58,9 @@ class CursorManager(private val context: Context) {
     private fun setupYLayout() {
         if (yLayout == null) {
             yLayout = LinearLayout(context)
-            yLayout!!.setBackgroundColor(Color.RED)
-            yLayoutParams = WindowManager.LayoutParams()
+            yLayout?.setBackgroundColor(Color.RED)
             yLayoutParams?.width = getScreenSize().x
-            yLayoutParams?.height = 10
+            yLayoutParams?.height = cursorLineThickness
             yLayoutParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
             yLayoutParams?.gravity = Gravity.TOP or Gravity.LEFT
             yLayoutParams?.format = PixelFormat.TRANSPARENT
@@ -67,11 +72,10 @@ class CursorManager(private val context: Context) {
     private fun setupXLayout() {
         if (xLayout == null) {
             xLayout = LinearLayout(context)
-            xLayout!!.setBackgroundColor(Color.RED)
-            xLayoutParams = WindowManager.LayoutParams()
+            xLayout?.setBackgroundColor(Color.RED)
             xLayoutParams?.x = 0
             xLayoutParams?.y = 0
-            xLayoutParams?.width = 10
+            xLayoutParams?.width = cursorLineThickness
             xLayoutParams?.height = getScreenSize().y
             xLayoutParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
             xLayoutParams?.gravity = Gravity.TOP or Gravity.LEFT
@@ -88,7 +92,7 @@ class CursorManager(private val context: Context) {
         val handler = Handler(Looper.getMainLooper())
         if (timer == null) {
             timer = Timer()
-            timer!!.scheduleAtFixedRate(object : TimerTask() {
+            timer?.scheduleAtFixedRate(object : TimerTask() {
                 override fun run() {
                     handler.post {
                         move()
@@ -114,33 +118,41 @@ class CursorManager(private val context: Context) {
         when (direction) {
             Direction.LEFT ->
                 if (x > 0) {
-                    x -= 10
-                    xLayoutParams!!.x = x
-                    windowManager!!.updateViewLayout(xLayout, xLayoutParams)
+                    if (xLayout != null) {
+                        x -= 10
+                        xLayoutParams?.x = x
+                        windowManager?.updateViewLayout(xLayout, xLayoutParams)
+                    }
                 } else {
                     direction = Direction.RIGHT
                 }
             Direction.RIGHT ->
                 if (x < getScreenSize().x) {
-                    x += 10
-                    xLayoutParams!!.x = x
-                    windowManager!!.updateViewLayout(xLayout, xLayoutParams)
+                    if (xLayout != null) {
+                        x += 10
+                        xLayoutParams?.x = x
+                        windowManager?.updateViewLayout(xLayout, xLayoutParams)
+                    }
                 } else {
                     direction = Direction.LEFT
                 }
             Direction.UP ->
                 if (y > 0) {
-                    y -= 10
-                    yLayoutParams!!.y = y
-                    windowManager!!.updateViewLayout(yLayout, yLayoutParams)
+                    if (yLayout != null) {
+                        y -= 10
+                        yLayoutParams?.y = y
+                        windowManager?.updateViewLayout(yLayout, yLayoutParams)
+                    }
                 } else {
                     direction = Direction.DOWN
                 }
             Direction.DOWN ->
                 if (y < getScreenSize().y) {
-                    y += 10
-                    yLayoutParams!!.y = y
-                    windowManager!!.updateViewLayout(yLayout, yLayoutParams)
+                    if (yLayout != null) {
+                        y += 10
+                        yLayoutParams?.y = y
+                        windowManager?.updateViewLayout(yLayout, yLayoutParams)
+                    }
                 } else {
                     direction = Direction.UP
                 }
@@ -162,9 +174,7 @@ class CursorManager(private val context: Context) {
             windowManager?.removeView(yLayout)
         }
 
-        xLayoutParams = null
         xLayout = null
-        yLayoutParams = null
         yLayout = null
     }
 
@@ -191,9 +201,43 @@ class CursorManager(private val context: Context) {
 
 
 
-    fun performTap() {
-        tapGestureListener?.onTap(PointF(x.toFloat(), y.toFloat()))
+    private fun performTap() {
+        val point = PointF((x + (cursorLineThickness / 2)).toFloat(), (y + (cursorLineThickness / 2)).toFloat())
+        tapGestureListener?.onTap(point)
+        drawCircleAndRemove()
         reset()
+    }
+
+
+
+    // Function to draw a circle at x, y and remove after half a second
+    private fun drawCircleAndRemove() {
+        val circleSize = cursorLineThickness * 2
+
+        val gradientDrawable = GradientDrawable()
+        gradientDrawable.shape = GradientDrawable.OVAL
+        gradientDrawable.setColor(Color.RED)
+        gradientDrawable.setSize(circleSize, circleSize)
+
+        val circle = ImageView(context)
+        circle.setImageDrawable(gradientDrawable)
+
+        val layoutParams = WindowManager.LayoutParams()
+        layoutParams.x = x - cursorLineThickness / 2
+        layoutParams.y = y - cursorLineThickness / 2
+        layoutParams.width = circleSize
+        layoutParams.height = circleSize
+        layoutParams.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+        layoutParams.gravity = Gravity.TOP or Gravity.LEFT
+        layoutParams.format = PixelFormat.TRANSPARENT
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        windowManager?.addView(circle, layoutParams)
+
+        // Remove the circle after half a second
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed({
+            windowManager?.removeView(circle)
+        }, 500)
     }
 
 
@@ -201,9 +245,9 @@ class CursorManager(private val context: Context) {
 
     // function to get screen size
     private fun getScreenSize(): Point {
-        val display = windowManager!!.defaultDisplay
+        val display = windowManager?.defaultDisplay
         val size = Point()
-        display.getSize(size)
+        display?.getSize(size)
         return size
     }
 
