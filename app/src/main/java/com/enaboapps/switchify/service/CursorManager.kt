@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Context.WINDOW_SERVICE
 import android.graphics.Color
 import android.graphics.PixelFormat
-import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.drawable.GradientDrawable
 import android.os.Handler
@@ -13,6 +12,7 @@ import android.view.Gravity
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
+import com.enaboapps.switchify.service.utils.ScreenUtils
 import java.util.*
 
 interface TapGestureListener {
@@ -59,7 +59,7 @@ class CursorManager(private val context: Context) {
         if (yLayout == null) {
             yLayout = LinearLayout(context)
             yLayout?.setBackgroundColor(Color.RED)
-            yLayoutParams?.width = getScreenSize().x
+            yLayoutParams?.width = ScreenUtils.getWidth(context)
             yLayoutParams?.height = cursorLineThickness
             yLayoutParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
             yLayoutParams?.gravity = Gravity.TOP or Gravity.LEFT
@@ -76,7 +76,7 @@ class CursorManager(private val context: Context) {
             xLayoutParams?.x = 0
             xLayoutParams?.y = 0
             xLayoutParams?.width = cursorLineThickness
-            xLayoutParams?.height = getScreenSize().y
+            xLayoutParams?.height = ScreenUtils.getHeight(context)
             xLayoutParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
             xLayoutParams?.gravity = Gravity.TOP or Gravity.LEFT
             xLayoutParams?.format = PixelFormat.TRANSPARENT
@@ -127,7 +127,7 @@ class CursorManager(private val context: Context) {
                     direction = Direction.RIGHT
                 }
             Direction.RIGHT ->
-                if (x < getScreenSize().x) {
+                if (x < ScreenUtils.getWidth(context)) {
                     if (xLayout != null) {
                         x += 10
                         xLayoutParams?.x = x
@@ -147,7 +147,7 @@ class CursorManager(private val context: Context) {
                     direction = Direction.DOWN
                 }
             Direction.DOWN ->
-                if (y < getScreenSize().y) {
+                if (y < ScreenUtils.getHeight(context)) {
                     if (yLayout != null) {
                         y += 10
                         yLayoutParams?.y = y
@@ -238,17 +238,6 @@ class CursorManager(private val context: Context) {
         handler.postDelayed({
             windowManager?.removeView(circle)
         }, 500)
-    }
-
-
-
-
-    // function to get screen size
-    private fun getScreenSize(): Point {
-        val display = windowManager?.defaultDisplay
-        val size = Point()
-        display?.getSize(size)
-        return size
     }
 
 }
