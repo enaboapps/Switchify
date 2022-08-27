@@ -12,6 +12,7 @@ import android.view.Gravity
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.compose.ui.res.stringArrayResource
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import java.util.*
 
@@ -29,10 +30,17 @@ class CursorManager(private val context: Context) {
 
     private var windowManager: WindowManager? = null
 
-    private var xLayoutParams: WindowManager.LayoutParams? = null
-    private var xLayout: LinearLayout? = null
-    private var yLayoutParams: WindowManager.LayoutParams? = null
-    private var yLayout: LinearLayout? = null
+    private var xQuadrantParams: WindowManager.LayoutParams? = null
+    private var xQuadrant: LinearLayout? = null
+    private var yQuadrantParams: WindowManager.LayoutParams? = null
+    private var yQuadrant: LinearLayout? = null
+
+    private var xCursorLineParams: WindowManager.LayoutParams? = null
+    private var xCursorLine: LinearLayout? = null
+    private var yCursorLineParams: WindowManager.LayoutParams? = null
+    private var yCursorLine: LinearLayout? = null
+
+    private var isInQuadrant = false
 
     private var x: Int = 0
     private var y: Int = 0
@@ -46,46 +54,77 @@ class CursorManager(private val context: Context) {
     }
 
 
-
     fun setup() {
         windowManager = context.getSystemService(WINDOW_SERVICE) as WindowManager
-        xLayoutParams = WindowManager.LayoutParams()
-        yLayoutParams = WindowManager.LayoutParams()
+        xQuadrantParams = WindowManager.LayoutParams()
+        yQuadrantParams = WindowManager.LayoutParams()
+        xCursorLineParams = WindowManager.LayoutParams()
+        yCursorLineParams = WindowManager.LayoutParams()
     }
 
 
-
-    private fun setupYLayout() {
-        if (yLayout == null) {
-            yLayout = LinearLayout(context)
-            yLayout?.setBackgroundColor(Color.RED)
-            yLayoutParams?.width = ScreenUtils.getWidth(context)
-            yLayoutParams?.height = cursorLineThickness
-            yLayoutParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-            yLayoutParams?.gravity = Gravity.TOP or Gravity.LEFT
-            yLayoutParams?.format = PixelFormat.TRANSPARENT
-            yLayoutParams?.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            windowManager?.addView(yLayout, yLayoutParams)
+    private fun setupYQuadrant() {
+        if (yQuadrant == null) {
+            y = 0
+            yQuadrant = LinearLayout(context)
+            yQuadrant?.setBackgroundColor(Color.RED)
+            yQuadrant?.alpha = 0.5f
+            yQuadrantParams?.y = y
+            yQuadrantParams?.gravity = Gravity.START or Gravity.TOP
+            yQuadrantParams?.width = ScreenUtils.getWidth(context)
+            yQuadrantParams?.height = ScreenUtils.getHeight(context) / 4
+            yQuadrantParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            yQuadrantParams?.format = PixelFormat.TRANSLUCENT
+            windowManager?.addView(yQuadrant, yQuadrantParams)
         }
     }
 
-    private fun setupXLayout() {
-        if (xLayout == null) {
-            xLayout = LinearLayout(context)
-            xLayout?.setBackgroundColor(Color.RED)
-            xLayoutParams?.x = 0
-            xLayoutParams?.y = 0
-            xLayoutParams?.width = cursorLineThickness
-            xLayoutParams?.height = ScreenUtils.getHeight(context)
-            xLayoutParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-            xLayoutParams?.gravity = Gravity.TOP or Gravity.LEFT
-            xLayoutParams?.format = PixelFormat.TRANSPARENT
-            xLayoutParams?.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            windowManager?.addView(xLayout, xLayoutParams)
+    private fun setupXQuadrant() {
+        if (xQuadrant == null) {
+            x = 0
+            xQuadrant = LinearLayout(context)
+            xQuadrant?.setBackgroundColor(Color.RED)
+            xQuadrant?.alpha = 0.5f
+            xQuadrantParams?.x = x
+            xQuadrantParams?.gravity = Gravity.START or Gravity.TOP
+            xQuadrantParams?.width = ScreenUtils.getWidth(context) / 4
+            xQuadrantParams?.height = ScreenUtils.getHeight(context)
+            xQuadrantParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            xQuadrantParams?.format = PixelFormat.TRANSLUCENT
+            windowManager?.addView(xQuadrant, xQuadrantParams)
         }
     }
 
 
+    private fun setupYCursorLine() {
+        if (yCursorLine == null) {
+            yCursorLine = LinearLayout(context)
+            yCursorLine?.setBackgroundColor(Color.RED)
+            yCursorLineParams?.y = y
+            yCursorLineParams?.gravity = Gravity.START or Gravity.TOP
+            yCursorLineParams?.width = ScreenUtils.getWidth(context)
+            yCursorLineParams?.height = cursorLineThickness
+            yCursorLineParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            yCursorLineParams?.format = PixelFormat.TRANSPARENT
+            yCursorLineParams?.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            windowManager?.addView(yCursorLine, yCursorLineParams)
+        }
+    }
+
+    private fun setupXCursorLine() {
+        if (xCursorLine == null) {
+            xCursorLine = LinearLayout(context)
+            xCursorLine?.setBackgroundColor(Color.RED)
+            xCursorLineParams?.x = x
+            xCursorLineParams?.gravity = Gravity.START or Gravity.TOP
+            xCursorLineParams?.width = cursorLineThickness
+            xCursorLineParams?.height = ScreenUtils.getHeight(context)
+            xCursorLineParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            xCursorLineParams?.format = PixelFormat.TRANSPARENT
+            xCursorLineParams?.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            windowManager?.addView(xCursorLine, xCursorLineParams)
+        }
+    }
 
 
     private fun start() {
@@ -95,13 +134,16 @@ class CursorManager(private val context: Context) {
             timer?.scheduleAtFixedRate(object : TimerTask() {
                 override fun run() {
                     handler.post {
-                        move()
+                        if (isInQuadrant) {
+                            moveCursorLine()
+                        } else {
+                            moveToNextQuadrant()
+                        }
                     }
                 }
-            }, 0, 100)
+            }, 1000, 1000)
         }
     }
-
 
 
     // Function to stop the timer
@@ -111,50 +153,107 @@ class CursorManager(private val context: Context) {
     }
 
 
-
-
-    // Function to move the cursor
-    private fun move() {
+    // Function to move to the next quadrant
+    private fun moveToNextQuadrant() {
         when (direction) {
-            Direction.LEFT ->
+            Direction.LEFT -> {
                 if (x > 0) {
-                    if (xLayout != null) {
-                        x -= 10
-                        xLayoutParams?.x = x
-                        windowManager?.updateViewLayout(xLayout, xLayoutParams)
+                    if (xQuadrant != null) {
+                        x -= ScreenUtils.getWidth(context) / 4
+                        xQuadrantParams?.x = x
+                        windowManager?.updateViewLayout(xQuadrant, xQuadrantParams)
                     }
                 } else {
                     direction = Direction.RIGHT
+                    moveToNextQuadrant()
                 }
-            Direction.RIGHT ->
-                if (x < ScreenUtils.getWidth(context)) {
-                    if (xLayout != null) {
-                        x += 10
-                        xLayoutParams?.x = x
-                        windowManager?.updateViewLayout(xLayout, xLayoutParams)
+            }
+            Direction.RIGHT -> {
+                if (x < ScreenUtils.getWidth(context) - ScreenUtils.getWidth(context) / 4) {
+                    if (xQuadrant != null) {
+                        x += ScreenUtils.getWidth(context) / 4
+                        xQuadrantParams?.x = x
+                        windowManager?.updateViewLayout(xQuadrant, xQuadrantParams)
                     }
                 } else {
                     direction = Direction.LEFT
+                    moveToNextQuadrant()
                 }
-            Direction.UP ->
+            }
+            Direction.UP -> {
                 if (y > 0) {
-                    if (yLayout != null) {
-                        y -= 10
-                        yLayoutParams?.y = y
-                        windowManager?.updateViewLayout(yLayout, yLayoutParams)
+                    if (yQuadrant != null) {
+                        y -= ScreenUtils.getHeight(context) / 4
+                        yQuadrantParams?.y = y
+                        windowManager?.updateViewLayout(yQuadrant, yQuadrantParams)
                     }
                 } else {
                     direction = Direction.DOWN
+                    moveToNextQuadrant()
                 }
-            Direction.DOWN ->
-                if (y < ScreenUtils.getHeight(context)) {
-                    if (yLayout != null) {
-                        y += 10
-                        yLayoutParams?.y = y
-                        windowManager?.updateViewLayout(yLayout, yLayoutParams)
+            }
+            Direction.DOWN -> {
+                if (y < ScreenUtils.getHeight(context) - ScreenUtils.getHeight(context) / 4) {
+                    if (yQuadrant != null) {
+                        y += ScreenUtils.getHeight(context) / 4
+                        yQuadrantParams?.y = y
+                        windowManager?.updateViewLayout(yQuadrant, yQuadrantParams)
                     }
                 } else {
                     direction = Direction.UP
+                    moveToNextQuadrant()
+                }
+            }
+        }
+    }
+
+
+    // Function to move the cursor line
+    private fun moveCursorLine() {
+        when (direction) {
+            Direction.LEFT ->
+                if (x > 0) {
+                    if (xCursorLine != null) {
+                        x -= 10
+                        xCursorLineParams?.x = x
+                        windowManager?.updateViewLayout(xCursorLine, xCursorLineParams)
+                    }
+                } else {
+                    direction = Direction.RIGHT
+                    moveCursorLine()
+                }
+            Direction.RIGHT ->
+                if (x < ScreenUtils.getWidth(context)) {
+                    if (xCursorLine != null) {
+                        x += 10
+                        xCursorLineParams?.x = x
+                        windowManager?.updateViewLayout(xCursorLine, xCursorLineParams)
+                    }
+                } else {
+                    direction = Direction.LEFT
+                    moveCursorLine()
+                }
+            Direction.UP ->
+                if (y > 0) {
+                    if (yCursorLine != null) {
+                        y -= 10
+                        yCursorLineParams?.y = y
+                        windowManager?.updateViewLayout(yCursorLine, yCursorLineParams)
+                    }
+                } else {
+                    direction = Direction.DOWN
+                    moveCursorLine()
+                }
+            Direction.DOWN ->
+                if (y < ScreenUtils.getHeight(context)) {
+                    if (yCursorLine != null) {
+                        y += 10
+                        yCursorLineParams?.y = y
+                        windowManager?.updateViewLayout(yCursorLine, yCursorLineParams)
+                    }
+                } else {
+                    direction = Direction.UP
+                    moveCursorLine()
                 }
         }
     }
@@ -167,47 +266,95 @@ class CursorManager(private val context: Context) {
 
         direction = Direction.RIGHT
 
-        if (xLayout != null) {
-            windowManager?.removeView(xLayout)
-        }
-        if (yLayout != null) {
-            windowManager?.removeView(yLayout)
-        }
-
-        xLayout = null
-        yLayout = null
+        resetQuadrants()
+        resetCursorLines()
     }
 
+    private fun resetQuadrants() {
+        if (xQuadrant != null) {
+            windowManager?.removeView(xQuadrant)
+        }
+        if (yQuadrant != null) {
+            windowManager?.removeView(yQuadrant)
+        }
+        xQuadrant = null
+        yQuadrant = null
+    }
+
+    private fun resetCursorLines() {
+        if (xCursorLine != null) {
+            windowManager?.removeView(xCursorLine)
+        }
+        if (yCursorLine != null) {
+            windowManager?.removeView(yCursorLine)
+        }
+        xCursorLine = null
+        yCursorLine = null
+    }
 
 
     fun performAction() {
         if (timer == null) {
-            setupXLayout()
+            setupXQuadrant()
             start()
             return
         }
         when (direction) {
             Direction.LEFT, Direction.RIGHT -> {
-                direction = Direction.DOWN
-                if (yLayout == null) {
-                    setupYLayout()
+                stop()
+                if (!isInQuadrant) {
+                    isInQuadrant = true
+
+                    direction = Direction.RIGHT
+
+                    resetQuadrants()
+
+                    if (xCursorLine == null) {
+                        setupXCursorLine()
+                    }
+                } else {
+                    direction = Direction.DOWN
+                    isInQuadrant = false
+
+                    if (xQuadrant == null) {
+                        setupYQuadrant()
+                    }
+                }
+                start()
+            }
+            Direction.UP, Direction.DOWN -> {
+                stop()
+                if (!isInQuadrant) {
+                    isInQuadrant = true
+
+                    direction = Direction.DOWN
+
+                    resetQuadrants()
+
+                    if (yCursorLine == null) {
+                        setupYCursorLine()
+                    }
+
+                    start()
+                } else {
+                    isInQuadrant = false
+
+                    performTap()
                 }
             }
-            Direction.UP, Direction.DOWN ->
-                performTap()
         }
     }
 
 
-
-
     private fun performTap() {
-        val point = PointF((x + (cursorLineThickness / 2)).toFloat(), (y + (cursorLineThickness / 2)).toFloat())
+        val point = PointF(
+            (x + (cursorLineThickness / 2)).toFloat(),
+            (y + (cursorLineThickness / 2)).toFloat()
+        )
         tapGestureListener?.onTap(point)
         drawCircleAndRemove()
         reset()
     }
-
 
 
     // Function to draw a circle at x, y and remove after half a second
@@ -228,7 +375,7 @@ class CursorManager(private val context: Context) {
         layoutParams.width = circleSize
         layoutParams.height = circleSize
         layoutParams.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-        layoutParams.gravity = Gravity.TOP or Gravity.LEFT
+        layoutParams.gravity = Gravity.TOP or Gravity.START
         layoutParams.format = PixelFormat.TRANSPARENT
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         windowManager?.addView(circle, layoutParams)
