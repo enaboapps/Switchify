@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.ui.theme
+package com.enaboapps.switchify.activities.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

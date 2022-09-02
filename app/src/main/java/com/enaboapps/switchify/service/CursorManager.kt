@@ -8,11 +8,13 @@ import android.graphics.PointF
 import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.compose.ui.res.stringArrayResource
+import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import java.util.*
 
@@ -27,6 +29,8 @@ class CursorManager(private val context: Context) {
     private val cursorLineThickness = 10
 
     public var tapGestureListener: TapGestureListener? = null
+
+    private val preferenceManager: PreferenceManager = PreferenceManager(context)
 
     private var windowManager: WindowManager? = null
 
@@ -128,6 +132,8 @@ class CursorManager(private val context: Context) {
 
 
     private fun start() {
+        val rate = preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
+        Log.d(TAG, "start: $rate")
         val handler = Handler(Looper.getMainLooper())
         if (timer == null) {
             timer = Timer()
@@ -141,7 +147,7 @@ class CursorManager(private val context: Context) {
                         }
                     }
                 }
-            }, 1000, 1000)
+            }, rate.toLong(), rate.toLong())
         }
     }
 
