@@ -11,7 +11,7 @@ import com.enaboapps.switchify.screens.SettingsScreen
 fun NavGraph(navController: NavHostController) {
     NavHost(navController, startDestination = NavigationRoute.Home.name) {
         composable(NavigationRoute.Home.name) {
-            HomeScreen()
+            HomeScreen(navController)
         }
         composable(NavigationRoute.Settings.name) {
             SettingsScreen()
