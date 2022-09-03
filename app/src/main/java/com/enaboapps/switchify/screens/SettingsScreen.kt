@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.widgets.PreferenceSection
 import com.enaboapps.switchify.widgets.PreferenceTimeStepper
 
 @Composable
@@ -25,15 +26,7 @@ fun SettingsScreen() {
         }
     ) {
         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Top) {
-            PreferenceTimeStepper(
-                value = settingsScreenModel.getScanRate(),
-                title = "Scan rate",
-                min = 100,
-                max = 1000,
-                onValueChanged = {
-                    settingsScreenModel.setScanRate(it)
-                }
-            )
+            TimingSection()
         }
     }
 }
@@ -48,5 +41,22 @@ class SettingsScreenModel(context: Context) : ViewModel() {
 
     fun setScanRate(rate: Int) {
         preferenceManager.setIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE, rate)
+    }
+}
+
+@Composable
+private fun TimingSection() {
+    val settingsScreenModel = SettingsScreenModel(LocalContext.current)
+
+    PreferenceSection(title = "Timing") {
+        PreferenceTimeStepper(
+            value = settingsScreenModel.getScanRate(),
+            title = "Scan rate",
+            min = 100,
+            max = 100000,
+            onValueChanged = {
+                settingsScreenModel.setScanRate(it)
+            }
+        )
     }
 }

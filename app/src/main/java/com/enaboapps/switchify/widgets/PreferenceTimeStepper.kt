@@ -1,6 +1,8 @@
 package com.enaboapps.switchify.widgets
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -18,7 +20,7 @@ fun PreferenceTimeStepper(
     onValueChanged: (Int) -> Unit
 ) {
     var time by remember { mutableStateOf(value) }
-    Row(Modifier.padding(all = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("$title ${StringUtils.getSecondsString(time)}")
         Spacer(modifier = Modifier.weight(1f))
         Button(onClick = {
