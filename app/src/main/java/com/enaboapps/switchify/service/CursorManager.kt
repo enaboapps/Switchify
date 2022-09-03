@@ -13,7 +13,6 @@ import android.view.Gravity
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
-import androidx.compose.ui.res.stringArrayResource
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import java.util.*
@@ -45,6 +44,7 @@ class CursorManager(private val context: Context) {
     private var yCursorLine: LinearLayout? = null
 
     private var isInQuadrant = false
+    private var quadrantInfo: QuadrantInfo? = null
 
     private var x: Int = 0
     private var y: Int = 0
@@ -102,9 +102,10 @@ class CursorManager(private val context: Context) {
 
     private fun setupYCursorLine() {
         if (yCursorLine == null) {
+            quadrantInfo = QuadrantInfo(y, y + ScreenUtils.getHeight(context) / 4)
             yCursorLine = LinearLayout(context)
             yCursorLine?.setBackgroundColor(Color.RED)
-            yCursorLineParams?.y = y
+            yCursorLineParams?.y = quadrantInfo?.start
             yCursorLineParams?.gravity = Gravity.START or Gravity.TOP
             yCursorLineParams?.width = ScreenUtils.getWidth(context)
             yCursorLineParams?.height = cursorLineThickness
@@ -117,9 +118,10 @@ class CursorManager(private val context: Context) {
 
     private fun setupXCursorLine() {
         if (xCursorLine == null) {
+            quadrantInfo = QuadrantInfo(x, x + ScreenUtils.getWidth(context) / 4)
             xCursorLine = LinearLayout(context)
             xCursorLine?.setBackgroundColor(Color.RED)
-            xCursorLineParams?.x = x
+            xCursorLineParams?.x = quadrantInfo?.start
             xCursorLineParams?.gravity = Gravity.START or Gravity.TOP
             xCursorLineParams?.width = cursorLineThickness
             xCursorLineParams?.height = ScreenUtils.getHeight(context)
@@ -132,7 +134,8 @@ class CursorManager(private val context: Context) {
 
 
     private fun start() {
-        val rate = preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
+        val rate =
+            preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
         Log.d(TAG, "start: $rate")
         val handler = Handler(Looper.getMainLooper())
         if (timer == null) {
@@ -216,51 +219,53 @@ class CursorManager(private val context: Context) {
 
     // Function to move the cursor line
     private fun moveCursorLine() {
-        when (direction) {
-            Direction.LEFT ->
-                if (x > 0) {
-                    if (xCursorLine != null) {
-                        x -= 10
-                        xCursorLineParams?.x = x
-                        windowManager?.updateViewLayout(xCursorLine, xCursorLineParams)
+        if (quadrantInfo != null) {
+            when (direction) {
+                Direction.LEFT ->
+                    if (x > quadrantInfo?.start!!) {
+                        if (xCursorLine != null) {
+                            x -= 10
+                            xCursorLineParams?.x = x
+                            windowManager?.updateViewLayout(xCursorLine, xCursorLineParams)
+                        }
+                    } else {
+                        direction = Direction.RIGHT
+                        moveCursorLine()
                     }
-                } else {
-                    direction = Direction.RIGHT
-                    moveCursorLine()
-                }
-            Direction.RIGHT ->
-                if (x < ScreenUtils.getWidth(context)) {
-                    if (xCursorLine != null) {
-                        x += 10
-                        xCursorLineParams?.x = x
-                        windowManager?.updateViewLayout(xCursorLine, xCursorLineParams)
+                Direction.RIGHT ->
+                    if (x < quadrantInfo?.end!!) {
+                        if (xCursorLine != null) {
+                            x += 10
+                            xCursorLineParams?.x = x
+                            windowManager?.updateViewLayout(xCursorLine, xCursorLineParams)
+                        }
+                    } else {
+                        direction = Direction.LEFT
+                        moveCursorLine()
                     }
-                } else {
-                    direction = Direction.LEFT
-                    moveCursorLine()
-                }
-            Direction.UP ->
-                if (y > 0) {
-                    if (yCursorLine != null) {
-                        y -= 10
-                        yCursorLineParams?.y = y
-                        windowManager?.updateViewLayout(yCursorLine, yCursorLineParams)
+                Direction.UP ->
+                    if (y > quadrantInfo?.start!!) {
+                        if (yCursorLine != null) {
+                            y -= 10
+                            yCursorLineParams?.y = y
+                            windowManager?.updateViewLayout(yCursorLine, yCursorLineParams)
+                        }
+                    } else {
+                        direction = Direction.DOWN
+                        moveCursorLine()
                     }
-                } else {
-                    direction = Direction.DOWN
-                    moveCursorLine()
-                }
-            Direction.DOWN ->
-                if (y < ScreenUtils.getHeight(context)) {
-                    if (yCursorLine != null) {
-                        y += 10
-                        yCursorLineParams?.y = y
-                        windowManager?.updateViewLayout(yCursorLine, yCursorLineParams)
+                Direction.DOWN ->
+                    if (y < quadrantInfo?.end!!) {
+                        if (yCursorLine != null) {
+                            y += 10
+                            yCursorLineParams?.y = y
+                            windowManager?.updateViewLayout(yCursorLine, yCursorLineParams)
+                        }
+                    } else {
+                        direction = Direction.UP
+                        moveCursorLine()
                     }
-                } else {
-                    direction = Direction.UP
-                    moveCursorLine()
-                }
+            }
         }
     }
 
@@ -394,3 +399,8 @@ class CursorManager(private val context: Context) {
     }
 
 }
+
+data class QuadrantInfo(
+    val start: Int,
+    val end: Int,
+)
