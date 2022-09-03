@@ -134,8 +134,11 @@ class CursorManager(private val context: Context) {
 
 
     private fun start() {
-        val rate =
+        var rate =
             preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
+        if (isInQuadrant && rate > 200) {
+            rate = 200
+        }
         Log.d(TAG, "start: $rate")
         val handler = Handler(Looper.getMainLooper())
         if (timer == null) {
@@ -224,7 +227,7 @@ class CursorManager(private val context: Context) {
                 Direction.LEFT ->
                     if (x > quadrantInfo?.start!!) {
                         if (xCursorLine != null) {
-                            x -= 10
+                            x -= cursorLineThickness * 2
                             xCursorLineParams?.x = x
                             windowManager?.updateViewLayout(xCursorLine, xCursorLineParams)
                         }
@@ -235,7 +238,7 @@ class CursorManager(private val context: Context) {
                 Direction.RIGHT ->
                     if (x < quadrantInfo?.end!!) {
                         if (xCursorLine != null) {
-                            x += 10
+                            x += cursorLineThickness * 2
                             xCursorLineParams?.x = x
                             windowManager?.updateViewLayout(xCursorLine, xCursorLineParams)
                         }
@@ -246,7 +249,7 @@ class CursorManager(private val context: Context) {
                 Direction.UP ->
                     if (y > quadrantInfo?.start!!) {
                         if (yCursorLine != null) {
-                            y -= 10
+                            y -= cursorLineThickness * 2
                             yCursorLineParams?.y = y
                             windowManager?.updateViewLayout(yCursorLine, yCursorLineParams)
                         }
@@ -257,7 +260,7 @@ class CursorManager(private val context: Context) {
                 Direction.DOWN ->
                     if (y < quadrantInfo?.end!!) {
                         if (yCursorLine != null) {
-                            y += 10
+                            y += cursorLineThickness * 2
                             yCursorLineParams?.y = y
                             windowManager?.updateViewLayout(yCursorLine, yCursorLineParams)
                         }
