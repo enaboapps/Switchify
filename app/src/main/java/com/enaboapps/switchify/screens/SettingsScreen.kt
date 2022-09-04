@@ -1,23 +1,23 @@
 package com.enaboapps.switchify.screens
 
-import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.ViewModel
-import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.screens.models.SettingsScreenModel
 import com.enaboapps.switchify.widgets.PreferenceSection
 import com.enaboapps.switchify.widgets.PreferenceTimeStepper
 
 @Composable
 fun SettingsScreen() {
-    val settingsScreenModel = SettingsScreenModel(LocalContext.current)
+    val verticalScrollState = rememberScrollState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -25,24 +25,19 @@ fun SettingsScreen() {
             )
         }
     ) {
-        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Top) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(verticalScrollState),
+            verticalArrangement = Arrangement.Top
+        ) {
             TimingSection()
         }
     }
 }
 
 
-class SettingsScreenModel(context: Context) : ViewModel() {
-    private val preferenceManager = PreferenceManager(context)
 
-    fun getScanRate(): Int {
-        return preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
-    }
-
-    fun setScanRate(rate: Int) {
-        preferenceManager.setIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE, rate)
-    }
-}
 
 @Composable
 private fun TimingSection() {
@@ -52,6 +47,7 @@ private fun TimingSection() {
         PreferenceTimeStepper(
             value = settingsScreenModel.getScanRate(),
             title = "Scan rate",
+            summary = "The interval at which the scanner will move to the next item",
             min = 100,
             max = 100000,
             onValueChanged = {
