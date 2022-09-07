@@ -5,7 +5,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.enaboapps.switchify.screens.HomeScreen
-import com.enaboapps.switchify.screens.SettingsScreen
+import com.enaboapps.switchify.screens.settings.AddNewSwitchScreen
+import com.enaboapps.switchify.screens.settings.SettingsScreen
+import com.enaboapps.switchify.screens.settings.SwitchesScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -14,7 +16,13 @@ fun NavGraph(navController: NavHostController) {
             HomeScreen(navController)
         }
         composable(NavigationRoute.Settings.name) {
-            SettingsScreen()
+            SettingsScreen(navController)
+        }
+        composable(NavigationRoute.Switches.name) {
+            SwitchesScreen(navController)
+        }
+        composable(NavigationRoute.AddNewSwitch.name) {
+            AddNewSwitchScreen(navController)
         }
     }
 }

@@ -1,8 +1,9 @@
-package com.enaboapps.switchify.screens
+package com.enaboapps.switchify.screens.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
@@ -11,12 +12,15 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.enaboapps.switchify.screens.models.SettingsScreenModel
+import androidx.navigation.NavController
+import com.enaboapps.switchify.nav.NavigationRoute
+import com.enaboapps.switchify.screens.settings.models.SettingsScreenModel
+import com.enaboapps.switchify.widgets.PreferenceLink
 import com.enaboapps.switchify.widgets.PreferenceSection
 import com.enaboapps.switchify.widgets.PreferenceTimeStepper
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(navController: NavController) {
     val verticalScrollState = rememberScrollState()
     Scaffold(
         topBar = {
@@ -28,10 +32,17 @@ fun SettingsScreen() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(verticalScrollState),
+                .verticalScroll(verticalScrollState)
+                .padding(it),
             verticalArrangement = Arrangement.Top
         ) {
             TimingSection()
+            PreferenceLink(
+                title = "Switches",
+                summary = "Configure your switches",
+                navController = navController,
+                route = NavigationRoute.Switches
+            )
         }
     }
 }

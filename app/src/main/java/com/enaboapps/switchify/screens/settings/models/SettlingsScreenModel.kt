@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.screens.models
+package com.enaboapps.switchify.screens.settings.models
 
 import android.content.Context
 import androidx.lifecycle.ViewModel

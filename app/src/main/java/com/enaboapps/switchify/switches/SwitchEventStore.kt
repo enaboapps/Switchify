@@ -23,17 +23,28 @@ class SwitchEventStore(private val context: Context) {
         }
     }
 
+    fun contains(switchEvent: SwitchEvent): Boolean {
+        return switchEvents.contains(switchEvent)
+    }
+
+    fun getCount(): Int {
+        return switchEvents.size
+    }
+
     fun getSwitchEvents(): List<SwitchEvent> {
+        readFile()
         return switchEvents
     }
 
     // Function to read the file
-    fun readFile() {
+    private fun readFile() {
         val file = File(context.filesDir, fileName)
-        val lines = file.readLines()
-        for (line in lines) {
-            val switchEvent = SwitchEvent.fromString(line)
-            switchEvents.add(switchEvent)
+        if (file.exists()) {
+            val lines = file.readLines()
+            for (line in lines) {
+                val switchEvent = SwitchEvent.fromString(line)
+                switchEvents.add(switchEvent)
+            }
         }
     }
 
