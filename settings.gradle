@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Switchify"
+rootProject.name = "switchify"
 include ':app'
