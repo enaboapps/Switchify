@@ -9,11 +9,14 @@ import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import com.enaboapps.switchify.service.utils.GestureUtils
 
-class SwitchifyAccessibilityService : AccessibilityService(), TapGestureListener {
+class SwitchifyAccessibilityService : AccessibilityService(), TapGestureListener,
+    ScreenSwitchListener {
 
     private val TAG = "SwitchifyAccessibilityService"
 
     private val cursorManager: CursorManager = CursorManager(this)
+
+    private val screenSwitch: ScreenSwitch = ScreenSwitch(this)
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         Log.d(TAG, "onAccessibilityEvent: ${event?.eventType}")
@@ -29,6 +32,9 @@ class SwitchifyAccessibilityService : AccessibilityService(), TapGestureListener
 
         cursorManager.setup()
         cursorManager.tapGestureListener = this
+
+        screenSwitch.setup()
+        screenSwitch.screenSwitchListener = this
     }
 
 
@@ -52,6 +58,13 @@ class SwitchifyAccessibilityService : AccessibilityService(), TapGestureListener
         } catch (e: Exception) {
             Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
         }
+    }
+
+    override fun onScreenSwitch() {
+        cursorManager.performAction()
+
+        screenSwitch.teardown()
+        screenSwitch.setup()
     }
 
 }
