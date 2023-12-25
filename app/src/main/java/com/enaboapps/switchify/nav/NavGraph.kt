@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.enaboapps.switchify.screens.EnableAccessibilityServiceScreen
 import com.enaboapps.switchify.screens.HomeScreen
 import com.enaboapps.switchify.screens.settings.AddNewSwitchScreen
 import com.enaboapps.switchify.screens.settings.SettingsScreen
@@ -23,6 +24,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(NavigationRoute.AddNewSwitch.name) {
             AddNewSwitchScreen(navController)
+        }
+        composable(NavigationRoute.EnableAccessibilityService.name) {
+            EnableAccessibilityServiceScreen()
         }
     }
 }
