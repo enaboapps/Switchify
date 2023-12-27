@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service
 
 import android.content.Context
+import android.view.Gravity
 import android.view.WindowManager
 import android.widget.Button
 import androidx.core.content.ContextCompat.getSystemService
@@ -27,6 +28,12 @@ class ScreenSwitch(private val context: Context) {
     // Set up the button at the bottom of the screen.
     fun setup() {
         windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+
+        // Getting screen dimensions
+        val displayMetrics = context.resources.displayMetrics
+        val screenHeight = displayMetrics.heightPixels
+
+        // Setting up LayoutParams
         buttonLayoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -34,10 +41,17 @@ class ScreenSwitch(private val context: Context) {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             android.graphics.PixelFormat.TRANSLUCENT
         )
+
+        // Adjusting the position to the bottom of the screen
+        buttonLayoutParams?.gravity = Gravity.BOTTOM
+        buttonLayoutParams?.x = 0
+        buttonLayoutParams?.y = 0 // Y is now set to 0 with gravity at the bottom
+
         button = Button(context)
         button?.setOnClickListener {
             performAction()
         }
+
         windowManager?.addView(button, buttonLayoutParams)
     }
 

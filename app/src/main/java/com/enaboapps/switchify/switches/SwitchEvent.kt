@@ -23,9 +23,7 @@ data class SwitchEvent(
         if (name != other.name) return false
         if (code != other.code) return false
         if (pressAction != other.pressAction) return false
-        if (longPressAction != other.longPressAction) return false
-
-        return true
+        return longPressAction == other.longPressAction
     }
 
     override fun hashCode(): Int {

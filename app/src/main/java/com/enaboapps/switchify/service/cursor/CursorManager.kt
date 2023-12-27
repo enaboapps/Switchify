@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service
+package com.enaboapps.switchify.service.cursor
 
 import android.content.Context
 import android.content.Context.WINDOW_SERVICE
@@ -14,20 +14,16 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.gestures.GestureManager
+import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import java.util.*
-
-interface TapGestureListener {
-    fun onTap(point: PointF)
-}
 
 class CursorManager(private val context: Context) {
 
     private val TAG = "CursorManager"
 
     private val cursorLineThickness = 10
-
-    public var tapGestureListener: TapGestureListener? = null
 
     private val preferenceManager: PreferenceManager = PreferenceManager(context)
 
@@ -353,20 +349,26 @@ class CursorManager(private val context: Context) {
                 } else {
                     isInQuadrant = false
 
-                    performTap()
+                    performFinalAction()
                 }
             }
         }
     }
 
 
-    private fun performTap() {
+    private fun performFinalAction() {
         val point = PointF(
             (x + (cursorLineThickness / 2)).toFloat(),
             (y + (cursorLineThickness / 2)).toFloat()
         )
-        tapGestureListener?.onTap(point)
-        drawCircleAndRemove()
+        GestureManager.getInstance().currentPoint = point
+        var shouldPerformTap = false
+        if (shouldPerformTap) {
+            GestureManager.getInstance().performTap()
+            drawCircleAndRemove()
+        } else {
+            MenuManager.getInstance().openMainMenu()
+        }
         reset()
     }
 

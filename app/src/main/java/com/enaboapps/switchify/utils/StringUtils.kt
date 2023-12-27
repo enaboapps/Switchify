@@ -6,7 +6,7 @@ class StringUtils {
 
         // Function to get time string in seconds from milliseconds (ex. 1.5 seconds)
         fun getSecondsString(milliseconds: Int): String {
-            val seconds: kotlin.Double = (milliseconds / 1000.0)
+            val seconds: Double = (milliseconds / 1000.0)
             return "$seconds seconds"
         }
 
