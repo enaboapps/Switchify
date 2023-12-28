@@ -1,15 +1,28 @@
 package com.enaboapps.switchify.screens.settings
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +42,7 @@ fun SwitchesScreen(navController: NavController) {
     val switchesScreenModel = SwitchesScreenModel(
         SwitchEventStore(LocalContext.current)
     )
+    val events: List<SwitchEvent> = switchesScreenModel.events.observeAsState().value ?: listOf()
     val verticalScrollState = rememberScrollState()
     Scaffold(
         topBar = {
@@ -55,7 +69,7 @@ fun SwitchesScreen(navController: NavController) {
                 .verticalScroll(verticalScrollState)
                 .padding(it)
         ) {
-            if (switchesScreenModel.events.value?.isEmpty() == true) {
+            if (events.isEmpty()) {
                 Box(modifier = Modifier.padding(16.dp), contentAlignment = Alignment.Center) {
                     Text(
                         text = "No switches found",
@@ -64,8 +78,11 @@ fun SwitchesScreen(navController: NavController) {
                 }
             } else {
                 PreferenceSection(title = "Switches") {
-                    switchesScreenModel.events.value?.forEach { switch ->
-                        SwitchEventItem(switchEvent = switch, model = switchesScreenModel)
+                    for (event in events) {
+                        SwitchEventItem(
+                            switchEvent = event,
+                            model = switchesScreenModel
+                        )
                     }
                 }
             }
@@ -92,7 +109,15 @@ private fun SwitchEventItem(
             style = MaterialTheme.typography.subtitle1,
             modifier = Modifier.weight(1f)
         )
-        Image(imageVector = Icons.Default.ArrowForward, contentDescription = null)
+        IconButton(onClick = {
+            model.deleteEvent(switchEvent)
+        }) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                tint = MaterialTheme.colors.error,
+                contentDescription = "Delete Switch"
+            )
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.switches
 
 import android.content.Context
+import android.util.Log
 import java.io.File
 
 class SwitchEventStore(private val context: Context) {
@@ -17,7 +18,9 @@ class SwitchEventStore(private val context: Context) {
     }
 
     fun remove(switchEvent: SwitchEvent) {
+        Log.d("SwitchEventStore", "Removing $switchEvent")
         if (switchEvents.contains(switchEvent)) {
+            Log.d("SwitchEventStore", "Found and removing $switchEvent")
             switchEvents.remove(switchEvent)
             saveToFile()
         }
