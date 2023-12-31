@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.screens.settings
+package com.enaboapps.switchify.screens.settings.switches
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -32,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.nav.NavigationRoute
-import com.enaboapps.switchify.screens.settings.models.SwitchesScreenModel
+import com.enaboapps.switchify.screens.settings.switches.models.SwitchesScreenModel
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.widgets.PreferenceSection

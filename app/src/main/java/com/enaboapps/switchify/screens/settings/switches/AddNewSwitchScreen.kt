@@ -1,10 +1,18 @@
-package com.enaboapps.switchify.screens.settings
+package com.enaboapps.switchify.screens.settings.switches
 
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,7 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
-import com.enaboapps.switchify.screens.settings.models.AddNewSwitchScreenModel
+import com.enaboapps.switchify.screens.settings.switches.models.AddNewSwitchScreenModel
 import com.enaboapps.switchify.switches.SwitchEventStore
 
 @Composable
@@ -55,6 +63,10 @@ fun AddNewSwitchScreen(navController: NavController) {
                         .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(text = "Switch captured", style = MaterialTheme.typography.h5)
+                    SwitchActionSection(
+                        viewModel = addNewSwitchScreenModel,
+                        modifier = Modifier.padding(16.dp)
+                    )
                     Button(onClick = {
                         addNewSwitchScreenModel.save()
                         navController.popBackStack()
@@ -96,5 +108,24 @@ fun SwitchName(name: MutableLiveData<String>) {
         horizontalArrangement = Arrangement.Start
     ) {
         Text(text = name.value!!, style = MaterialTheme.typography.h5)
+    }
+}
+
+@Composable
+fun SwitchActionSection(
+    viewModel: AddNewSwitchScreenModel,
+    modifier: Modifier = Modifier
+) {
+    Column {
+        SwitchActionPicker(
+            title = "Press action",
+            action = viewModel.pressAction,
+            modifier = modifier
+        )
+        SwitchActionPicker(
+            title = "Long press action",
+            action = viewModel.longPressAction,
+            modifier = modifier
+        )
     }
 }

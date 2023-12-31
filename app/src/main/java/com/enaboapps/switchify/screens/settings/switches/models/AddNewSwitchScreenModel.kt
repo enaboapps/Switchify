@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.screens.settings.models
+package com.enaboapps.switchify.screens.settings.switches.models
 
 import android.util.Log
 import androidx.compose.ui.input.key.Key
@@ -20,6 +20,12 @@ class AddNewSwitchScreenModel(private val store: SwitchEventStore): ViewModel() 
 
     val shouldSave = MutableLiveData(false)
 
+
+    // Actions for press and long press
+    val pressAction = MutableLiveData(SwitchAction(SwitchAction.Actions.ACTION_SELECT))
+    val longPressAction = MutableLiveData(SwitchAction(SwitchAction.Actions.ACTION_STOP_SCANNING))
+
+
     fun processKeyCode(key: Key) {
         Log.d(TAG, "processKeyCode: $key")
         code = key.keyCode
@@ -28,7 +34,7 @@ class AddNewSwitchScreenModel(private val store: SwitchEventStore): ViewModel() 
 
     fun save() {
         if (shouldSave.value == true) {
-            val event = SwitchEvent(name = name.value!!, code = code.toString(), pressAction = SwitchAction(SwitchAction.Actions.ACTION_SELECT))
+            val event = SwitchEvent(name = name.value!!, code = code.toString(), pressAction = pressAction.value!!, longPressAction = longPressAction.value!!)
             if (!store.contains(event)) {
                 store.add(event)
             } else {

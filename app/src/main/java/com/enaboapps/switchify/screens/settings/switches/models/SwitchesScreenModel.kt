@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.screens.settings.models
+package com.enaboapps.switchify.screens.settings.switches.models
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
