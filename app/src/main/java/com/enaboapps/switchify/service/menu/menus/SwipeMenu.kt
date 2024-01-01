@@ -3,19 +3,21 @@ package com.enaboapps.switchify.service.menu.menus
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuItem
-import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.MenuView
 
-class MainMenu(accessibilityService: SwitchifyAccessibilityService) {
+class SwipeMenu(accessibilityService: SwitchifyAccessibilityService) {
     private var items: List<MenuItem> = listOf(
-        MenuItem("Tap", {
-            GestureManager.getInstance().performTap()
+        MenuItem("Swipe Up", {
+            GestureManager.getInstance().performSwipe(GestureManager.SwipeDirection.UP)
         }),
-        MenuItem("Swipe", {
-            MenuManager.getInstance().openSwipeMenu()
+        MenuItem("Swipe Down", {
+            GestureManager.getInstance().performSwipe(GestureManager.SwipeDirection.DOWN)
         }),
-        MenuItem("System Control", {
-            MenuManager.getInstance().openSystemControlMenu()
+        MenuItem("Swipe Left", {
+            GestureManager.getInstance().performSwipe(GestureManager.SwipeDirection.LEFT)
+        }),
+        MenuItem("Swipe Right", {
+            GestureManager.getInstance().performSwipe(GestureManager.SwipeDirection.RIGHT)
         }),
     )
 

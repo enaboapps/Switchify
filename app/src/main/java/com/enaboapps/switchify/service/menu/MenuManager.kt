@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.menu.menus.MainMenu
+import com.enaboapps.switchify.service.menu.menus.SwipeMenu
 import com.enaboapps.switchify.service.menu.menus.SystemControlMenu
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import java.util.concurrent.DelayQueue
@@ -40,6 +41,12 @@ class MenuManager : MenuViewListener {
     fun openSystemControlMenu() {
         val systemControlMenu = SystemControlMenu(accessibilityService!!)
         openDifferentMenu(systemControlMenu.menuView)
+    }
+
+    // This function opens the swipe menu
+    fun openSwipeMenu() {
+        val swipeMenu = SwipeMenu(accessibilityService!!)
+        openDifferentMenu(swipeMenu.menuView)
     }
 
     // This function opens a menu
