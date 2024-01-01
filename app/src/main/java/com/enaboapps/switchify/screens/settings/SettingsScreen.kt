@@ -17,11 +17,14 @@ import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.screens.settings.models.SettingsScreenModel
 import com.enaboapps.switchify.widgets.PreferenceLink
 import com.enaboapps.switchify.widgets.PreferenceSection
+import com.enaboapps.switchify.widgets.PreferenceSwitch
 import com.enaboapps.switchify.widgets.PreferenceTimeStepper
 
 @Composable
 fun SettingsScreen(navController: NavController) {
     val verticalScrollState = rememberScrollState()
+    val context = LocalContext.current
+    val settingsScreenModel = SettingsScreenModel(context)
     Scaffold(
         topBar = {
             TopAppBar(
@@ -36,7 +39,8 @@ fun SettingsScreen(navController: NavController) {
                 .padding(it),
             verticalArrangement = Arrangement.Top
         ) {
-            TimingSection()
+            TimingSection(settingsScreenModel)
+            SelectionSection(settingsScreenModel)
             PreferenceLink(
                 title = "Switches",
                 summary = "Configure your switches",
@@ -51,9 +55,7 @@ fun SettingsScreen(navController: NavController) {
 
 
 @Composable
-private fun TimingSection() {
-    val settingsScreenModel = SettingsScreenModel(LocalContext.current)
-
+private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
     PreferenceSection(title = "Timing") {
         PreferenceTimeStepper(
             value = settingsScreenModel.getScanRate(),
@@ -63,6 +65,30 @@ private fun TimingSection() {
             max = 100000,
             onValueChanged = {
                 settingsScreenModel.setScanRate(it)
+            }
+        )
+    }
+}
+
+@Composable
+private fun SelectionSection(screenModel: SettingsScreenModel) {
+    PreferenceSection(title = "Selection") {
+        PreferenceSwitch(
+            title = "Auto select",
+            summary = "Automatically select the item after a delay",
+            checked = screenModel.getAutoSelect(),
+            onCheckedChange = {
+                screenModel.setAutoSelect(it)
+            }
+        )
+        PreferenceTimeStepper(
+            value = screenModel.getAutoSelectDelay(),
+            title = "Auto select delay",
+            summary = "The delay before the item is selected",
+            min = 100,
+            max = 100000,
+            onValueChanged = {
+                screenModel.setAutoSelectDelay(it)
             }
         )
     }

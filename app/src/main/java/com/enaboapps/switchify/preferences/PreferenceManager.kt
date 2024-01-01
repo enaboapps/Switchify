@@ -7,6 +7,8 @@ class PreferenceManager(context: Context) {
 
     companion object Keys {
         const val PREFERENCE_KEY_SCAN_RATE = "scan_rate"
+        const val PREFERENCE_KEY_AUTO_SELECT = "auto_select"
+        const val PREFERENCE_KEY_AUTO_SELECT_DELAY = "auto_select_delay"
         private const val PREFERENCE_FILE_NAME = "switchify_preferences"
     }
 

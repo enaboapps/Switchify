@@ -34,7 +34,7 @@ fun PreferenceSwitch(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 8.dp),
-        elevation = 4.dp,
+        elevation = 8.dp,
         color = MaterialTheme.colors.surface
     ) {
         Row(

@@ -47,7 +47,11 @@ class CursorManager(private val context: Context) {
 
     private var direction: Direction = Direction.RIGHT
 
-    private var timer: Timer? = null
+    private var movingTimer: Timer? = null // Timer to move the cursor line
+
+    // auto select variables
+    private var isInAutoSelect = false // If true, we listen for a second event to activate the menu
+    private var autoSelectTimer: Timer? = null // Timer to wait for the second event
 
     enum class Direction {
         LEFT, RIGHT, UP, DOWN
@@ -137,9 +141,9 @@ class CursorManager(private val context: Context) {
         }
         Log.d(TAG, "start: $rate")
         val handler = Handler(Looper.getMainLooper())
-        if (timer == null) {
-            timer = Timer()
-            timer?.scheduleAtFixedRate(object : TimerTask() {
+        if (movingTimer == null) {
+            movingTimer = Timer()
+            movingTimer?.scheduleAtFixedRate(object : TimerTask() {
                 override fun run() {
                     handler.post {
                         if (isInQuadrant) {
@@ -156,8 +160,8 @@ class CursorManager(private val context: Context) {
 
     // Function to stop the timer
     private fun stop() {
-        timer?.cancel()
-        timer = null
+        movingTimer?.cancel()
+        movingTimer = null
     }
 
 
@@ -304,11 +308,19 @@ class CursorManager(private val context: Context) {
 
 
     fun performAction() {
-        if (timer == null) {
+        // If the event is triggered within the auto select delay, we don't perform the action
+        if (checkAutoSelectDelay()) {
+            return
+        }
+
+        // If moving timer is null, we start the timer and return
+        if (movingTimer == null) {
             setupXQuadrant()
             start()
             return
         }
+
+        // We perform the action based on the direction
         when (direction) {
             Direction.LEFT, Direction.RIGHT -> {
                 stop()
@@ -362,14 +374,48 @@ class CursorManager(private val context: Context) {
             (y + (cursorLineThickness / 2)).toFloat()
         )
         GestureManager.getInstance().currentPoint = point
-        var shouldPerformTap = false
-        if (shouldPerformTap) {
-            GestureManager.getInstance().performTap()
-            drawCircleAndRemove()
-        } else {
-            MenuManager.getInstance().openMainMenu()
+        val auto = preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT)
+        if (auto && !isInAutoSelect) {
+            startAutoSelectTimer()
         }
         reset()
+    }
+
+
+    // Function to check if the event is triggered within the auto select delay
+    private fun checkAutoSelectDelay(): Boolean {
+        if (isInAutoSelect) {
+            isInAutoSelect = false
+            autoSelectTimer?.cancel()
+            autoSelectTimer = null
+            // open menu
+            MenuManager.getInstance().openMainMenu()
+            return true
+        }
+        return false
+    }
+
+
+    // Function to start auto select timer
+    private fun startAutoSelectTimer() {
+        val delay =
+            preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT_DELAY)
+        val handler = Handler(Looper.getMainLooper())
+        isInAutoSelect = true
+        if (autoSelectTimer == null) {
+            autoSelectTimer = Timer()
+            autoSelectTimer?.schedule(object : TimerTask() {
+                override fun run() {
+                    handler.post {
+                        if (isInAutoSelect) {
+                            isInAutoSelect = false
+                            // tap
+                            GestureManager.getInstance().performTap()
+                        }
+                    }
+                }
+            }, delay.toLong())
+        }
     }
 
 

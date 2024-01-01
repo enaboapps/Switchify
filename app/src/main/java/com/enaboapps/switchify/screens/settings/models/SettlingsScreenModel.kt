@@ -14,4 +14,20 @@ class SettingsScreenModel(context: Context) : ViewModel() {
     fun setScanRate(rate: Int) {
         preferenceManager.setIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE, rate)
     }
+
+    fun getAutoSelect(): Boolean {
+        return preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT)
+    }
+
+    fun setAutoSelect(autoSelect: Boolean) {
+        preferenceManager.setBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT, autoSelect)
+    }
+
+    fun getAutoSelectDelay(): Int {
+        return preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT_DELAY)
+    }
+
+    fun setAutoSelectDelay(delay: Int) {
+        preferenceManager.setIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT_DELAY, delay)
+    }
 }
