@@ -12,7 +12,7 @@ class SwitchifyAccessibilityService : AccessibilityService(),
 
     private val TAG = "SwitchifyAccessibilityService"
 
-    private val scanningManager = ScanningManager(this, this)
+    private var scanningManager: ScanningManager? = null
 
     private val screenSwitch: ScreenSwitch = ScreenSwitch(this)
 
@@ -28,7 +28,9 @@ class SwitchifyAccessibilityService : AccessibilityService(),
         Log.d(TAG, "onServiceConnected")
         super.onServiceConnected()
 
-        scanningManager.setup()
+        scanningManager = ScanningManager(this, this)
+
+        scanningManager?.setup()
 
         GestureManager.getInstance().accessibilityService = this
 
@@ -39,14 +41,14 @@ class SwitchifyAccessibilityService : AccessibilityService(),
 
     override fun onKeyEvent(event: KeyEvent?): Boolean {
         if (event?.action == KeyEvent.ACTION_UP) {
-            scanningManager.select()
+            scanningManager?.select()
         }
         return true
     }
 
 
     override fun onScreenSwitch() {
-        scanningManager.select()
+        scanningManager?.select()
 
         screenSwitch.teardown()
         screenSwitch.setup()

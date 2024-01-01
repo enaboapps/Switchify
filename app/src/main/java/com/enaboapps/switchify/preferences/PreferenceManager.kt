@@ -10,8 +10,10 @@ class PreferenceManager(context: Context) {
         private const val PREFERENCE_FILE_NAME = "switchify_preferences"
     }
 
+    private val appContext = context.applicationContext
+
     private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences(PREFERENCE_FILE_NAME, Context.MODE_PRIVATE)
+        appContext.getSharedPreferences(PREFERENCE_FILE_NAME, Context.MODE_PRIVATE)
 
     fun setIntegerValue(key: String, value: Int) {
         with(sharedPreferences.edit()) {
