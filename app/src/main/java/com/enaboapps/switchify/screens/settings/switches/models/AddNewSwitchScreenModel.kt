@@ -2,6 +2,7 @@ package com.enaboapps.switchify.screens.settings.switches.models
 
 import android.util.Log
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.nativeKeyCode
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.enaboapps.switchify.switches.SwitchAction
@@ -12,7 +13,7 @@ class AddNewSwitchScreenModel(private val store: SwitchEventStore): ViewModel() 
 
     private val TAG = "AddNewSwitchScreenModel"
 
-    var code: Long = 0
+    private var code: Int = 0
 
     val name = MutableLiveData(
         "Switch ${store.getCount() + 1}"
@@ -27,15 +28,15 @@ class AddNewSwitchScreenModel(private val store: SwitchEventStore): ViewModel() 
 
 
     fun processKeyCode(key: Key) {
-        Log.d(TAG, "processKeyCode: $key")
-        code = key.keyCode
+        Log.d(TAG, "processKeyCode: ${key.nativeKeyCode}")
+        code = key.nativeKeyCode
         shouldSave.value = true
     }
 
     fun save() {
         if (shouldSave.value == true) {
             val event = SwitchEvent(name = name.value!!, code = code.toString(), pressAction = pressAction.value!!, longPressAction = longPressAction.value!!)
-            if (!store.contains(event)) {
+            if (store.find(event.code) == null) {
                 store.add(event)
             } else {
                 shouldSave.value = false

@@ -6,6 +6,7 @@ import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
+import com.enaboapps.switchify.service.scanning.SwitchListener
 
 class SwitchifyAccessibilityService : AccessibilityService(),
     ScreenSwitchListener {
@@ -13,6 +14,8 @@ class SwitchifyAccessibilityService : AccessibilityService(),
     private val TAG = "SwitchifyAccessibilityService"
 
     private var scanningManager: ScanningManager? = null
+
+    private var switchListener: SwitchListener? = null
 
     private val screenSwitch: ScreenSwitch = ScreenSwitch(this)
 
@@ -32,6 +35,8 @@ class SwitchifyAccessibilityService : AccessibilityService(),
 
         scanningManager?.setup()
 
+        switchListener = SwitchListener(this, scanningManager!!)
+
         GestureManager.getInstance().accessibilityService = this
 
         screenSwitch.setup()
@@ -40,8 +45,10 @@ class SwitchifyAccessibilityService : AccessibilityService(),
 
 
     override fun onKeyEvent(event: KeyEvent?): Boolean {
-        if (event?.action == KeyEvent.ACTION_UP) {
-            scanningManager?.select()
+        if (event?.action == KeyEvent.ACTION_DOWN) {
+            switchListener?.onSwitchPressed(event.keyCode)
+        } else if (event?.action == KeyEvent.ACTION_UP) {
+            switchListener?.onSwitchReleased(event.keyCode)
         }
         return true
     }
