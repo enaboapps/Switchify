@@ -2,6 +2,7 @@ package com.enaboapps.switchify.service.gestures
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
+import android.content.Context
 import android.graphics.PointF
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 
@@ -27,14 +28,21 @@ class GestureManager {
     fun performTap() {
         try {
             val path = android.graphics.Path()
-            path.moveTo(currentPoint!!.x, currentPoint!!.y)
+            currentPoint?.let { point ->
+                path.moveTo(point.x, point.y)
+            }
             val gestureDescription = GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(path, 550, 100)).build()
-            accessibilityService?.dispatchGesture(gestureDescription, object : AccessibilityService.GestureResultCallback() {
-                override fun onCompleted(gestureDescription: GestureDescription?) {
-                    super.onCompleted(gestureDescription)
-                    // Log.d(TAG, "onCompleted")
-                }
-            }, null)
+            accessibilityService.let {
+                it?.dispatchGesture(gestureDescription, object : AccessibilityService.GestureResultCallback() {
+                    override fun onCompleted(gestureDescription: GestureDescription?) {
+                        super.onCompleted(gestureDescription)
+                        val gestureDrawing = GestureDrawing(it)
+                        currentPoint?.let { point ->
+                            gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt())
+                        }
+                    }
+                }, null)
+            }
         } catch (e: Exception) {
             // Log.e(TAG, "onTap: ", e)
         }
