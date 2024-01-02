@@ -369,15 +369,24 @@ class CursorManager(private val context: Context) {
 
 
     private fun performFinalAction() {
+        // get the point
         val point = PointF(
             (x + (cursorLineThickness / 2)).toFloat(),
             (y + (cursorLineThickness / 2)).toFloat()
         )
         GestureManager.getInstance().currentPoint = point
+
+        // check if auto select is enabled, if so, start the timer
         val auto = preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT)
         if (auto && !isInAutoSelect) {
             startAutoSelectTimer()
         }
+
+        if (!auto) {
+            // open menu
+            MenuManager.getInstance().openMainMenu()
+        }
+
         reset()
     }
 
@@ -416,37 +425,6 @@ class CursorManager(private val context: Context) {
                 }
             }, delay.toLong())
         }
-    }
-
-
-    // Function to draw a circle at x, y and remove after half a second
-    private fun drawCircleAndRemove() {
-        val circleSize = cursorLineThickness * 2
-
-        val gradientDrawable = GradientDrawable()
-        gradientDrawable.shape = GradientDrawable.OVAL
-        gradientDrawable.setColor(Color.RED)
-        gradientDrawable.setSize(circleSize, circleSize)
-
-        val circle = ImageView(context)
-        circle.setImageDrawable(gradientDrawable)
-
-        val layoutParams = WindowManager.LayoutParams()
-        layoutParams.x = x - cursorLineThickness / 2
-        layoutParams.y = y - cursorLineThickness / 2
-        layoutParams.width = circleSize
-        layoutParams.height = circleSize
-        layoutParams.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-        layoutParams.gravity = Gravity.TOP or Gravity.START
-        layoutParams.format = PixelFormat.TRANSPARENT
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-        windowManager?.addView(circle, layoutParams)
-
-        // Remove the circle after half a second
-        val handler = Handler(Looper.getMainLooper())
-        handler.postDelayed({
-            windowManager?.removeView(circle)
-        }, 500)
     }
 
 }
