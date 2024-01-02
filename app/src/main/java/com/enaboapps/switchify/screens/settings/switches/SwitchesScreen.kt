@@ -40,7 +40,7 @@ fun SwitchesScreen(navController: NavController) {
     val switchesScreenModel = SwitchesScreenModel(
         SwitchEventStore(LocalContext.current)
     )
-    val events: List<SwitchEvent> = switchesScreenModel.events.observeAsState().value ?: listOf()
+    val events: Collection<SwitchEvent> = switchesScreenModel.events.observeAsState().value ?: listOf()
     val verticalScrollState = rememberScrollState()
     Scaffold(
         topBar = {

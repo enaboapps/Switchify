@@ -6,64 +6,66 @@ import java.io.File
 
 class SwitchEventStore(private val context: Context) {
 
-    private val switchEvents = mutableListOf<SwitchEvent>()
-
+    private val switchEvents = mutableSetOf<SwitchEvent>()
     private val fileName = "switch_events.txt"
 
+    init {
+        readFile()
+    }
+
     fun add(switchEvent: SwitchEvent) {
-        if (!switchEvents.contains(switchEvent)) {
-            switchEvents.add(switchEvent)
+        if (switchEvents.add(switchEvent)) {
             saveToFile()
         }
     }
 
     fun remove(switchEvent: SwitchEvent) {
-        Log.d("SwitchEventStore", "Removing $switchEvent")
-        if (switchEvents.contains(switchEvent)) {
-            Log.d("SwitchEventStore", "Found and removing $switchEvent")
-            switchEvents.remove(switchEvent)
+        if (switchEvents.remove(switchEvent)) {
             saveToFile()
         }
     }
 
-    fun contains(switchEvent: SwitchEvent): Boolean {
-        return switchEvents.contains(switchEvent)
-    }
-
-    fun getCount(): Int {
-        return switchEvents.size
-    }
-
-    fun getSwitchEvents(): List<SwitchEvent> {
-        readFile()
-        return switchEvents
-    }
-
-    // Function to read the file
-    private fun readFile() {
-        val file = File(context.filesDir, fileName)
-        if (file.exists()) {
-            val lines = file.readLines()
-            for (line in lines) {
-                val switchEvent = SwitchEvent.fromString(line)
-                switchEvents.add(switchEvent)
+    fun find(code: String): SwitchEvent? {
+        for (switchEvent in switchEvents) {
+            Log.d("SwitchEventStore", "Checking switch event ${switchEvent.code} for code $code")
+            if (switchEvent.code == code) {
+                Log.d("SwitchEventStore", "Found switch event for code $code")
+                return switchEvent
             }
         }
+        Log.d("SwitchEventStore", "No switch event found for code $code")
+        return null
     }
 
-    // Function to save the switch events to a file
-    private fun saveToFile() {
-        val file = File(context.filesDir, fileName)
-        // Check if the file exists
+    fun getCount(): Int = switchEvents.size
+
+    fun getSwitchEvents(): Set<SwitchEvent> = switchEvents.toSet()
+
+    private fun readFile() {
+        val file = File(context.applicationContext.filesDir, fileName)
         if (file.exists()) {
-            // If it does, delete it
-            file.delete()
-        }
-        // Create a new file
-        file.createNewFile()
-        for (switchEvent in switchEvents) {
-            file.appendText(switchEvent.toString() + "\n")
+            try {
+                file.readLines().forEach { line ->
+                    try {
+                        SwitchEvent.fromString(line).let { switchEvents.add(it) }
+                    } catch (e: Exception) {
+                        Log.e("SwitchEventStore", "Error parsing line: $line", e)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("SwitchEventStore", "Error reading from file", e)
+            }
+        } else {
+            Log.d("SwitchEventStore", "File does not exist")
         }
     }
 
+    private fun saveToFile() {
+        val file = File(context.applicationContext.filesDir, fileName)
+        try {
+            file.writeText(switchEvents.joinToString("\n") { it.toString() })
+        } catch (e: Exception) {
+            Log.e("SwitchEventStore", "Error writing to file", e)
+        }
+    }
 }

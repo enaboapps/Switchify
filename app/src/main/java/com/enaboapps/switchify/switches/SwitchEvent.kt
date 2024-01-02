@@ -16,7 +16,7 @@ data class SwitchEvent(
 
     override fun equals(other: Any?): Boolean {
         if (other is SwitchEvent) {
-            return name == other.name
+            return code == other.code
         }
         return false
     }

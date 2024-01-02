@@ -10,7 +10,7 @@ import com.enaboapps.switchify.service.menu.menus.MainMenu
 import com.enaboapps.switchify.service.menu.menus.SystemControlMenu
 
 class ScanningManager(
-    val accessibilityService: SwitchifyAccessibilityService,
+    private val accessibilityService: SwitchifyAccessibilityService,
     val context: Context
 ) {
 
