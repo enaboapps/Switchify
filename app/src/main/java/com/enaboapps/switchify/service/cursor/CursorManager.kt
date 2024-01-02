@@ -369,15 +369,24 @@ class CursorManager(private val context: Context) {
 
 
     private fun performFinalAction() {
+        // get the point
         val point = PointF(
             (x + (cursorLineThickness / 2)).toFloat(),
             (y + (cursorLineThickness / 2)).toFloat()
         )
         GestureManager.getInstance().currentPoint = point
+
+        // check if auto select is enabled, if so, start the timer
         val auto = preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT)
         if (auto && !isInAutoSelect) {
             startAutoSelectTimer()
         }
+
+        if (!auto) {
+            // open menu
+            MenuManager.getInstance().openMainMenu()
+        }
+
         reset()
     }
 
