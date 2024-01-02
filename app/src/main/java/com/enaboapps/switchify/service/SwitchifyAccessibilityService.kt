@@ -46,9 +46,9 @@ class SwitchifyAccessibilityService : AccessibilityService(),
 
     override fun onKeyEvent(event: KeyEvent?): Boolean {
         if (event?.action == KeyEvent.ACTION_DOWN) {
-            switchListener?.onSwitchPressed(event.keyCode)
+            return switchListener?.onSwitchPressed(event.keyCode) ?: false
         } else if (event?.action == KeyEvent.ACTION_UP) {
-            switchListener?.onSwitchReleased(event.keyCode)
+            return switchListener?.onSwitchReleased(event.keyCode) ?: false
         }
         return true
     }

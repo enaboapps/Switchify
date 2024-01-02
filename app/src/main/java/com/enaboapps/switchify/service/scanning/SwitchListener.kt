@@ -18,7 +18,7 @@ class SwitchListener(
 
     // This function is called when the switch is pressed
     // It takes in the key code, checks if it is a switch event, and if it is, it updates the latest action
-    fun onSwitchPressed(keyCode: Int) {
+    fun onSwitchPressed(keyCode: Int): Boolean {
         val switchEvent = switchEventStore.find(keyCode.toString())
         Log.d("SwitchListener", "onSwitchPressed: $keyCode")
         if (switchEvent != null) {
@@ -26,12 +26,13 @@ class SwitchListener(
         } else {
             Log.d("SwitchListener", "No switch event found for key code $keyCode")
         }
+        return switchEvent == null
     }
 
     // This function is called when the switch is released
     // It takes in the key code, checks if it is a switch event, and if it is, it checks if the latest action is the same as the switch event
     // If it is, it calls the select function on the scanning manager
-    fun onSwitchReleased(keyCode: Int) {
+    fun onSwitchReleased(keyCode: Int): Boolean {
         val switchEvent = switchEventStore.find(keyCode.toString())
         Log.d("SwitchListener", "onSwitchReleased: $keyCode")
         if (switchEvent != null) {
@@ -41,6 +42,7 @@ class SwitchListener(
         } else {
             Toast.makeText(context, "No switch event found for key code $keyCode", Toast.LENGTH_SHORT).show()
         }
+        return switchEvent == null
     }
 
 }
