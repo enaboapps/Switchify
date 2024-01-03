@@ -12,7 +12,7 @@ interface MenuViewListener {
     fun onMenuViewClosed()
 }
 
-class MenuView(val context: Context, val menuItems: List<MenuItem>) {
+class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) {
 
     var menuViewListener: MenuViewListener? = null
 
@@ -33,8 +33,13 @@ class MenuView(val context: Context, val menuItems: List<MenuItem>) {
         linearLayout.orientation = LinearLayout.VERTICAL
         // White background
         linearLayout.setBackgroundColor(0xFFFFFFFF.toInt())
-        // Inflate the menu items
-        menuItems.forEach { menuItem ->
+        // Add a close menu item
+        val closeMenuItem = MenuItem("Close Menu", {
+            close()
+        })
+        menuItems.add(closeMenuItem)
+        // Iterate through the menu items and inflate them
+        for (menuItem in menuItems) {
             menuItem.inflate(linearLayout)
         }
         // Add the LinearLayout to the WindowManager

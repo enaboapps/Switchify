@@ -21,7 +21,7 @@ class SwipeMenu(accessibilityService: SwitchifyAccessibilityService) {
         }),
     )
 
-    val menuView = MenuView(accessibilityService, items)
+    val menuView = MenuView(accessibilityService, items.toMutableList())
 
     // This function is called when the menu is opened
     fun open() {
