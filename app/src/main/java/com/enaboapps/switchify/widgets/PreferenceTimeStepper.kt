@@ -36,7 +36,7 @@ fun PreferenceTimeStepper(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         elevation = 8.dp,
         backgroundColor = MaterialTheme.colors.surface
     ) {

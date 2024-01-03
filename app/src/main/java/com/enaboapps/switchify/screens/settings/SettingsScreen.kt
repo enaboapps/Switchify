@@ -67,6 +67,16 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
                 settingsScreenModel.setScanRate(it)
             }
         )
+        PreferenceTimeStepper(
+            value = settingsScreenModel.getSwitchHoldTime(),
+            title = "Switch hold time",
+            summary = "The time to hold the switch before the long pressed action is triggered",
+            min = 100,
+            max = 100000,
+            onValueChanged = {
+                settingsScreenModel.setSwitchHoldTime(it)
+            }
+        )
     }
 }
 
