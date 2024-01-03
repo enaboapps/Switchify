@@ -8,6 +8,7 @@ import com.enaboapps.switchify.service.menu.MenuView
 import com.enaboapps.switchify.service.menu.MenuViewListener
 import com.enaboapps.switchify.service.menu.menus.MainMenu
 import com.enaboapps.switchify.service.menu.menus.SystemControlMenu
+import com.enaboapps.switchify.switches.SwitchAction
 
 class ScanningManager(
     private val accessibilityService: SwitchifyAccessibilityService,
@@ -57,6 +58,34 @@ class ScanningManager(
             State.MENU -> {
                 // Select the menu item
                 MenuManager.getInstance().currentMenu?.select()
+            }
+        }
+    }
+
+
+    // This function performs an action
+    fun performAction(action: SwitchAction) {
+        when (action.id) {
+            SwitchAction.Actions.ACTION_NONE -> {
+                // do nothing
+            }
+
+            SwitchAction.Actions.ACTION_SELECT -> {
+                select()
+            }
+
+            SwitchAction.Actions.ACTION_STOP_SCANNING -> {
+                when (state) {
+                    State.CURSOR -> {
+                        // Stop scanning
+                        cursorManager.stop()
+                    }
+
+                    State.MENU -> {
+                        // Stop scanning
+                        MenuManager.getInstance().currentMenu?.close()
+                    }
+                }
             }
         }
     }

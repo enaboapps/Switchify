@@ -15,6 +15,14 @@ class SettingsScreenModel(context: Context) : ViewModel() {
         preferenceManager.setIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE, rate)
     }
 
+    fun getSwitchHoldTime(): Int {
+        return preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SWITCH_HOLD_TIME)
+    }
+
+    fun setSwitchHoldTime(time: Int) {
+        preferenceManager.setIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SWITCH_HOLD_TIME, time)
+    }
+
     fun getAutoSelect(): Boolean {
         return preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT)
     }
