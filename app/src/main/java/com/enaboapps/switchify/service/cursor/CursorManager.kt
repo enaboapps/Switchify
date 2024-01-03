@@ -394,6 +394,7 @@ class CursorManager(private val context: Context) {
     // Function to check if the event is triggered within the auto select delay
     private fun checkAutoSelectDelay(): Boolean {
         if (isInAutoSelect) {
+            Log.d(TAG, "checkAutoSelectDelay: true")
             isInAutoSelect = false
             autoSelectTimer?.cancel()
             autoSelectTimer = null
@@ -413,18 +414,18 @@ class CursorManager(private val context: Context) {
         isInAutoSelect = true
         if (autoSelectTimer == null) {
             autoSelectTimer = Timer()
-            autoSelectTimer?.schedule(object : TimerTask() {
-                override fun run() {
-                    handler.post {
-                        if (isInAutoSelect) {
-                            isInAutoSelect = false
-                            // tap
-                            GestureManager.getInstance().performTap()
-                        }
+        }
+        autoSelectTimer?.schedule(object : TimerTask() {
+            override fun run() {
+                handler.post {
+                    if (isInAutoSelect) {
+                        isInAutoSelect = false
+                        // tap
+                        GestureManager.getInstance().performTap()
                     }
                 }
-            }, delay.toLong())
-        }
+            }
+        }, delay.toLong())
     }
 
 }
