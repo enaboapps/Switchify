@@ -7,7 +7,7 @@ data class SwitchEvent(
     val longPressAction: SwitchAction
 ) {
     override fun toString(): String {
-        return "$name, $code, $pressAction, $longPressAction"
+        return "$name, $code, ${pressAction.id}, ${longPressAction.id}"
     }
 
     override fun equals(other: Any?): Boolean {
