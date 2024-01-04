@@ -77,8 +77,8 @@ class ScanningManager(
             SwitchAction.Actions.ACTION_STOP_SCANNING -> {
                 when (state) {
                     State.CURSOR -> {
-                        // Stop scanning
-                        cursorManager.stop()
+                        // reset the cursor
+                        cursorManager.reset()
                     }
 
                     State.MENU -> {

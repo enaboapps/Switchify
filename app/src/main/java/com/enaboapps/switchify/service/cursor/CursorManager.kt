@@ -159,7 +159,7 @@ class CursorManager(private val context: Context) {
 
 
     // Function to stop the timer
-    fun stop() {
+    private fun stop() {
         movingTimer?.cancel()
         movingTimer = null
     }
@@ -271,8 +271,7 @@ class CursorManager(private val context: Context) {
             }
         }
     }
-
-    private fun reset() {
+    fun reset() {
         stop()
 
         x = 0
