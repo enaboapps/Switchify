@@ -1,23 +1,19 @@
 package com.enaboapps.switchify.service.cursor
 
 import android.content.Context
-import android.content.Context.WINDOW_SERVICE
 import android.graphics.Color
-import android.graphics.PixelFormat
 import android.graphics.PointF
-import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.Gravity
-import android.view.WindowManager
-import android.widget.ImageView
 import android.widget.LinearLayout
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.utils.ScreenUtils
-import java.util.*
+import com.enaboapps.switchify.service.window.SwitchifyHUD
+import java.util.Timer
+import java.util.TimerTask
 
 class CursorManager(private val context: Context) {
 
@@ -27,16 +23,10 @@ class CursorManager(private val context: Context) {
 
     private val preferenceManager: PreferenceManager = PreferenceManager(context)
 
-    private var windowManager: WindowManager? = null
-
-    private var xQuadrantParams: WindowManager.LayoutParams? = null
     private var xQuadrant: LinearLayout? = null
-    private var yQuadrantParams: WindowManager.LayoutParams? = null
     private var yQuadrant: LinearLayout? = null
 
-    private var xCursorLineParams: WindowManager.LayoutParams? = null
     private var xCursorLine: LinearLayout? = null
-    private var yCursorLineParams: WindowManager.LayoutParams? = null
     private var yCursorLine: LinearLayout? = null
 
     private var isInQuadrant = false
@@ -53,17 +43,15 @@ class CursorManager(private val context: Context) {
     private var isInAutoSelect = false // If true, we listen for a second event to activate the menu
     private var autoSelectTimer: Timer? = null // Timer to wait for the second event
 
+    private var switchifyHUD: SwitchifyHUD? = null
+
     enum class Direction {
         LEFT, RIGHT, UP, DOWN
     }
 
 
     fun setup() {
-        windowManager = context.getSystemService(WINDOW_SERVICE) as WindowManager
-        xQuadrantParams = WindowManager.LayoutParams()
-        yQuadrantParams = WindowManager.LayoutParams()
-        xCursorLineParams = WindowManager.LayoutParams()
-        yCursorLineParams = WindowManager.LayoutParams()
+        switchifyHUD = SwitchifyHUD.getInstance(context)
     }
 
 
@@ -73,13 +61,9 @@ class CursorManager(private val context: Context) {
             yQuadrant = LinearLayout(context)
             yQuadrant?.setBackgroundColor(Color.RED)
             yQuadrant?.alpha = 0.5f
-            yQuadrantParams?.y = y
-            yQuadrantParams?.gravity = Gravity.START or Gravity.TOP
-            yQuadrantParams?.width = ScreenUtils.getWidth(context)
-            yQuadrantParams?.height = ScreenUtils.getHeight(context) / 4
-            yQuadrantParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-            yQuadrantParams?.format = PixelFormat.TRANSLUCENT
-            windowManager?.addView(yQuadrant, yQuadrantParams)
+            val width = ScreenUtils.getWidth(context)
+            val height = ScreenUtils.getHeight(context) / 4
+            switchifyHUD?.addView(yQuadrant!!, x, y, width, height)
         }
     }
 
@@ -89,13 +73,9 @@ class CursorManager(private val context: Context) {
             xQuadrant = LinearLayout(context)
             xQuadrant?.setBackgroundColor(Color.RED)
             xQuadrant?.alpha = 0.5f
-            xQuadrantParams?.x = x
-            xQuadrantParams?.gravity = Gravity.START or Gravity.TOP
-            xQuadrantParams?.width = ScreenUtils.getWidth(context) / 4
-            xQuadrantParams?.height = ScreenUtils.getHeight(context)
-            xQuadrantParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-            xQuadrantParams?.format = PixelFormat.TRANSLUCENT
-            windowManager?.addView(xQuadrant, xQuadrantParams)
+            val width = ScreenUtils.getWidth(context) / 4
+            val height = ScreenUtils.getHeight(context)
+            switchifyHUD?.addView(xQuadrant!!, x, y, width, height)
         }
     }
 
@@ -103,32 +83,24 @@ class CursorManager(private val context: Context) {
     private fun setupYCursorLine() {
         if (yCursorLine == null) {
             quadrantInfo = QuadrantInfo(y, y + ScreenUtils.getHeight(context) / 4)
+            Log.d(TAG, "setupYCursorLine: $y")
             yCursorLine = LinearLayout(context)
             yCursorLine?.setBackgroundColor(Color.RED)
-            yCursorLineParams?.y = quadrantInfo?.start
-            yCursorLineParams?.gravity = Gravity.START or Gravity.TOP
-            yCursorLineParams?.width = ScreenUtils.getWidth(context)
-            yCursorLineParams?.height = cursorLineThickness
-            yCursorLineParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-            yCursorLineParams?.format = PixelFormat.TRANSPARENT
-            yCursorLineParams?.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            windowManager?.addView(yCursorLine, yCursorLineParams)
+            val width = ScreenUtils.getWidth(context)
+            val height = cursorLineThickness
+            quadrantInfo?.start?.let { switchifyHUD?.addView(yCursorLine!!, x, it, width, height) }
         }
     }
 
     private fun setupXCursorLine() {
         if (xCursorLine == null) {
             quadrantInfo = QuadrantInfo(x, x + ScreenUtils.getWidth(context) / 4)
+            Log.d(TAG, "setupXCursorLine: $x")
             xCursorLine = LinearLayout(context)
             xCursorLine?.setBackgroundColor(Color.RED)
-            xCursorLineParams?.x = quadrantInfo?.start
-            xCursorLineParams?.gravity = Gravity.START or Gravity.TOP
-            xCursorLineParams?.width = cursorLineThickness
-            xCursorLineParams?.height = ScreenUtils.getHeight(context)
-            xCursorLineParams?.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
-            xCursorLineParams?.format = PixelFormat.TRANSPARENT
-            xCursorLineParams?.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            windowManager?.addView(xCursorLine, xCursorLineParams)
+            val width = cursorLineThickness
+            val height = ScreenUtils.getHeight(context)
+            quadrantInfo?.start?.let { switchifyHUD?.addView(xCursorLine!!, it, y, width, height) }
         }
     }
 
@@ -170,11 +142,8 @@ class CursorManager(private val context: Context) {
         when (direction) {
             Direction.LEFT -> {
                 if (x > 0) {
-                    if (xQuadrant != null) {
-                        x -= ScreenUtils.getWidth(context) / 4
-                        xQuadrantParams?.x = x
-                        windowManager?.updateViewLayout(xQuadrant, xQuadrantParams)
-                    }
+                    x -= ScreenUtils.getWidth(context) / 4
+                    switchifyHUD?.updateViewLayout(xQuadrant!!, x, y)
                 } else {
                     direction = Direction.RIGHT
                     moveToNextQuadrant()
@@ -182,11 +151,8 @@ class CursorManager(private val context: Context) {
             }
             Direction.RIGHT -> {
                 if (x < ScreenUtils.getWidth(context) - ScreenUtils.getWidth(context) / 4) {
-                    if (xQuadrant != null) {
-                        x += ScreenUtils.getWidth(context) / 4
-                        xQuadrantParams?.x = x
-                        windowManager?.updateViewLayout(xQuadrant, xQuadrantParams)
-                    }
+                    x += ScreenUtils.getWidth(context) / 4
+                    switchifyHUD?.updateViewLayout(xQuadrant!!, x, y)
                 } else {
                     direction = Direction.LEFT
                     moveToNextQuadrant()
@@ -194,11 +160,8 @@ class CursorManager(private val context: Context) {
             }
             Direction.UP -> {
                 if (y > 0) {
-                    if (yQuadrant != null) {
-                        y -= ScreenUtils.getHeight(context) / 4
-                        yQuadrantParams?.y = y
-                        windowManager?.updateViewLayout(yQuadrant, yQuadrantParams)
-                    }
+                    y -= ScreenUtils.getHeight(context) / 4
+                    switchifyHUD?.updateViewLayout(yQuadrant!!, x, y)
                 } else {
                     direction = Direction.DOWN
                     moveToNextQuadrant()
@@ -206,11 +169,8 @@ class CursorManager(private val context: Context) {
             }
             Direction.DOWN -> {
                 if (y < ScreenUtils.getHeight(context) - ScreenUtils.getHeight(context) / 4) {
-                    if (yQuadrant != null) {
-                        y += ScreenUtils.getHeight(context) / 4
-                        yQuadrantParams?.y = y
-                        windowManager?.updateViewLayout(yQuadrant, yQuadrantParams)
-                    }
+                    y += ScreenUtils.getHeight(context) / 4
+                    switchifyHUD?.updateViewLayout(yQuadrant!!, x, y)
                 } else {
                     direction = Direction.UP
                     moveToNextQuadrant()
@@ -226,44 +186,32 @@ class CursorManager(private val context: Context) {
             when (direction) {
                 Direction.LEFT ->
                     if (x > quadrantInfo?.start!!) {
-                        if (xCursorLine != null) {
-                            x -= cursorLineThickness * 2
-                            xCursorLineParams?.x = x
-                            windowManager?.updateViewLayout(xCursorLine, xCursorLineParams)
-                        }
+                        x -= cursorLineThickness * 2
+                        switchifyHUD?.updateViewLayout(xCursorLine!!, x, y)
                     } else {
                         direction = Direction.RIGHT
                         moveCursorLine()
                     }
                 Direction.RIGHT ->
                     if (x < quadrantInfo?.end!!) {
-                        if (xCursorLine != null) {
-                            x += cursorLineThickness * 2
-                            xCursorLineParams?.x = x
-                            windowManager?.updateViewLayout(xCursorLine, xCursorLineParams)
-                        }
+                        x += cursorLineThickness * 2
+                        switchifyHUD?.updateViewLayout(xCursorLine!!, x, y)
                     } else {
                         direction = Direction.LEFT
                         moveCursorLine()
                     }
                 Direction.UP ->
                     if (y > quadrantInfo?.start!!) {
-                        if (yCursorLine != null) {
-                            y -= cursorLineThickness * 2
-                            yCursorLineParams?.y = y
-                            windowManager?.updateViewLayout(yCursorLine, yCursorLineParams)
-                        }
+                        y -= cursorLineThickness * 2
+                        switchifyHUD?.updateViewLayout(yCursorLine!!, x, y)
                     } else {
                         direction = Direction.DOWN
                         moveCursorLine()
                     }
                 Direction.DOWN ->
                     if (y < quadrantInfo?.end!!) {
-                        if (yCursorLine != null) {
-                            y += cursorLineThickness * 2
-                            yCursorLineParams?.y = y
-                            windowManager?.updateViewLayout(yCursorLine, yCursorLineParams)
-                        }
+                        y += cursorLineThickness * 2
+                        switchifyHUD?.updateViewLayout(yCursorLine!!, x, y)
                     } else {
                         direction = Direction.UP
                         moveCursorLine()
@@ -271,6 +219,8 @@ class CursorManager(private val context: Context) {
             }
         }
     }
+
+
     fun reset() {
         stop()
 
@@ -284,22 +234,22 @@ class CursorManager(private val context: Context) {
     }
 
     private fun resetQuadrants() {
-        if (xQuadrant != null) {
-            windowManager?.removeView(xQuadrant)
+        xQuadrant?.let {
+            switchifyHUD?.removeView(it)
         }
-        if (yQuadrant != null) {
-            windowManager?.removeView(yQuadrant)
+        yQuadrant?.let {
+            switchifyHUD?.removeView(it)
         }
         xQuadrant = null
         yQuadrant = null
     }
 
     private fun resetCursorLines() {
-        if (xCursorLine != null) {
-            windowManager?.removeView(xCursorLine)
+        xCursorLine?.let {
+            switchifyHUD?.removeView(it)
         }
-        if (yCursorLine != null) {
-            windowManager?.removeView(yCursorLine)
+        yCursorLine?.let {
+            switchifyHUD?.removeView(it)
         }
         xCursorLine = null
         yCursorLine = null

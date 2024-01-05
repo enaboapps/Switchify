@@ -7,6 +7,7 @@ import android.view.accessibility.AccessibilityEvent
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.scanning.SwitchListener
+import com.enaboapps.switchify.service.window.SwitchifyHUD
 
 class SwitchifyAccessibilityService : AccessibilityService(),
     ScreenSwitchListener {
@@ -30,6 +31,8 @@ class SwitchifyAccessibilityService : AccessibilityService(),
     override fun onServiceConnected() {
         Log.d(TAG, "onServiceConnected")
         super.onServiceConnected()
+
+        SwitchifyHUD.getInstance(this).show()
 
         scanningManager = ScanningManager(this, this)
 
