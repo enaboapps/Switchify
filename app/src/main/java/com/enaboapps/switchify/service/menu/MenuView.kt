@@ -54,6 +54,8 @@ class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) {
 
     // This function is called when the menu is closed
     fun close() {
+        // Stop scanning
+        stopScanning()
         // Remove the LinearLayout from the WindowManager
         windowManager.removeView(linearLayout)
         // Call the listener
@@ -61,7 +63,7 @@ class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) {
     }
 
     // This function starts scanning the menu items
-    fun startScanning() {
+    private fun startScanning() {
         // Set the first menu item to be highlighted
         menuItems[scanIndex].highlight()
         val rate = PreferenceManager(context).getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
@@ -86,9 +88,10 @@ class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) {
     }
 
     // This function stops scanning the menu items
-    fun stopScanning() {
+    private fun stopScanning() {
         // Cancel the timer
         timer?.cancel()
+        timer = null
         // Unhighlight the current menu item
         menuItems[scanIndex].unhighlight()
         // Reset the scan index to 0
@@ -96,13 +99,13 @@ class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) {
     }
 
     // This function returns whether or not the menu is scanning
-    fun isScanning(): Boolean {
+    private fun isScanning(): Boolean {
         return timer != null
     }
 
     // This function either starts scanning or selects the current menu item
     fun select() {
-        Log.d("MenuView", "Selecting menu item ${scanIndex}")
+        Log.d("MenuView", "Selecting menu item $scanIndex")
         if (isScanning()) {
             menuItems[scanIndex].select()
             stopScanning()

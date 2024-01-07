@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.menu
 
+import android.util.Log
 import android.widget.Button
 import android.widget.LinearLayout
 
@@ -27,17 +28,25 @@ class MenuItem(val text: String, val action: () -> Unit, var highlighted: Boolea
 
     // This function is called when the menu item is highlighted
     fun highlight() {
-        button?.context?.resources?.getColor(android.R.color.holo_blue_light, null)?.let {
-            button?.setBackgroundColor(it)
+        try {
+            button?.context?.resources?.getColor(android.R.color.holo_blue_dark, null)?.let {
+                button?.setBackgroundColor(it)
+            }
+            highlighted = true
+        } catch (e: Exception) {
+            Log.e("MenuItem", "Error highlighting menu item", e)
         }
-        highlighted = true
     }
 
     // This function is called when the menu item is unhighlighted
     fun unhighlight() {
-        button?.context?.resources?.getColor(android.R.color.white, null)?.let {
-            button?.setBackgroundColor(it)
+        try {
+            button?.context?.resources?.getColor(android.R.color.transparent, null)?.let {
+                button?.setBackgroundColor(it)
+            }
+            highlighted = false
+        } catch (e: Exception) {
+            Log.e("MenuItem", "Error unhighlighting menu item", e)
         }
-        highlighted = false
     }
 }
