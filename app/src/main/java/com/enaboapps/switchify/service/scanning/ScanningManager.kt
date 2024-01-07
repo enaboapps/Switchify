@@ -78,7 +78,7 @@ class ScanningManager(
                 when (state) {
                     State.CURSOR -> {
                         // reset the cursor
-                        cursorManager.reset()
+                        cursorManager.externalReset()
                     }
 
                     State.MENU -> {

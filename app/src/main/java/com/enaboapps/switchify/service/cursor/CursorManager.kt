@@ -251,7 +251,19 @@ class CursorManager(private val context: Context) {
     }
 
 
-    fun reset() {
+    fun externalReset() {
+        internalReset()
+
+        isInAutoSelect = false
+        autoSelectTimer?.cancel()
+        autoSelectTimer = null
+
+        isInQuadrant = false
+        quadrantInfo = null
+    }
+
+
+    private fun internalReset() {
         stop()
 
         x = 0
@@ -368,7 +380,7 @@ class CursorManager(private val context: Context) {
             MenuManager.getInstance().openMainMenu()
         }
 
-        reset()
+        internalReset()
     }
 
 
