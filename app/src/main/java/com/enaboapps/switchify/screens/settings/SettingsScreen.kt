@@ -68,6 +68,16 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
             }
         )
         PreferenceTimeStepper(
+            value = settingsScreenModel.getRefineScanRate(),
+            title = "Refine scan rate",
+            summary = "The interval at which the scanner will move when refining the selection",
+            min = 100,
+            max = 100000,
+            onValueChanged = {
+                settingsScreenModel.setRefineScanRate(it)
+            }
+        )
+        PreferenceTimeStepper(
             value = settingsScreenModel.getSwitchHoldTime(),
             title = "Switch hold time",
             summary = "The time to hold the switch before the long pressed action is triggered",
