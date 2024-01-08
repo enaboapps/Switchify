@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.WindowManager
 import android.widget.LinearLayout
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.scanning.ScanDirection
 import java.util.Timer
 import java.util.TimerTask
 
@@ -22,6 +23,7 @@ class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) {
 
     // scanIndex is the index of the menu item that is currently being scanned
     var scanIndex = 0
+    var direction: ScanDirection = ScanDirection.DOWN
     // timer is the timer that is used to scan the menu items
     private var timer: Timer? = null
 
@@ -73,11 +75,19 @@ class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) {
             override fun run() {
                 // Unhighlight the current menu item
                 menuItems[scanIndex].unhighlight()
-                // Increment the scan index
-                scanIndex++
-                // If the scan index is greater than the number of menu items, reset it to 0
-                if (scanIndex >= menuItems.size) {
+                // If direction is down, increment scanIndex
+                // If direction is up, decrement scanIndex
+                if (direction == ScanDirection.DOWN) {
+                    scanIndex++
+                } else {
+                    scanIndex--
+                }
+                // If direction is down and scanIndex is greater than or equal to the number of menu items, set scanIndex to 0
+                // If direction is up and scanIndex is less than 0, set scanIndex to the number of menu items minus 1
+                if (direction == ScanDirection.DOWN && scanIndex >= menuItems.size) {
                     scanIndex = 0
+                } else if (direction == ScanDirection.UP && scanIndex < 0) {
+                    scanIndex = menuItems.size - 1
                 }
                 // Highlight the current menu item
                 menuItems[scanIndex].highlight()
@@ -112,6 +122,15 @@ class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) {
             close()
         } else {
             startScanning()
+        }
+    }
+
+    // This function swaps the scan direction
+    fun swapScanDirection() {
+        direction = if (direction == ScanDirection.DOWN) {
+            ScanDirection.UP
+        } else {
+            ScanDirection.DOWN
         }
     }
 }
