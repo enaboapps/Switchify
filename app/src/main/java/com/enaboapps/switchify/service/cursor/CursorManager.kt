@@ -363,10 +363,7 @@ class CursorManager(private val context: Context) {
 
     private fun performFinalAction() {
         // get the point
-        val point = PointF(
-            (x + (cursorLineThickness / 2)).toFloat(),
-            (y + (cursorLineThickness / 2)).toFloat()
-        )
+        val point = PointF(x.toFloat(), y.toFloat())
         GestureManager.getInstance().currentPoint = point
 
         // check if auto select is enabled, if so, start the timer

@@ -32,8 +32,8 @@ class GestureDrawing(private val context: Context) {
         circle.setImageDrawable(gradientDrawable)
 
         val layoutParams = WindowManager.LayoutParams()
-        layoutParams.x = x
-        layoutParams.y = y
+        layoutParams.x = x - circleSize / 2
+        layoutParams.y = y - circleSize / 2
         layoutParams.width = circleSize
         layoutParams.height = circleSize
         layoutParams.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
