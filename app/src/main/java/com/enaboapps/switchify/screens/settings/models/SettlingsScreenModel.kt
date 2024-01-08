@@ -15,6 +15,14 @@ class SettingsScreenModel(context: Context) : ViewModel() {
         preferenceManager.setIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE, rate)
     }
 
+    fun getRefineScanRate(): Int {
+        return preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
+    }
+
+    fun setRefineScanRate(rate: Int) {
+        preferenceManager.setIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE, rate)
+    }
+
     fun getSwitchHoldTime(): Int {
         return preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SWITCH_HOLD_TIME)
     }

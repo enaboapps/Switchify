@@ -132,8 +132,9 @@ class CursorManager(private val context: Context) {
     private fun start() {
         var rate =
             preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
-        if (isInQuadrant && rate > 200) {
-            rate = 200
+        if (isInQuadrant) {
+            rate =
+                preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
         }
         Log.d(TAG, "start: $rate")
         val handler = Handler(Looper.getMainLooper())
