@@ -87,6 +87,20 @@ class ScanningManager(
                     }
                 }
             }
+
+            SwitchAction.Actions.ACTION_CHANGE_SCANNING_DIRECTION -> {
+                when (state) {
+                    State.CURSOR -> {
+                        // Change the cursor direction
+                        cursorManager.swapDirection()
+                    }
+
+                    State.MENU -> {
+                        // Change the menu direction
+                        MenuManager.getInstance().currentMenu?.swapScanDirection()
+                    }
+                }
+            }
         }
     }
 }

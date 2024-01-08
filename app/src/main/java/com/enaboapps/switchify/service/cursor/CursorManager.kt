@@ -10,6 +10,7 @@ import android.widget.RelativeLayout
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
+import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import java.util.Timer
 import java.util.TimerTask
@@ -34,7 +35,7 @@ class CursorManager(private val context: Context) {
     private var x: Int = 0
     private var y: Int = 0
 
-    private var direction: Direction = Direction.RIGHT
+    private var direction: ScanDirection = ScanDirection.RIGHT
 
     private var movingTimer: Timer? = null // Timer to move the cursor line
 
@@ -43,10 +44,6 @@ class CursorManager(private val context: Context) {
     private var autoSelectTimer: Timer? = null // Timer to wait for the second event
 
     private var cursorHUD: CursorHUD? = null
-
-    enum class Direction {
-        LEFT, RIGHT, UP, DOWN
-    }
 
 
     fun setup() {
@@ -155,6 +152,17 @@ class CursorManager(private val context: Context) {
     }
 
 
+    // Function to swap the direction
+    fun swapDirection() {
+        direction = when (direction) {
+            ScanDirection.LEFT -> ScanDirection.RIGHT
+            ScanDirection.RIGHT -> ScanDirection.LEFT
+            ScanDirection.UP -> ScanDirection.DOWN
+            ScanDirection.DOWN -> ScanDirection.UP
+        }
+    }
+
+
     // Function to stop the timer
     private fun stop() {
         movingTimer?.cancel()
@@ -165,42 +173,42 @@ class CursorManager(private val context: Context) {
     // Function to move to the next quadrant
     private fun moveToNextQuadrant() {
         when (direction) {
-            Direction.LEFT -> {
+            ScanDirection.LEFT -> {
                 if (x > 0) {
                     x -= ScreenUtils.getWidth(context) / 4
                     updateXQuadrant()
                 } else {
-                    direction = Direction.RIGHT
+                    direction = ScanDirection.RIGHT
                     moveToNextQuadrant()
                 }
             }
 
-            Direction.RIGHT -> {
+            ScanDirection.RIGHT -> {
                 if (x < ScreenUtils.getWidth(context) - ScreenUtils.getWidth(context) / 4) {
                     x += ScreenUtils.getWidth(context) / 4
                     updateXQuadrant()
                 } else {
-                    direction = Direction.LEFT
+                    direction = ScanDirection.LEFT
                     moveToNextQuadrant()
                 }
             }
 
-            Direction.UP -> {
+            ScanDirection.UP -> {
                 if (y > 0) {
                     y -= ScreenUtils.getHeight(context) / 4
                     updateYQuadrant()
                 } else {
-                    direction = Direction.DOWN
+                    direction = ScanDirection.DOWN
                     moveToNextQuadrant()
                 }
             }
 
-            Direction.DOWN -> {
+            ScanDirection.DOWN -> {
                 if (y < ScreenUtils.getHeight(context) - ScreenUtils.getHeight(context) / 4) {
                     y += ScreenUtils.getHeight(context) / 4
                     updateYQuadrant()
                 } else {
-                    direction = Direction.UP
+                    direction = ScanDirection.UP
                     moveToNextQuadrant()
                 }
             }
@@ -212,39 +220,39 @@ class CursorManager(private val context: Context) {
     private fun moveCursorLine() {
         if (quadrantInfo != null) {
             when (direction) {
-                Direction.LEFT ->
+                ScanDirection.LEFT ->
                     if (x > quadrantInfo?.start!!) {
                         x -= cursorLineThickness * 2
                         updateXCursorLine()
                     } else {
-                        direction = Direction.RIGHT
+                        direction = ScanDirection.RIGHT
                         moveCursorLine()
                     }
 
-                Direction.RIGHT ->
+                ScanDirection.RIGHT ->
                     if (x < quadrantInfo?.end!!) {
                         x += cursorLineThickness * 2
                         updateXCursorLine()
                     } else {
-                        direction = Direction.LEFT
+                        direction = ScanDirection.LEFT
                         moveCursorLine()
                     }
 
-                Direction.UP ->
+                ScanDirection.UP ->
                     if (y > quadrantInfo?.start!!) {
                         y -= cursorLineThickness * 2
                         updateYCursorLine()
                     } else {
-                        direction = Direction.DOWN
+                        direction = ScanDirection.DOWN
                         moveCursorLine()
                     }
 
-                Direction.DOWN ->
+                ScanDirection.DOWN ->
                     if (y < quadrantInfo?.end!!) {
                         y += cursorLineThickness * 2
                         updateYCursorLine()
                     } else {
-                        direction = Direction.UP
+                        direction = ScanDirection.UP
                         moveCursorLine()
                     }
             }
@@ -270,7 +278,7 @@ class CursorManager(private val context: Context) {
         x = 0
         y = 0
 
-        direction = Direction.RIGHT
+        direction = ScanDirection.RIGHT
 
         resetQuadrants()
         resetCursorLines()
@@ -314,12 +322,12 @@ class CursorManager(private val context: Context) {
 
         // We perform the action based on the direction
         when (direction) {
-            Direction.LEFT, Direction.RIGHT -> {
+            ScanDirection.LEFT, ScanDirection.RIGHT -> {
                 stop()
                 if (!isInQuadrant) {
                     isInQuadrant = true
 
-                    direction = Direction.RIGHT
+                    direction = ScanDirection.RIGHT
 
                     resetQuadrants()
 
@@ -327,7 +335,7 @@ class CursorManager(private val context: Context) {
                         setupXCursorLine()
                     }
                 } else {
-                    direction = Direction.DOWN
+                    direction = ScanDirection.DOWN
                     isInQuadrant = false
 
                     if (xQuadrant == null) {
@@ -337,12 +345,12 @@ class CursorManager(private val context: Context) {
                 start()
             }
 
-            Direction.UP, Direction.DOWN -> {
+            ScanDirection.UP, ScanDirection.DOWN -> {
                 stop()
                 if (!isInQuadrant) {
                     isInQuadrant = true
 
-                    direction = Direction.DOWN
+                    direction = ScanDirection.DOWN
 
                     resetQuadrants()
 
