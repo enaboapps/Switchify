@@ -7,6 +7,8 @@ import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
+import java.util.Timer
+import java.util.TimerTask
 
 class SwitchListener(
     private val context: Context,
@@ -20,6 +22,25 @@ class SwitchListener(
     // Variable to track the latest action
     private var latestAction: AbsorbedSwitchAction? = null
 
+    // Timer to time the switch hold time
+    private var switchHoldTimer: Timer? = null
+
+    // Function to start the timer
+    private fun startSwitchHoldTimer() {
+        switchHoldTimer = Timer()
+        switchHoldTimer?.schedule(object : TimerTask() {
+            override fun run() {
+                // If the timer is not null, cancel it
+                switchHoldTimer?.cancel()
+                switchHoldTimer = null
+                // If the latest action is not null, call the long press action on the scanning manager
+                if (latestAction != null) {
+                    scanningManager.performAction(latestAction!!.switchEvent.longPressAction)
+                }
+            }
+        }, preferenceManager.getIntegerValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME).toLong())
+    }
+
     // This function is called when the switch is pressed
     // It takes in the key code, checks if it is a switch event, and if it is, it updates the latest action
     // If there is no long press action, it calls the press action on the scanning manager
@@ -32,6 +53,9 @@ class SwitchListener(
             // If there is no long press action, it calls the press action on the scanning manager
             if (switchEvent.longPressAction.id == SwitchAction.Actions.ACTION_NONE) {
                 scanningManager.performAction(switchEvent.pressAction)
+            } else {
+                // If there is a long press action, it starts the switch hold timer
+                startSwitchHoldTimer()
             }
         } else {
             Log.d("SwitchListener", "No switch event found for key code $keyCode")
@@ -53,10 +77,12 @@ class SwitchListener(
                     val time = System.currentTimeMillis() - latestAction!!.time
                     val switchHoldTime = preferenceManager.getIntegerValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
                     if (time > switchHoldTime) {
-                        scanningManager.performAction(switchEvent.longPressAction)
+                        // do nothing
                     } else {
                         scanningManager.performAction(switchEvent.pressAction)
                     }
+                    // If the timer is not null, cancel it
+                    switchHoldTimer?.cancel()
                 } else {
                     // do nothing
                 }
