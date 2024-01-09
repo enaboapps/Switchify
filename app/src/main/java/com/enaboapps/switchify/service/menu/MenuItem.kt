@@ -15,6 +15,10 @@ class MenuItem(val text: String, val action: () -> Unit, var highlighted: Boolea
     fun inflate(linearLayout: LinearLayout) {
         button = Button(linearLayout.context)
         button?.text = text
+        button?.setBackgroundColor(linearLayout.context.resources.getColor(android.R.color.black, null))
+        button?.setTextColor(linearLayout.context.resources.getColor(android.R.color.white, null))
+        // padding
+        button?.setPadding(30, 30, 30, 30)
         button?.setOnClickListener {
             select()
         }
@@ -29,8 +33,11 @@ class MenuItem(val text: String, val action: () -> Unit, var highlighted: Boolea
     // This function is called when the menu item is highlighted
     fun highlight() {
         try {
-            button?.context?.resources?.getColor(android.R.color.holo_blue_dark, null)?.let {
+            button?.context?.resources?.getColor(android.R.color.white, null)?.let {
                 button?.setBackgroundColor(it)
+            }
+            button?.context?.resources?.getColor(android.R.color.black, null)?.let {
+                button?.setTextColor(it)
             }
             highlighted = true
         } catch (e: Exception) {
@@ -41,8 +48,11 @@ class MenuItem(val text: String, val action: () -> Unit, var highlighted: Boolea
     // This function is called when the menu item is unhighlighted
     fun unhighlight() {
         try {
-            button?.context?.resources?.getColor(android.R.color.transparent, null)?.let {
+            button?.context?.resources?.getColor(android.R.color.black, null)?.let {
                 button?.setBackgroundColor(it)
+            }
+            button?.context?.resources?.getColor(android.R.color.white, null)?.let {
+                button?.setTextColor(it)
             }
             highlighted = false
         } catch (e: Exception) {
