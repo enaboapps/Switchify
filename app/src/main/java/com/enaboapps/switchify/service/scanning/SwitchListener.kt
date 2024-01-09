@@ -78,18 +78,18 @@ class SwitchListener(
         if (switchEvent != null) {
             if (latestAction?.switchEvent == switchEvent) {
                 if (switchEvent.longPressAction.id != SwitchAction.Actions.ACTION_NONE) {
+                    // If the long press is "Change Scanning Direction", resume scanning
+                    if (switchEvent.longPressAction.id == SwitchAction.Actions.ACTION_CHANGE_SCANNING_DIRECTION) {
+                        scanningManager.resumeScanning()
+                    }
+
                     val time = System.currentTimeMillis() - latestAction!!.time
                     val switchHoldTime = preferenceManager.getIntegerValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
-                    if (time > switchHoldTime) {
-                        // do nothing
-                    } else {
-                        scanningManager.resumeScanning() // This is required to perform the action
+                    if (time < switchHoldTime) {
                         scanningManager.performAction(switchEvent.pressAction)
                     }
                     // If the timer is not null, cancel it
                     switchHoldTimer?.cancel()
-                } else {
-                    // do nothing
                 }
             } else {
                 Log.d("SwitchListener", "Switch event does not match latest action")
