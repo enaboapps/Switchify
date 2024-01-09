@@ -37,8 +37,9 @@ class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) : Sca
         // Create a LinearLayout
         linearLayout = LinearLayout(context)
         linearLayout.orientation = LinearLayout.VERTICAL
-        // White background
-        linearLayout.setBackgroundColor(0xFFFFFFFF.toInt())
+        // Set grey border
+        linearLayout.setPadding(10, 10, 10, 10)
+        linearLayout.setBackgroundColor(context.resources.getColor(android.R.color.darker_gray, null))
         // Add a close menu item
         val closeMenuItem = MenuItem("Close Menu", {
             close()
