@@ -11,11 +11,13 @@ import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanDirection
+import com.enaboapps.switchify.service.scanning.ScanState
+import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import java.util.Timer
 import java.util.TimerTask
 
-class CursorManager(private val context: Context) {
+class CursorManager(private val context: Context) : ScanStateInterface {
 
     private val TAG = "CursorManager"
 
@@ -34,6 +36,8 @@ class CursorManager(private val context: Context) {
 
     private var x: Int = 0
     private var y: Int = 0
+
+    private var scanState = ScanState.STOPPED
 
     private var direction: ScanDirection = ScanDirection.RIGHT
 
@@ -134,17 +138,14 @@ class CursorManager(private val context: Context) {
                 preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
         }
         Log.d(TAG, "start: $rate")
+        scanState = ScanState.SCANNING
         val handler = Handler(Looper.getMainLooper())
         if (movingTimer == null) {
             movingTimer = Timer()
             movingTimer?.scheduleAtFixedRate(object : TimerTask() {
                 override fun run() {
                     handler.post {
-                        if (isInQuadrant) {
-                            moveCursorLine()
-                        } else {
-                            moveToNextQuadrant()
-                        }
+                        move()
                     }
                 }
             }, rate.toLong(), rate.toLong())
@@ -164,9 +165,40 @@ class CursorManager(private val context: Context) {
 
 
     // Function to stop the timer
-    private fun stop() {
-        movingTimer?.cancel()
-        movingTimer = null
+    override fun stopScanning() {
+        if (scanState == ScanState.SCANNING) {
+            scanState = ScanState.STOPPED
+            movingTimer?.cancel()
+            movingTimer = null
+        }
+    }
+
+
+    // Function to pause the scanning
+    override fun pauseScanning() {
+        if (scanState == ScanState.SCANNING) {
+            scanState = ScanState.PAUSED
+        }
+    }
+
+
+    // Function to resume the scanning
+    override fun resumeScanning() {
+        if (scanState == ScanState.PAUSED) {
+            scanState = ScanState.SCANNING
+        }
+    }
+
+
+    private fun move() {
+        if (scanState == ScanState.SCANNING) {
+            if (isInQuadrant) {
+                moveCursorLine()
+            } else {
+                moveToNextQuadrant()
+            }
+            Log.d(TAG, "move: $x, $y, $direction")
+        }
     }
 
 
@@ -273,7 +305,7 @@ class CursorManager(private val context: Context) {
 
 
     private fun internalReset() {
-        stop()
+        stopScanning()
 
         x = 0
         y = 0
@@ -323,7 +355,7 @@ class CursorManager(private val context: Context) {
         // We perform the action based on the direction
         when (direction) {
             ScanDirection.LEFT, ScanDirection.RIGHT -> {
-                stop()
+                stopScanning()
                 if (!isInQuadrant) {
                     isInQuadrant = true
 
@@ -346,7 +378,7 @@ class CursorManager(private val context: Context) {
             }
 
             ScanDirection.UP, ScanDirection.DOWN -> {
-                stop()
+                stopScanning()
                 if (!isInQuadrant) {
                     isInQuadrant = true
 

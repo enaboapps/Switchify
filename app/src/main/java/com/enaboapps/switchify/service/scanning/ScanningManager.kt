@@ -108,6 +108,7 @@ class ScanningManager(
         when (state) {
             State.CURSOR -> {
                 // Pause the cursor
+                cursorManager.pauseScanning()
             }
 
             State.MENU -> {
@@ -121,6 +122,7 @@ class ScanningManager(
         when (state) {
             State.CURSOR -> {
                 // Resume the cursor
+                cursorManager.resumeScanning()
             }
 
             State.MENU -> {
