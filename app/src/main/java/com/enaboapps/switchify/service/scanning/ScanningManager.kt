@@ -103,4 +103,30 @@ class ScanningManager(
             }
         }
     }
+
+    fun pauseScanning() {
+        when (state) {
+            State.CURSOR -> {
+                // Pause the cursor
+            }
+
+            State.MENU -> {
+                // Pause the menu
+                MenuManager.getInstance().currentMenu?.pauseScanning()
+            }
+        }
+    }
+
+    fun resumeScanning() {
+        when (state) {
+            State.CURSOR -> {
+                // Resume the cursor
+            }
+
+            State.MENU -> {
+                // Resume the menu
+                MenuManager.getInstance().currentMenu?.resumeScanning()
+            }
+        }
+    }
 }

@@ -56,6 +56,10 @@ class SwitchListener(
             } else {
                 // If there is a long press action, it starts the switch hold timer
                 startSwitchHoldTimer()
+                // If the long press is "Change Scanning Direction", pause scanning
+                if (switchEvent.longPressAction.id == SwitchAction.Actions.ACTION_CHANGE_SCANNING_DIRECTION) {
+                    scanningManager.pauseScanning()
+                }
             }
         } else {
             Log.d("SwitchListener", "No switch event found for key code $keyCode")
@@ -79,6 +83,7 @@ class SwitchListener(
                     if (time > switchHoldTime) {
                         // do nothing
                     } else {
+                        scanningManager.resumeScanning() // This is required to perform the action
                         scanningManager.performAction(switchEvent.pressAction)
                     }
                     // If the timer is not null, cancel it
