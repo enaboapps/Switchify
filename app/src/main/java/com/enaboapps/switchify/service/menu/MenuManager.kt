@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.menu
 
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
+import com.enaboapps.switchify.service.menu.menus.GesturesMenu
 import com.enaboapps.switchify.service.menu.menus.MainMenu
 import com.enaboapps.switchify.service.menu.menus.SwipeMenu
 import com.enaboapps.switchify.service.menu.menus.SystemControlMenu
@@ -44,6 +45,12 @@ class MenuManager {
     fun openSystemControlMenu() {
         val systemControlMenu = SystemControlMenu(accessibilityService!!)
         openMenu(systemControlMenu.menuView)
+    }
+
+    // This function opens the gestures menu
+    fun openGesturesMenu() {
+        val gesturesMenu = GesturesMenu(accessibilityService!!)
+        openMenu(gesturesMenu.menuView)
     }
 
     // This function opens the swipe menu

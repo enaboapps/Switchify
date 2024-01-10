@@ -6,16 +6,16 @@ import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.MenuView
 
-class MainMenu(accessibilityService: SwitchifyAccessibilityService) {
+class GesturesMenu(accessibilityService: SwitchifyAccessibilityService) {
     private var items: List<MenuItem> = listOf(
         MenuItem("Tap", {
             GestureManager.getInstance().performTap()
         }),
-        MenuItem("Gestures", {
-            MenuManager.getInstance().openGesturesMenu()
+        MenuItem("Swipe", {
+            MenuManager.getInstance().openSwipeMenu()
         }),
-        MenuItem("System Control", {
-            MenuManager.getInstance().openSystemControlMenu()
+        MenuItem("Previous Menu", {
+            MenuManager.getInstance().menuHierarchy?.popMenu()
         }),
         MenuItem("Close Menu", {
             MenuManager.getInstance().menuHierarchy?.removeAllMenus()
