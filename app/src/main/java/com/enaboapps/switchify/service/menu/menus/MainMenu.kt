@@ -17,6 +17,9 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) {
         MenuItem("System Control", {
             MenuManager.getInstance().openSystemControlMenu()
         }),
+        MenuItem("Close Menu", {
+            MenuManager.getInstance().menuHierarchy?.removeAllMenus()
+        })
     )
 
     val menuView = MenuView(accessibilityService, items.toMutableList())

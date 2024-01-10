@@ -31,8 +31,7 @@ class ScanningManager(
     // This function sets up the scanning manager
     fun setup() {
         cursorManager.setup()
-        MenuManager.getInstance().scanningManager = this
-        MenuManager.getInstance().accessibilityService = accessibilityService
+        MenuManager.getInstance().setup(this, accessibilityService)
     }
 
 
@@ -57,7 +56,7 @@ class ScanningManager(
 
             State.MENU -> {
                 // Select the menu item
-                MenuManager.getInstance().currentMenu?.select()
+                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.select()
             }
         }
     }
@@ -83,7 +82,7 @@ class ScanningManager(
 
                     State.MENU -> {
                         // Stop scanning
-                        MenuManager.getInstance().currentMenu?.close()
+                        MenuManager.getInstance().closeMenuHierarchy()
                     }
                 }
             }
@@ -97,7 +96,7 @@ class ScanningManager(
 
                     State.MENU -> {
                         // Change the menu direction
-                        MenuManager.getInstance().currentMenu?.swapScanDirection()
+                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.swapScanDirection()
                     }
                 }
             }
@@ -113,7 +112,7 @@ class ScanningManager(
 
             State.MENU -> {
                 // Pause the menu
-                MenuManager.getInstance().currentMenu?.pauseScanning()
+                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.pauseScanning()
             }
         }
     }
@@ -127,7 +126,7 @@ class ScanningManager(
 
             State.MENU -> {
                 // Resume the menu
-                MenuManager.getInstance().currentMenu?.resumeScanning()
+                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.resumeScanning()
             }
         }
     }

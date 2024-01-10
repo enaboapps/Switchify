@@ -15,7 +15,10 @@ interface MenuViewListener {
     fun onMenuViewClosed()
 }
 
-class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) : ScanStateInterface {
+class MenuView(
+    val context: Context,
+    val menuItems: List<MenuItem>
+) : ScanStateInterface {
 
     var menuViewListener: MenuViewListener? = null
 
@@ -40,11 +43,6 @@ class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) : Sca
         // Set grey border
         linearLayout.setPadding(10, 10, 10, 10)
         linearLayout.setBackgroundColor(context.resources.getColor(android.R.color.darker_gray, null))
-        // Add a close menu item
-        val closeMenuItem = MenuItem("Close Menu", {
-            close()
-        })
-        menuItems.add(closeMenuItem)
         // Iterate through the menu items and inflate them
         for (menuItem in menuItems) {
             menuItem.inflate(linearLayout)
@@ -64,7 +62,11 @@ class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) : Sca
         // Stop scanning
         stopScanning()
         // Remove the LinearLayout from the WindowManager
-        windowManager.removeView(linearLayout)
+        try {
+            windowManager.removeView(linearLayout)
+        } catch (e: Exception) {
+            Log.e("MenuView", "Error removing menu view", e)
+        }
         // Call the listener
         menuViewListener?.onMenuViewClosed()
     }
@@ -146,7 +148,7 @@ class MenuView(val context: Context, var menuItems: MutableList<MenuItem>) : Sca
         if (isScanning()) {
             menuItems[scanIndex].select()
             stopScanning()
-            close()
+            MenuManager.getInstance().menuHierarchy?.getTopMenu()?.close()
         } else if (scanState == ScanState.STOPPED) {
             startScanning()
         }
