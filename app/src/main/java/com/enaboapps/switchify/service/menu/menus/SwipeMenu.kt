@@ -7,7 +7,7 @@ import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.MenuView
 
 class SwipeMenu(accessibilityService: SwitchifyAccessibilityService) {
-    private var items: List<MenuItem> = listOf(
+    private val items: List<MenuItem> = listOf(
         MenuItem("Swipe Up", {
             GestureManager.getInstance().performSwipe(GestureManager.SwipeDirection.UP)
         }),
@@ -28,15 +28,6 @@ class SwipeMenu(accessibilityService: SwitchifyAccessibilityService) {
         })
     )
 
-    val menuView = MenuView(accessibilityService, items.toMutableList())
-
-    // This function is called when the menu is opened
-    fun open() {
-        menuView.open()
-    }
-
-    // This function is called when the menu is closed
-    fun close() {
-        menuView.close()
-    }
+    val menuView = MenuView(accessibilityService, items)
+    
 }

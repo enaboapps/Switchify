@@ -7,7 +7,7 @@ import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.MenuView
 
 class GesturesMenu(accessibilityService: SwitchifyAccessibilityService) {
-    private var items: List<MenuItem> = listOf(
+    private val items: List<MenuItem> = listOf(
         MenuItem("Tap", {
             GestureManager.getInstance().performTap()
         }),
@@ -25,15 +25,6 @@ class GesturesMenu(accessibilityService: SwitchifyAccessibilityService) {
         })
     )
 
-    val menuView = MenuView(accessibilityService, items.toMutableList())
+    val menuView = MenuView(accessibilityService, items)
 
-    // This function is called when the menu is opened
-    fun open() {
-        menuView.open()
-    }
-
-    // This function is called when the menu is closed
-    fun close() {
-        menuView.close()
-    }
 }

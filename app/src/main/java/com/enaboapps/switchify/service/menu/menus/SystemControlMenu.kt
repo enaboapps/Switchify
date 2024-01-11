@@ -7,7 +7,7 @@ import com.enaboapps.switchify.service.menu.MenuView
 
 class SystemControlMenu(accessibilityService: AccessibilityService) {
 
-    private var items: List<MenuItem> = listOf(
+    private val items: List<MenuItem> = listOf(
         MenuItem("Back", {
             // Perform the back action
             accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
@@ -36,16 +36,6 @@ class SystemControlMenu(accessibilityService: AccessibilityService) {
         })
     )
 
-    val menuView = MenuView(accessibilityService, items.toMutableList())
-
-    // This function is called when the menu is opened
-    fun open() {
-        menuView.open()
-    }
-
-    // This function is called when the menu is closed
-    fun close() {
-        menuView.close()
-    }
+    val menuView = MenuView(accessibilityService, items)
 
 }
