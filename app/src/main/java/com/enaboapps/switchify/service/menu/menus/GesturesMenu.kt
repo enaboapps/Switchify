@@ -11,6 +11,9 @@ class GesturesMenu(accessibilityService: SwitchifyAccessibilityService) {
         MenuItem("Tap", {
             GestureManager.getInstance().performTap()
         }),
+        MenuItem("Double Tap", {
+            GestureManager.getInstance().performDoubleTap()
+        }),
         MenuItem("Swipe", {
             MenuManager.getInstance().openSwipeMenu()
         }),

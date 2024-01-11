@@ -5,6 +5,7 @@ import android.accessibilityservice.GestureDescription
 import android.graphics.PointF
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.utils.ScreenUtils
+import java.util.Timer
 
 class GestureManager {
     // singleton
@@ -45,6 +46,44 @@ class GestureManager {
             }
         } catch (e: Exception) {
             // Log.e(TAG, "onTap: ", e)
+        }
+    }
+
+    // Function to perform a double tap
+    fun performDoubleTap() {
+        try {
+            val path = android.graphics.Path()
+            currentPoint?.let { point ->
+                path.moveTo(point.x, point.y)
+            }
+            val gestureDescription = GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(path, 550, 100)).build()
+            accessibilityService.let {
+                it?.dispatchGesture(gestureDescription, object : AccessibilityService.GestureResultCallback() {
+                    override fun onCompleted(gestureDescription: GestureDescription?) {
+                        super.onCompleted(gestureDescription)
+                        val gestureDrawing = GestureDrawing(it)
+                        currentPoint?.let { point ->
+                            gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt())
+                        }
+                        Timer().schedule(object : java.util.TimerTask() {
+                            override fun run() {
+                                if (gestureDescription != null) {
+                                    it.dispatchGesture(gestureDescription, object : AccessibilityService.GestureResultCallback() {
+                                        override fun onCompleted(gestureDescription: GestureDescription?) {
+                                            super.onCompleted(gestureDescription)
+                                            currentPoint?.let { point ->
+                                                gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt())
+                                            }
+                                        }
+                                    }, null)
+                                }
+                            }
+                        }, 100)
+                    }
+                }, null)
+            }
+        } catch (e: Exception) {
+            // Log.e(TAG, "onDoubleTap: ", e)
         }
     }
 
