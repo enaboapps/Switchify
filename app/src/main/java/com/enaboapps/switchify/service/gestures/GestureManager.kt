@@ -99,29 +99,34 @@ class GestureManager {
             currentPoint?.let { point ->
                 path.moveTo(point.x, point.y)
                 accessibilityService?.let { accessibilityService ->
+                    val gestureDrawing = GestureDrawing(accessibilityService)
                     when (direction) {
                         SwipeDirection.UP -> {
                             val fifthOfScreen = ScreenUtils.getHeight(accessibilityService) / 5
                             val travel = getTravel(ScreenUtils.getHeight(accessibilityService), point.y - fifthOfScreen)
                             path.lineTo(point.x, travel)
+                            gestureDrawing.drawLineAndRemove(point.x.toInt(), point.y.toInt(), point.x.toInt(), travel.toInt())
                         }
 
                         SwipeDirection.DOWN -> {
                             val fifthOfScreen = ScreenUtils.getHeight(accessibilityService) / 5
                             val travel = getTravel(ScreenUtils.getHeight(accessibilityService), point.y + fifthOfScreen)
                             path.lineTo(point.x, travel)
+                            gestureDrawing.drawLineAndRemove(point.x.toInt(), point.y.toInt(), point.x.toInt(), travel.toInt())
                         }
 
                         SwipeDirection.LEFT -> {
                             val quarterOfScreen = ScreenUtils.getWidth(accessibilityService) / 4
                             val travel = getTravel(ScreenUtils.getWidth(accessibilityService), point.x - quarterOfScreen)
                             path.lineTo(travel, point.y)
+                            gestureDrawing.drawLineAndRemove(point.x.toInt(), point.y.toInt(), travel.toInt(), point.y.toInt())
                         }
 
                         SwipeDirection.RIGHT -> {
                             val quarterOfScreen = ScreenUtils.getWidth(accessibilityService) / 4
                             val travel = getTravel(ScreenUtils.getWidth(accessibilityService), point.x + quarterOfScreen)
                             path.lineTo(travel, point.y)
+                            gestureDrawing.drawLineAndRemove(point.x.toInt(), point.y.toInt(), travel.toInt(), point.y.toInt())
                         }
                     }
                     val gestureDescription = GestureDescription.Builder()
