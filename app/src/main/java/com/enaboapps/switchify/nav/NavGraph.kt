@@ -8,6 +8,7 @@ import com.enaboapps.switchify.screens.EnableAccessibilityServiceScreen
 import com.enaboapps.switchify.screens.HomeScreen
 import com.enaboapps.switchify.screens.settings.switches.AddNewSwitchScreen
 import com.enaboapps.switchify.screens.settings.SettingsScreen
+import com.enaboapps.switchify.screens.settings.switches.EditSwitchScreen
 import com.enaboapps.switchify.screens.settings.switches.SwitchesScreen
 
 @Composable
@@ -24,6 +25,11 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(NavigationRoute.AddNewSwitch.name) {
             AddNewSwitchScreen(navController)
+        }
+        composable("${NavigationRoute.EditSwitch.name}/{code}") {
+            it.arguments?.getString("code")?.let { code ->
+                EditSwitchScreen(navController, code)
+            }
         }
         composable(NavigationRoute.EnableAccessibilityService.name) {
             EnableAccessibilityServiceScreen()

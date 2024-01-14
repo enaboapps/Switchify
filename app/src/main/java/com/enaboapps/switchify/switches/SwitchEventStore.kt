@@ -19,6 +19,13 @@ class SwitchEventStore(private val context: Context) {
         }
     }
 
+    fun update(switchEvent: SwitchEvent) {
+        if (switchEvents.remove(switchEvent)) {
+            switchEvents.add(switchEvent)
+            saveToFile()
+        }
+    }
+
     fun remove(switchEvent: SwitchEvent) {
         if (switchEvents.remove(switchEvent)) {
             saveToFile()
