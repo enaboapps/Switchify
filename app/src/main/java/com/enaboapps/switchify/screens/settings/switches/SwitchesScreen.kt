@@ -18,6 +18,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -34,6 +35,7 @@ import com.enaboapps.switchify.screens.settings.switches.models.SwitchesScreenMo
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.widgets.PreferenceSection
+import com.enaboapps.switchify.widgets.UICard
 
 @Composable
 fun SwitchesScreen(navController: NavController) {
@@ -78,8 +80,8 @@ fun SwitchesScreen(navController: NavController) {
                 PreferenceSection(title = "Switches") {
                     for (event in events) {
                         SwitchEventItem(
-                            switchEvent = event,
-                            model = switchesScreenModel
+                            navController = navController,
+                            switchEvent = event
                         )
                     }
                 }
@@ -90,8 +92,8 @@ fun SwitchesScreen(navController: NavController) {
 
 @Composable
 private fun SwitchEventItem(
-    switchEvent: SwitchEvent,
-    model: SwitchesScreenModel
+    navController: NavController,
+    switchEvent: SwitchEvent
 ) {
     Row(
         modifier = Modifier
@@ -102,19 +104,8 @@ private fun SwitchEventItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = switchEvent.name,
-            style = MaterialTheme.typography.subtitle1,
-            modifier = Modifier.weight(1f)
-        )
-        IconButton(onClick = {
-            model.deleteEvent(switchEvent)
-        }) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                tint = MaterialTheme.colors.error,
-                contentDescription = "Delete Switch"
-            )
+        UICard(title = switchEvent.name, description = "Edit this switch") {
+            navController.navigate(NavigationRoute.EditSwitch.name + "/${switchEvent.code}")
         }
     }
 }
