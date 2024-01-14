@@ -48,6 +48,7 @@ fun AddNewSwitchScreen(navController: NavController) {
             modifier = Modifier
                 .verticalScroll(verticalScrollState)
                 .padding(it)
+                .padding(all = 16.dp),
         ) {
             SwitchName(name = addNewSwitchScreenModel.name)
             if (!shouldSave!!) {

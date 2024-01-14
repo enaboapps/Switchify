@@ -12,6 +12,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.screens.settings.models.SettingsScreenModel
@@ -36,7 +37,8 @@ fun SettingsScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(verticalScrollState)
-                .padding(it),
+                .padding(it)
+                .padding(all = 16.dp),
             verticalArrangement = Arrangement.Top
         ) {
             TimingSection(settingsScreenModel)
@@ -45,7 +47,7 @@ fun SettingsScreen(navController: NavController) {
                 title = "Switches",
                 summary = "Configure your switches",
                 navController = navController,
-                route = NavigationRoute.Switches
+                route = NavigationRoute.Switches.name
             )
         }
     }
