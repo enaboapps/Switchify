@@ -1,8 +1,15 @@
 package com.enaboapps.switchify.screens
 
-import android.app.Application
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,9 +25,7 @@ fun EnableAccessibilityServiceScreen() {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Enable Accessibility Service") },
-                backgroundColor = MaterialTheme.colors.primary,
-                contentColor = Color.White
+                title = { Text(text = "Enable Accessibility Service") }
             )
         }
     ) { paddingValues ->
@@ -38,11 +43,14 @@ fun EnableAccessibilityServiceScreen() {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 20.dp)
             )
+            Text(
+                text = "This allows you to use your device without touching the screen.",
+                modifier = Modifier.padding(bottom = 20.dp)
+            )
             Button(
-                onClick = { ServiceUtils().openAccessibilitySettings(context) },
-                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary)
+                onClick = { ServiceUtils().openAccessibilitySettings(context) }
             ) {
-                Text(text = "Go to Settings", color = Color.White)
+                Text(text = "Go to Settings")
             }
         }
     }
