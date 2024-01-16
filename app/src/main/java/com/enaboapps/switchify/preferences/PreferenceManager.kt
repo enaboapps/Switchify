@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 class PreferenceManager(context: Context) {
 
     companion object Keys {
+        const val PREFERENCE_KEY_SETUP_COMPLETE = "setup_complete"
         const val PREFERENCE_KEY_SCAN_RATE = "scan_rate"
         const val PREFERENCE_KEY_REFINE_SCAN_RATE = "refine_scan_rate"
         const val PREFERENCE_KEY_SWITCH_HOLD_TIME = "switch_hold_time"
@@ -18,6 +19,14 @@ class PreferenceManager(context: Context) {
 
     private val sharedPreferences: SharedPreferences =
         appContext.getSharedPreferences(PREFERENCE_FILE_NAME, Context.MODE_PRIVATE)
+
+    fun setSetupComplete() {
+        setBooleanValue(PREFERENCE_KEY_SETUP_COMPLETE, true)
+    }
+
+    fun isSetupComplete(): Boolean {
+        return getBooleanValue(PREFERENCE_KEY_SETUP_COMPLETE)
+    }
 
     fun setIntegerValue(key: String, value: Int) {
         with(sharedPreferences.edit()) {
