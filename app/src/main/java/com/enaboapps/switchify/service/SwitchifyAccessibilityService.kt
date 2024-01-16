@@ -8,16 +8,13 @@ import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.scanning.SwitchListener
 
-class SwitchifyAccessibilityService : AccessibilityService(),
-    ScreenSwitchListener {
+class SwitchifyAccessibilityService : AccessibilityService() {
 
     private val TAG = "SwitchifyAccessibilityService"
 
     private var scanningManager: ScanningManager? = null
 
     private var switchListener: SwitchListener? = null
-
-    private val screenSwitch: ScreenSwitch = ScreenSwitch(this)
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         Log.d(TAG, "onAccessibilityEvent: ${event?.eventType}")
@@ -38,9 +35,6 @@ class SwitchifyAccessibilityService : AccessibilityService(),
         switchListener = SwitchListener(this, scanningManager!!)
 
         GestureManager.getInstance().accessibilityService = this
-
-        screenSwitch.setup()
-        screenSwitch.screenSwitchListener = this
     }
 
 
@@ -51,13 +45,5 @@ class SwitchifyAccessibilityService : AccessibilityService(),
             return switchListener?.onSwitchReleased(event.keyCode) ?: false
         }
         return true
-    }
-
-
-    override fun onScreenSwitch() {
-        scanningManager?.select()
-
-        screenSwitch.teardown()
-        screenSwitch.setup()
     }
 }
