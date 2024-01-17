@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -31,6 +30,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import com.enaboapps.switchify.screens.settings.switches.models.AddNewSwitchScreenModel
 import com.enaboapps.switchify.switches.SwitchEventStore
+import com.enaboapps.switchify.widgets.FullWidthButton
 
 @Composable
 fun AddNewSwitchScreen(navController: NavController) {
@@ -53,9 +53,7 @@ fun AddNewSwitchScreen(navController: NavController) {
             SwitchName(name = addNewSwitchScreenModel.name)
             if (!shouldSave!!) {
                 SwitchListener(onKeyEvent = { keyEvent: KeyEvent ->
-                    if (!shouldSave!!) {
-                        addNewSwitchScreenModel.processKeyCode(keyEvent.key)
-                    }
+                    addNewSwitchScreenModel.processKeyCode(keyEvent.key)
                 })
             } else {
                 Column(
@@ -68,12 +66,10 @@ fun AddNewSwitchScreen(navController: NavController) {
                         viewModel = addNewSwitchScreenModel,
                         modifier = Modifier.padding(16.dp)
                     )
-                    Button(onClick = {
+                    FullWidthButton(text = "Save", onClick = {
                         addNewSwitchScreenModel.save()
                         navController.popBackStack()
-                    }) {
-                        Text(text = "Save")
-                    }
+                    })
                 }
             }
         }
