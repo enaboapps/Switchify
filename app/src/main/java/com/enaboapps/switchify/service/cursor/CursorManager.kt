@@ -47,12 +47,22 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     private var isInAutoSelect = false // If true, we listen for a second event to activate the menu
     private var autoSelectTimer: Timer? = null // Timer to wait for the second event
 
+    // Handler to update the UI
+    private val uiHandler = Handler(Looper.getMainLooper())
+
     private var cursorHUD: CursorHUD? = null
 
 
     fun setup() {
         cursorHUD = CursorHUD(context)
         cursorHUD?.show()
+    }
+
+
+    // Function to set quadrant info
+    // Takes the quadrant index and the start and end points of the quadrant
+    private fun setQuadrantInfo(quadrantIndex: Int, start: Int, end: Int) {
+        quadrantInfo = QuadrantInfo(quadrantIndex, start, end)
     }
 
 
@@ -65,12 +75,17 @@ class CursorManager(private val context: Context) : ScanStateInterface {
             val width = ScreenUtils.getWidth(context)
             val height = ScreenUtils.getHeight(context) / 4
             cursorHUD?.addView(yQuadrant!!, 0, y, width, height)
+            setQuadrantInfo(0, y, y + height)
         }
     }
 
-    private fun updateYQuadrant() {
+    private fun updateYQuadrant(quadrantIndex: Int) {
         yQuadrant?.let {
-            cursorHUD?.updateViewLayout(it, 0, y)
+            uiHandler.post {
+                y = quadrantIndex * ScreenUtils.getHeight(context) / 4
+                cursorHUD?.updateViewLayout(it, 0, y)
+                setQuadrantInfo(quadrantIndex, y, y + ScreenUtils.getHeight(context) / 4)
+            }
         }
     }
 
@@ -83,19 +98,23 @@ class CursorManager(private val context: Context) : ScanStateInterface {
             val width = ScreenUtils.getWidth(context) / 4
             val height = ScreenUtils.getHeight(context)
             cursorHUD?.addView(xQuadrant!!, x, y, width, height)
+            setQuadrantInfo(0, x, x + width)
         }
     }
 
-    private fun updateXQuadrant() {
+    private fun updateXQuadrant(quadrantIndex: Int) {
         xQuadrant?.let {
-            cursorHUD?.updateViewLayout(it, x, y)
+            uiHandler.post {
+                x = quadrantIndex * ScreenUtils.getWidth(context) / 4
+                cursorHUD?.updateViewLayout(it, x, y)
+                setQuadrantInfo(quadrantIndex, x, x + ScreenUtils.getWidth(context) / 4)
+            }
         }
     }
 
 
     private fun setupYCursorLine() {
         if (yCursorLine == null) {
-            quadrantInfo = QuadrantInfo(y, y + ScreenUtils.getHeight(context) / 4)
             Log.d(TAG, "setupYCursorLine: $y")
             yCursorLine = RelativeLayout(context)
             yCursorLine?.setBackgroundColor(Color.RED)
@@ -113,7 +132,6 @@ class CursorManager(private val context: Context) : ScanStateInterface {
 
     private fun setupXCursorLine() {
         if (xCursorLine == null) {
-            quadrantInfo = QuadrantInfo(x, x + ScreenUtils.getWidth(context) / 4)
             Log.d(TAG, "setupXCursorLine: $x")
             xCursorLine = RelativeLayout(context)
             xCursorLine?.setBackgroundColor(Color.RED)
@@ -155,11 +173,57 @@ class CursorManager(private val context: Context) : ScanStateInterface {
 
     // Function to swap the direction
     fun swapDirection() {
-        direction = when (direction) {
-            ScanDirection.LEFT -> ScanDirection.RIGHT
-            ScanDirection.RIGHT -> ScanDirection.LEFT
-            ScanDirection.UP -> ScanDirection.DOWN
-            ScanDirection.DOWN -> ScanDirection.UP
+        // Here we swap the direction
+        // If we are at the first quadrant, we swap the direction and go to the last quadrant, and vice versa
+        when (direction) {
+            ScanDirection.LEFT -> {
+                direction = ScanDirection.RIGHT
+                if (!isInQuadrant) {
+                    quadrantInfo?.let {
+                        if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
+                            updateXQuadrant(MAX_QUADRANT_INDEX)
+                        } else if (it.quadrantIndex == MAX_QUADRANT_INDEX) {
+                            updateXQuadrant(MIN_QUADRANT_INDEX)
+                        }
+                    }
+                }
+            }
+            ScanDirection.RIGHT -> {
+                direction = ScanDirection.LEFT
+                if (!isInQuadrant) {
+                    quadrantInfo?.let {
+                        if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
+                            updateXQuadrant(MAX_QUADRANT_INDEX)
+                        } else if (it.quadrantIndex == MAX_QUADRANT_INDEX) {
+                            updateXQuadrant(MIN_QUADRANT_INDEX)
+                        }
+                    }
+                }
+            }
+            ScanDirection.UP -> {
+                direction = ScanDirection.DOWN
+                if (!isInQuadrant) {
+                    quadrantInfo?.let {
+                        if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
+                            updateYQuadrant(MAX_QUADRANT_INDEX)
+                        } else if (it.quadrantIndex == MAX_QUADRANT_INDEX) {
+                            updateYQuadrant(MIN_QUADRANT_INDEX)
+                        }
+                    }
+                }
+            }
+            ScanDirection.DOWN -> {
+                direction = ScanDirection.UP
+                if (!isInQuadrant) {
+                    quadrantInfo?.let {
+                        if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
+                            updateYQuadrant(MAX_QUADRANT_INDEX)
+                        } else if (it.quadrantIndex == MAX_QUADRANT_INDEX) {
+                            updateYQuadrant(MIN_QUADRANT_INDEX)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -206,42 +270,50 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     private fun moveToNextQuadrant() {
         when (direction) {
             ScanDirection.LEFT -> {
-                if (x > 0) {
-                    x -= ScreenUtils.getWidth(context) / 4
-                    updateXQuadrant()
-                } else {
-                    direction = ScanDirection.RIGHT
-                    moveToNextQuadrant()
+                quadrantInfo?.let {
+                    if (it.quadrantIndex > MIN_QUADRANT_INDEX) {
+                        val quadrantIndex = it.quadrantIndex - 1
+                        updateXQuadrant(quadrantIndex)
+                    } else {
+                        direction = ScanDirection.RIGHT
+                        moveToNextQuadrant()
+                    }
                 }
             }
 
             ScanDirection.RIGHT -> {
-                if (x < ScreenUtils.getWidth(context) - ScreenUtils.getWidth(context) / 4) {
-                    x += ScreenUtils.getWidth(context) / 4
-                    updateXQuadrant()
-                } else {
-                    direction = ScanDirection.LEFT
-                    moveToNextQuadrant()
+                quadrantInfo?.let {
+                    if (it.quadrantIndex < MAX_QUADRANT_INDEX) {
+                        val quadrantIndex = it.quadrantIndex + 1
+                        updateXQuadrant(quadrantIndex)
+                    } else {
+                        direction = ScanDirection.LEFT
+                        moveToNextQuadrant()
+                    }
                 }
             }
 
             ScanDirection.UP -> {
-                if (y > 0) {
-                    y -= ScreenUtils.getHeight(context) / 4
-                    updateYQuadrant()
-                } else {
-                    direction = ScanDirection.DOWN
-                    moveToNextQuadrant()
+                quadrantInfo?.let {
+                    if (it.quadrantIndex > MIN_QUADRANT_INDEX) {
+                        val quadrantIndex = it.quadrantIndex - 1
+                        updateYQuadrant(quadrantIndex)
+                    } else {
+                        direction = ScanDirection.DOWN
+                        moveToNextQuadrant()
+                    }
                 }
             }
 
             ScanDirection.DOWN -> {
-                if (y < ScreenUtils.getHeight(context) - ScreenUtils.getHeight(context) / 4) {
-                    y += ScreenUtils.getHeight(context) / 4
-                    updateYQuadrant()
-                } else {
-                    direction = ScanDirection.UP
-                    moveToNextQuadrant()
+                quadrantInfo?.let {
+                    if (it.quadrantIndex < MAX_QUADRANT_INDEX) {
+                        val quadrantIndex = it.quadrantIndex + 1
+                        updateYQuadrant(quadrantIndex)
+                    } else {
+                        direction = ScanDirection.UP
+                        moveToNextQuadrant()
+                    }
                 }
             }
         }
@@ -441,14 +513,13 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     private fun startAutoSelectTimer() {
         val delay =
             preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT_DELAY)
-        val handler = Handler(Looper.getMainLooper())
         isInAutoSelect = true
         if (autoSelectTimer == null) {
             autoSelectTimer = Timer()
         }
         autoSelectTimer?.schedule(object : TimerTask() {
             override fun run() {
-                handler.post {
+                uiHandler.post {
                     if (isInAutoSelect) {
                         isInAutoSelect = false
                         // tap
@@ -462,6 +533,10 @@ class CursorManager(private val context: Context) : ScanStateInterface {
 }
 
 data class QuadrantInfo(
+    val quadrantIndex: Int,
     val start: Int,
     val end: Int,
 )
+
+val MIN_QUADRANT_INDEX = 0
+val MAX_QUADRANT_INDEX = 3
