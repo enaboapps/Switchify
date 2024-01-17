@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,7 +50,7 @@ fun PreferenceSwitch(
             Switch(checked = isChecked, onCheckedChange = {
                 isChecked = it
                 onCheckedChange(it)
-            })
+            }, colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary))
         }
     }
 }
