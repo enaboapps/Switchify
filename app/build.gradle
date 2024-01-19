@@ -10,8 +10,8 @@ android {
 
     defaultConfig {
         applicationId "com.enaboapps.switchify"
-        minSdk 31
-        targetSdk 33
+        minSdk 30
+        targetSdk 34
         versionCode 3
         versionName "0.2.0-alpha"
 
