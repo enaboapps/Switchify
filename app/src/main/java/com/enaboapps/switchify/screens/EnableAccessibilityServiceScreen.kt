@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,15 +16,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.service.utils.ServiceUtils
 import com.enaboapps.switchify.widgets.FullWidthButton
+import com.enaboapps.switchify.widgets.NavBar
 
 @Composable
 fun EnableAccessibilityServiceScreen(navController: NavController) {
     val context = LocalContext.current
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = "Enable Accessibility Service") }
-            )
+            NavBar(title = "Enable Accessibility Service", navController = navController)
         }
     ) { paddingValues ->
         Column(

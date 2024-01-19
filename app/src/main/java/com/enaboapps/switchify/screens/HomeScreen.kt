@@ -9,12 +9,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -22,6 +20,7 @@ import androidx.navigation.NavController
 import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.utils.ServiceUtils
+import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.UICard
 
 @Composable
@@ -38,12 +37,7 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = "Switchify", color = Color.White)
-                },
-                backgroundColor = MaterialTheme.colors.primary
-            )
+            NavBar(title = "Switchify", navController = navController)
         }
     ) { paddingValues ->
         LazyColumn(
