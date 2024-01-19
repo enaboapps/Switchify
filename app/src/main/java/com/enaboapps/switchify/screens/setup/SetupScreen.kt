@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.widgets.FullWidthButton
+import com.enaboapps.switchify.widgets.NavBar
 
 @Composable
 fun SetupScreen(navController: NavController) {
@@ -24,9 +24,7 @@ fun SetupScreen(navController: NavController) {
     val setupScreenModel = SetupScreenModel(context)
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = "Setup") }
-            )
+            NavBar(title = "Setup", navController = navController)
         }
     ) {
         Column(

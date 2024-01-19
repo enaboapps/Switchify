@@ -31,6 +31,7 @@ import androidx.navigation.NavController
 import com.enaboapps.switchify.screens.settings.switches.models.AddNewSwitchScreenModel
 import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.widgets.FullWidthButton
+import com.enaboapps.switchify.widgets.NavBar
 
 @Composable
 fun AddNewSwitchScreen(navController: NavController) {
@@ -39,9 +40,7 @@ fun AddNewSwitchScreen(navController: NavController) {
     val shouldSave by addNewSwitchScreenModel.shouldSave.observeAsState()
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = "Add Switch") }
-            )
+            NavBar(title = "Add New Switch", navController = navController)
         }
     ) {
         Column(

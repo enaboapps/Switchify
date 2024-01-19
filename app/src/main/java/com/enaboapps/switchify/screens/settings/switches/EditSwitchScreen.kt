@@ -14,6 +14,7 @@ import androidx.navigation.NavController
 import com.enaboapps.switchify.screens.settings.switches.models.EditSwitchScreenModel
 import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.widgets.FullWidthButton
+import com.enaboapps.switchify.widgets.NavBar
 
 @Composable
 fun EditSwitchScreen(
@@ -24,9 +25,7 @@ fun EditSwitchScreen(
     val verticalScrollState = rememberScrollState()
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = "Edit ${editSwitchScreenModel.name.value}") }
-            )
+            NavBar(title = "Edit ${editSwitchScreenModel.name.value}", navController = navController)
         }
     ) {
         Column(

@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -16,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.screens.settings.models.SettingsScreenModel
+import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.PreferenceLink
 import com.enaboapps.switchify.widgets.PreferenceSection
 import com.enaboapps.switchify.widgets.PreferenceSwitch
@@ -28,9 +27,7 @@ fun SettingsScreen(navController: NavController) {
     val settingsScreenModel = SettingsScreenModel(context)
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = "Settings") }
-            )
+            NavBar(title = "Settings", navController = navController)
         }
     ) {
         Column(

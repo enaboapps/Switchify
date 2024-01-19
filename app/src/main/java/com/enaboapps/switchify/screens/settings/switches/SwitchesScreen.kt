@@ -6,12 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -25,6 +24,7 @@ import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.screens.settings.switches.models.SwitchesScreenModel
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
+import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.PreferenceLink
 import com.enaboapps.switchify.widgets.PreferenceSection
 
@@ -38,21 +38,17 @@ fun SwitchesScreen(navController: NavController) {
     val verticalScrollState = rememberScrollState()
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = "Switches")
-                },
-                actions = {
-                    IconButton(onClick = {
-                        navController.navigate(NavigationRoute.AddNewSwitch.name)
-                    }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_add_24),
-                            contentDescription = "Add Switch"
-                        )
-                    }
-                }
-            )
+            NavBar(title = "Switches", navController = navController)
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                navController.navigate(NavigationRoute.AddNewSwitch.name)
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_add_24),
+                    contentDescription = "Add"
+                )
+            }
         }
     ) {
         Column(
