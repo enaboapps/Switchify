@@ -8,16 +8,16 @@ import com.enaboapps.switchify.service.menu.MenuView
 
 class MainMenu(accessibilityService: SwitchifyAccessibilityService) {
     private val items: List<MenuItem> = listOf(
-        MenuItem("Tap", {
+        MenuItem("Tap", action = {
             GestureManager.getInstance().performTap()
         }),
-        MenuItem("Gestures", {
+        MenuItem("Gestures", action = {
             MenuManager.getInstance().openGesturesMenu()
         }),
-        MenuItem("System Control", {
+        MenuItem("System Control", action = {
             MenuManager.getInstance().openSystemControlMenu()
         }),
-        MenuItem("Close Menu", {
+        MenuItem("Close Menu", action = {
             MenuManager.getInstance().menuHierarchy?.removeAllMenus()
         })
     )

@@ -34,7 +34,7 @@ class SwitchifyAccessibilityService : AccessibilityService() {
 
         switchListener = SwitchListener(this, scanningManager!!)
 
-        GestureManager.getInstance().accessibilityService = this
+        GestureManager.getInstance().setup(this)
     }
 
 
