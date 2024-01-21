@@ -8,19 +8,19 @@ import com.enaboapps.switchify.service.menu.MenuView
 
 class GesturesMenu(accessibilityService: SwitchifyAccessibilityService) {
     private val items: List<MenuItem> = listOf(
-        MenuItem("Tap", {
+        MenuItem("Tap", action = {
             GestureManager.getInstance().performTap()
         }),
-        MenuItem("Double Tap", {
+        MenuItem("Double Tap", action = {
             GestureManager.getInstance().performDoubleTap()
         }),
-        MenuItem("Swipe", {
+        MenuItem("Swipe", action = {
             MenuManager.getInstance().openSwipeMenu()
         }),
-        MenuItem("Previous Menu", {
+        MenuItem("Previous Menu", action = {
             MenuManager.getInstance().menuHierarchy?.popMenu()
         }),
-        MenuItem("Close Menu", {
+        MenuItem("Close Menu", action = {
             MenuManager.getInstance().menuHierarchy?.removeAllMenus()
         })
     )

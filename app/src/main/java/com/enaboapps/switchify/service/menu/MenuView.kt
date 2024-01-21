@@ -147,8 +147,10 @@ class MenuView(
         Log.d("MenuView", "Selecting menu item $scanIndex")
         if (isScanning()) {
             menuItems[scanIndex].select()
-            stopScanning()
-            MenuManager.getInstance().menuHierarchy?.getTopMenu()?.close()
+            if (menuItems[scanIndex].closeOnSelect) {
+                stopScanning()
+                close()
+            }
         } else if (scanState == ScanState.STOPPED) {
             startScanning()
         }

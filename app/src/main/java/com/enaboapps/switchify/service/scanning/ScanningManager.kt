@@ -3,11 +3,8 @@ package com.enaboapps.switchify.service.scanning
 import android.content.Context
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.cursor.CursorManager
+import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
-import com.enaboapps.switchify.service.menu.MenuView
-import com.enaboapps.switchify.service.menu.MenuViewListener
-import com.enaboapps.switchify.service.menu.menus.MainMenu
-import com.enaboapps.switchify.service.menu.menus.SystemControlMenu
 import com.enaboapps.switchify.switches.SwitchAction
 
 class ScanningManager(
@@ -64,6 +61,13 @@ class ScanningManager(
 
     // This function performs an action
     fun performAction(action: SwitchAction) {
+        // If swipe lock is enabled, swipe and return
+        if (GestureManager.getInstance().performSwipeLock()) {
+            return
+        }
+
+
+        // Perform the action based on the action id
         when (action.id) {
             SwitchAction.Actions.ACTION_NONE -> {
                 // do nothing

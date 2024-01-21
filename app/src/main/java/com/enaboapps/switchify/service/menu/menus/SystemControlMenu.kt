@@ -8,30 +8,30 @@ import com.enaboapps.switchify.service.menu.MenuView
 class SystemControlMenu(accessibilityService: AccessibilityService) {
 
     private val items: List<MenuItem> = listOf(
-        MenuItem("Back", {
+        MenuItem("Back", action = {
             // Perform the back action
             accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
         }),
-        MenuItem("Home", {
+        MenuItem("Home", action = {
             // Perform the home action
             accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
         }),
-        MenuItem("Recents", {
+        MenuItem("Recents", action = {
             // Perform the recents action
             accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS)
         }),
-        MenuItem("Notifications", {
+        MenuItem("Notifications", action = {
             // Perform the notifications action
             accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS)
         }),
-        MenuItem("Quick Settings", {
+        MenuItem("Quick Settings", action = {
             // Perform the quick settings action
             accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS)
         }),
-        MenuItem("Previous Menu", {
+        MenuItem("Previous Menu", action = {
             MenuManager.getInstance().menuHierarchy?.popMenu()
         }),
-        MenuItem("Close Menu", {
+        MenuItem("Close Menu", action = {
             MenuManager.getInstance().menuHierarchy?.removeAllMenus()
         })
     )
