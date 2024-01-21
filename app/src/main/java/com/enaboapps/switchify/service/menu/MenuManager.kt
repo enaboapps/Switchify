@@ -1,10 +1,11 @@
 package com.enaboapps.switchify.service.menu
 
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
-import com.enaboapps.switchify.service.menu.menus.GesturesMenu
+import com.enaboapps.switchify.service.menu.menus.gestures.GesturesMenu
 import com.enaboapps.switchify.service.menu.menus.MainMenu
-import com.enaboapps.switchify.service.menu.menus.SwipeMenu
+import com.enaboapps.switchify.service.menu.menus.gestures.SwipeGesturesMenu
 import com.enaboapps.switchify.service.menu.menus.SystemControlMenu
+import com.enaboapps.switchify.service.menu.menus.gestures.TapGesturesMenu
 import com.enaboapps.switchify.service.scanning.ScanningManager
 
 class MenuManager {
@@ -53,10 +54,16 @@ class MenuManager {
         openMenu(gesturesMenu.menuView)
     }
 
+    // This function opens the tap menu
+    fun openTapMenu() {
+        val tapGesturesMenu = TapGesturesMenu(accessibilityService!!)
+        openMenu(tapGesturesMenu.menuView)
+    }
+
     // This function opens the swipe menu
     fun openSwipeMenu() {
-        val swipeMenu = SwipeMenu(accessibilityService!!)
-        openMenu(swipeMenu.menuView)
+        val swipeGesturesMenu = SwipeGesturesMenu(accessibilityService!!)
+        openMenu(swipeGesturesMenu.menuView)
     }
 
     // This function opens a menu

@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.menu.menus
+package com.enaboapps.switchify.service.menu.menus.gestures
 
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.gestures.GestureManager
@@ -6,7 +6,7 @@ import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.MenuView
 
-class SwipeMenu(accessibilityService: SwitchifyAccessibilityService) {
+class SwipeGesturesMenu(accessibilityService: SwitchifyAccessibilityService) {
     private val items: List<MenuItem> = listOf(
         MenuItem("Swipe Up", action = {
             GestureManager.getInstance().performSwipe(GestureManager.SwipeDirection.UP)
