@@ -2,9 +2,9 @@ package com.enaboapps.switchify.service.menu
 
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.menu.menus.gestures.GesturesMenu
-import com.enaboapps.switchify.service.menu.menus.MainMenu
+import com.enaboapps.switchify.service.menu.menus.main.MainMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.SwipeGesturesMenu
-import com.enaboapps.switchify.service.menu.menus.SystemControlMenu
+import com.enaboapps.switchify.service.menu.menus.system.SystemControlMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.TapGesturesMenu
 import com.enaboapps.switchify.service.scanning.ScanningManager
 
@@ -39,31 +39,31 @@ class MenuManager {
     // This function opens the main menu
     fun openMainMenu() {
         val mainMenu = MainMenu(accessibilityService!!)
-        openMenu(mainMenu.menuView)
+        openMenu(mainMenu.build())
     }
 
     // This function opens the system control menu
     fun openSystemControlMenu() {
         val systemControlMenu = SystemControlMenu(accessibilityService!!)
-        openMenu(systemControlMenu.menuView)
+        openMenu(systemControlMenu.build())
     }
 
     // This function opens the gestures menu
     fun openGesturesMenu() {
         val gesturesMenu = GesturesMenu(accessibilityService!!)
-        openMenu(gesturesMenu.menuView)
+        openMenu(gesturesMenu.build())
     }
 
     // This function opens the tap menu
     fun openTapMenu() {
         val tapGesturesMenu = TapGesturesMenu(accessibilityService!!)
-        openMenu(tapGesturesMenu.menuView)
+        openMenu(tapGesturesMenu.build())
     }
 
     // This function opens the swipe menu
     fun openSwipeMenu() {
         val swipeGesturesMenu = SwipeGesturesMenu(accessibilityService!!)
-        openMenu(swipeGesturesMenu.menuView)
+        openMenu(swipeGesturesMenu.build())
     }
 
     // This function opens a menu
