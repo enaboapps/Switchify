@@ -117,8 +117,6 @@ class MenuView(
         timer = null
         // Unhighlight the current menu item
         menuItems[scanIndex].unhighlight()
-        // Reset the scan index to 0
-        scanIndex = 0
         // Set the scan state to stopped
         scanState = ScanState.STOPPED
     }
@@ -150,6 +148,9 @@ class MenuView(
             if (menuItems[scanIndex].closeOnSelect) {
                 stopScanning()
                 close()
+            } else {
+                stopScanning()
+                startScanning()
             }
         } else if (scanState == ScanState.STOPPED) {
             startScanning()
