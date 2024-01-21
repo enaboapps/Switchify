@@ -6,6 +6,7 @@ import com.enaboapps.switchify.service.menu.menus.main.MainMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.SwipeGesturesMenu
 import com.enaboapps.switchify.service.menu.menus.system.SystemControlMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.TapGesturesMenu
+import com.enaboapps.switchify.service.menu.menus.system.VolumeControlMenu
 import com.enaboapps.switchify.service.scanning.ScanningManager
 
 class MenuManager {
@@ -46,6 +47,12 @@ class MenuManager {
     fun openSystemControlMenu() {
         val systemControlMenu = SystemControlMenu(accessibilityService!!)
         openMenu(systemControlMenu.build())
+    }
+
+    // This function opens the volume control menu
+    fun openVolumeControlMenu() {
+        val volumeControlMenu = VolumeControlMenu(accessibilityService!!)
+        openMenu(volumeControlMenu.build())
     }
 
     // This function opens the gestures menu

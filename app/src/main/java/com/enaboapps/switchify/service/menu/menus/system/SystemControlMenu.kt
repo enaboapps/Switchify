@@ -3,6 +3,7 @@ package com.enaboapps.switchify.service.menu.menus.system
 import android.accessibilityservice.AccessibilityService
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.menu.MenuItem
+import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
 
 class SystemControlMenu(
@@ -26,6 +27,9 @@ class SystemControlMenu(
                 }),
                 MenuItem("Quick Settings", action = {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS)
+                }),
+                MenuItem("Volume Control", action = {
+                    MenuManager.getInstance().openVolumeControlMenu()
                 })
             )
         }
