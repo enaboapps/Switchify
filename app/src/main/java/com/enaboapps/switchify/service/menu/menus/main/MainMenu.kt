@@ -14,10 +14,10 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) : BaseMenu(a
                 MenuItem("Tap", action = {
                     GestureManager.getInstance().performTap()
                 }),
-                MenuItem("Gestures", action = {
+                MenuItem("Gestures", isMenuNavItem = true, action = {
                     MenuManager.getInstance().openGesturesMenu()
                 }),
-                MenuItem("System Control", action = {
+                MenuItem("System Control", isMenuNavItem = true, action = {
                     MenuManager.getInstance().openSystemControlMenu()
                 })
             )
