@@ -1,6 +1,8 @@
 package com.enaboapps.switchify.screens.settings.switches.models
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.nativeKeyCode
 import androidx.lifecycle.MutableLiveData
@@ -9,7 +11,7 @@ import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
 
-class AddNewSwitchScreenModel(private val store: SwitchEventStore): ViewModel() {
+class AddNewSwitchScreenModel(private val context: Context, private val store: SwitchEventStore): ViewModel() {
 
     private val TAG = "AddNewSwitchScreenModel"
 
@@ -29,6 +31,14 @@ class AddNewSwitchScreenModel(private val store: SwitchEventStore): ViewModel() 
 
     fun processKeyCode(key: Key) {
         Log.d(TAG, "processKeyCode: ${key.nativeKeyCode}")
+
+        // If switch already exists, don't save and show toast
+        if (store.find(key.nativeKeyCode.toString()) != null) {
+            shouldSave.value = false
+            Toast.makeText(context, "Switch already exists", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         code = key.nativeKeyCode
         shouldSave.value = true
     }
