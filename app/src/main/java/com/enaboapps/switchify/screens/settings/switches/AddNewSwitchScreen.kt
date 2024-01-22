@@ -35,7 +35,7 @@ import com.enaboapps.switchify.widgets.NavBar
 
 @Composable
 fun AddNewSwitchScreen(navController: NavController) {
-    val addNewSwitchScreenModel = AddNewSwitchScreenModel(SwitchEventStore(LocalContext.current))
+    val addNewSwitchScreenModel = AddNewSwitchScreenModel(LocalContext.current, SwitchEventStore(LocalContext.current))
     val verticalScrollState = rememberScrollState()
     val shouldSave by addNewSwitchScreenModel.shouldSave.observeAsState()
     Scaffold(
