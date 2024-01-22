@@ -45,6 +45,7 @@ fun SwitchActionPicker(
             Text(text = title, style = MaterialTheme.typography.h6, fontWeight = FontWeight.Medium)
             if (action.value != null) {
                 Text(text = action.value!!.getActionName())
+                Text(text = action.value!!.getActionDescription())
             }
             Spacer(modifier = Modifier.height(8.dp))
             DropdownMenu(
