@@ -12,11 +12,11 @@ open class BaseMenu(
     private fun getMenuItems(): List<MenuItem> {
         var menuItems = items
         if (MenuManager.getInstance().menuHierarchy?.getTopMenu() != null) {
-            menuItems = menuItems + MenuItem("Previous Menu", action = {
+            menuItems = menuItems + MenuItem("Previous Menu", isMenuNavItem = true, action = {
                 MenuManager.getInstance().menuHierarchy?.popMenu()
             })
         }
-        menuItems = menuItems + MenuItem("Close Menu", action = {
+        menuItems = menuItems + MenuItem("Close Menu", isMenuNavItem = true, action = {
             MenuManager.getInstance().menuHierarchy?.removeAllMenus()
         })
         return menuItems

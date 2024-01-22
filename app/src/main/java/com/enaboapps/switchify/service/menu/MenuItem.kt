@@ -7,12 +7,32 @@ import android.widget.LinearLayout
 // This is a base class for all menu items
 // Text - The text to display for the menu item
 // Close on select - Whether or not the menu should be closed when the menu item is selected
+// Is menu nav item - Whether or not the menu item is a menu navigation item
 // Action - The action to perform when the menu item is selected
-class MenuItem(
-    private val text: String,
-    val closeOnSelect: Boolean = true,
+class MenuItem {
+    private val text: String
+    val closeOnSelect: Boolean
+    var isMenuNavItem: Boolean = false
     private val action: () -> Unit
-) {
+
+    constructor(text: String, closeOnSelect: Boolean = true, action: () -> Unit) {
+        this.text = text
+        this.closeOnSelect = closeOnSelect
+        this.action = action
+    }
+
+    constructor(
+        text: String,
+        closeOnSelect: Boolean = true,
+        isMenuNavItem: Boolean = false,
+        action: () -> Unit
+    ) {
+        this.text = text
+        this.closeOnSelect = closeOnSelect
+        this.isMenuNavItem = isMenuNavItem
+        this.action = action
+    }
+
     // highlighted is whether or not the menu item is highlighted
     private var highlighted = false
 

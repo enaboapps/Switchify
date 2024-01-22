@@ -147,7 +147,11 @@ class MenuView(
             menuItems[scanIndex].select()
             if (menuItems[scanIndex].closeOnSelect) {
                 stopScanning()
-                close()
+                if (!menuItems[scanIndex].isMenuNavItem) {
+                    MenuManager.getInstance().menuHierarchy?.removeAllMenus()
+                } else {
+                    close()
+                }
             } else {
                 stopScanning()
                 startScanning()
