@@ -12,6 +12,14 @@ class ScanMode(val id: Int) {
             ScanMode(Modes.MODE_AUTO),
             ScanMode(Modes.MODE_MANUAL)
         )
+
+        fun fromId(id: Int): ScanMode {
+            return when (id) {
+                Modes.MODE_AUTO -> ScanMode(Modes.MODE_AUTO)
+                Modes.MODE_MANUAL -> ScanMode(Modes.MODE_MANUAL)
+                else -> ScanMode(Modes.MODE_AUTO)
+            }
+        }
     }
 
     fun getModeName(): String {
@@ -28,5 +36,12 @@ class ScanMode(val id: Int) {
             Modes.MODE_MANUAL -> "Use a switch to move between items and another switch to select"
             else -> "Unknown"
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other is ScanMode) {
+            return other.id == id
+        }
+        return false
     }
 }
