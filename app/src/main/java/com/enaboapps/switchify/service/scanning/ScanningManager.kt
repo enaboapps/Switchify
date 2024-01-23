@@ -48,7 +48,7 @@ class ScanningManager(
         when (state) {
             State.CURSOR -> {
                 // Perform the cursor action
-                cursorManager.performAction()
+                cursorManager.performSelectionAction()
             }
 
             State.MENU -> {
@@ -101,6 +101,30 @@ class ScanningManager(
                     State.MENU -> {
                         // Change the menu direction
                         MenuManager.getInstance().menuHierarchy?.getTopMenu()?.swapScanDirection()
+                    }
+                }
+            }
+
+            SwitchAction.Actions.ACTION_MOVE_TO_NEXT_ITEM -> {
+                when (state) {
+                    State.CURSOR -> {
+                        // Move the cursor to the next item
+                        cursorManager.moveToNextItem()
+                    }
+
+                    State.MENU -> {
+                    }
+                }
+            }
+
+            SwitchAction.Actions.ACTION_MOVE_TO_PREVIOUS_ITEM -> {
+                when (state) {
+                    State.CURSOR -> {
+                        // Move the cursor to the previous item
+                        cursorManager.moveToPreviousItem()
+                    }
+
+                    State.MENU -> {
                     }
                 }
             }

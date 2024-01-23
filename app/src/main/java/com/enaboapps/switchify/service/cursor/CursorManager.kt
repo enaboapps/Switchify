@@ -11,6 +11,7 @@ import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanDirection
+import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.service.scanning.ScanState
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.utils.ScreenUtils
@@ -149,6 +150,13 @@ class CursorManager(private val context: Context) : ScanStateInterface {
 
 
     private fun start() {
+        scanState = ScanState.SCANNING
+
+        val mode = ScanMode(preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
+        if (mode.id == ScanMode.Modes.MODE_MANUAL) {
+            return
+        }
+
         var rate =
             preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
         if (isInQuadrant) {
@@ -156,7 +164,6 @@ class CursorManager(private val context: Context) : ScanStateInterface {
                 preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
         }
         Log.d(TAG, "start: $rate")
-        scanState = ScanState.SCANNING
         val handler = Handler(Looper.getMainLooper())
         if (movingTimer == null) {
             movingTimer = Timer()
@@ -388,6 +395,10 @@ class CursorManager(private val context: Context) : ScanStateInterface {
         resetCursorLines()
     }
 
+    private fun isReset(): Boolean {
+        return xQuadrant == null && yQuadrant == null && xCursorLine == null && yCursorLine == null
+    }
+
     private fun resetQuadrants() {
         xQuadrant?.let {
             cursorHUD?.removeView(it)
@@ -411,14 +422,65 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     }
 
 
-    fun performAction() {
+    fun moveToNextItem() {
+        if (isReset()) {
+            setupXQuadrant()
+            start()
+            return
+        }
+
+        direction = when (direction) {
+            // If left or right, set right
+            ScanDirection.LEFT, ScanDirection.RIGHT -> {
+                ScanDirection.RIGHT
+            }
+            // If up or down, set down
+            ScanDirection.UP, ScanDirection.DOWN -> {
+                ScanDirection.DOWN
+            }
+        }
+
+        if (isInQuadrant) {
+            moveCursorLine()
+        } else {
+            moveToNextQuadrant()
+        }
+    }
+
+
+    fun moveToPreviousItem() {
+        if (isReset()) {
+            setupXQuadrant()
+            start()
+            return
+        }
+
+        direction = when (direction) {
+            // If left or right, set left
+            ScanDirection.LEFT, ScanDirection.RIGHT -> {
+                ScanDirection.LEFT
+            }
+            // If up or down, set up
+            ScanDirection.UP, ScanDirection.DOWN -> {
+                ScanDirection.UP
+            }
+        }
+
+        if (isInQuadrant) {
+            moveCursorLine()
+        } else {
+            moveToNextQuadrant()
+        }
+    }
+
+
+    fun performSelectionAction() {
         // If the event is triggered within the auto select delay, we don't perform the action
         if (checkAutoSelectDelay()) {
             return
         }
 
-        // If moving timer is null, we start the timer and return
-        if (movingTimer == null) {
+        if (isReset()) {
             setupXQuadrant()
             start()
             return
