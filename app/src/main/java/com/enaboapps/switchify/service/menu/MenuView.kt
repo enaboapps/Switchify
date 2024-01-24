@@ -192,6 +192,9 @@ class MenuView(
             if (scanIndex < menuItems.size - 1) {
                 // If scanIndex is less than the number of menu items minus 1, increment scanIndex
                 scanIndex++
+            } else {
+                // If scanIndex is equal to the number of menu items minus 1, set scanIndex to 0
+                scanIndex = 0
             }
             // Highlight the current menu item
             menuItems[scanIndex].highlight()
@@ -210,6 +213,9 @@ class MenuView(
             if (scanIndex > 0) {
                 // If scanIndex is greater than 0, decrement scanIndex
                 scanIndex--
+            } else {
+                // If scanIndex is equal to 0, set scanIndex to the number of menu items minus 1
+                scanIndex = menuItems.size - 1
             }
             // Highlight the current menu item
             menuItems[scanIndex].highlight()
