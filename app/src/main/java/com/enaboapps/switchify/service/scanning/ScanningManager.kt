@@ -113,6 +113,8 @@ class ScanningManager(
                     }
 
                     State.MENU -> {
+                        // Move the menu to the next item
+                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.moveToNextItem()
                     }
                 }
             }
@@ -125,6 +127,8 @@ class ScanningManager(
                     }
 
                     State.MENU -> {
+                        // Move the menu to the previous item
+                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.moveToPreviousItem()
                     }
                 }
             }

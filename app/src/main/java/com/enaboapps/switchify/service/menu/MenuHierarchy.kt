@@ -23,6 +23,7 @@ class MenuHierarchy(
     fun popMenu() {
         if (canPopMenu()) {
             getTopMenu()?.close()
+            getTopMenu()?.reset()
             tree = tree.dropLast(1)
             tree.last().menuViewListener = this
             Handler(Looper.getMainLooper()).postDelayed(100) {
@@ -35,7 +36,8 @@ class MenuHierarchy(
     fun openMenu(menu: MenuView) {
         addMenu(menu)
         if (tree.size > 1) {
-            tree[tree.size - 2].close()
+            getTopMenu()?.close()
+            getTopMenu()?.reset()
         }
         menu.menuViewListener = this
         Handler(Looper.getMainLooper()).postDelayed(100) {

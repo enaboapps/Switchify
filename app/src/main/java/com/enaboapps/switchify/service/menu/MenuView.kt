@@ -6,6 +6,7 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.scanning.ScanDirection
+import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.service.scanning.ScanState
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import java.util.Timer
@@ -57,6 +58,22 @@ class MenuView(
         ))
     }
 
+    // This function resets the menu
+    fun reset() {
+        // Stop scanning
+        stopScanning()
+        // Unhighlight the current menu item
+        menuItems[scanIndex].unhighlight()
+        // Set scanIndex to 0
+        scanIndex = 0
+        // Set the scan state to stopped
+        scanState = ScanState.STOPPED
+        // Set the scan direction to down
+        direction = ScanDirection.DOWN
+        // Set menuViewListener to null
+        menuViewListener = null
+    }
+
     // This function is called when the menu is closed
     fun close() {
         // Stop scanning
@@ -76,6 +93,12 @@ class MenuView(
         // Set the first menu item to be highlighted
         menuItems[scanIndex].highlight()
         scanState = ScanState.SCANNING
+
+        val mode = ScanMode.fromId(PreferenceManager(context).getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
+        if (mode.id == ScanMode.Modes.MODE_MANUAL) {
+            return
+        }
+
         val rate = PreferenceManager(context).getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
         // If the timer is not null, cancel it
         timer?.cancel()
@@ -158,6 +181,42 @@ class MenuView(
             }
         } else if (scanState == ScanState.STOPPED) {
             startScanning()
+        }
+    }
+
+    // This function moves to the next menu item
+    fun moveToNextItem() {
+        if (isScanning()) {
+            // Unhighlight the current menu item
+            menuItems[scanIndex].unhighlight()
+            if (scanIndex < menuItems.size - 1) {
+                // If scanIndex is less than the number of menu items minus 1, increment scanIndex
+                scanIndex++
+            }
+            // Highlight the current menu item
+            menuItems[scanIndex].highlight()
+        } else if (scanState == ScanState.STOPPED) {
+            scanIndex = 0
+            menuItems[scanIndex].highlight()
+            scanState = ScanState.SCANNING
+        }
+    }
+
+    // This function moves to the previous menu item
+    fun moveToPreviousItem() {
+        if (isScanning()) {
+            // Unhighlight the current menu item
+            menuItems[scanIndex].unhighlight()
+            if (scanIndex > 0) {
+                // If scanIndex is greater than 0, decrement scanIndex
+                scanIndex--
+            }
+            // Highlight the current menu item
+            menuItems[scanIndex].highlight()
+        } else if (scanState == ScanState.STOPPED) {
+            scanIndex = 0
+            menuItems[scanIndex].highlight()
+            scanState = ScanState.SCANNING
         }
     }
 
