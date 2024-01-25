@@ -8,6 +8,7 @@ import com.enaboapps.switchify.screens.EnableAccessibilityServiceScreen
 import com.enaboapps.switchify.screens.HomeScreen
 import com.enaboapps.switchify.screens.settings.switches.AddNewSwitchScreen
 import com.enaboapps.switchify.screens.settings.SettingsScreen
+import com.enaboapps.switchify.screens.settings.scanning.ScanModeSelectionScreen
 import com.enaboapps.switchify.screens.settings.switches.EditSwitchScreen
 import com.enaboapps.switchify.screens.settings.switches.SwitchesScreen
 import com.enaboapps.switchify.screens.setup.SetupScreen
@@ -23,6 +24,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(NavigationRoute.Settings.name) {
             SettingsScreen(navController)
+        }
+        composable(NavigationRoute.ScanMode.name) {
+            ScanModeSelectionScreen(navController)
         }
         composable(NavigationRoute.Switches.name) {
             SwitchesScreen(navController)

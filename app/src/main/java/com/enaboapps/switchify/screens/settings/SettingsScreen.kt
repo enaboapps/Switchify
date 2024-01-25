@@ -38,6 +38,14 @@ fun SettingsScreen(navController: NavController) {
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.Top
         ) {
+            PreferenceSection(title = "Scanning") {
+                PreferenceLink(
+                    title = "Scan Mode",
+                    summary = "Configure the scan mode",
+                    navController = navController,
+                    route = NavigationRoute.ScanMode.name
+                )
+            }
             TimingSection(settingsScreenModel)
             SelectionSection(settingsScreenModel)
             PreferenceLink(
