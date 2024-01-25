@@ -56,10 +56,11 @@ class MenuView(
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             0
         ))
+        reset()
     }
 
     // This function resets the menu
-    fun reset() {
+    private fun reset() {
         // Stop scanning
         stopScanning()
         // Unhighlight the current menu item
@@ -70,8 +71,6 @@ class MenuView(
         scanState = ScanState.STOPPED
         // Set the scan direction to down
         direction = ScanDirection.DOWN
-        // Set menuViewListener to null
-        menuViewListener = null
     }
 
     // This function is called when the menu is closed

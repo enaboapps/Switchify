@@ -16,29 +16,28 @@ class MenuHierarchy(
         tree += menu
     }
 
-    fun canPopMenu(): Boolean {
+    private fun canPopMenu(): Boolean {
         return tree.size > 1
     }
 
     fun popMenu() {
         if (canPopMenu()) {
-            getTopMenu()?.close()
-            getTopMenu()?.reset()
+            tree.lastOrNull()?.close()
             tree = tree.dropLast(1)
-            tree.last().menuViewListener = this
             Handler(Looper.getMainLooper()).postDelayed(100) {
-                scanningManager.setMenuState()
-                tree.last().open()
+                tree.lastOrNull()?.let {
+                    scanningManager.setMenuState()
+                    it.menuViewListener = this
+                    it.open()
+                }
             }
         }
     }
 
     fun openMenu(menu: MenuView) {
+        getTopMenu()?.close()
+
         addMenu(menu)
-        if (tree.size > 1) {
-            getTopMenu()?.close()
-            getTopMenu()?.reset()
-        }
         menu.menuViewListener = this
         Handler(Looper.getMainLooper()).postDelayed(100) {
             scanningManager.setMenuState()
