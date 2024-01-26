@@ -1,6 +1,8 @@
 package com.enaboapps.switchify.service.menu
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.WindowManager
 import android.widget.LinearLayout
@@ -18,7 +20,7 @@ interface MenuViewListener {
 
 class MenuView(
     val context: Context,
-    val menuItems: List<MenuItem>
+    var menuItems: List<MenuItem>
 ) : ScanStateInterface {
 
     var menuViewListener: MenuViewListener? = null
@@ -35,20 +37,73 @@ class MenuView(
     // scanState is the state of the scanning
     private var scanState = ScanState.STOPPED
 
+    // Page variables
+    private val numOfItemsPerPage = 3
+    private var currentPage = 0
+    private var numOfPages = 0
+    private data class MenuItemPage(var menuItems: List<MenuItem>, val page: Int)
+    private var menuItemPages = mutableListOf<MenuItemPage>()
 
-    // This function is called when the menu is opened
-    fun open() {
-        // Create a LinearLayout
+    constructor(page: Int, context: Context, menuItems: List<MenuItem>) : this(context, menuItems) {
+        currentPage = page
+    }
+
+    init {
+        setup()
+    }
+
+    // This function sets up the menu
+    private fun setup() {
+        // Set the number of pages
+        numOfPages = (menuItems.size / numOfItemsPerPage) + 1
+        // Iterate through the menu items and set the page
+        for (menuItem in menuItems) {
+            menuItem.page = (menuItems.indexOf(menuItem) / numOfItemsPerPage) + 1
+        }
+        // Iterate through the pages and add the menu items to the page
+        for (i in 1..numOfPages) {
+            menuItemPages.add(MenuItemPage(menuItems.filter { it.page == i }, i))
+        }
+        // Add a "Next" menu item to each page
+        for (i in 1..numOfPages) {
+            val menuItem = MenuItem("Next", false) {
+                moveToNextPage()
+            }
+            menuItem.isPageNavItem = true
+            menuItemPages[i - 1].menuItems += menuItem
+        }
+        // Set the menu items to the current page
+        menuItems = menuItemPages[currentPage].menuItems
+    }
+
+    // This function moves to the next page
+    private fun moveToNextPage() {
+        // If the current page is less than the number of pages, increment the current page
+        if (currentPage < numOfPages - 1) {
+            currentPage++
+        } else {
+            // If the current page is at the last page, set the current page to 0
+            currentPage = 0
+        }
+        // Replace the menu in the hierarchy with the new menu
+        val itemsWithoutPageNav = menuItemPages[currentPage].menuItems.filter { !it.isPageNavItem }
+        val newMenu = MenuView(currentPage, context, itemsWithoutPageNav)
+        MenuManager.getInstance().menuHierarchy?.replaceTopMenu(newMenu)
+    }
+
+    private fun createLinearLayout() {
+        try {
+            windowManager.removeView(linearLayout)
+        } catch (e: Exception) {
+            Log.e("MenuView", "Error removing menu view", e)
+        }
         linearLayout = LinearLayout(context)
         linearLayout.orientation = LinearLayout.VERTICAL
-        // Set grey border
         linearLayout.setPadding(10, 10, 10, 10)
         linearLayout.setBackgroundColor(context.resources.getColor(android.R.color.darker_gray, null))
-        // Iterate through the menu items and inflate them
-        for (menuItem in menuItems) {
-            menuItem.inflate(linearLayout)
-        }
-        // Add the LinearLayout to the WindowManager
+    }
+
+    private fun addToWindowManager() {
         windowManager.addView(linearLayout, WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -56,6 +111,19 @@ class MenuView(
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             0
         ))
+    }
+
+
+    // This function is called when the menu is opened
+    fun open() {
+        createLinearLayout()
+        // Iterate through the menu items and inflate them
+        for (menuItem in menuItems) {
+            menuItem.inflate(linearLayout)
+        }
+        // Add to the WindowManager
+        addToWindowManager()
+        // Reset the menu
         reset()
     }
 

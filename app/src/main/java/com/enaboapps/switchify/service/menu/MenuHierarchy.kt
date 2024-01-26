@@ -48,6 +48,21 @@ class MenuHierarchy(
         scanningManager.setMenuState()
     }
 
+    fun replaceTopMenu(menu: MenuView) {
+        getTopMenu()?.close()
+
+        tree = tree.dropLast(1)
+        addMenu(menu)
+        menu.menuViewListener = this
+        Handler(Looper.getMainLooper()).postDelayed(100) {
+            scanningManager.setMenuState()
+            menu.open()
+        }
+
+        // set the state to menu
+        scanningManager.setMenuState()
+    }
+
     fun removeAllMenus() {
         // close the top menu
         getTopMenu()?.close()
