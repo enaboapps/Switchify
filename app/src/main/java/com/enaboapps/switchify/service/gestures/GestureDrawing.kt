@@ -41,6 +41,8 @@ class GestureDrawing(private val context: Context) {
         layoutParams.gravity = Gravity.TOP or Gravity.START
         layoutParams.format = PixelFormat.TRANSPARENT
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        layoutParams.layoutInDisplayCutoutMode =
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         windowManager.addView(circle, layoutParams)
 
         // Remove the circle after half a second
@@ -75,6 +77,8 @@ class GestureDrawing(private val context: Context) {
         layoutParams.gravity = Gravity.TOP or Gravity.START
         layoutParams.format = PixelFormat.TRANSPARENT
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        layoutParams.layoutInDisplayCutoutMode =
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         windowManager.addView(line, layoutParams)
 
         // Remove the line after half a second
