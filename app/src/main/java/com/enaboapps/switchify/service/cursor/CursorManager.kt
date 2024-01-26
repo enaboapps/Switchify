@@ -372,14 +372,16 @@ class CursorManager(private val context: Context) : ScanStateInterface {
 
 
     fun externalReset() {
-        internalReset()
+        uiHandler.post {
+            internalReset()
 
-        isInAutoSelect = false
-        autoSelectTimer?.cancel()
-        autoSelectTimer = null
+            isInAutoSelect = false
+            autoSelectTimer?.cancel()
+            autoSelectTimer = null
 
-        isInQuadrant = false
-        quadrantInfo = null
+            isInQuadrant = false
+            quadrantInfo = null
+        }
     }
 
 
