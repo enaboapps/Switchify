@@ -36,8 +36,9 @@ fun EditSwitchScreen(
             SwitchActionPicker(title = "Press Action", action = editSwitchScreenModel.pressAction)
             SwitchActionPicker(title = "Long Press Action", action = editSwitchScreenModel.longPressAction)
             FullWidthButton(text = "Save", onClick = {
-                editSwitchScreenModel.save()
-                navController.popBackStack()
+                editSwitchScreenModel.save {
+                    navController.popBackStack()
+                }
             })
             FullWidthButton(text = "Delete", onClick = {
                 editSwitchScreenModel.delete {

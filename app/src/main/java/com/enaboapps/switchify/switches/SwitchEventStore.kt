@@ -20,9 +20,24 @@ class SwitchEventStore(private val context: Context) {
     }
 
     fun update(switchEvent: SwitchEvent) {
-        if (switchEvents.remove(switchEvent)) {
-            switchEvents.add(switchEvent)
-            saveToFile()
+        val file = File(context.applicationContext.filesDir, fileName)
+        if (file.exists()) {
+            try {
+                val lines = file.readLines()
+                val newLines = lines.map { line ->
+                    val parts = line.split(", ")
+                    if (parts[1] == switchEvent.code) {
+                        switchEvent.toString()
+                    } else {
+                        line
+                    }
+                }
+                file.writeText(newLines.joinToString("\n"))
+            } catch (e: Exception) {
+                Log.e("SwitchEventStore", "Error reading from file", e)
+            }
+        } else {
+            Log.d("SwitchEventStore", "File does not exist")
         }
     }
 

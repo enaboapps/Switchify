@@ -23,16 +23,15 @@ class EditSwitchScreenModel(
         longPressAction.value = event?.longPressAction
     }
 
-    fun save() {
+    fun save(completion: () -> Unit) {
         val event = SwitchEvent(
             name = name.value!!,
             code = code,
             pressAction = pressAction.value!!,
             longPressAction = longPressAction.value!!
         )
-        if (store.find(event.code) != null) {
-            store.update(event)
-        }
+        store.update(event)
+        completion()
     }
 
     fun delete(completion: () -> Unit) {
