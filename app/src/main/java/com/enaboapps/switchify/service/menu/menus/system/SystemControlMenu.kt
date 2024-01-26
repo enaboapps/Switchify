@@ -28,6 +28,9 @@ class SystemControlMenu(
                 MenuItem("Quick Settings", action = {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS)
                 }),
+                MenuItem("Lock Screen", action = {
+                    accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN)
+                }),
                 MenuItem("Power Dialog", action = {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG)
                 }),
