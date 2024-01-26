@@ -28,6 +28,9 @@ class SystemControlMenu(
                 MenuItem("Quick Settings", action = {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS)
                 }),
+                MenuItem("Power Dialog", action = {
+                    accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG)
+                }),
                 MenuItem("Volume Control", isMenuNavItem = true, action = {
                     MenuManager.getInstance().openVolumeControlMenu()
                 })
