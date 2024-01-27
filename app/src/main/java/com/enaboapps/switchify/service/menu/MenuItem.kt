@@ -13,10 +13,15 @@ import android.widget.LinearLayout
 class MenuItem {
     private val text: String
     val closeOnSelect: Boolean
-    var isMenuNavItem: Boolean = false
+    private var isMenuNavItem: Boolean = false
     var page: Int = 0
-    var isPageNavItem: Boolean = false
     private val action: () -> Unit
+
+    // highlighted is whether or not the menu item is highlighted
+    private var highlighted = false
+
+    // button is the button that is displayed for the menu item
+    private var button: Button? = null
 
     constructor(text: String, closeOnSelect: Boolean = true, action: () -> Unit) {
         this.text = text
@@ -35,12 +40,6 @@ class MenuItem {
         this.isMenuNavItem = isMenuNavItem
         this.action = action
     }
-
-    // highlighted is whether or not the menu item is highlighted
-    private var highlighted = false
-
-    // button is the button that is displayed for the menu item
-    private var button: Button? = null
 
     // Inflate the menu item
     fun inflate(linearLayout: LinearLayout) {
@@ -63,6 +62,10 @@ class MenuItem {
 
     // This function is called when the menu item is selected
     fun select() {
+        Log.d("MenuItem", "Selected menu item: $text")
+        if (!isMenuNavItem && closeOnSelect) {
+            MenuManager.getInstance().closeMenuHierarchy()
+        }
         action()
     }
 

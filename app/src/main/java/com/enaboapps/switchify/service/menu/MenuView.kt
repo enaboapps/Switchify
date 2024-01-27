@@ -11,6 +11,7 @@ import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.service.scanning.ScanState
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
+import com.enaboapps.switchify.service.scanning.ScanningManager
 import java.util.Timer
 import java.util.TimerTask
 
@@ -20,7 +21,7 @@ interface MenuViewListener {
 
 class MenuView(
     val context: Context,
-    var menuItems: List<MenuItem>
+    val menuItems: List<MenuItem>
 ) : ScanStateInterface {
 
     var menuViewListener: MenuViewListener? = null
@@ -41,12 +42,7 @@ class MenuView(
     private val numOfItemsPerPage = 3
     private var currentPage = 0
     private var numOfPages = 0
-    private data class MenuItemPage(var menuItems: List<MenuItem>, val page: Int)
-    private var menuItemPages = mutableListOf<MenuItemPage>()
-
-    constructor(page: Int, context: Context, menuItems: List<MenuItem>) : this(context, menuItems) {
-        currentPage = page
-    }
+    private val menuPages = mutableListOf<MenuPage>()
 
     init {
         setup()
@@ -58,45 +54,41 @@ class MenuView(
         numOfPages = (menuItems.size / numOfItemsPerPage) + 1
         // Iterate through the menu items and set the page
         for (menuItem in menuItems) {
-            menuItem.page = (menuItems.indexOf(menuItem) / numOfItemsPerPage) + 1
+            menuItem.page = (menuItems.indexOf(menuItem) / numOfItemsPerPage)
         }
-        // Iterate through the pages and add the menu items to the page
-        for (i in 1..numOfPages) {
-            menuItemPages.add(MenuItemPage(menuItems.filter { it.page == i }, i))
+        // Iterate through the pages and add the menu items to the pages
+        for (i in 0 until numOfPages) {
+            val menuPage = MenuPage(
+                context,
+                menuItems.filter { it.page == i },
+                i,
+                numOfPages - 1,
+                ::onMenuPageChanged
+            )
+            menuPages.add(menuPage)
         }
-        // Add a "Next" menu item to each page
-        for (i in 1..numOfPages) {
-            val menuItem = MenuItem("Next", false) {
-                moveToNextPage()
-            }
-            menuItem.isPageNavItem = true
-            menuItemPages[i - 1].menuItems += menuItem
-        }
-        // Set the menu items to the current page
-        menuItems = menuItemPages[currentPage].menuItems
     }
 
-    // This function moves to the next page
-    private fun moveToNextPage() {
-        // If the current page is less than the number of pages, increment the current page
-        if (currentPage < numOfPages - 1) {
-            currentPage++
-        } else {
-            // If the current page is at the last page, set the current page to 0
-            currentPage = 0
-        }
-        // Replace the menu in the hierarchy with the new menu
-        val itemsWithoutPageNav = menuItemPages[currentPage].menuItems.filter { !it.isPageNavItem }
-        val newMenu = MenuView(currentPage, context, itemsWithoutPageNav)
-        MenuManager.getInstance().menuHierarchy?.replaceTopMenu(newMenu)
+    // This function is called when the menu page is changed
+    private fun onMenuPageChanged(pageIndex: Int) {
+        // Stop scanning
+        scanIndex = 0
+        stopScanning()
+        // Set the current page to the new page
+        currentPage = pageIndex
+        // Inflate the menu
+        inflateMenu()
+    }
+
+    // This function inflates the menu
+    private fun inflateMenu() {
+        // Remove all views from the LinearLayout
+        linearLayout.removeAllViews()
+        // Add the menu items to the LinearLayout
+        linearLayout.addView(menuPages[currentPage].getMenuLayout())
     }
 
     private fun createLinearLayout() {
-        try {
-            windowManager.removeView(linearLayout)
-        } catch (e: Exception) {
-            Log.e("MenuView", "Error removing menu view", e)
-        }
         linearLayout = LinearLayout(context)
         linearLayout.orientation = LinearLayout.VERTICAL
         linearLayout.setPadding(10, 10, 10, 10)
@@ -115,16 +107,17 @@ class MenuView(
 
 
     // This function is called when the menu is opened
-    fun open() {
+    fun open(scanningManager: ScanningManager) {
+        // Create the LinearLayout
         createLinearLayout()
-        // Iterate through the menu items and inflate them
-        for (menuItem in menuItems) {
-            menuItem.inflate(linearLayout)
-        }
+        // Inflate the menu
+        inflateMenu()
         // Add to the WindowManager
         addToWindowManager()
         // Reset the menu
         reset()
+        // Set the menu state
+        scanningManager.setMenuState()
     }
 
     // This function resets the menu
@@ -132,7 +125,7 @@ class MenuView(
         // Stop scanning
         stopScanning()
         // Unhighlight the current menu item
-        menuItems[scanIndex].unhighlight()
+        getCurrentItem().unhighlight()
         // Set scanIndex to 0
         scanIndex = 0
         // Set the scan state to stopped
@@ -147,6 +140,7 @@ class MenuView(
         stopScanning()
         // Remove the LinearLayout from the WindowManager
         try {
+            linearLayout.removeAllViews()
             windowManager.removeView(linearLayout)
         } catch (e: Exception) {
             Log.e("MenuView", "Error removing menu view", e)
@@ -158,7 +152,7 @@ class MenuView(
     // This function starts scanning the menu items
     private fun startScanning() {
         // Set the first menu item to be highlighted
-        menuItems[scanIndex].highlight()
+        getCurrentItem().highlight()
         scanState = ScanState.SCANNING
 
         val mode = ScanMode.fromId(PreferenceManager(context).getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
@@ -176,7 +170,7 @@ class MenuView(
             override fun run() {
                 if (scanState == ScanState.SCANNING) {
                     // Unhighlight the current menu item
-                    menuItems[scanIndex].unhighlight()
+                    getCurrentItem().unhighlight()
                     // If direction is down, increment scanIndex
                     // If direction is up, decrement scanIndex
                     if (direction == ScanDirection.DOWN) {
@@ -186,13 +180,13 @@ class MenuView(
                     }
                     // If direction is down and scanIndex is greater than or equal to the number of menu items, set scanIndex to 0
                     // If direction is up and scanIndex is less than 0, set scanIndex to the number of menu items minus 1
-                    if (direction == ScanDirection.DOWN && scanIndex >= menuItems.size) {
+                    if (direction == ScanDirection.DOWN && scanIndex >= menuPages[currentPage].getMenuItems().size) {
                         scanIndex = 0
                     } else if (direction == ScanDirection.UP && scanIndex < 0) {
-                        scanIndex = menuItems.size - 1
+                        scanIndex = menuPages[currentPage].getMenuItems().size - 1
                     }
                     // Highlight the current menu item
-                    menuItems[scanIndex].highlight()
+                    getCurrentItem().highlight()
 
                     Log.d("MenuView", "Scanning menu item ${scanIndex}")
                 }
@@ -206,7 +200,7 @@ class MenuView(
         timer?.cancel()
         timer = null
         // Unhighlight the current menu item
-        menuItems[scanIndex].unhighlight()
+        getCurrentItem().unhighlight()
         // Set the scan state to stopped
         scanState = ScanState.STOPPED
     }
@@ -230,18 +224,18 @@ class MenuView(
         return scanState == ScanState.SCANNING
     }
 
+    private fun getCurrentItem(): MenuItem {
+        return menuPages[currentPage].getMenuItems()[scanIndex]
+    }
+
     // This function either starts scanning or selects the current menu item
     fun select() {
+        val item = getCurrentItem()
         Log.d("MenuView", "Selecting menu item $scanIndex")
         if (isScanning()) {
-            menuItems[scanIndex].select()
-            if (menuItems[scanIndex].closeOnSelect) {
-                stopScanning()
-                if (!menuItems[scanIndex].isMenuNavItem) {
-                    MenuManager.getInstance().menuHierarchy?.removeAllMenus()
-                } else {
-                    close()
-                }
+            item.select()
+            if (item.closeOnSelect) {
+                close()
             } else {
                 stopScanning()
                 startScanning()
@@ -255,8 +249,8 @@ class MenuView(
     fun moveToNextItem() {
         if (isScanning()) {
             // Unhighlight the current menu item
-            menuItems[scanIndex].unhighlight()
-            if (scanIndex < menuItems.size - 1) {
+            getCurrentItem().unhighlight()
+            if (scanIndex < menuPages[currentPage].getMenuItems().size - 1) {
                 // If scanIndex is less than the number of menu items minus 1, increment scanIndex
                 scanIndex++
             } else {
@@ -264,10 +258,10 @@ class MenuView(
                 scanIndex = 0
             }
             // Highlight the current menu item
-            menuItems[scanIndex].highlight()
+            getCurrentItem().highlight()
         } else if (scanState == ScanState.STOPPED) {
             scanIndex = 0
-            menuItems[scanIndex].highlight()
+            getCurrentItem().highlight()
             scanState = ScanState.SCANNING
         }
     }
@@ -276,19 +270,19 @@ class MenuView(
     fun moveToPreviousItem() {
         if (isScanning()) {
             // Unhighlight the current menu item
-            menuItems[scanIndex].unhighlight()
+            getCurrentItem().unhighlight()
             if (scanIndex > 0) {
                 // If scanIndex is greater than 0, decrement scanIndex
                 scanIndex--
             } else {
                 // If scanIndex is equal to 0, set scanIndex to the number of menu items minus 1
-                scanIndex = menuItems.size - 1
+                scanIndex = menuPages[currentPage].getMenuItems().size - 1
             }
             // Highlight the current menu item
-            menuItems[scanIndex].highlight()
+            getCurrentItem().highlight()
         } else if (scanState == ScanState.STOPPED) {
-            scanIndex = 0
-            menuItems[scanIndex].highlight()
+            scanIndex = menuPages[currentPage].getMenuItems().size - 1
+            getCurrentItem().highlight()
             scanState = ScanState.SCANNING
         }
     }
