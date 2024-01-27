@@ -26,9 +26,8 @@ class MenuHierarchy(
             tree = tree.dropLast(1)
             Handler(Looper.getMainLooper()).postDelayed(100) {
                 tree.lastOrNull()?.let {
-                    scanningManager.setMenuState()
                     it.menuViewListener = this
-                    it.open()
+                    it.open(scanningManager)
                 }
             }
         }
@@ -40,12 +39,8 @@ class MenuHierarchy(
         addMenu(menu)
         menu.menuViewListener = this
         Handler(Looper.getMainLooper()).postDelayed(100) {
-            scanningManager.setMenuState()
-            menu.open()
+            menu.open(scanningManager)
         }
-
-        // set the state to menu
-        scanningManager.setMenuState()
     }
 
     fun removeAllMenus() {
