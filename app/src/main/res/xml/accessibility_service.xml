@@ -4,7 +4,6 @@
     android:accessibilityEventTypes="typeContextClicked|typeViewClicked"
     android:accessibilityFlags="flagRequestFilterKeyEvents"
     android:accessibilityFeedbackType="feedbackAllMask"
-    android:isAccessibilityTool="true"
     android:canRequestFilterKeyEvents="true"
     android:canPerformGestures="true"
     android:notificationTimeout="50"
