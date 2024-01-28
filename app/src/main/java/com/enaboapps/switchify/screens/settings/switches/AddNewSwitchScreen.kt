@@ -11,7 +11,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -71,6 +70,12 @@ fun AddNewSwitchScreen(navController: NavController) {
                     })
                 }
             }
+            Text(
+                text = "Is your switch not working? " +
+                        "If you are using a USB switch, please make sure that you have it plugged in and that it is turned on. " +
+                        "If you are using a Bluetooth switch, please make sure that it is paired with your device.",
+                style = MaterialTheme.typography.body1
+            )
         }
     }
 }
