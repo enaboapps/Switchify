@@ -1,8 +1,6 @@
 package com.enaboapps.switchify.service.menu
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.WindowManager
 import android.widget.LinearLayout
@@ -50,22 +48,27 @@ class MenuView(
 
     // This function sets up the menu
     private fun setup() {
-        // Set the number of pages
-        numOfPages = (menuItems.size / numOfItemsPerPage) + 1
-        // Iterate through the menu items and set the page
-        for (menuItem in menuItems) {
-            menuItem.page = (menuItems.indexOf(menuItem) / numOfItemsPerPage)
+        val itemsLessHierarchy = menuItems.filter { !it.isMenuHierarchyManipulator }
+        val numOfItemsLessHierarchy = itemsLessHierarchy.size
+        numOfPages = (numOfItemsLessHierarchy / numOfItemsPerPage)
+        if (numOfItemsLessHierarchy % numOfItemsPerPage != 0) {
+            numOfPages++
         }
-        // Iterate through the pages and add the menu items to the pages
+        for (item in itemsLessHierarchy) {
+            item.page = (itemsLessHierarchy.indexOf(item) / numOfItemsPerPage)
+        }
         for (i in 0 until numOfPages) {
-            val menuPage = MenuPage(
-                context,
-                menuItems.filter { it.page == i },
-                i,
-                numOfPages - 1,
-                ::onMenuPageChanged
-            )
-            menuPages.add(menuPage)
+            val hierarchyItems = menuItems.filter { it.isMenuHierarchyManipulator }
+            val items = itemsLessHierarchy.filter { it.page == i } + hierarchyItems
+            val containsNonHierarchyItems = items.any { !it.isMenuHierarchyManipulator }
+            if (containsNonHierarchyItems) {
+                menuPages.add(MenuPage(context, items, i, numOfPages - 1) {
+                    onMenuPageChanged(it)
+                })
+            } else {
+                numOfPages--
+                break
+            }
         }
     }
 
