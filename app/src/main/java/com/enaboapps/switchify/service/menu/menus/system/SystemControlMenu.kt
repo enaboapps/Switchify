@@ -34,7 +34,7 @@ class SystemControlMenu(
                 MenuItem("Power Dialog", action = {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG)
                 }),
-                MenuItem("Volume Control", isMenuNavItem = true, action = {
+                MenuItem("Volume Control", isLinkToMenu = true, action = {
                     MenuManager.getInstance().openVolumeControlMenu()
                 })
             )
