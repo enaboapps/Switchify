@@ -23,6 +23,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     private val TAG = "CursorManager"
 
     private val cursorLineThickness = 10
+    private val cursorLineMovement = (cursorLineThickness * 4)
 
     private val preferenceManager: PreferenceManager = PreferenceManager(context)
 
@@ -333,7 +334,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
             when (direction) {
                 ScanDirection.LEFT ->
                     if (x > quadrantInfo?.start!!) {
-                        x -= cursorLineThickness * 2
+                        x -= cursorLineMovement
                         updateXCursorLine()
                     } else {
                         direction = ScanDirection.RIGHT
@@ -342,7 +343,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
 
                 ScanDirection.RIGHT ->
                     if (x < quadrantInfo?.end!!) {
-                        x += cursorLineThickness * 2
+                        x += cursorLineMovement
                         updateXCursorLine()
                     } else {
                         direction = ScanDirection.LEFT
@@ -351,7 +352,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
 
                 ScanDirection.UP ->
                     if (y > quadrantInfo?.start!!) {
-                        y -= cursorLineThickness * 2
+                        y -= cursorLineMovement
                         updateYCursorLine()
                     } else {
                         direction = ScanDirection.DOWN
@@ -360,7 +361,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
 
                 ScanDirection.DOWN ->
                     if (y < quadrantInfo?.end!!) {
-                        y += cursorLineThickness * 2
+                        y += cursorLineMovement
                         updateYCursorLine()
                     } else {
                         direction = ScanDirection.UP
