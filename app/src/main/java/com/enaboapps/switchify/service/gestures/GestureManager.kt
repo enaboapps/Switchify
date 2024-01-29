@@ -5,7 +5,6 @@ import android.accessibilityservice.GestureDescription
 import android.graphics.PointF
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.utils.ScreenUtils
-import java.util.Timer
 
 class GestureManager {
     // singleton
@@ -17,6 +16,9 @@ class GestureManager {
             }
             return instance!!
         }
+
+        const val TAP_DURATION = 100L
+        const val DOUBLE_TAP_INTERVAL = 250L
     }
 
 
@@ -40,22 +42,20 @@ class GestureManager {
     // Function to perform a tap
     fun performTap() {
         try {
-            val path = android.graphics.Path()
-            currentPoint?.let { point ->
-                path.moveTo(point.x, point.y)
-            }
-            val gestureDescription = GestureDescription.Builder()
-                .addStroke(GestureDescription.StrokeDescription(path, 550, 100)).build()
             accessibilityService.let {
+                val path = android.graphics.Path()
+                currentPoint?.let { point ->
+                    val gestureDrawing = GestureDrawing(it!!)
+                    gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt())
+                    path.moveTo(point.x, point.y)
+                }
+                val gestureDescription = GestureDescription.Builder()
+                    .addStroke(GestureDescription.StrokeDescription(path, 0, TAP_DURATION)).build()
                 it?.dispatchGesture(
                     gestureDescription,
                     object : AccessibilityService.GestureResultCallback() {
                         override fun onCompleted(gestureDescription: GestureDescription?) {
                             super.onCompleted(gestureDescription)
-                            val gestureDrawing = GestureDrawing(it)
-                            currentPoint?.let { point ->
-                                gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt())
-                            }
                         }
                     },
                     null
@@ -69,43 +69,25 @@ class GestureManager {
     // Function to perform a double tap
     fun performDoubleTap() {
         try {
-            val path = android.graphics.Path()
-            currentPoint?.let { point ->
-                path.moveTo(point.x, point.y)
-            }
-            val gestureDescription = GestureDescription.Builder()
-                .addStroke(GestureDescription.StrokeDescription(path, 550, 100)).build()
             accessibilityService.let {
+                val path = android.graphics.Path()
+                currentPoint?.let { point ->
+                    val gestureDrawing = GestureDrawing(it!!)
+                    gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt())
+                    path.moveTo(point.x, point.y)
+                }
+                val tap1 = GestureDescription.StrokeDescription(path, 0, TAP_DURATION)
+                val tap2 = GestureDescription.StrokeDescription(path, DOUBLE_TAP_INTERVAL, TAP_DURATION)
+                val gestureDescription = GestureDescription.Builder()
+                    .addStroke(tap1)
+                    .addStroke(tap2)
+                    .build()
                 it?.dispatchGesture(
                     gestureDescription,
                     object : AccessibilityService.GestureResultCallback() {
                         override fun onCompleted(gestureDescription: GestureDescription?) {
                             super.onCompleted(gestureDescription)
-                            val gestureDrawing = GestureDrawing(it)
-                            currentPoint?.let { point ->
-                                gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt())
-                            }
-                            Timer().schedule(object : java.util.TimerTask() {
-                                override fun run() {
-                                    if (gestureDescription != null) {
-                                        it.dispatchGesture(
-                                            gestureDescription,
-                                            object : AccessibilityService.GestureResultCallback() {
-                                                override fun onCompleted(gestureDescription: GestureDescription?) {
-                                                    super.onCompleted(gestureDescription)
-                                                    currentPoint?.let { point ->
-                                                        gestureDrawing.drawCircleAndRemove(
-                                                            point.x.toInt(),
-                                                            point.y.toInt()
-                                                        )
-                                                    }
-                                                }
-                                            },
-                                            null
-                                        )
-                                    }
-                                }
-                            }, 100)
+                            // Log.d(TAG, "onCompleted")
                         }
                     },
                     null
