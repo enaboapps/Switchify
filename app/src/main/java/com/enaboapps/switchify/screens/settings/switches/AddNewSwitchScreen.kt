@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.screens.settings.switches
 
+import android.widget.Toast
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,15 +29,32 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import com.enaboapps.switchify.screens.settings.switches.models.AddNewSwitchScreenModel
+import com.enaboapps.switchify.service.utils.ServiceUtils
 import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
 
 @Composable
 fun AddNewSwitchScreen(navController: NavController) {
-    val addNewSwitchScreenModel = AddNewSwitchScreenModel(LocalContext.current, SwitchEventStore(LocalContext.current))
+    val context = LocalContext.current
+    val switchEventStore = SwitchEventStore(context)
+    val addNewSwitchScreenModel = remember {
+        AddNewSwitchScreenModel(
+            context = context,
+            store = switchEventStore
+        )
+    }
     val verticalScrollState = rememberScrollState()
     val shouldSave by addNewSwitchScreenModel.shouldSave.observeAsState()
+    val serviceUtils = ServiceUtils()
+    val isServiceEnabled = serviceUtils.isAccessibilityServiceEnabled(context)
+    LaunchedEffect(isServiceEnabled) {
+        // If the service is enabled, show a warning and pop back to the previous screen
+        if (isServiceEnabled) {
+            Toast.makeText(context, "Please disable the Switchify service before adding a new switch", Toast.LENGTH_LONG).show()
+            navController.popBackStack()
+        }
+    }
     Scaffold(
         topBar = {
             NavBar(title = "Add New Switch", navController = navController)
