@@ -25,6 +25,9 @@ class GestureManager {
 
         // This is the tap and hold duration
         const val TAP_AND_HOLD_DURATION = 1000L
+
+        // This is the duration of the swipe
+        const val SWIPE_DURATION = 80L
     }
 
 
@@ -230,7 +233,7 @@ class GestureManager {
                         }
                     }
                     val gestureDescription = GestureDescription.Builder()
-                        .addStroke(GestureDescription.StrokeDescription(path, 550, 100)).build()
+                        .addStroke(GestureDescription.StrokeDescription(path, 0, SWIPE_DURATION)).build()
                     accessibilityService.dispatchGesture(
                         gestureDescription,
                         object : AccessibilityService.GestureResultCallback() {
