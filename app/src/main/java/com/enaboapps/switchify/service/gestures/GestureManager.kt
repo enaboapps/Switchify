@@ -17,8 +17,14 @@ class GestureManager {
             return instance!!
         }
 
+        // This is the duration of the tap
         const val TAP_DURATION = 100L
+
+        // This is the interval between the two taps
         const val DOUBLE_TAP_INTERVAL = 250L
+
+        // This is the tap and hold duration
+        const val TAP_AND_HOLD_DURATION = 1000L
     }
 
 
@@ -46,7 +52,7 @@ class GestureManager {
                 val path = android.graphics.Path()
                 currentPoint?.let { point ->
                     val gestureDrawing = GestureDrawing(it!!)
-                    gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt())
+                    gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt(), TAP_DURATION)
                     path.moveTo(point.x, point.y)
                 }
                 val gestureDescription = GestureDescription.Builder()
@@ -73,7 +79,7 @@ class GestureManager {
                 val path = android.graphics.Path()
                 currentPoint?.let { point ->
                     val gestureDrawing = GestureDrawing(it!!)
-                    gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt())
+                    gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt(), TAP_DURATION)
                     path.moveTo(point.x, point.y)
                 }
                 val tap1 = GestureDescription.StrokeDescription(path, 0, TAP_DURATION)
@@ -95,6 +101,34 @@ class GestureManager {
             }
         } catch (e: Exception) {
             // Log.e(TAG, "onDoubleTap: ", e)
+        }
+    }
+
+    // Function to perform a tap and hold
+    fun performTapAndHold() {
+        try {
+            accessibilityService.let {
+                val path = android.graphics.Path()
+                currentPoint?.let { point ->
+                    val gestureDrawing = GestureDrawing(it!!)
+                    gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt(), TAP_AND_HOLD_DURATION)
+                    path.moveTo(point.x, point.y)
+                }
+                val gestureDescription = GestureDescription.Builder()
+                    .addStroke(GestureDescription.StrokeDescription(path, 0, TAP_AND_HOLD_DURATION)).build()
+                it?.dispatchGesture(
+                    gestureDescription,
+                    object : AccessibilityService.GestureResultCallback() {
+                        override fun onCompleted(gestureDescription: GestureDescription?) {
+                            super.onCompleted(gestureDescription)
+                            // Log.d(TAG, "onCompleted")
+                        }
+                    },
+                    null
+                )
+            }
+        } catch (e: Exception) {
+            // Log.e(TAG, "onTapAndHold: ", e)
         }
     }
 

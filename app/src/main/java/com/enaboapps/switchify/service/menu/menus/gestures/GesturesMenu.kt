@@ -11,10 +11,10 @@ class GesturesMenu(accessibilityService: SwitchifyAccessibilityService) : BaseMe
     companion object {
         private fun buildGesturesMenuItems(accessibilityService: SwitchifyAccessibilityService): List<MenuItem> {
             return listOf(
-                MenuItem("Tap", isLinkToMenu = true, action = {
+                MenuItem("Tap Gestures", isLinkToMenu = true, action = {
                     MenuManager.getInstance().openTapMenu()
                 }),
-                MenuItem("Swipe", isLinkToMenu = true, action = {
+                MenuItem("Swipe Gestures", isLinkToMenu = true, action = {
                     MenuManager.getInstance().openSwipeMenu()
                 })
             )
