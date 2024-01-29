@@ -17,10 +17,11 @@ class GestureDrawing(private val context: Context) {
         context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
 
-    // Function to draw a circle at x, y and remove after half TAP_DURATION - 20
+    // Function to draw a circle at x, y and remove after a specified time
     fun drawCircleAndRemove(
         x: Int,
         y: Int,
+        time: Long,
     ) {
         val circleSize = 40
 
@@ -50,7 +51,7 @@ class GestureDrawing(private val context: Context) {
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
             windowManager.removeView(circle)
-        }, GestureManager.TAP_DURATION - 20)
+        }, time)
     }
 
     // Function to draw a line from x1, y1 to x2, y2 and remove after half a second

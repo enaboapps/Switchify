@@ -16,6 +16,9 @@ class TapGesturesMenu(accessibilityService: SwitchifyAccessibilityService) : Bas
                 }),
                 MenuItem("Double Tap", action = {
                     GestureManager.getInstance().performDoubleTap()
+                }),
+                MenuItem("Tap and Hold", action = {
+                    GestureManager.getInstance().performTapAndHold()
                 })
             )
         }
