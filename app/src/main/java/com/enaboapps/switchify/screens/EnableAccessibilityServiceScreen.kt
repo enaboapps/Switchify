@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.utils.ServiceUtils
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
@@ -40,8 +41,9 @@ fun EnableAccessibilityServiceScreen(navController: NavController) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 20.dp)
             )
+            val disclosure = context.resources.getString(R.string.accessibility_service_disclosure)
             Text(
-                text = "This allows you to use your device without touching the screen.",
+                text = disclosure,
                 modifier = Modifier.padding(bottom = 20.dp)
             )
             FullWidthButton(text = "Take Me There", onClick = {
