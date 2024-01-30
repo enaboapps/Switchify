@@ -45,7 +45,7 @@ class GestureManager {
 
     fun setup(accessibilityService: SwitchifyAccessibilityService) {
         this.accessibilityService = accessibilityService
-        swipeLockManager = SwipeLockManager(accessibilityService)
+        swipeLockManager = SwipeLockManager()
     }
 
     // Function to perform a tap

@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.RelativeLayout
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
+import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanMode
@@ -52,12 +53,12 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     // Handler to update the UI
     private val uiHandler = Handler(Looper.getMainLooper())
 
-    private var cursorHUD: CursorHUD? = null
+    private var switchifyAccessibilityWindow: SwitchifyAccessibilityWindow? = null
 
 
     fun setup() {
-        cursorHUD = CursorHUD(context)
-        cursorHUD?.show()
+        switchifyAccessibilityWindow = SwitchifyAccessibilityWindow(context)
+        switchifyAccessibilityWindow?.show()
     }
 
 
@@ -76,7 +77,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
             yQuadrant?.alpha = 0.5f
             val width = ScreenUtils.getWidth(context)
             val height = ScreenUtils.getHeight(context) / 4
-            cursorHUD?.addView(yQuadrant!!, 0, y, width, height)
+            switchifyAccessibilityWindow?.addView(yQuadrant!!, 0, y, width, height)
             setQuadrantInfo(0, y, y + height)
         }
     }
@@ -85,7 +86,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
         yQuadrant?.let {
             uiHandler.post {
                 y = quadrantIndex * ScreenUtils.getHeight(context) / 4
-                cursorHUD?.updateViewLayout(it, 0, y)
+                switchifyAccessibilityWindow?.updateViewLayout(it, 0, y)
                 setQuadrantInfo(quadrantIndex, y, y + ScreenUtils.getHeight(context) / 4)
             }
         }
@@ -99,7 +100,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
             xQuadrant?.alpha = 0.5f
             val width = ScreenUtils.getWidth(context) / 4
             val height = ScreenUtils.getHeight(context)
-            cursorHUD?.addView(xQuadrant!!, x, y, width, height)
+            switchifyAccessibilityWindow?.addView(xQuadrant!!, x, y, width, height)
             setQuadrantInfo(0, x, x + width)
         }
     }
@@ -108,7 +109,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
         xQuadrant?.let {
             uiHandler.post {
                 x = quadrantIndex * ScreenUtils.getWidth(context) / 4
-                cursorHUD?.updateViewLayout(it, x, y)
+                switchifyAccessibilityWindow?.updateViewLayout(it, x, y)
                 setQuadrantInfo(quadrantIndex, x, x + ScreenUtils.getWidth(context) / 4)
             }
         }
@@ -122,13 +123,13 @@ class CursorManager(private val context: Context) : ScanStateInterface {
             yCursorLine?.setBackgroundColor(Color.RED)
             val width = ScreenUtils.getWidth(context)
             val height = cursorLineThickness
-            quadrantInfo?.start?.let { cursorHUD?.addView(yCursorLine!!, 0, it, width, height) }
+            quadrantInfo?.start?.let { switchifyAccessibilityWindow?.addView(yCursorLine!!, 0, it, width, height) }
         }
     }
 
     private fun updateYCursorLine() {
         yCursorLine?.let {
-            cursorHUD?.updateViewLayout(it, 0, y)
+            switchifyAccessibilityWindow?.updateViewLayout(it, 0, y)
         }
     }
 
@@ -139,13 +140,13 @@ class CursorManager(private val context: Context) : ScanStateInterface {
             xCursorLine?.setBackgroundColor(Color.RED)
             val width = cursorLineThickness
             val height = ScreenUtils.getHeight(context)
-            quadrantInfo?.start?.let { cursorHUD?.addView(xCursorLine!!, it, y, width, height) }
+            quadrantInfo?.start?.let { switchifyAccessibilityWindow?.addView(xCursorLine!!, it, y, width, height) }
         }
     }
 
     private fun updateXCursorLine() {
         xCursorLine?.let {
-            cursorHUD?.updateViewLayout(it, x, y)
+            switchifyAccessibilityWindow?.updateViewLayout(it, x, y)
         }
     }
 
@@ -404,10 +405,10 @@ class CursorManager(private val context: Context) : ScanStateInterface {
 
     private fun resetQuadrants() {
         xQuadrant?.let {
-            cursorHUD?.removeView(it)
+            switchifyAccessibilityWindow?.removeView(it)
         }
         yQuadrant?.let {
-            cursorHUD?.removeView(it)
+            switchifyAccessibilityWindow?.removeView(it)
         }
         xQuadrant = null
         yQuadrant = null
@@ -415,10 +416,10 @@ class CursorManager(private val context: Context) : ScanStateInterface {
 
     private fun resetCursorLines() {
         xCursorLine?.let {
-            cursorHUD?.removeView(it)
+            switchifyAccessibilityWindow?.removeView(it)
         }
         yCursorLine?.let {
-            cursorHUD?.removeView(it)
+            switchifyAccessibilityWindow?.removeView(it)
         }
         xCursorLine = null
         yCursorLine = null
