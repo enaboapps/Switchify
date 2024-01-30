@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.cursor
+package com.enaboapps.switchify.service.window
 
 import android.content.Context
 import android.graphics.PixelFormat
@@ -6,9 +6,9 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.RelativeLayout
 
-class CursorHUD(context: Context) {
+class SwitchifyAccessibilityWindow(private val context: Context) {
 
-    private val TAG = "SwitchifyHUD"
+    private val TAG = "SwitchifyAccessibilityWindow"
 
     private var windowManager: WindowManager? = null
     private var baseLayout: RelativeLayout? = null
@@ -16,6 +16,12 @@ class CursorHUD(context: Context) {
     init {
         windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         baseLayout = RelativeLayout(context)
+
+        ServiceMessageHUD.instance.setup(this)
+    }
+
+    fun getContext(): Context {
+        return context
     }
 
     fun show() {

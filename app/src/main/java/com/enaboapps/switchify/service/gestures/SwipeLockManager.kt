@@ -1,19 +1,24 @@
 package com.enaboapps.switchify.service.gestures
 
-import android.content.Context
-import android.widget.Toast
+import com.enaboapps.switchify.service.window.ServiceMessageHUD
 
-class SwipeLockManager(private val context: Context) {
+class SwipeLockManager {
     var isLocked = false
     var swipeLockDirection: GestureManager.SwipeDirection? = null
 
-    // Function to lock/unlock the swipe lock, showing a toast message to the user
+    // Function to lock/unlock the swipe lock, showing a message to the user
     fun toggleSwipeLock() {
         isLocked = !isLocked
         if (isLocked) {
-            Toast.makeText(context, "Swipe lock enabled. Choose a direction. Hold a switch to disable.", Toast.LENGTH_LONG).show()
+            ServiceMessageHUD.instance.showMessage(
+                "Entered swipe lock. Choose a direction and your switch will swipe when pressed. Press and hold to exit swipe lock.",
+                ServiceMessageHUD.MessageType.DISAPPEARING
+            )
         } else {
-            Toast.makeText(context, "Swipe lock disabled.", Toast.LENGTH_SHORT).show()
+            ServiceMessageHUD.instance.showMessage(
+                "Exited swipe lock.",
+                ServiceMessageHUD.MessageType.DISAPPEARING
+            )
             swipeLockDirection = null
         }
     }
