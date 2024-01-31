@@ -5,6 +5,8 @@ import android.accessibilityservice.GestureDescription
 import android.graphics.PointF
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.utils.ScreenUtils
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class GestureManager {
     // singleton
@@ -47,6 +49,24 @@ class GestureManager {
         this.accessibilityService = accessibilityService
         swipeLockManager = SwipeLockManager()
     }
+
+
+    // Function to check if point is close to the center of the screen (within 400 pixels)
+    fun isPointCloseToCenter(): Boolean {
+        val point = currentPoint ?: return false
+        accessibilityService?.let {
+            val width = ScreenUtils.getWidth(it)
+            val height = ScreenUtils.getHeight(it)
+            val centerX = width / 2
+            val centerY = height / 2
+            val distance = sqrt(
+                (point.x - centerX).toDouble().pow(2.0) + (point.y - centerY).toDouble().pow(2.0)
+            )
+            return distance <= 400
+        }
+        return false
+    }
+
 
     // Function to perform a tap
     fun performTap() {
