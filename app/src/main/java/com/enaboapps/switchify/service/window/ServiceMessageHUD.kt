@@ -18,7 +18,7 @@ class ServiceMessageHUD {
         }
     }
 
-    private var switchifyAccessibilityWindow: SwitchifyAccessibilityWindow? = null
+    private var switchifyAccessibilityWindow: SwitchifyAccessibilityWindow = SwitchifyAccessibilityWindow.instance
 
     private var message = ""
     private var shownMessageType: MessageType? = null
@@ -33,13 +33,8 @@ class ServiceMessageHUD {
     }
 
 
-    fun setup(switchifyAccessibilityWindow: SwitchifyAccessibilityWindow) {
-        this.switchifyAccessibilityWindow = switchifyAccessibilityWindow
-    }
-
-
     private fun createMessageView() {
-        messageView = LinearLayout(switchifyAccessibilityWindow?.getContext())
+        messageView = LinearLayout(switchifyAccessibilityWindow.getContext())
         messageView?.orientation = LinearLayout.VERTICAL
         messageView?.gravity = Gravity.CENTER
         messageView?.setBackgroundColor(Color.parseColor("#CC000000"))
@@ -49,7 +44,7 @@ class ServiceMessageHUD {
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
 
-        val messageTextView = TextView(switchifyAccessibilityWindow?.getContext())
+        val messageTextView = TextView(switchifyAccessibilityWindow.getContext())
         messageTextView.text = message
         messageTextView.setTextColor(Color.WHITE)
         messageTextView.textSize = 20f
@@ -77,11 +72,11 @@ class ServiceMessageHUD {
         createMessageView()
 
         // Bottom of screen
-        val y = ScreenUtils.getHeight(switchifyAccessibilityWindow?.getContext()!!) - 300
+        val y = ScreenUtils.getHeight(switchifyAccessibilityWindow.getContext()!!) - 300
 
         handler.post {
             if (messageView != null) {
-                switchifyAccessibilityWindow?.addView(
+                switchifyAccessibilityWindow.addView(
                     messageView!!,
                     0,
                     y,
@@ -103,7 +98,7 @@ class ServiceMessageHUD {
     fun hideMessage() {
         if (messageView != null) {
             handler.post {
-                switchifyAccessibilityWindow?.removeView(messageView!!)
+                switchifyAccessibilityWindow.removeView(messageView!!)
                 messageView = null
                 shownMessageType = null
             }

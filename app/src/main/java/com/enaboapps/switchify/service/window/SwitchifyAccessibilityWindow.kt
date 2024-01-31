@@ -6,21 +6,29 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.RelativeLayout
 
-class SwitchifyAccessibilityWindow(private val context: Context) {
+class SwitchifyAccessibilityWindow {
 
     private val TAG = "SwitchifyAccessibilityWindow"
 
+
+    private var context: Context? = null
     private var windowManager: WindowManager? = null
     private var baseLayout: RelativeLayout? = null
 
-    init {
-        windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        baseLayout = RelativeLayout(context)
 
-        ServiceMessageHUD.instance.setup(this)
+    companion object {
+        val instance: SwitchifyAccessibilityWindow by lazy {
+            SwitchifyAccessibilityWindow()
+        }
     }
 
-    fun getContext(): Context {
+
+    fun setup(context: Context) {
+        windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        baseLayout = RelativeLayout(context)
+    }
+
+    fun getContext(): Context? {
         return context
     }
 
@@ -37,10 +45,21 @@ class SwitchifyAccessibilityWindow(private val context: Context) {
         windowManager?.addView(baseLayout, params)
     }
 
+    // This function adds a view to the window with the given x, y, width, and height
     fun addView(view: ViewGroup, x: Int, y: Int, width: Int, height: Int) {
         val params = RelativeLayout.LayoutParams(width, height)
         params.leftMargin = x
         params.topMargin = y
+        baseLayout?.addView(view, params)
+    }
+
+    // This function adds a view to the center of the window
+    fun addViewToCenter(view: ViewGroup) {
+        val params = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.WRAP_CONTENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT
+        )
+        params.addRule(RelativeLayout.CENTER_IN_PARENT)
         baseLayout?.addView(view, params)
     }
 
@@ -52,6 +71,10 @@ class SwitchifyAccessibilityWindow(private val context: Context) {
     }
 
     fun removeView(view: ViewGroup) {
-        baseLayout?.removeView(view)
+        try {
+            baseLayout?.removeView(view)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

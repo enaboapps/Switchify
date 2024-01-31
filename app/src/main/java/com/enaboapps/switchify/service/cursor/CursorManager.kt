@@ -57,7 +57,8 @@ class CursorManager(private val context: Context) : ScanStateInterface {
 
 
     fun setup() {
-        switchifyAccessibilityWindow = SwitchifyAccessibilityWindow(context)
+        switchifyAccessibilityWindow = SwitchifyAccessibilityWindow.instance
+        switchifyAccessibilityWindow?.setup(context)
         switchifyAccessibilityWindow?.show()
     }
 
