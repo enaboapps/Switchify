@@ -11,7 +11,6 @@ class SwitchifyAccessibilityWindow {
     private val TAG = "SwitchifyAccessibilityWindow"
 
 
-    private var context: Context? = null
     private var windowManager: WindowManager? = null
     private var baseLayout: RelativeLayout? = null
 
@@ -26,10 +25,7 @@ class SwitchifyAccessibilityWindow {
     fun setup(context: Context) {
         windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         baseLayout = RelativeLayout(context)
-    }
-
-    fun getContext(): Context? {
-        return context
+        ServiceMessageHUD.instance.setup(context)
     }
 
     fun show() {

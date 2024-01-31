@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.window
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
@@ -18,6 +19,8 @@ class ServiceMessageHUD {
         }
     }
 
+    private var context: Context? = null
+
     private var switchifyAccessibilityWindow: SwitchifyAccessibilityWindow = SwitchifyAccessibilityWindow.instance
 
     private var message = ""
@@ -27,6 +30,10 @@ class ServiceMessageHUD {
 
     private val handler = Handler(Looper.getMainLooper())
 
+    fun setup(context: Context) {
+        this.context = context
+    }
+
     enum class MessageType {
         DISAPPEARING,
         PERMANENT
@@ -34,22 +41,24 @@ class ServiceMessageHUD {
 
 
     private fun createMessageView() {
-        messageView = LinearLayout(switchifyAccessibilityWindow.getContext())
-        messageView?.orientation = LinearLayout.VERTICAL
-        messageView?.gravity = Gravity.CENTER
-        messageView?.setBackgroundColor(Color.parseColor("#CC000000"))
-        messageView?.setPadding(16, 16, 16, 16)
-        messageView?.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
+        context?.let {
+            messageView = LinearLayout(it)
+            messageView?.orientation = LinearLayout.VERTICAL
+            messageView?.gravity = Gravity.CENTER
+            messageView?.setBackgroundColor(Color.parseColor("#CC000000"))
+            messageView?.setPadding(16, 16, 16, 16)
+            messageView?.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
 
-        val messageTextView = TextView(switchifyAccessibilityWindow.getContext())
-        messageTextView.text = message
-        messageTextView.setTextColor(Color.WHITE)
-        messageTextView.textSize = 20f
+            val messageTextView = TextView(it)
+            messageTextView.text = message
+            messageTextView.setTextColor(Color.WHITE)
+            messageTextView.textSize = 20f
 
-        messageView?.addView(messageTextView)
+            messageView?.addView(messageTextView)
+        }
     }
 
 
@@ -72,7 +81,7 @@ class ServiceMessageHUD {
         createMessageView()
 
         // Bottom of screen
-        val y = ScreenUtils.getHeight(switchifyAccessibilityWindow.getContext()!!) - 300
+        val y = ScreenUtils.getHeight(context!!) - 300
 
         handler.post {
             if (messageView != null) {
