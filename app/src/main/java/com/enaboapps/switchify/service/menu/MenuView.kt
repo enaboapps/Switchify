@@ -2,7 +2,6 @@ package com.enaboapps.switchify.service.menu
 
 import android.content.Context
 import android.util.Log
-import android.view.WindowManager
 import android.widget.LinearLayout
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.scanning.ScanDirection
@@ -10,6 +9,7 @@ import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.service.scanning.ScanState
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningManager
+import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import java.util.Timer
 import java.util.TimerTask
 
@@ -24,7 +24,7 @@ class MenuView(
 
     var menuViewListener: MenuViewListener? = null
 
-    private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    private val switchifyAccessibilityWindow: SwitchifyAccessibilityWindow = SwitchifyAccessibilityWindow.instance
 
     private var linearLayout = LinearLayout(context)
 
@@ -98,14 +98,8 @@ class MenuView(
         linearLayout.setBackgroundColor(context.resources.getColor(android.R.color.darker_gray, null))
     }
 
-    private fun addToWindowManager() {
-        windowManager.addView(linearLayout, WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            0
-        ))
+    private fun addToWindow() {
+        switchifyAccessibilityWindow.addViewToCenter(linearLayout)
     }
 
 
@@ -115,8 +109,8 @@ class MenuView(
         createLinearLayout()
         // Inflate the menu
         inflateMenu()
-        // Add to the WindowManager
-        addToWindowManager()
+        // Add to the window
+        addToWindow()
         // Reset the menu
         reset()
         // Set the menu state
@@ -141,13 +135,9 @@ class MenuView(
     fun close() {
         // Stop scanning
         stopScanning()
-        // Remove the LinearLayout from the WindowManager
-        try {
-            linearLayout.removeAllViews()
-            windowManager.removeView(linearLayout)
-        } catch (e: Exception) {
-            Log.e("MenuView", "Error removing menu view", e)
-        }
+        // Remove the LinearLayout from the window
+        linearLayout.removeAllViews()
+        switchifyAccessibilityWindow.removeView(linearLayout)
         // Call the listener
         menuViewListener?.onMenuViewClosed()
     }
