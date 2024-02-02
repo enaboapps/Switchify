@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.graphics.PointF
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
+import com.enaboapps.switchify.service.gestures.visuals.GestureDrawing
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -199,11 +200,12 @@ class GestureManager {
                                 point.y - fifthOfScreen
                             )
                             path.lineTo(point.x, travel)
-                            gestureDrawing.drawLineAndRemove(
+                            gestureDrawing.drawLineAndArrowAndRemove(
                                 point.x.toInt(),
                                 point.y.toInt(),
                                 point.x.toInt(),
-                                travel.toInt()
+                                travel.toInt(),
+                                500
                             )
                         }
 
@@ -214,11 +216,12 @@ class GestureManager {
                                 point.y + fifthOfScreen
                             )
                             path.lineTo(point.x, travel)
-                            gestureDrawing.drawLineAndRemove(
+                            gestureDrawing.drawLineAndArrowAndRemove(
                                 point.x.toInt(),
                                 point.y.toInt(),
                                 point.x.toInt(),
-                                travel.toInt()
+                                travel.toInt(),
+                                500
                             )
                         }
 
@@ -229,11 +232,12 @@ class GestureManager {
                                 point.x - quarterOfScreen
                             )
                             path.lineTo(travel, point.y)
-                            gestureDrawing.drawLineAndRemove(
+                            gestureDrawing.drawLineAndArrowAndRemove(
                                 point.x.toInt(),
                                 point.y.toInt(),
                                 travel.toInt(),
-                                point.y.toInt()
+                                point.y.toInt(),
+                                500
                             )
                         }
 
@@ -244,11 +248,12 @@ class GestureManager {
                                 point.x + quarterOfScreen
                             )
                             path.lineTo(travel, point.y)
-                            gestureDrawing.drawLineAndRemove(
+                            gestureDrawing.drawLineAndArrowAndRemove(
                                 point.x.toInt(),
                                 point.y.toInt(),
                                 travel.toInt(),
-                                point.y.toInt()
+                                point.y.toInt(),
+                                500
                             )
                         }
                     }
