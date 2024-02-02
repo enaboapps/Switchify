@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.gestures
+package com.enaboapps.switchify.service.gestures.visuals
 
 import android.content.Context
 import android.graphics.Color
@@ -47,46 +47,43 @@ class GestureDrawing(private val context: Context) {
             WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         windowManager.addView(circle, layoutParams)
 
-        // Remove the circle after half a second
+        // Remove the circle after the specified time
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
             windowManager.removeView(circle)
         }, time)
     }
 
-    // Function to draw a line from x1, y1 to x2, y2 and remove after half a second
-    fun drawLineAndRemove(
+    // Function to draw a line from x1, y1 to x2, y2
+    // and add an arrow at the end of the line
+    // and remove the line after a specified time
+    fun drawLineAndArrowAndRemove(
         x1: Int,
         y1: Int,
         x2: Int,
         y2: Int,
+        time: Long,
     ) {
-        val gradientDrawable = GradientDrawable()
-        gradientDrawable.shape = GradientDrawable.RECTANGLE
-        gradientDrawable.setColor(Color.RED)
-
-        val requiredHeightOrWidth = 40
-
-        val line = ImageView(context)
-        line.setImageDrawable(gradientDrawable)
+        val gestureIndicatorView = GestureIndicatorView(context)
+        gestureIndicatorView.setGesture(x1.toFloat(), y1.toFloat(), x2.toFloat(), y2.toFloat())
 
         val layoutParams = WindowManager.LayoutParams()
-        layoutParams.x = if (x1 < x2) x1 else x2
-        layoutParams.y = if (y1 < y2) y1 else y2
-        layoutParams.width = if (x1 == x2) requiredHeightOrWidth else abs(x1 - x2)
-        layoutParams.height = if (y1 == y2) requiredHeightOrWidth else abs(y1 - y2)
+        layoutParams.x = 0
+        layoutParams.y = 0
+        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT
+        layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT
         layoutParams.type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
         layoutParams.gravity = Gravity.TOP or Gravity.START
         layoutParams.format = PixelFormat.TRANSPARENT
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-        layoutParams.layoutInDisplayCutoutMode =
-            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-        windowManager.addView(line, layoutParams)
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        layoutParams.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        windowManager.addView(gestureIndicatorView, layoutParams)
 
-        // Remove the line after half a second
+        // Remove the line after the specified time
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
-            windowManager.removeView(line)
-        }, 500)
+            windowManager.removeView(gestureIndicatorView)
+        }, time)
     }
 }
