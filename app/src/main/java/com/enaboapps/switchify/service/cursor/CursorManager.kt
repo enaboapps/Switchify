@@ -543,7 +543,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     private fun performFinalAction() {
         // get the point
         val point = PointF(x.toFloat(), y.toFloat())
-        GestureManager.getInstance().currentPoint = point
+        CursorPoint.instance.point = point
 
         // check if drag is enabled, if so, select the end point
         if (GestureManager.getInstance().isDragging()) {
