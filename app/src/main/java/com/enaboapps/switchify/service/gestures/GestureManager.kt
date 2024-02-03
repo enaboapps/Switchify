@@ -6,6 +6,7 @@ import android.graphics.PointF
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.gestures.visuals.GestureDrawing
 import com.enaboapps.switchify.service.utils.ScreenUtils
+import com.enaboapps.switchify.service.window.ServiceMessageHUD
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -31,11 +32,19 @@ class GestureManager {
 
         // This is the duration of the swipe
         const val SWIPE_DURATION = 80L
+
+        // This is the duration of the drag
+        const val DRAG_DURATION = 1500L
     }
 
 
     // Variable to keep track of the current point
     var currentPoint: PointF? = null
+
+
+    // Drag variables
+    private var dragStartPoint: PointF? = null
+    private var isDragging = false
 
 
     // swipe lock manager
@@ -274,6 +283,60 @@ class GestureManager {
         } catch (e: Exception) {
             // Log.e(TAG, "onSwipe: ", e)
         }
+    }
+
+    // Function to start dragging
+    fun startDragGesture() {
+        dragStartPoint = currentPoint
+        isDragging = true
+
+        ServiceMessageHUD.instance.showMessage("Select where to drag to", ServiceMessageHUD.MessageType.DISAPPEARING)
+    }
+
+    // Function to stop dragging
+    fun selectEndOfDrag() {
+        isDragging = false
+
+        // If the drag start point is null, return
+        if (dragStartPoint == null) {
+            return
+        }
+
+        // Dispatch the drag gesture
+        val path = android.graphics.Path()
+        currentPoint?.let { point ->
+            path.moveTo(dragStartPoint!!.x, dragStartPoint!!.y)
+            path.lineTo(point.x, point.y)
+            accessibilityService?.let { accessibilityService ->
+                val gestureDrawing = GestureDrawing(accessibilityService)
+                gestureDrawing.drawLineAndArrowAndRemove(
+                    dragStartPoint!!.x.toInt(),
+                    dragStartPoint!!.y.toInt(),
+                    point.x.toInt(),
+                    point.y.toInt(),
+                    500
+                )
+                val gestureDescription = GestureDescription.Builder()
+                    .addStroke(GestureDescription.StrokeDescription(path, 0, DRAG_DURATION)).build()
+                accessibilityService.dispatchGesture(
+                    gestureDescription,
+                    object : AccessibilityService.GestureResultCallback() {
+                        override fun onCompleted(gestureDescription: GestureDescription?) {
+                            super.onCompleted(gestureDescription)
+                            // Log.d(TAG, "onCompleted")
+                        }
+                    },
+                    null
+                )
+            }
+        }
+
+        // Reset the drag start point
+        dragStartPoint = null
+    }
+
+    fun isDragging(): Boolean {
+        return isDragging
     }
 
     // Helper function to figure out if the gesture is going to be out of bounds
