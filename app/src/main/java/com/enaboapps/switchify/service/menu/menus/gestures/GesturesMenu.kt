@@ -16,6 +16,9 @@ class GesturesMenu(accessibilityService: SwitchifyAccessibilityService) : BaseMe
                 }),
                 MenuItem("Swipe Gestures", isLinkToMenu = true, action = {
                     MenuManager.getInstance().openSwipeMenu()
+                }),
+                MenuItem("Drag", action = {
+                    GestureManager.getInstance().startDragGesture()
                 })
             )
         }

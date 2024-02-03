@@ -545,6 +545,13 @@ class CursorManager(private val context: Context) : ScanStateInterface {
         val point = PointF(x.toFloat(), y.toFloat())
         GestureManager.getInstance().currentPoint = point
 
+        // check if drag is enabled, if so, select the end point
+        if (GestureManager.getInstance().isDragging()) {
+            GestureManager.getInstance().selectEndOfDrag()
+            internalReset()
+            return
+        }
+
         // check if auto select is enabled, if so, start the timer
         val auto =
             preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT)
