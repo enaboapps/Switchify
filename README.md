@@ -1,6 +1,9 @@
 # Switchify
 This is an Android app for switch users. It allows full control of the device using a single switch or multiple switches. It is designed to be used with a bluetooth switch interface or a USB switch interface.
 
+## Get the app
+You can download the app from the [Google Play Store](https://play.google.com/store/apps/details?id=com.enaboapps.switchify)
+
 ## Supported Android versions
 - Android 11 (API level 30) and above
 
