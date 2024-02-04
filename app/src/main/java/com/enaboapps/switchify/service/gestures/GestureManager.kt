@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.graphics.PointF
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
+import com.enaboapps.switchify.service.cursor.CursorPoint
 import com.enaboapps.switchify.service.gestures.visuals.GestureDrawing
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import com.enaboapps.switchify.service.window.ServiceMessageHUD
@@ -38,10 +39,6 @@ class GestureManager {
     }
 
 
-    // Variable to keep track of the current point
-    var currentPoint: PointF? = null
-
-
     // Drag variables
     private var dragStartPoint: PointF? = null
     private var isDragging = false
@@ -63,7 +60,7 @@ class GestureManager {
 
     // Function to check if point is close to the center of the screen (within 400 pixels)
     fun isPointCloseToCenter(): Boolean {
-        val point = currentPoint ?: return false
+        val point = CursorPoint.instance.point ?: return false
         accessibilityService?.let {
             val width = ScreenUtils.getWidth(it)
             val height = ScreenUtils.getHeight(it)
@@ -83,6 +80,7 @@ class GestureManager {
         try {
             accessibilityService.let {
                 val path = android.graphics.Path()
+                val currentPoint = CursorPoint.instance.point
                 currentPoint?.let { point ->
                     val gestureDrawing = GestureDrawing(it!!)
                     gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt(), TAP_DURATION)
@@ -110,6 +108,7 @@ class GestureManager {
         try {
             accessibilityService.let {
                 val path = android.graphics.Path()
+                val currentPoint = CursorPoint.instance.point
                 currentPoint?.let { point ->
                     val gestureDrawing = GestureDrawing(it!!)
                     gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt(), TAP_DURATION)
@@ -142,6 +141,7 @@ class GestureManager {
         try {
             accessibilityService.let {
                 val path = android.graphics.Path()
+                val currentPoint = CursorPoint.instance.point
                 currentPoint?.let { point ->
                     val gestureDrawing = GestureDrawing(it!!)
                     gestureDrawing.drawCircleAndRemove(point.x.toInt(), point.y.toInt(), TAP_AND_HOLD_DURATION)
@@ -197,6 +197,7 @@ class GestureManager {
                 swipeLockManager?.swipeLockDirection = direction
             }
             val path = android.graphics.Path()
+            val currentPoint = CursorPoint.instance.point
             currentPoint?.let { point ->
                 path.moveTo(point.x, point.y)
                 accessibilityService?.let { accessibilityService ->
@@ -287,7 +288,7 @@ class GestureManager {
 
     // Function to start dragging
     fun startDragGesture() {
-        dragStartPoint = currentPoint
+        dragStartPoint = CursorPoint.instance.point
         isDragging = true
 
         ServiceMessageHUD.instance.showMessage("Select where to drag to", ServiceMessageHUD.MessageType.DISAPPEARING)
@@ -304,6 +305,7 @@ class GestureManager {
 
         // Dispatch the drag gesture
         val path = android.graphics.Path()
+        val currentPoint = CursorPoint.instance.point
         currentPoint?.let { point ->
             path.moveTo(dragStartPoint!!.x, dragStartPoint!!.y)
             path.lineTo(point.x, point.y)

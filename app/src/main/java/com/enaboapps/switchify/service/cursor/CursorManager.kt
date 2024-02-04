@@ -15,11 +15,10 @@ import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.service.scanning.ScanState
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
-import com.enaboapps.switchify.service.utils.ScreenUtils
 import java.util.Timer
 import java.util.TimerTask
 
-class CursorManager(private val context: Context) : ScanStateInterface {
+class CursorManager(private val context: Context) : ScanStateInterface, CursorPointListener {
 
     private val TAG = "CursorManager"
 
@@ -60,6 +59,19 @@ class CursorManager(private val context: Context) : ScanStateInterface {
         switchifyAccessibilityWindow = SwitchifyAccessibilityWindow.instance
         switchifyAccessibilityWindow?.setup(context)
         switchifyAccessibilityWindow?.show()
+
+        CursorPoint.instance.listener = this
+    }
+
+
+    override fun onCursorPointReselect() {
+        y = 0
+        // find the last quadrant
+        quadrantInfo = CursorPoint.instance.lastXQuadrant
+        x = quadrantInfo?.start!!
+        isInQuadrant = true
+        setupXCursorLine()
+        start()
     }
 
 
@@ -67,18 +79,28 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     // Takes the quadrant index and the start and end points of the quadrant
     private fun setQuadrantInfo(quadrantIndex: Int, start: Int, end: Int) {
         quadrantInfo = QuadrantInfo(quadrantIndex, start, end)
+
+        when (direction) {
+            ScanDirection.LEFT, ScanDirection.RIGHT -> {
+                CursorPoint.instance.lastXQuadrant = quadrantInfo!!
+            }
+            ScanDirection.UP, ScanDirection.DOWN -> {
+                CursorPoint.instance.lastYQuadrant = quadrantInfo!!
+            }
+        }
     }
 
 
     private fun setupYQuadrant() {
         if (yQuadrant == null) {
-            y = 0
+            y = CursorPoint.instance.getRectForScreen(context).top
             yQuadrant = RelativeLayout(context)
             yQuadrant?.setBackgroundColor(Color.RED)
             yQuadrant?.alpha = 0.5f
-            val width = ScreenUtils.getWidth(context)
-            val height = ScreenUtils.getHeight(context) / 4
-            switchifyAccessibilityWindow?.addView(yQuadrant!!, 0, y, width, height)
+            val left = CursorPoint.instance.getRectForScreen(context).left
+            val width = CursorPoint.instance.getRectForScreen(context).width()
+            val height = CursorPoint.instance.getRectForScreen(context).height() / 4
+            switchifyAccessibilityWindow?.addView(yQuadrant!!, left, y, width, height)
             setQuadrantInfo(0, y, y + height)
         }
     }
@@ -86,21 +108,21 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     private fun updateYQuadrant(quadrantIndex: Int) {
         yQuadrant?.let {
             uiHandler.post {
-                y = quadrantIndex * ScreenUtils.getHeight(context) / 4
+                y = quadrantIndex * CursorPoint.instance.getRectForScreen(context).height() / 4
                 switchifyAccessibilityWindow?.updateViewLayout(it, 0, y)
-                setQuadrantInfo(quadrantIndex, y, y + ScreenUtils.getHeight(context) / 4)
+                setQuadrantInfo(quadrantIndex, y, y + CursorPoint.instance.getRectForScreen(context).height() / 4)
             }
         }
     }
 
     private fun setupXQuadrant() {
         if (xQuadrant == null) {
-            x = 0
+            x = CursorPoint.instance.getRectForScreen(context).left
             xQuadrant = RelativeLayout(context)
             xQuadrant?.setBackgroundColor(Color.RED)
             xQuadrant?.alpha = 0.5f
-            val width = ScreenUtils.getWidth(context) / 4
-            val height = ScreenUtils.getHeight(context)
+            val width = CursorPoint.instance.getRectForScreen(context).width() / 4
+            val height = CursorPoint.instance.getRectForScreen(context).height()
             switchifyAccessibilityWindow?.addView(xQuadrant!!, x, y, width, height)
             setQuadrantInfo(0, x, x + width)
         }
@@ -109,9 +131,9 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     private fun updateXQuadrant(quadrantIndex: Int) {
         xQuadrant?.let {
             uiHandler.post {
-                x = quadrantIndex * ScreenUtils.getWidth(context) / 4
+                x = quadrantIndex * CursorPoint.instance.getRectForScreen(context).width() / 4
                 switchifyAccessibilityWindow?.updateViewLayout(it, x, y)
-                setQuadrantInfo(quadrantIndex, x, x + ScreenUtils.getWidth(context) / 4)
+                setQuadrantInfo(quadrantIndex, x, x + CursorPoint.instance.getRectForScreen(context).width() / 4)
             }
         }
     }
@@ -122,7 +144,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
             Log.d(TAG, "setupYCursorLine: $y")
             yCursorLine = RelativeLayout(context)
             yCursorLine?.setBackgroundColor(Color.RED)
-            val width = ScreenUtils.getWidth(context)
+            val width = CursorPoint.instance.getRectForScreen(context).width()
             val height = cursorLineThickness
             quadrantInfo?.start?.let { switchifyAccessibilityWindow?.addView(yCursorLine!!, 0, it, width, height) }
         }
@@ -140,7 +162,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
             xCursorLine = RelativeLayout(context)
             xCursorLine?.setBackgroundColor(Color.RED)
             val width = cursorLineThickness
-            val height = ScreenUtils.getHeight(context)
+            val height = CursorPoint.instance.getRectForScreen(context).height()
             quadrantInfo?.start?.let { switchifyAccessibilityWindow?.addView(xCursorLine!!, it, y, width, height) }
         }
     }
@@ -391,8 +413,8 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     private fun internalReset() {
         stopScanning()
 
-        x = 0
-        y = 0
+        x = CursorPoint.instance.getRectForScreen(context).left
+        y = CursorPoint.instance.getRectForScreen(context).top
 
         direction = ScanDirection.RIGHT
 
@@ -445,11 +467,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
             }
         }
 
-        if (isInQuadrant) {
-            moveCursorLine()
-        } else {
-            moveToNextQuadrant()
-        }
+        move()
     }
 
 
@@ -471,11 +489,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
             }
         }
 
-        if (isInQuadrant) {
-            moveCursorLine()
-        } else {
-            moveToNextQuadrant()
-        }
+        move()
     }
 
 
@@ -543,7 +557,7 @@ class CursorManager(private val context: Context) : ScanStateInterface {
     private fun performFinalAction() {
         // get the point
         val point = PointF(x.toFloat(), y.toFloat())
-        GestureManager.getInstance().currentPoint = point
+        CursorPoint.instance.point = point
 
         // check if drag is enabled, if so, select the end point
         if (GestureManager.getInstance().isDragging()) {

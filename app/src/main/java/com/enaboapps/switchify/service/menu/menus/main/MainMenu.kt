@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.menu.menus.main
 
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
+import com.enaboapps.switchify.service.cursor.CursorPoint
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
@@ -16,6 +17,9 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) : BaseMenu(a
                 }),
                 MenuItem("Gestures", isLinkToMenu = true, action = {
                     MenuManager.getInstance().openGesturesMenu()
+                }),
+                MenuItem("Refine Selection", action = {
+                    CursorPoint.instance.setReselect(true)
                 }),
                 MenuItem("System Control", isLinkToMenu = true, action = {
                     MenuManager.getInstance().openSystemControlMenu()
