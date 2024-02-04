@@ -12,7 +12,7 @@ android {
         applicationId "com.enaboapps.switchify"
         minSdk 30
         targetSdk 34
-        versionCode 6
+        versionCode gitVersionCode()
         versionName "0.5.0-alpha"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -46,6 +46,22 @@ android {
         }
     }
     namespace 'com.enaboapps.switchify'
+}
+
+
+// Function to get the version code from the number of commits
+def gitVersionCode() {
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-list', '--count', 'HEAD'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim().toInteger()
+    } catch (Exception e) {
+        // Fallback in case the git command fails or is not available
+        return 1
+    }
 }
 
 dependencies {
