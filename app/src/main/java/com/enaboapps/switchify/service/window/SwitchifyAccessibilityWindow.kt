@@ -63,7 +63,11 @@ class SwitchifyAccessibilityWindow {
         val params = view.layoutParams as RelativeLayout.LayoutParams
         params.leftMargin = x
         params.topMargin = y
-        baseLayout?.updateViewLayout(view, params)
+        try {
+            baseLayout?.updateViewLayout(view, params)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun removeView(view: ViewGroup) {
