@@ -19,6 +19,9 @@ class GesturesMenu(accessibilityService: SwitchifyAccessibilityService) : BaseMe
                 }),
                 MenuItem("Drag", action = {
                     GestureManager.getInstance().startDragGesture()
+                }),
+                MenuItem("Zoom Gestures", isLinkToMenu = true, action = {
+                    MenuManager.getInstance().openZoomGesturesMenu()
                 })
             )
         }
