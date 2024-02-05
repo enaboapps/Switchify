@@ -6,6 +6,7 @@ import com.enaboapps.switchify.service.menu.menus.main.MainMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.SwipeGesturesMenu
 import com.enaboapps.switchify.service.menu.menus.system.SystemControlMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.TapGesturesMenu
+import com.enaboapps.switchify.service.menu.menus.gestures.ZoomGesturesMenu
 import com.enaboapps.switchify.service.menu.menus.system.VolumeControlMenu
 import com.enaboapps.switchify.service.scanning.ScanningManager
 
@@ -71,6 +72,12 @@ class MenuManager {
     fun openSwipeMenu() {
         val swipeGesturesMenu = SwipeGesturesMenu(accessibilityService!!)
         openMenu(swipeGesturesMenu.build())
+    }
+
+    // This function opens the zoom gestures menu
+    fun openZoomGesturesMenu() {
+        val zoomGesturesMenu = ZoomGesturesMenu(accessibilityService!!)
+        openMenu(zoomGesturesMenu.build())
     }
 
     // This function opens a menu
