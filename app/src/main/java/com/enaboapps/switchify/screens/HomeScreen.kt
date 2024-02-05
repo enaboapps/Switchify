@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.enaboapps.switchify.auth.AuthManager
 import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.utils.ServiceUtils
@@ -70,6 +71,38 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
                     )
                 }
             }
+
+            item {
+                AccountCard(navController)
+            }
         }
     }
+}
+
+
+/**
+ * Account card
+ * If the user is logged in, show the account email and on click, go to the account screen
+ * If the user is not logged in, on click, launch the sign in intent
+ */
+@Composable
+fun AccountCard(navController: NavController) {
+    val authManager = AuthManager.instance
+
+    val context = LocalContext.current
+
+    val isUserSignedIn = authManager.isUserSignedIn()
+    val currentUser = authManager.getCurrentUser()
+
+    val title = if (isUserSignedIn) "Account" else "Sign In"
+    val description = if (isUserSignedIn) currentUser?.email ?: "" else "Sign in to access your account."
+
+    UICard(
+        title = title,
+        description = description,
+        onClick = {
+            // TODO: If the user is signed in, go to the account screen
+            // If the user is not signed in, launch the sign in intent
+        }
+    )
 }
