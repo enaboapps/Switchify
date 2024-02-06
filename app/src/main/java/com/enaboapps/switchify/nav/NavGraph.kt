@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.enaboapps.switchify.screens.EnableAccessibilityServiceScreen
 import com.enaboapps.switchify.screens.HomeScreen
+import com.enaboapps.switchify.screens.account.SignInScreen
 import com.enaboapps.switchify.screens.settings.switches.AddNewSwitchScreen
 import com.enaboapps.switchify.screens.settings.SettingsScreen
 import com.enaboapps.switchify.screens.settings.scanning.ScanModeSelectionScreen
@@ -21,6 +22,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(NavigationRoute.Setup.name) {
             SetupScreen(navController)
+        }
+        composable(NavigationRoute.SignIn.name) {
+            SignInScreen(navController)
         }
         composable(NavigationRoute.Settings.name) {
             SettingsScreen(navController)

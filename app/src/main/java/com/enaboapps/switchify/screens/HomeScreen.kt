@@ -101,8 +101,11 @@ fun AccountCard(navController: NavController) {
         title = title,
         description = description,
         onClick = {
-            // TODO: If the user is signed in, go to the account screen
-            // If the user is not signed in, launch the sign in intent
+            if (isUserSignedIn) {
+                //navController.navigate(NavigationRoute.Account.name)
+            } else {
+                navController.navigate(NavigationRoute.SignIn.name)
+            }
         }
     )
 }
