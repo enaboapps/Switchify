@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.auth
 
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
@@ -59,6 +60,28 @@ class AuthManager {
      */
     fun getCurrentUser(): FirebaseUser? {
         return auth.currentUser
+    }
+
+    /**
+     * Update the current user's password.
+     */
+    fun updatePassword(currentPassword: String, newPassword: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        val user = FirebaseAuth.getInstance().currentUser
+        val credential = EmailAuthProvider.getCredential(user!!.email!!, currentPassword)
+
+        user.reauthenticate(credential).addOnCompleteListener { authTask ->
+            if (authTask.isSuccessful) {
+                user.updatePassword(newPassword).addOnCompleteListener { updateTask ->
+                    if (updateTask.isSuccessful) {
+                        onSuccess()
+                    } else {
+                        onFailure(updateTask.exception ?: Exception("Failed to update password"))
+                    }
+                }
+            } else {
+                onFailure(authTask.exception ?: Exception("Re-authentication failed"))
+            }
+        }
     }
 
     /**

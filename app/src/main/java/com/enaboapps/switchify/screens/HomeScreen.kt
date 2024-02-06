@@ -102,7 +102,7 @@ fun AccountCard(navController: NavController) {
         description = description,
         onClick = {
             if (isUserSignedIn) {
-                //navController.navigate(NavigationRoute.Account.name)
+                navController.navigate(NavigationRoute.Account.name)
             } else {
                 navController.navigate(NavigationRoute.SignIn.name)
             }
