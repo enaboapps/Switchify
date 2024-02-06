@@ -13,18 +13,19 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.auth.AuthManager
-import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
 
 @Composable
-fun SignInScreen(navController: NavController) {
+fun SignUpScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val authManager = AuthManager.instance
     val verticalScrollState = rememberScrollState()
 
-    Scaffold(topBar = { NavBar(title = "Sign In", navController = navController) }) { paddingValues ->
+    Scaffold(topBar = { NavBar(title = "Sign Up", navController = navController) }) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -56,35 +57,39 @@ fun SignInScreen(navController: NavController) {
                 label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            TextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = { Text("Confirm Password") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
             )
             Spacer(modifier = Modifier.height(16.dp))
             FullWidthButton(
-                text = "Sign In",
-                onClick = {
-                    AuthManager.instance.signInWithEmailAndPassword(email, password,
-                        onSuccess = {
-                            navController.popBackStack()
-                        },
-                        onFailure = { exception ->
-                            errorMessage = exception.localizedMessage
-                        }
-                    )
-                }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            FullWidthButton(
                 text = "Sign Up",
                 onClick = {
-                    navController.navigate(NavigationRoute.SignUp.name)
+                    errorMessage = when {
+                        !authManager.isPasswordStrong(password) -> "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, and a number."
+                        password != confirmPassword -> "Passwords do not match."
+                        else -> null
+                    }
+                    if (errorMessage == null) {
+                        authManager.createUserWithEmailAndPassword(email, password,
+                            onSuccess = {
+                                // Go to the first screen
+                                navController.popBackStack(navController.graph.startDestinationId, false)
+                            },
+                            onFailure = { exception ->
+                                errorMessage = exception.localizedMessage
+                            }
+                        )
+                    }
                 }
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            TextButton(onClick = {
-
-            }) {
-                Text("Forgot Password?")
-            }
         }
     }
 }

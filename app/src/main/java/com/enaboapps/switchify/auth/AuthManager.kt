@@ -60,4 +60,13 @@ class AuthManager {
     fun getCurrentUser(): FirebaseUser? {
         return auth.currentUser
     }
+
+    /**
+     * Check a password for strength.
+     */
+    fun isPasswordStrong(password: String): Boolean {
+        // eight characters, one uppercase, one lowercase, one number
+        val passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}\$".toRegex()
+        return passwordRegex.matches(password)
+    }
 }
