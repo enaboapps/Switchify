@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.auth.AuthManager
@@ -42,21 +43,29 @@ fun SignInScreen(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
+            // Email TextField with KeyboardOptions for Email
             TextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Email // Helps with autofill support
+                )
             )
             Spacer(modifier = Modifier.height(8.dp))
+            // Password TextField with KeyboardOptions for Password
             TextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Password // Helps with autofill support
+                )
             )
             Spacer(modifier = Modifier.height(16.dp))
             FullWidthButton(

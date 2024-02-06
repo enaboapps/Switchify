@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -49,7 +50,10 @@ fun ChangePasswordScreen(navController: NavController) {
                 label = { Text("Current Password") },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Password
+                ),
                 singleLine = true
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -59,7 +63,10 @@ fun ChangePasswordScreen(navController: NavController) {
                 label = { Text("New Password") },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Password
+                ),
                 singleLine = true
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -69,7 +76,10 @@ fun ChangePasswordScreen(navController: NavController) {
                 label = { Text("Confirm New Password") },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Password
+                ),
                 singleLine = true
             )
             Spacer(modifier = Modifier.height(16.dp))
