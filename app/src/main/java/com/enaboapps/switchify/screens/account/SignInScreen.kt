@@ -81,7 +81,7 @@ fun SignInScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             TextButton(onClick = {
-
+                navController.navigate(NavigationRoute.ForgotPassword.name)
             }) {
                 Text("Forgot Password?")
             }

@@ -62,6 +62,20 @@ class AuthManager {
     }
 
     /**
+     * Send a password reset email.
+     */
+    fun sendPasswordResetEmail(email: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onFailure(task.exception ?: Exception("Unknown error occurred"))
+                }
+            }
+    }
+
+    /**
      * Check a password for strength.
      */
     fun isPasswordStrong(password: String): Boolean {
