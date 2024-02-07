@@ -63,6 +63,13 @@ class AuthManager {
     }
 
     /**
+     * Get the user's ID, if any.
+     */
+    fun getUserId(): String? {
+        return auth.currentUser?.uid
+    }
+
+    /**
      * Update the current user's password.
      */
     fun updatePassword(currentPassword: String, newPassword: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
