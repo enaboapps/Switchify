@@ -1,5 +1,9 @@
 package com.enaboapps.switchify.screens.account
 
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -103,6 +107,18 @@ fun SignUpScreen(navController: NavController) {
                     }
                 }
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            val urlLauncher =
+                rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+                    // Handle the result
+                }
+            val privacyPolicyUrl = "https://www.enaboapps.com/switchify-privacy-policy"
+            TextButton(onClick = {
+                // Open the privacy policy in the system browser
+                urlLauncher.launch(Intent(Intent.ACTION_VIEW, Uri.parse(privacyPolicyUrl)))
+            }) {
+                Text("Privacy Policy")
+            }
         }
     }
 }
