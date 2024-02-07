@@ -12,12 +12,14 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.auth.AuthManager
+import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
 
@@ -29,6 +31,7 @@ fun SignUpScreen(navController: NavController) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val authManager = AuthManager.instance
     val verticalScrollState = rememberScrollState()
+    val context = LocalContext.current
 
     Scaffold(topBar = { NavBar(title = "Sign Up", navController = navController) }) { paddingValues ->
         Column(
@@ -99,6 +102,13 @@ fun SignUpScreen(navController: NavController) {
                             onSuccess = {
                                 // Go to the first screen
                                 navController.popBackStack(navController.graph.startDestinationId, false)
+
+                                // Upload the user's settings to Firestore
+                                val preferenceManager = PreferenceManager(context)
+                                preferenceManager.preferenceSync.uploadSettingsToFirestore()
+
+                                // Start listening for changes to the user's settings
+                                preferenceManager.preferenceSync.listenForSettingsChanges()
                             },
                             onFailure = { exception ->
                                 errorMessage = exception.localizedMessage

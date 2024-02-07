@@ -21,6 +21,8 @@ class PreferenceManager(context: Context) {
     private val sharedPreferences: SharedPreferences =
         appContext.getSharedPreferences(PREFERENCE_FILE_NAME, Context.MODE_PRIVATE)
 
+    val preferenceSync = PreferenceSync(sharedPreferences)
+
     fun setSetupComplete() {
         setBooleanValue(PREFERENCE_KEY_SETUP_COMPLETE, true)
     }
