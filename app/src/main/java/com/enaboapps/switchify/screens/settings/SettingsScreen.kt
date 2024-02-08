@@ -47,6 +47,7 @@ fun SettingsScreen(navController: NavController) {
                 )
             }
             TimingSection(settingsScreenModel)
+            SwitchStabilitySection(settingsScreenModel)
             SelectionSection(settingsScreenModel)
             PreferenceLink(
                 title = "Switches",
@@ -89,6 +90,21 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
         ) {
             settingsScreenModel.setSwitchHoldTime(it)
         }
+    }
+}
+
+// Switch Stability Section
+@Composable
+private fun SwitchStabilitySection(screenModel: SettingsScreenModel) {
+    PreferenceSection(title = "Switch Stability") {
+        PreferenceSwitch(
+            title = "Pause scan on switch hold",
+            summary = "Pause the scan when a switch is held",
+            checked = screenModel.getPauseScanOnSwitchHold(),
+            onCheckedChange = {
+                screenModel.setPauseScanOnSwitchHold(it)
+            }
+        )
     }
 }
 
