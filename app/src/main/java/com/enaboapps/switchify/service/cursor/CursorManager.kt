@@ -9,12 +9,12 @@ import android.util.Log
 import android.widget.RelativeLayout
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
-import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.service.scanning.ScanState
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
+import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import java.util.Timer
 import java.util.TimerTask
 
@@ -84,6 +84,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
             ScanDirection.LEFT, ScanDirection.RIGHT -> {
                 CursorPoint.instance.lastXQuadrant = quadrantInfo!!
             }
+
             ScanDirection.UP, ScanDirection.DOWN -> {
                 CursorPoint.instance.lastYQuadrant = quadrantInfo!!
             }
@@ -110,7 +111,11 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
             uiHandler.post {
                 y = quadrantIndex * CursorPoint.instance.getRectForScreen(context).height() / 4
                 switchifyAccessibilityWindow?.updateViewLayout(it, 0, y)
-                setQuadrantInfo(quadrantIndex, y, y + CursorPoint.instance.getRectForScreen(context).height() / 4)
+                setQuadrantInfo(
+                    quadrantIndex,
+                    y,
+                    y + CursorPoint.instance.getRectForScreen(context).height() / 4
+                )
             }
         }
     }
@@ -133,7 +138,11 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
             uiHandler.post {
                 x = quadrantIndex * CursorPoint.instance.getRectForScreen(context).width() / 4
                 switchifyAccessibilityWindow?.updateViewLayout(it, x, y)
-                setQuadrantInfo(quadrantIndex, x, x + CursorPoint.instance.getRectForScreen(context).width() / 4)
+                setQuadrantInfo(
+                    quadrantIndex,
+                    x,
+                    x + CursorPoint.instance.getRectForScreen(context).width() / 4
+                )
             }
         }
     }
@@ -146,7 +155,15 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
             yCursorLine?.setBackgroundColor(Color.RED)
             val width = CursorPoint.instance.getRectForScreen(context).width()
             val height = cursorLineThickness
-            quadrantInfo?.start?.let { switchifyAccessibilityWindow?.addView(yCursorLine!!, 0, it, width, height) }
+            quadrantInfo?.start?.let {
+                switchifyAccessibilityWindow?.addView(
+                    yCursorLine!!,
+                    0,
+                    it,
+                    width,
+                    height
+                )
+            }
         }
     }
 
@@ -163,7 +180,15 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
             xCursorLine?.setBackgroundColor(Color.RED)
             val width = cursorLineThickness
             val height = CursorPoint.instance.getRectForScreen(context).height()
-            quadrantInfo?.start?.let { switchifyAccessibilityWindow?.addView(xCursorLine!!, it, y, width, height) }
+            quadrantInfo?.start?.let {
+                switchifyAccessibilityWindow?.addView(
+                    xCursorLine!!,
+                    it,
+                    y,
+                    width,
+                    height
+                )
+            }
         }
     }
 
@@ -177,16 +202,17 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     private fun start() {
         scanState = ScanState.SCANNING
 
-        val mode = ScanMode(preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
+        val mode =
+            ScanMode(preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
         if (mode.id == ScanMode.Modes.MODE_MANUAL) {
             return
         }
 
         var rate =
-            preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
+            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
         if (isInQuadrant) {
             rate =
-                preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
+                preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
         }
         Log.d(TAG, "start: $rate")
         val handler = Handler(Looper.getMainLooper())
@@ -198,7 +224,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                         move()
                     }
                 }
-            }, rate.toLong(), rate.toLong())
+            }, rate, rate)
         }
     }
 
@@ -220,6 +246,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                     }
                 }
             }
+
             ScanDirection.RIGHT -> {
                 direction = ScanDirection.LEFT
                 if (!isInQuadrant) {
@@ -232,6 +259,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                     }
                 }
             }
+
             ScanDirection.UP -> {
                 direction = ScanDirection.DOWN
                 if (!isInQuadrant) {
@@ -244,6 +272,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                     }
                 }
             }
+
             ScanDirection.DOWN -> {
                 direction = ScanDirection.UP
                 if (!isInQuadrant) {
@@ -600,7 +629,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     // Function to start auto select timer
     private fun startAutoSelectTimer() {
         val delay =
-            preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT_DELAY)
+            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT_DELAY)
         isInAutoSelect = true
         if (autoSelectTimer == null) {
             autoSelectTimer = Timer()
@@ -615,7 +644,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                     }
                 }
             }
-        }, delay.toLong())
+        }, delay)
     }
 
 }

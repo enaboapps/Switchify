@@ -52,6 +52,13 @@ class PreferenceManager(context: Context) {
         }
     }
 
+    fun setLongValue(key: String, value: Long) {
+        with(sharedPreferences.edit()) {
+            putLong(key, value)
+            apply()
+        }
+    }
+
     fun getFloatValue(key: String, defaultValue: Float = 0f): Float {
         return sharedPreferences.getFloat(key, defaultValue)
     }
@@ -62,6 +69,15 @@ class PreferenceManager(context: Context) {
 
     fun getIntegerValue(key: String, defaultValue: Int = 1000): Int {
         return sharedPreferences.getInt(key, defaultValue)
+    }
+
+    fun getLongValue(key: String, defaultValue: Long = 1000L): Long {
+        // Due to an old version of the app storing some values as different types, we need to do try/catch
+        return try {
+            sharedPreferences.getLong(key, defaultValue)
+        } catch (e: ClassCastException) {
+            defaultValue
+        }
     }
 
 }
