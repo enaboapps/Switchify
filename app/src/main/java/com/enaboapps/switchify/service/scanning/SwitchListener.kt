@@ -31,18 +31,21 @@ class SwitchListener(
     // Function to start the switch hold timer
     private fun startSwitchHoldTimer() {
         switchHoldTimer = Timer()
-        switchHoldTimer?.schedule(object : TimerTask() {
-            override fun run() {
-                // Cancel the timer when it runs out
-                switchHoldTimer?.cancel()
-                switchHoldTimer = null
+        switchHoldTimer?.schedule(
+            object : TimerTask() {
+                override fun run() {
+                    // Cancel the timer when it runs out
+                    switchHoldTimer?.cancel()
+                    switchHoldTimer = null
 
-                // Perform long press action if available
-                latestAction?.let {
-                    scanningManager.performAction(it.switchEvent.longPressAction)
+                    // Perform long press action if available
+                    latestAction?.let {
+                        scanningManager.performAction(it.switchEvent.longPressAction)
+                    }
                 }
-            }
-        }, preferenceManager.getIntegerValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME).toLong())
+            },
+            preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
+        )
     }
 
     // Called when a switch is pressed
@@ -74,7 +77,7 @@ class SwitchListener(
             latestAction?.takeIf { it.switchEvent == event }?.let {
                 val timeElapsed = System.currentTimeMillis() - it.time
                 val switchHoldTime =
-                    preferenceManager.getIntegerValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
+                    preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
 
                 if (event.longPressAction.id != SwitchAction.Actions.ACTION_NONE) {
                     // Toggle swipe lock if time elapsed is greater than hold time

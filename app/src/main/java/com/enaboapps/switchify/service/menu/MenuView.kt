@@ -25,15 +25,18 @@ class MenuView(
 
     var menuViewListener: MenuViewListener? = null
 
-    private val switchifyAccessibilityWindow: SwitchifyAccessibilityWindow = SwitchifyAccessibilityWindow.instance
+    private val switchifyAccessibilityWindow: SwitchifyAccessibilityWindow =
+        SwitchifyAccessibilityWindow.instance
 
     private var linearLayout = LinearLayout(context)
 
     // scanIndex is the index of the menu item that is currently being scanned
     var scanIndex = 0
     var direction: ScanDirection = ScanDirection.DOWN
+
     // timer is the timer that is used to scan the menu items
     private var timer: Timer? = null
+
     // scanState is the state of the scanning
     private var scanState = ScanState.STOPPED
 
@@ -100,7 +103,12 @@ class MenuView(
         linearLayout.alpha = if (transparency) 0.6f else 1f
         linearLayout.orientation = LinearLayout.VERTICAL
         linearLayout.setPadding(10, 10, 10, 10)
-        linearLayout.setBackgroundColor(context.resources.getColor(android.R.color.darker_gray, null))
+        linearLayout.setBackgroundColor(
+            context.resources.getColor(
+                android.R.color.darker_gray,
+                null
+            )
+        )
     }
 
     private fun addToWindow() {
@@ -153,12 +161,14 @@ class MenuView(
         getCurrentItem().highlight()
         scanState = ScanState.SCANNING
 
-        val mode = ScanMode.fromId(PreferenceManager(context).getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
+        val mode =
+            ScanMode.fromId(PreferenceManager(context).getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
         if (mode.id == ScanMode.Modes.MODE_MANUAL) {
             return
         }
 
-        val rate = PreferenceManager(context).getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
+        val rate =
+            PreferenceManager(context).getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
         // If the timer is not null, cancel it
         timer?.cancel()
         timer = null
@@ -189,7 +199,7 @@ class MenuView(
                     Log.d("MenuView", "Scanning menu item ${scanIndex}")
                 }
             }
-        }, rate.toLong(), rate.toLong())
+        }, rate, rate)
     }
 
     // This function stops scanning the menu items

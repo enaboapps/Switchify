@@ -59,8 +59,6 @@ fun SettingsScreen(navController: NavController) {
 }
 
 
-
-
 @Composable
 private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
     PreferenceSection(title = "Timing") {
@@ -69,31 +67,28 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
             title = "Scan rate",
             summary = "The interval at which the scanner will move to the next item",
             min = 100,
-            max = 100000,
-            onValueChanged = {
-                settingsScreenModel.setScanRate(it)
-            }
-        )
+            max = 100000
+        ) {
+            settingsScreenModel.setScanRate(it)
+        }
         PreferenceTimeStepper(
             value = settingsScreenModel.getRefineScanRate(),
             title = "Refine scan rate",
             summary = "The interval at which the scanner will move when refining the selection",
             min = 100,
-            max = 100000,
-            onValueChanged = {
-                settingsScreenModel.setRefineScanRate(it)
-            }
-        )
+            max = 100000
+        ) {
+            settingsScreenModel.setRefineScanRate(it)
+        }
         PreferenceTimeStepper(
             value = settingsScreenModel.getSwitchHoldTime(),
             title = "Switch hold time",
             summary = "The time to hold the switch before the long pressed action is triggered",
             min = 100,
-            max = 100000,
-            onValueChanged = {
-                settingsScreenModel.setSwitchHoldTime(it)
-            }
-        )
+            max = 100000
+        ) {
+            settingsScreenModel.setSwitchHoldTime(it)
+        }
     }
 }
 
@@ -113,10 +108,9 @@ private fun SelectionSection(screenModel: SettingsScreenModel) {
             title = "Auto select delay",
             summary = "The delay before the item is selected",
             min = 100,
-            max = 100000,
-            onValueChanged = {
-                screenModel.setAutoSelectDelay(it)
-            }
-        )
+            max = 100000
+        ) {
+            screenModel.setAutoSelectDelay(it)
+        }
     }
 }
