@@ -21,6 +21,7 @@ import com.enaboapps.switchify.auth.AuthManager
 import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.utils.ServiceUtils
+import com.enaboapps.switchify.switches.SwitchConfigInvalidBanner
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.UICard
 
@@ -50,7 +51,11 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
         ) {
             item {
                 Spacer(modifier = Modifier.height(20.dp))
-                Text(text = "Welcome to Switchify", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "Welcome to Switchify",
+                    style = MaterialTheme.typography.h5,
+                    fontWeight = FontWeight.Bold
+                )
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
@@ -60,6 +65,10 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
                     description = "Tap here to adjust your settings.",
                     onClick = { navController.navigate(NavigationRoute.Settings.name) }
                 )
+            }
+
+            item {
+                SwitchConfigInvalidBanner()
             }
 
             if (!isAccessibilityServiceEnabled) {
@@ -95,7 +104,8 @@ fun AccountCard(navController: NavController) {
     val currentUser = authManager.getCurrentUser()
 
     val title = if (isUserSignedIn) "Account" else "Sign In"
-    val description = if (isUserSignedIn) currentUser?.email ?: "" else "Sign in to access your account."
+    val description =
+        if (isUserSignedIn) currentUser?.email ?: "" else "Sign in to access your account."
 
     UICard(
         title = title,

@@ -2,6 +2,8 @@ package com.enaboapps.switchify.switches
 
 import android.content.Context
 import android.util.Log
+import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.scanning.ScanMode
 import java.io.File
 
 class SwitchEventStore(private val context: Context) {
@@ -88,6 +90,37 @@ class SwitchEventStore(private val context: Context) {
             file.writeText(switchEvents.joinToString("\n") { it.toString() })
         } catch (e: Exception) {
             Log.e("SwitchEventStore", "Error writing to file", e)
+        }
+    }
+
+    // This function returns a string to tell the user if the configuration is valid
+    // If mode is auto, at least one switch must be configured to the select action
+    // If mode is manual, at least one switch must be configured to the next and previous actions
+    // and at least one switch must be configured to the select action
+    fun isConfigInvalid(): String? {
+        val preferenceManager = PreferenceManager(context)
+        val mode =
+            ScanMode(preferenceManager.getIntegerValue(PreferenceManager.PREFERENCE_KEY_SCAN_MODE))
+        val containsSelect =
+            switchEvents.any { it.containsAction(SwitchAction.Actions.ACTION_SELECT) }
+        val containsNext =
+            switchEvents.any { it.containsAction(SwitchAction.Actions.ACTION_MOVE_TO_NEXT_ITEM) }
+        val containsPrevious =
+            switchEvents.any { it.containsAction(SwitchAction.Actions.ACTION_MOVE_TO_PREVIOUS_ITEM) }
+        return when (mode.id) {
+            ScanMode.Modes.MODE_AUTO -> if (containsSelect) {
+                null
+            } else {
+                "At least one switch must be configured to the select action."
+            }
+
+            ScanMode.Modes.MODE_MANUAL -> if (containsSelect && containsNext && containsPrevious) {
+                null
+            } else {
+                "At least one switch must be configured to the next, previous, and select actions."
+            }
+
+            else -> null
         }
     }
 }
