@@ -31,6 +31,17 @@ class SettingsScreenModel(context: Context) : ViewModel() {
         preferenceManager.setLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SWITCH_HOLD_TIME, time)
     }
 
+    fun getPauseScanOnSwitchHold(): Boolean {
+        return preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)
+    }
+
+    fun setPauseScanOnSwitchHold(pause: Boolean) {
+        preferenceManager.setBooleanValue(
+            PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD,
+            pause
+        )
+    }
+
     fun getAutoSelect(): Boolean {
         return preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT)
     }

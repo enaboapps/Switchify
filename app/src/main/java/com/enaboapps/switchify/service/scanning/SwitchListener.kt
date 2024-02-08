@@ -60,8 +60,8 @@ class SwitchListener(
                 scanningManager.performAction(it.pressAction)
             } else {
                 startSwitchHoldTimer()
-                // Pause scanning if the long press action is to change scanning direction
-                if (it.longPressAction.id == SwitchAction.Actions.ACTION_CHANGE_SCANNING_DIRECTION) {
+                // Pause scanning if the setting is enabled
+                if (preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)) {
                     scanningManager.pauseScanning()
                 }
             }
@@ -88,8 +88,8 @@ class SwitchListener(
                         return true
                     }
 
-                    // Resume scanning if the long press action is to change scanning direction
-                    if (event.longPressAction.id == SwitchAction.Actions.ACTION_CHANGE_SCANNING_DIRECTION) {
+                    // Resume scanning if the setting is enabled
+                    if (preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)) {
                         scanningManager.resumeScanning()
                     }
 
