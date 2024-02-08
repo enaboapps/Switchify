@@ -17,6 +17,10 @@ data class SwitchEvent(
         return false
     }
 
+    fun containsAction(action: Int): Boolean {
+        return pressAction.id == action || longPressAction.id == action
+    }
+
     override fun hashCode(): Int {
         var result = name.hashCode()
         result = 31 * result + code.hashCode()
