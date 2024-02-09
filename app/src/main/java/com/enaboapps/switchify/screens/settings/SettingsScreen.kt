@@ -64,7 +64,7 @@ fun SettingsScreen(navController: NavController) {
 private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
     PreferenceSection(title = "Timing") {
         PreferenceTimeStepper(
-            value = settingsScreenModel.getScanRate(),
+            value = settingsScreenModel.scanRate.value ?: 0,
             title = "Scan rate",
             summary = "The interval at which the scanner will move to the next item",
             min = 200,
@@ -73,7 +73,7 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
             settingsScreenModel.setScanRate(it)
         }
         PreferenceTimeStepper(
-            value = settingsScreenModel.getRefineScanRate(),
+            value = settingsScreenModel.refineScanRate.value ?: 0,
             title = "Refine scan rate",
             summary = "The interval at which the scanner will move when refining the selection",
             min = 200,
@@ -82,7 +82,7 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
             settingsScreenModel.setRefineScanRate(it)
         }
         PreferenceTimeStepper(
-            value = settingsScreenModel.getSwitchHoldTime(),
+            value = settingsScreenModel.switchHoldTime.value ?: 0,
             title = "Switch hold time",
             summary = "The time to hold the switch before the long pressed action is triggered",
             min = 100,
@@ -100,7 +100,7 @@ private fun SwitchStabilitySection(screenModel: SettingsScreenModel) {
         PreferenceSwitch(
             title = "Pause scan on switch hold",
             summary = "Pause the scan when a switch is held",
-            checked = screenModel.getPauseScanOnSwitchHold(),
+            checked = screenModel.pauseScanOnSwitchHold.value ?: false,
             onCheckedChange = {
                 screenModel.setPauseScanOnSwitchHold(it)
             }
@@ -114,13 +114,13 @@ private fun SelectionSection(screenModel: SettingsScreenModel) {
         PreferenceSwitch(
             title = "Auto select",
             summary = "Automatically select the item after a delay",
-            checked = screenModel.getAutoSelect(),
+            checked = screenModel.autoSelect.value ?: false,
             onCheckedChange = {
                 screenModel.setAutoSelect(it)
             }
         )
         PreferenceTimeStepper(
-            value = screenModel.getAutoSelectDelay(),
+            value = screenModel.autoSelectDelay.value ?: 0,
             title = "Auto select delay",
             summary = "The delay before the item is selected",
             min = 100,
