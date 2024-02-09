@@ -14,6 +14,7 @@ import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.service.scanning.ScanState
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
+import com.enaboapps.switchify.service.scanning.ScanningScheduler
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import java.util.Timer
 import java.util.TimerTask
@@ -43,7 +44,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
     private var direction: ScanDirection = ScanDirection.RIGHT
 
-    private var movingTimer: Timer? = null // Timer to move the cursor line
+    private val scanningScheduler = ScanningScheduler { move() }
 
     // auto select variables
     private var isInAutoSelect = false // If true, we listen for a second event to activate the menu
@@ -169,7 +170,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
     private fun updateYCursorLine() {
         yCursorLine?.let {
-            switchifyAccessibilityWindow?.updateViewLayout(it, 0, y)
+            uiHandler.post {
+                switchifyAccessibilityWindow?.updateViewLayout(it, 0, y)
+            }
         }
     }
 
@@ -194,7 +197,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
     private fun updateXCursorLine() {
         xCursorLine?.let {
-            switchifyAccessibilityWindow?.updateViewLayout(it, x, y)
+            uiHandler.post {
+                switchifyAccessibilityWindow?.updateViewLayout(it, x, y)
+            }
         }
     }
 
@@ -215,17 +220,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                 preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
         }
         Log.d(TAG, "start: $rate")
-        val handler = Handler(Looper.getMainLooper())
-        if (movingTimer == null) {
-            movingTimer = Timer()
-            movingTimer?.scheduleAtFixedRate(object : TimerTask() {
-                override fun run() {
-                    handler.post {
-                        move()
-                    }
-                }
-            }, rate, rate)
-        }
+        scanningScheduler.startScanning(initialDelay = rate, period = rate)
     }
 
 
@@ -289,29 +284,22 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
-    // Function to stop the timer
+    // Function to stop the scanning
     override fun stopScanning() {
-        if (scanState == ScanState.SCANNING) {
-            scanState = ScanState.STOPPED
-            movingTimer?.cancel()
-            movingTimer = null
-        }
+        scanningScheduler.stopScanning()
+        scanState = ScanState.STOPPED
     }
 
 
     // Function to pause the scanning
     override fun pauseScanning() {
-        if (scanState == ScanState.SCANNING) {
-            scanState = ScanState.PAUSED
-        }
+        scanState = ScanState.PAUSED
     }
 
 
     // Function to resume the scanning
     override fun resumeScanning() {
-        if (scanState == ScanState.PAUSED) {
-            scanState = ScanState.SCANNING
-        }
+        scanState = ScanState.SCANNING
     }
 
 
@@ -322,7 +310,6 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
             } else {
                 moveToNextQuadrant()
             }
-            Log.d(TAG, "move: $x, $y, $direction")
         }
     }
 
@@ -523,6 +510,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
 
     fun performSelectionAction() {
+        pauseScanning()
+
         // If the event is triggered within the auto select delay, we don't perform the action
         if (checkAutoSelectDelay()) {
             return

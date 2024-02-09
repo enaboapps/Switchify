@@ -67,7 +67,7 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
             value = settingsScreenModel.getScanRate(),
             title = "Scan rate",
             summary = "The interval at which the scanner will move to the next item",
-            min = 100,
+            min = 200,
             max = 100000
         ) {
             settingsScreenModel.setScanRate(it)
@@ -76,7 +76,7 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
             value = settingsScreenModel.getRefineScanRate(),
             title = "Refine scan rate",
             summary = "The interval at which the scanner will move when refining the selection",
-            min = 100,
+            min = 200,
             max = 100000
         ) {
             settingsScreenModel.setRefineScanRate(it)
