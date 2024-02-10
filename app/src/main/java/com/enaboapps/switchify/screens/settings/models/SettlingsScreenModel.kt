@@ -46,12 +46,30 @@ class SettingsScreenModel(context: Context) : ViewModel() {
     }
     val autoSelectDelay: LiveData<Long> = _autoSelectDelay
 
+
+    private val pauseScanOnSwitchHoldThreshold: Long = 400
+
+    // LiveData for the switch stability setting visibility
+    private val _switchStabilityVisible = MutableLiveData<Boolean>()
+    val switchStabilityVisible: LiveData<Boolean> = _switchStabilityVisible
+
+
+    init {
+        updateSwitchStabilityVisible()
+    }
+
+
     // Update methods now update MutableLiveData which in turn updates the UI
     fun setScanRate(rate: Long) {
         viewModelScope.launch {
             preferenceManager.setLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE, rate)
             _scanRate.postValue(rate)
         }
+        // If rate < pauseScanOnSwitchHoldThreshold, set pauseScanOnSwitchHold to true
+        if (rate < pauseScanOnSwitchHoldThreshold) {
+            setPauseScanOnSwitchHold(true)
+        }
+        updateSwitchStabilityVisible()
     }
 
     fun setRefineScanRate(rate: Long) {
@@ -62,6 +80,11 @@ class SettingsScreenModel(context: Context) : ViewModel() {
             )
             _refineScanRate.postValue(rate)
         }
+        // If rate < pauseScanOnSwitchHoldThreshold, set pauseScanOnSwitchHold to true
+        if (rate < pauseScanOnSwitchHoldThreshold) {
+            setPauseScanOnSwitchHold(true)
+        }
+        updateSwitchStabilityVisible()
     }
 
     fun setSwitchHoldTime(time: Long) {
@@ -102,5 +125,15 @@ class SettingsScreenModel(context: Context) : ViewModel() {
             )
             _autoSelectDelay.postValue(delay)
         }
+    }
+
+
+    // Update the switchStabilityVisible LiveData when scan rate or refine scan rate changes
+    private fun updateSwitchStabilityVisible() {
+        val scanRate =
+            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
+        val refineScanRate =
+            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
+        _switchStabilityVisible.postValue(scanRate > pauseScanOnSwitchHoldThreshold && refineScanRate > pauseScanOnSwitchHoldThreshold)
     }
 }

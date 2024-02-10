@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,7 @@ fun SettingsScreen(navController: NavController) {
     val verticalScrollState = rememberScrollState()
     val context = LocalContext.current
     val settingsScreenModel = SettingsScreenModel(context)
+    val stabilityVisible = settingsScreenModel.switchStabilityVisible.observeAsState()
     Scaffold(
         topBar = {
             NavBar(title = "Settings", navController = navController)
@@ -47,7 +49,9 @@ fun SettingsScreen(navController: NavController) {
                 )
             }
             TimingSection(settingsScreenModel)
-            SwitchStabilitySection(settingsScreenModel)
+            if (stabilityVisible.value == true) {
+                SwitchStabilitySection(settingsScreenModel)
+            }
             SelectionSection(settingsScreenModel)
             PreferenceLink(
                 title = "Switches",
