@@ -46,7 +46,12 @@ fun SignInScreen(navController: NavController) {
     val verticalScrollState = rememberScrollState()
     val context = LocalContext.current
 
-    Scaffold(topBar = { NavBar(title = "Sign In", navController = navController) }) { paddingValues ->
+    Scaffold(topBar = {
+        NavBar(
+            title = "Sign In",
+            navController = navController
+        )
+    }) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -101,7 +106,7 @@ fun SignInScreen(navController: NavController) {
                             preferenceManager.preferenceSync.retrieveSettingsFromFirestore()
 
                             // Listen for changes to user settings
-                            preferenceManager.preferenceSync.listenForSettingsChanges()
+                            preferenceManager.preferenceSync.listenForSettingsChangesOnRemote()
                         },
                         onFailure = { exception ->
                             errorMessage = exception.localizedMessage
