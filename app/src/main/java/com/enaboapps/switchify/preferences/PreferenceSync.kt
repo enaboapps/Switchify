@@ -1,9 +1,9 @@
 package com.enaboapps.switchify.preferences
 
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 import android.content.SharedPreferences
 import com.enaboapps.switchify.auth.AuthManager
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 class PreferenceSync(private val sharedPreferences: SharedPreferences) {
     private val firestoreDb = FirebaseFirestore.getInstance()
@@ -47,7 +47,10 @@ class PreferenceSync(private val sharedPreferences: SharedPreferences) {
                                 is String -> putString(key, value)
                                 is Boolean -> putBoolean(key, value)
                                 is Long -> putLong(key, value)
-                                is Double -> putFloat(key, value.toFloat()) // Firestore stores floats as doubles
+                                is Double -> putFloat(
+                                    key,
+                                    value.toFloat()
+                                ) // Firestore stores floats as doubles
                                 is Int -> putInt(key, value)
                                 else -> {} // Add more types as needed
                             }
@@ -61,7 +64,14 @@ class PreferenceSync(private val sharedPreferences: SharedPreferences) {
             }
     }
 
-    fun listenForSettingsChanges() {
+    fun listenForSettingsChangesOnLocal() {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            uploadSettingsToFirestore()
+        }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    fun listenForSettingsChangesOnRemote() {
         val userId = authManager.getUserId() ?: return
         firestoreDb.collection("user-settings")
             .document("preferences")
@@ -80,7 +90,10 @@ class PreferenceSync(private val sharedPreferences: SharedPreferences) {
                                 is String -> putString(key, value)
                                 is Boolean -> putBoolean(key, value)
                                 is Long -> putLong(key, value)
-                                is Double -> putFloat(key, value.toFloat()) // Handle the Double to Float conversion
+                                is Double -> putFloat(
+                                    key,
+                                    value.toFloat()
+                                ) // Handle the Double to Float conversion
                                 is Int -> putInt(key, value)
                                 else -> {} // Handle other types as needed
                             }
