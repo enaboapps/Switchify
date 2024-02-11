@@ -82,6 +82,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
 
     private fun setupYQuadrant() {
+        y = 0
         cursorUI.createYQuadrant(0)
         setQuadrantInfo(0, y, y + cursorUI.getQuadrantHeight())
     }
@@ -93,6 +94,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
     private fun setupXQuadrant() {
+        x = 0
         cursorUI.createXQuadrant(0)
         setQuadrantInfo(0, x, x + cursorUI.getQuadrantWidth())
     }
