@@ -10,9 +10,8 @@ import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.service.scanning.ScanState
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningManager
+import com.enaboapps.switchify.service.scanning.ScanningScheduler
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
-import java.util.Timer
-import java.util.TimerTask
 
 interface MenuViewListener {
     fun onMenuViewClosed()
@@ -31,11 +30,12 @@ class MenuView(
     private var linearLayout = LinearLayout(context)
 
     // scanIndex is the index of the menu item that is currently being scanned
-    var scanIndex = 0
-    var direction: ScanDirection = ScanDirection.DOWN
+    private var scanIndex = 0
+    private var direction: ScanDirection = ScanDirection.DOWN
 
-    // timer is the timer that is used to scan the menu items
-    private var timer: Timer? = null
+    private val scanningScheduler = ScanningScheduler {
+        stepAutoScan()
+    }
 
     // scanState is the state of the scanning
     private var scanState = ScanState.STOPPED
@@ -169,44 +169,14 @@ class MenuView(
 
         val rate =
             PreferenceManager(context).getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
-        // If the timer is not null, cancel it
-        timer?.cancel()
-        timer = null
-        // Start the timer
-        timer = Timer()
-        timer?.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                if (scanState == ScanState.SCANNING) {
-                    // Unhighlight the current menu item
-                    getCurrentItem().unhighlight()
-                    // If direction is down, increment scanIndex
-                    // If direction is up, decrement scanIndex
-                    if (direction == ScanDirection.DOWN) {
-                        scanIndex++
-                    } else {
-                        scanIndex--
-                    }
-                    // If direction is down and scanIndex is greater than or equal to the number of menu items, set scanIndex to 0
-                    // If direction is up and scanIndex is less than 0, set scanIndex to the number of menu items minus 1
-                    if (direction == ScanDirection.DOWN && scanIndex >= menuPages[currentPage].getMenuItems().size) {
-                        scanIndex = 0
-                    } else if (direction == ScanDirection.UP && scanIndex < 0) {
-                        scanIndex = menuPages[currentPage].getMenuItems().size - 1
-                    }
-                    // Highlight the current menu item
-                    getCurrentItem().highlight()
 
-                    Log.d("MenuView", "Scanning menu item ${scanIndex}")
-                }
-            }
-        }, rate, rate)
+        scanningScheduler.startScanning(rate, rate)
     }
 
     // This function stops scanning the menu items
     override fun stopScanning() {
-        // Cancel the timer
-        timer?.cancel()
-        timer = null
+        // Stop the scanning scheduler
+        scanningScheduler.stopScanning()
         // Unhighlight the current menu item
         getCurrentItem().unhighlight()
         // Set the scan state to stopped
@@ -216,6 +186,9 @@ class MenuView(
     // This function pauses scanning the menu items
     override fun pauseScanning() {
         if (scanState == ScanState.SCANNING) {
+            // Pause the scanning scheduler
+            scanningScheduler.pauseScanning()
+            // Set the scan state to paused
             scanState = ScanState.PAUSED
         }
     }
@@ -223,6 +196,9 @@ class MenuView(
     // This function resumes scanning the menu items
     override fun resumeScanning() {
         if (scanState == ScanState.PAUSED) {
+            // Resume the scanning scheduler
+            scanningScheduler.resumeScanning()
+            // Set the scan state to scanning
             scanState = ScanState.SCANNING
         }
     }
@@ -234,6 +210,14 @@ class MenuView(
 
     private fun getCurrentItem(): MenuItem {
         return menuPages[currentPage].getMenuItems()[scanIndex]
+    }
+
+    private fun stepAutoScan() {
+        if (direction == ScanDirection.DOWN) {
+            moveToNextItem()
+        } else {
+            moveToPreviousItem()
+        }
     }
 
     // This function either starts scanning or selects the current menu item
