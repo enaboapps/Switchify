@@ -114,6 +114,8 @@ fun SignUpScreen(navController: NavController) {
                     errorMessage = when {
                         !authManager.isPasswordStrong(password) -> "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, and a number."
                         password != confirmPassword -> "Passwords do not match."
+                        email.isEmpty() -> "Email cannot be empty."
+                        password.isEmpty() -> "Password cannot be empty."
                         else -> null
                     }
                     if (errorMessage == null) {
