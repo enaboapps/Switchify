@@ -97,21 +97,26 @@ fun SignInScreen(navController: NavController) {
             FullWidthButton(
                 text = "Sign In",
                 onClick = {
-                    AuthManager.instance.signInWithEmailAndPassword(email, password,
-                        onSuccess = {
-                            navController.popBackStack()
+                    if (email.isNotEmpty() && password.isNotEmpty()) {
+                        AuthManager.instance.signInWithEmailAndPassword(
+                            email, password,
+                            onSuccess = {
+                                navController.popBackStack()
 
-                            // Download user settings from Firestore
-                            val preferenceManager = PreferenceManager(context)
-                            preferenceManager.preferenceSync.retrieveSettingsFromFirestore()
+                                // Download user settings from Firestore
+                                val preferenceManager = PreferenceManager(context)
+                                preferenceManager.preferenceSync.retrieveSettingsFromFirestore()
 
-                            // Listen for changes to user settings
-                            preferenceManager.preferenceSync.listenForSettingsChangesOnRemote()
-                        },
-                        onFailure = { exception ->
-                            errorMessage = exception.localizedMessage
-                        }
-                    )
+                                // Listen for changes to user settings
+                                preferenceManager.preferenceSync.listenForSettingsChangesOnRemote()
+                            },
+                            onFailure = { exception ->
+                                errorMessage = exception.localizedMessage
+                            }
+                        )
+                    } else {
+                        errorMessage = "Please enter your email and password"
+                    }
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
