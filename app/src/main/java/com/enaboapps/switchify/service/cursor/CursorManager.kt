@@ -202,6 +202,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                 }
             }
         }
+
+        // Resume the scanning
+        resumeScanning()
     }
 
 
