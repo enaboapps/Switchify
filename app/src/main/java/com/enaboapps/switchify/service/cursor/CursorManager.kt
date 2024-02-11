@@ -217,12 +217,14 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
     // Function to pause the scanning
     override fun pauseScanning() {
+        scanningScheduler.pauseScanning()
         scanState = ScanState.PAUSED
     }
 
 
     // Function to resume the scanning
     override fun resumeScanning() {
+        scanningScheduler.resumeScanning()
         scanState = ScanState.SCANNING
     }
 
