@@ -1,12 +1,10 @@
 package com.enaboapps.switchify.service.cursor
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.PointF
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.widget.RelativeLayout
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
@@ -23,16 +21,12 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
     private val TAG = "CursorManager"
 
-    private val cursorLineThickness = 10
-    private val cursorLineMovement = (cursorLineThickness * 4)
+    private val cursorLineMovement = 40
 
     private val preferenceManager: PreferenceManager = PreferenceManager(context)
 
-    private var xQuadrant: RelativeLayout? = null
-    private var yQuadrant: RelativeLayout? = null
-
-    private var xCursorLine: RelativeLayout? = null
-    private var yCursorLine: RelativeLayout? = null
+    private val uiHandler = Handler(Looper.getMainLooper())
+    private val cursorUI = CursorUI(context, uiHandler)
 
     private var isInQuadrant = false
     private var quadrantInfo: QuadrantInfo? = null
@@ -50,16 +44,10 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     private var isInAutoSelect = false // If true, we listen for a second event to activate the menu
     private var autoSelectTimer: Timer? = null // Timer to wait for the second event
 
-    // Handler to update the UI
-    private val uiHandler = Handler(Looper.getMainLooper())
-
-    private var switchifyAccessibilityWindow: SwitchifyAccessibilityWindow? = null
-
 
     fun setup() {
-        switchifyAccessibilityWindow = SwitchifyAccessibilityWindow.instance
-        switchifyAccessibilityWindow?.setup(context)
-        switchifyAccessibilityWindow?.show()
+        SwitchifyAccessibilityWindow.instance.setup(context)
+        SwitchifyAccessibilityWindow.instance.show()
 
         CursorPoint.instance.listener = this
     }
@@ -94,113 +82,46 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
 
     private fun setupYQuadrant() {
-        if (yQuadrant == null) {
-            y = CursorPoint.instance.getRectForScreen(context).top
-            yQuadrant = RelativeLayout(context)
-            yQuadrant?.setBackgroundColor(Color.RED)
-            yQuadrant?.alpha = 0.5f
-            val left = CursorPoint.instance.getRectForScreen(context).left
-            val width = CursorPoint.instance.getRectForScreen(context).width()
-            val height = CursorPoint.instance.getRectForScreen(context).height() / 4
-            switchifyAccessibilityWindow?.addView(yQuadrant!!, left, y, width, height)
-            setQuadrantInfo(0, y, y + height)
-        }
+        cursorUI.createYQuadrant(0)
+        setQuadrantInfo(0, y, y + cursorUI.getQuadrantHeight())
     }
 
     private fun updateYQuadrant(quadrantIndex: Int) {
-        yQuadrant?.let {
-            uiHandler.post {
-                y = quadrantIndex * CursorPoint.instance.getRectForScreen(context).height() / 4
-                switchifyAccessibilityWindow?.updateViewLayout(it, 0, y)
-                setQuadrantInfo(
-                    quadrantIndex,
-                    y,
-                    y + CursorPoint.instance.getRectForScreen(context).height() / 4
-                )
-            }
-        }
+        y = quadrantIndex * cursorUI.getQuadrantHeight()
+        cursorUI.updateYQuadrant(quadrantIndex)
+        setQuadrantInfo(quadrantIndex, y, y + cursorUI.getQuadrantHeight())
     }
 
     private fun setupXQuadrant() {
-        if (xQuadrant == null) {
-            x = CursorPoint.instance.getRectForScreen(context).left
-            xQuadrant = RelativeLayout(context)
-            xQuadrant?.setBackgroundColor(Color.RED)
-            xQuadrant?.alpha = 0.5f
-            val width = CursorPoint.instance.getRectForScreen(context).width() / 4
-            val height = CursorPoint.instance.getRectForScreen(context).height()
-            switchifyAccessibilityWindow?.addView(xQuadrant!!, x, y, width, height)
-            setQuadrantInfo(0, x, x + width)
-        }
+        cursorUI.createXQuadrant(0)
+        setQuadrantInfo(0, x, x + cursorUI.getQuadrantWidth())
     }
 
     private fun updateXQuadrant(quadrantIndex: Int) {
-        xQuadrant?.let {
-            uiHandler.post {
-                x = quadrantIndex * CursorPoint.instance.getRectForScreen(context).width() / 4
-                switchifyAccessibilityWindow?.updateViewLayout(it, x, y)
-                setQuadrantInfo(
-                    quadrantIndex,
-                    x,
-                    x + CursorPoint.instance.getRectForScreen(context).width() / 4
-                )
-            }
-        }
+        x = quadrantIndex * cursorUI.getQuadrantWidth()
+        cursorUI.updateXQuadrant(quadrantIndex)
+        setQuadrantInfo(quadrantIndex, x, x + cursorUI.getQuadrantWidth())
     }
 
 
     private fun setupYCursorLine() {
-        if (yCursorLine == null) {
-            Log.d(TAG, "setupYCursorLine: $y")
-            yCursorLine = RelativeLayout(context)
-            yCursorLine?.setBackgroundColor(Color.RED)
-            val width = CursorPoint.instance.getRectForScreen(context).width()
-            val height = cursorLineThickness
-            quadrantInfo?.start?.let {
-                switchifyAccessibilityWindow?.addView(
-                    yCursorLine!!,
-                    0,
-                    it,
-                    width,
-                    height
-                )
-            }
+        quadrantInfo?.quadrantIndex?.let {
+            cursorUI.createYCursorLine(it)
         }
     }
 
     private fun updateYCursorLine() {
-        yCursorLine?.let {
-            uiHandler.post {
-                switchifyAccessibilityWindow?.updateViewLayout(it, 0, y)
-            }
-        }
+        cursorUI.updateYCursorLine(y)
     }
 
     private fun setupXCursorLine() {
-        if (xCursorLine == null) {
-            Log.d(TAG, "setupXCursorLine: $x")
-            xCursorLine = RelativeLayout(context)
-            xCursorLine?.setBackgroundColor(Color.RED)
-            val width = cursorLineThickness
-            val height = CursorPoint.instance.getRectForScreen(context).height()
-            quadrantInfo?.start?.let {
-                switchifyAccessibilityWindow?.addView(
-                    xCursorLine!!,
-                    it,
-                    y,
-                    width,
-                    height
-                )
-            }
+        quadrantInfo?.quadrantIndex?.let {
+            cursorUI.createXCursorLine(it)
         }
     }
 
     private fun updateXCursorLine() {
-        xCursorLine?.let {
-            uiHandler.post {
-                switchifyAccessibilityWindow?.updateViewLayout(it, x, y)
-            }
-        }
+        cursorUI.updateXCursorLine(x)
     }
 
 
@@ -434,34 +355,16 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
         direction = ScanDirection.RIGHT
 
-        resetQuadrants()
-        resetCursorLines()
+        cursorUI.reset()
     }
 
     private fun isReset(): Boolean {
-        return xQuadrant == null && yQuadrant == null && xCursorLine == null && yCursorLine == null
+        return cursorUI.isReset()
     }
 
     private fun resetQuadrants() {
-        xQuadrant?.let {
-            switchifyAccessibilityWindow?.removeView(it)
-        }
-        yQuadrant?.let {
-            switchifyAccessibilityWindow?.removeView(it)
-        }
-        xQuadrant = null
-        yQuadrant = null
-    }
-
-    private fun resetCursorLines() {
-        xCursorLine?.let {
-            switchifyAccessibilityWindow?.removeView(it)
-        }
-        yCursorLine?.let {
-            switchifyAccessibilityWindow?.removeView(it)
-        }
-        xCursorLine = null
-        yCursorLine = null
+        cursorUI.removeXQuadrant()
+        cursorUI.removeYQuadrant()
     }
 
 
@@ -534,14 +437,14 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
                     resetQuadrants()
 
-                    if (xCursorLine == null) {
+                    if (!cursorUI.isXCursorLineVisible()) {
                         setupXCursorLine()
                     }
                 } else {
                     direction = ScanDirection.DOWN
                     isInQuadrant = false
 
-                    if (xQuadrant == null) {
+                    if (!cursorUI.isYQuadrantVisible()) {
                         setupYQuadrant()
                     }
                 }
@@ -557,7 +460,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
                     resetQuadrants()
 
-                    if (yCursorLine == null) {
+                    if (!cursorUI.isYCursorLineVisible()) {
                         setupYCursorLine()
                     }
 
