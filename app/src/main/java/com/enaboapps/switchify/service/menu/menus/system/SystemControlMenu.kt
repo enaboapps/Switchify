@@ -13,30 +13,30 @@ class SystemControlMenu(
     companion object {
         private fun buildSystemControlItems(accessibilityService: AccessibilityService): List<MenuItem> {
             return listOf(
-                MenuItem("Back", action = {
+                MenuItem("Back") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
-                }),
-                MenuItem("Home", action = {
+                },
+                MenuItem("Home") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
-                }),
-                MenuItem("Recents", action = {
+                },
+                MenuItem("Recents") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS)
-                }),
-                MenuItem("Notifications", action = {
+                },
+                MenuItem("Notifications") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS)
-                }),
-                MenuItem("Quick Settings", action = {
+                },
+                MenuItem("Quick Settings") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS)
-                }),
-                MenuItem("Lock Screen", action = {
+                },
+                MenuItem("Lock Screen") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN)
-                }),
-                MenuItem("Power Dialog", action = {
+                },
+                MenuItem("Power Dialog") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG)
-                }),
-                MenuItem("Volume Control", isLinkToMenu = true, action = {
+                },
+                MenuItem("Volume Control", isLinkToMenu = true) {
                     MenuManager.getInstance().openVolumeControlMenu()
-                })
+                }
             )
         }
     }
