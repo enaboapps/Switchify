@@ -33,9 +33,7 @@ class MenuView(
     private var scanIndex = 0
     private var direction: ScanDirection = ScanDirection.DOWN
 
-    private val scanningScheduler = ScanningScheduler {
-        stepAutoScan()
-    }
+    private var scanningScheduler: ScanningScheduler? = null
 
     // scanState is the state of the scanning
     private var scanState = ScanState.STOPPED
@@ -118,6 +116,10 @@ class MenuView(
 
     // This function is called when the menu is opened
     fun open(scanningManager: ScanningManager) {
+        // Initialize the scanning scheduler
+        scanningScheduler = ScanningScheduler {
+            stepAutoScan()
+        }
         // Create the LinearLayout
         createLinearLayout()
         // Inflate the menu
@@ -146,8 +148,8 @@ class MenuView(
 
     // This function is called when the menu is closed
     fun close() {
-        // Stop scanning
-        stopScanning()
+        // Shut down the scanning scheduler
+        scanningScheduler?.shutdown()
         // Remove the LinearLayout from the window
         linearLayout.removeAllViews()
         switchifyAccessibilityWindow.removeView(linearLayout)
@@ -170,13 +172,13 @@ class MenuView(
         val rate =
             PreferenceManager(context).getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
 
-        scanningScheduler.startScanning(rate, rate)
+        scanningScheduler?.startScanning(rate, rate)
     }
 
     // This function stops scanning the menu items
     override fun stopScanning() {
         // Stop the scanning scheduler
-        scanningScheduler.stopScanning()
+        scanningScheduler?.stopScanning()
         // Unhighlight the current menu item
         getCurrentItem().unhighlight()
         // Set the scan state to stopped
@@ -187,7 +189,7 @@ class MenuView(
     override fun pauseScanning() {
         if (scanState == ScanState.SCANNING) {
             // Pause the scanning scheduler
-            scanningScheduler.pauseScanning()
+            scanningScheduler?.pauseScanning()
             // Set the scan state to paused
             scanState = ScanState.PAUSED
         }
@@ -197,7 +199,7 @@ class MenuView(
     override fun resumeScanning() {
         if (scanState == ScanState.PAUSED) {
             // Resume the scanning scheduler
-            scanningScheduler.resumeScanning()
+            scanningScheduler?.resumeScanning()
             // Set the scan state to scanning
             scanState = ScanState.SCANNING
         }
