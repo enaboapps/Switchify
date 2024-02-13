@@ -8,6 +8,7 @@ import com.enaboapps.switchify.R
  * This class represents a page of the menu
  * @property context The context of the menu page
  * @property menuItems The menu items of the page
+ * @property navRowItems The navigation row items of the page
  * @property pageIndex The index of the page
  * @property maxPageIndex The maximum index of the page
  * @property onMenuPageChanged The action to perform when the page is changed
@@ -15,16 +16,23 @@ import com.enaboapps.switchify.R
 class MenuPage(
     val context: Context,
     private val menuItems: List<MenuItem>,
+    private val navRowItems: List<MenuItem>,
     private val pageIndex: Int,
     private val maxPageIndex: Int,
     val onMenuPageChanged: (pageIndex: Int) -> Unit
 ) {
-    private var linearLayout: LinearLayout = LinearLayout(context)
+    private var baseLayout: LinearLayout = LinearLayout(context)
+    private var navRowLayout = LinearLayout(context)
     private var menuChangeBtn: MenuItem? = null
-    private var _menuItems: List<MenuItem> = menuItems
+    private var _navRowItems: MutableList<MenuItem> = navRowItems.toMutableList()
 
     init {
-        linearLayout.orientation = LinearLayout.VERTICAL
+        baseLayout.orientation = LinearLayout.VERTICAL
+        navRowLayout.orientation = LinearLayout.HORIZONTAL
+        navRowLayout.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
 
         if (maxPageIndex > 0) {
             menuChangeBtn = MenuItem(
@@ -32,17 +40,17 @@ class MenuPage(
                 closeOnSelect = false,
                 action = { changePage() }
             )
-            _menuItems += menuChangeBtn!!
+            _navRowItems += menuChangeBtn!!
         }
     }
 
 
     /**
      * Get the menu items of the page
-     * @return The menu items of the page
+     * @return The menu items of the page including the navigation row items
      */
     fun getMenuItems(): List<MenuItem> {
-        return _menuItems
+        return menuItems + _navRowItems
     }
 
 
@@ -51,11 +59,16 @@ class MenuPage(
      * @return The layout of the menu
      */
     fun getMenuLayout(): LinearLayout {
-        linearLayout.removeAllViews()
-        _menuItems.forEach {
-            it.inflate(linearLayout)
+        baseLayout.removeAllViews()
+        navRowLayout.removeAllViews()
+        menuItems.forEach { menuItem ->
+            menuItem.inflate(baseLayout)
         }
-        return linearLayout
+        _navRowItems.forEach { menuItem ->
+            menuItem.inflate(navRowLayout, true)
+        }
+        baseLayout.addView(navRowLayout)
+        return baseLayout
     }
 
 

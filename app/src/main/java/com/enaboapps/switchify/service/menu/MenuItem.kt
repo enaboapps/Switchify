@@ -49,12 +49,13 @@ class MenuItem(
     /**
      * Inflate the menu item
      * @param linearLayout The linear layout to inflate the menu item into
+     * @param wrapHorizontal Whether to wrap the menu item horizontally
      */
-    fun inflate(linearLayout: LinearLayout) {
+    fun inflate(linearLayout: LinearLayout, wrapHorizontal: Boolean = false) {
         highlighted = false
         view = LinearLayout(linearLayout.context)
         view?.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
+            if (wrapHorizontal) LinearLayout.LayoutParams.WRAP_CONTENT else LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
 

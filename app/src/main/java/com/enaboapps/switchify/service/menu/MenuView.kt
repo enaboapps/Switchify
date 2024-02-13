@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.LinearLayout
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
+import com.enaboapps.switchify.service.menu.menus.BaseMenu
 import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.service.scanning.ScanState
@@ -19,7 +20,7 @@ interface MenuViewListener {
 
 class MenuView(
     val context: Context,
-    val menuItems: List<MenuItem>
+    private val menu: BaseMenu
 ) : ScanStateInterface {
 
     var menuViewListener: MenuViewListener? = null
@@ -27,7 +28,7 @@ class MenuView(
     private val switchifyAccessibilityWindow: SwitchifyAccessibilityWindow =
         SwitchifyAccessibilityWindow.instance
 
-    private var linearLayout = LinearLayout(context)
+    private var baseLayout = LinearLayout(context)
 
     // scanIndex is the index of the menu item that is currently being scanned
     private var scanIndex = 0
@@ -50,27 +51,32 @@ class MenuView(
 
     // This function sets up the menu
     private fun setup() {
-        val itemsLessHierarchy = menuItems.filter { !it.isMenuHierarchyManipulator }
-        val numOfItemsLessHierarchy = itemsLessHierarchy.size
-        numOfPages = (numOfItemsLessHierarchy / numOfItemsPerPage)
-        if (numOfItemsLessHierarchy % numOfItemsPerPage != 0) {
-            numOfPages++
-        }
-        for (item in itemsLessHierarchy) {
-            item.page = (itemsLessHierarchy.indexOf(item) / numOfItemsPerPage)
-        }
+        // Get the menu items
+        val menuItems = menu.getMenuItems()
+        // Create the menu pages
+        createMenuPages(menuItems)
+    }
+
+    // This function creates the menu pages
+    private fun createMenuPages(menuItems: List<MenuItem>) {
+        // Calculate the number of pages
+        numOfPages = (menuItems.size + numOfItemsPerPage - 1) / numOfItemsPerPage
+        // Create the menu pages
         for (i in 0 until numOfPages) {
-            val hierarchyItems = menuItems.filter { it.isMenuHierarchyManipulator }
-            val items = itemsLessHierarchy.filter { it.page == i } + hierarchyItems
-            val containsNonHierarchyItems = items.any { !it.isMenuHierarchyManipulator }
-            if (containsNonHierarchyItems) {
-                menuPages.add(MenuPage(context, items, i, numOfPages - 1) {
-                    onMenuPageChanged(it)
-                })
-            } else {
-                numOfPages--
-                break
-            }
+            val start = i * numOfItemsPerPage
+            val end = ((i + 1) * numOfItemsPerPage).coerceAtMost(menuItems.size)
+            val pageItems = menuItems.subList(start, end)
+            val navRowItems = menu.buildNavMenuItems()
+            menuPages.add(
+                MenuPage(
+                    context,
+                    pageItems,
+                    navRowItems,
+                    i,
+                    numOfPages - 1,
+                    ::onMenuPageChanged
+                )
+            )
         }
     }
 
@@ -88,20 +94,20 @@ class MenuView(
     // This function inflates the menu
     private fun inflateMenu() {
         // Remove all views from the LinearLayout
-        linearLayout.removeAllViews()
+        baseLayout.removeAllViews()
         // Add the menu items to the LinearLayout
-        linearLayout.addView(menuPages[currentPage].getMenuLayout())
+        baseLayout.addView(menuPages[currentPage].getMenuLayout())
     }
 
     private fun createLinearLayout() {
         // If the point is close to the center, set the transparency to 0.6
         // This way the user can see the content behind the menu
         val transparency = GestureManager.getInstance().isPointCloseToCenter()
-        linearLayout = LinearLayout(context)
-        linearLayout.alpha = if (transparency) 0.6f else 1f
-        linearLayout.orientation = LinearLayout.VERTICAL
-        linearLayout.setPadding(10, 10, 10, 10)
-        linearLayout.setBackgroundColor(
+        baseLayout = LinearLayout(context)
+        baseLayout.alpha = if (transparency) 0.6f else 1f
+        baseLayout.orientation = LinearLayout.VERTICAL
+        baseLayout.setPadding(10, 10, 10, 10)
+        baseLayout.setBackgroundColor(
             context.resources.getColor(
                 android.R.color.darker_gray,
                 null
@@ -110,7 +116,7 @@ class MenuView(
     }
 
     private fun addToWindow() {
-        switchifyAccessibilityWindow.addViewToCenter(linearLayout)
+        switchifyAccessibilityWindow.addViewToCenter(baseLayout)
     }
 
 
@@ -151,8 +157,8 @@ class MenuView(
         // Shut down the scanning scheduler
         scanningScheduler?.shutdown()
         // Remove the LinearLayout from the window
-        linearLayout.removeAllViews()
-        switchifyAccessibilityWindow.removeView(linearLayout)
+        baseLayout.removeAllViews()
+        switchifyAccessibilityWindow.removeView(baseLayout)
         // Call the listener
         menuViewListener?.onMenuViewClosed()
     }
