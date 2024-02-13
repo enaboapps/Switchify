@@ -6,30 +6,53 @@ import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.MenuView
 
+/**
+ * This class represents a base menu
+ * @property accessibilityService The accessibility service
+ * @property items The menu items
+ */
 open class BaseMenu(
     private val accessibilityService: SwitchifyAccessibilityService,
     private val items: List<MenuItem>
 ) {
-    private fun getMenuItems(): List<MenuItem> {
-        var menuItems = items
-        if (MenuManager.getInstance().menuHierarchy?.getTopMenu() != null) {
-            menuItems = menuItems + MenuItem(
-                drawableId = R.drawable.ic_previous_menu,
-                isMenuHierarchyManipulator = true
-            ) {
-                MenuManager.getInstance().menuHierarchy?.popMenu()
-            }
-        }
-        menuItems = menuItems + MenuItem(
-            drawableId = R.drawable.ic_close_menu,
-            isMenuHierarchyManipulator = true
-        ) {
-            MenuManager.getInstance().menuHierarchy?.removeAllMenus()
-        }
-        return menuItems
+    /**
+     * Get the menu items
+     * @return The menu items
+     */
+    fun getMenuItems(): List<MenuItem> {
+        return items
     }
 
+    /**
+     * Build the navigation menu items
+     * @return The navigation menu items
+     */
+    fun buildNavMenuItems(): List<MenuItem> {
+        val navMenuItems = mutableListOf<MenuItem>()
+        if (MenuManager.getInstance().menuHierarchy?.getTopMenu() != null) {
+            navMenuItems.add(
+                MenuItem(
+                    drawableId = R.drawable.ic_previous_menu,
+                    isMenuHierarchyManipulator = true,
+                    action = { MenuManager.getInstance().menuHierarchy?.popMenu() }
+                )
+            )
+        }
+        navMenuItems.add(
+            MenuItem(
+                drawableId = R.drawable.ic_close_menu,
+                isMenuHierarchyManipulator = true,
+                action = { MenuManager.getInstance().menuHierarchy?.removeAllMenus() }
+            )
+        )
+        return navMenuItems
+    }
+
+    /**
+     * Build the menu view
+     * @return The menu view
+     */
     fun build(): MenuView {
-        return MenuView(accessibilityService, getMenuItems())
+        return MenuView(accessibilityService, this)
     }
 }
