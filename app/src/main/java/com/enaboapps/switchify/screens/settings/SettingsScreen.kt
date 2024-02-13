@@ -14,7 +14,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.nav.NavigationRoute
+import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.screens.settings.models.SettingsScreenModel
+import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.PreferenceLink
 import com.enaboapps.switchify.widgets.PreferenceSection
@@ -66,24 +68,28 @@ fun SettingsScreen(navController: NavController) {
 
 @Composable
 private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
+    val mode =
+        PreferenceManager(LocalContext.current).getIntegerValue(PreferenceManager.PREFERENCE_KEY_SCAN_MODE)
     PreferenceSection(title = "Timing") {
-        PreferenceTimeStepper(
-            value = settingsScreenModel.scanRate.value ?: 0,
-            title = "Scan rate",
-            summary = "The interval at which the scanner will move to the next item",
-            min = 200,
-            max = 100000
-        ) {
-            settingsScreenModel.setScanRate(it)
-        }
-        PreferenceTimeStepper(
-            value = settingsScreenModel.refineScanRate.value ?: 0,
-            title = "Refine scan rate",
-            summary = "The interval at which the scanner will move when refining the selection",
-            min = 200,
-            max = 100000
-        ) {
-            settingsScreenModel.setRefineScanRate(it)
+        if (mode == ScanMode.Modes.MODE_AUTO) {
+            PreferenceTimeStepper(
+                value = settingsScreenModel.scanRate.value ?: 0,
+                title = "Scan rate",
+                summary = "The interval at which the scanner will move to the next item",
+                min = 200,
+                max = 100000
+            ) {
+                settingsScreenModel.setScanRate(it)
+            }
+            PreferenceTimeStepper(
+                value = settingsScreenModel.refineScanRate.value ?: 0,
+                title = "Refine scan rate",
+                summary = "The interval at which the scanner will move when refining the selection",
+                min = 200,
+                max = 100000
+            ) {
+                settingsScreenModel.setRefineScanRate(it)
+            }
         }
         PreferenceTimeStepper(
             value = settingsScreenModel.switchHoldTime.value ?: 0,
