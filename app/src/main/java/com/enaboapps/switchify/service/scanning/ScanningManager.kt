@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.scanning
 
+import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME
 import android.content.Context
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.cursor.CursorManager
@@ -131,6 +132,11 @@ class ScanningManager(
                         MenuManager.getInstance().menuHierarchy?.getTopMenu()?.moveToPreviousItem()
                     }
                 }
+            }
+
+            SwitchAction.Actions.ACTION_SYS_HOME -> {
+                // Go to the home screen
+                accessibilityService.performGlobalAction(GLOBAL_ACTION_HOME)
             }
         }
     }
