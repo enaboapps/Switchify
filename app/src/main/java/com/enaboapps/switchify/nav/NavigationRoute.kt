@@ -10,6 +10,7 @@ sealed class NavigationRoute(val name: String) {
     data object Account : NavigationRoute("Account")
     data object ChangePassword : NavigationRoute("ChangePassword")
     data object Settings : NavigationRoute("Settings")
+    data object About : NavigationRoute("About")
     data object ScanMode : NavigationRoute("ScanMode")
     data object Switches : NavigationRoute("Switches")
     data object AddNewSwitch : NavigationRoute("AddNewSwitch")

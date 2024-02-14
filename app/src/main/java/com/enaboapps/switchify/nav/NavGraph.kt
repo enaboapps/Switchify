@@ -11,9 +11,10 @@ import com.enaboapps.switchify.screens.account.ChangePasswordScreen
 import com.enaboapps.switchify.screens.account.ForgotPasswordScreen
 import com.enaboapps.switchify.screens.account.SignInScreen
 import com.enaboapps.switchify.screens.account.SignUpScreen
-import com.enaboapps.switchify.screens.settings.switches.AddNewSwitchScreen
+import com.enaboapps.switchify.screens.settings.AboutScreen
 import com.enaboapps.switchify.screens.settings.SettingsScreen
 import com.enaboapps.switchify.screens.settings.scanning.ScanModeSelectionScreen
+import com.enaboapps.switchify.screens.settings.switches.AddNewSwitchScreen
 import com.enaboapps.switchify.screens.settings.switches.EditSwitchScreen
 import com.enaboapps.switchify.screens.settings.switches.SwitchesScreen
 import com.enaboapps.switchify.screens.setup.SetupScreen
@@ -44,6 +45,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(NavigationRoute.Settings.name) {
             SettingsScreen(navController)
+        }
+        composable(NavigationRoute.About.name) {
+            AboutScreen(navController)
         }
         composable(NavigationRoute.ScanMode.name) {
             ScanModeSelectionScreen(navController)
