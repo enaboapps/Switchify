@@ -2,6 +2,7 @@ package com.enaboapps.switchify.screens.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -60,6 +61,13 @@ fun SettingsScreen(navController: NavController) {
                 summary = "Configure your switches",
                 navController = navController,
                 route = NavigationRoute.Switches.name
+            )
+            Spacer(modifier = Modifier.padding(top = 16.dp))
+            PreferenceLink(
+                title = "About",
+                summary = "About the app",
+                navController = navController,
+                route = NavigationRoute.About.name
             )
         }
     }
