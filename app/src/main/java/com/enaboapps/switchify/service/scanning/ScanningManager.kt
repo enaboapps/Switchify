@@ -54,7 +54,7 @@ class ScanningManager(
 
             State.MENU -> {
                 // Select the menu item
-                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.select()
+                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.performSelection()
             }
         }
     }
@@ -101,7 +101,7 @@ class ScanningManager(
 
                     State.MENU -> {
                         // Change the menu direction
-                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.swapScanDirection()
+                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.swapScanDirection()
                     }
                 }
             }
@@ -115,7 +115,7 @@ class ScanningManager(
 
                     State.MENU -> {
                         // Move the menu to the next item
-                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.moveToNextItem()
+                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stepForward()
                     }
                 }
             }
@@ -129,7 +129,7 @@ class ScanningManager(
 
                     State.MENU -> {
                         // Move the menu to the previous item
-                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.moveToPreviousItem()
+                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stepBackward()
                     }
                 }
             }
@@ -150,7 +150,7 @@ class ScanningManager(
 
             State.MENU -> {
                 // Pause the menu
-                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.pauseScanning()
+                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.pauseScanning()
             }
         }
     }
@@ -164,7 +164,7 @@ class ScanningManager(
 
             State.MENU -> {
                 // Resume the menu
-                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.resumeScanning()
+                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.resumeScanning()
             }
         }
     }
