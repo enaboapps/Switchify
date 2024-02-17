@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.scanning
 
 import android.content.Context
+import android.util.Log
 import com.enaboapps.switchify.preferences.PreferenceManager
 
 class ScanTree(context: Context) : ScanStateInterface {
@@ -122,8 +123,10 @@ class ScanTree(context: Context) : ScanStateInterface {
      * This function highlights the current row
      */
     private fun highlightCurrentRow() {
-        for (node in tree[currentRow]) {
-            node.highlight()
+        if (tree.size > currentRow) {
+            for (node in tree[currentRow]) {
+                node.highlight()
+            }
         }
     }
 
@@ -131,8 +134,10 @@ class ScanTree(context: Context) : ScanStateInterface {
      * This function unhighlights the current row
      */
     private fun unhighlightCurrentRow() {
-        for (node in tree[currentRow]) {
-            node.unhighlight()
+        if (tree.size > currentRow) {
+            for (node in tree[currentRow]) {
+                node.unhighlight()
+            }
         }
     }
 
@@ -193,7 +198,13 @@ class ScanTree(context: Context) : ScanStateInterface {
      * This function selects the current column
      */
     private fun selectCurrentColumn() {
-        tree[currentRow][currentColumn].select()
+        // Check if the row exists
+        if (tree.size > currentRow) {
+            // Check if the column exists
+            if (tree[currentRow].size > currentColumn) {
+                tree[currentRow][currentColumn].select()
+            }
+        }
     }
 
     /**
@@ -208,6 +219,8 @@ class ScanTree(context: Context) : ScanStateInterface {
         }
         if (isInRow) {
             selectCurrentColumn()
+            stopScanning()
+            reset()
         } else {
             selectCurrentRow()
         }
@@ -217,19 +230,23 @@ class ScanTree(context: Context) : ScanStateInterface {
      * This function steps through the scanning tree
      */
     private fun stepAutoScanning() {
-        if (isInRow) {
-            if (scanDirection == ScanDirection.RIGHT) {
-                moveSelectionToNextNode()
+        if (scanState == ScanState.SCANNING) {
+            if (isInRow) {
+                if (scanDirection == ScanDirection.RIGHT) {
+                    moveSelectionToNextNode()
+                } else {
+                    moveSelectionToPreviousNode()
+                }
             } else {
-                moveSelectionToPreviousNode()
-            }
-        } else {
-            if (scanDirection == ScanDirection.DOWN) {
-                moveSelectionToNextRow()
-            } else {
-                moveSelectionToPreviousRow()
+                if (scanDirection == ScanDirection.DOWN) {
+                    moveSelectionToNextRow()
+                } else {
+                    moveSelectionToPreviousRow()
+                }
             }
         }
+
+        Log.d("ScanTree", "stepAutoScanning scanState: $scanState")
     }
 
     /**
@@ -260,16 +277,19 @@ class ScanTree(context: Context) : ScanStateInterface {
      * This function starts scanning
      */
     private fun startScanning() {
-        val mode = preferenceManager.getIntegerValue(PreferenceManager.PREFERENCE_KEY_SCAN_MODE)
+        val mode =
+            ScanMode.fromId(preferenceManager.getIntegerValue(PreferenceManager.PREFERENCE_KEY_SCAN_MODE))
         if (scanState == ScanState.STOPPED) {
             reset()
             highlightCurrentRow() // Highlight the first row
-            if (mode == ScanMode.Modes.MODE_AUTO) {
+            scanState = ScanState.SCANNING
+            Log.d("ScanTree", "mode: $mode")
+            if (mode.id == ScanMode.Modes.MODE_AUTO) {
+                Log.d("ScanTree", "startScanning")
                 val rate =
                     preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SCAN_RATE)
                 scanningScheduler.startScanning(rate, rate)
             }
-            scanState = ScanState.SCANNING
         }
     }
 
