@@ -2,31 +2,38 @@ package com.enaboapps.switchify.service.scanning
 
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.newSingleThreadContext
 import java.util.UUID
 
 class ScanningScheduler(private val onScan: suspend () -> Unit) {
-    // Generate a unique identifier for the scope
     private val uniqueId = UUID.randomUUID().toString()
-    private val coroutineScope = CoroutineScope(Dispatchers.Default + CoroutineName(uniqueId))
+
+    // Create a new single-threaded context named "ScanningThread"
+    @OptIn(DelicateCoroutinesApi::class)
+    private val singleThreadContext = newSingleThreadContext("ScanningThread-$uniqueId")
+
+    // Use the single-threaded context for the coroutineScope
+    private val coroutineScope = CoroutineScope(singleThreadContext + CoroutineName(uniqueId))
+
     private var scanningJob: Job? = null
     private var isPaused = false
-    private var isExecuting = false // Execution flag to track onScan execution
+    private var isExecuting = false
     private var initialDelay: Long = 0L
-    private var period: Long = 1000L // Default period of 1 second
+    private var period: Long = 1000L
 
     fun startScanning(initialDelay: Long, period: Long) {
         this.initialDelay = initialDelay
         this.period = period
-        scanningJob?.cancel() // Cancel any existing job
+        scanningJob?.cancel()
         scanningJob = coroutineScope.launch {
             println("[$uniqueId] Starting scanning job")
-            delay(initialDelay) // Apply initial delay before starting the scanning
+            delay(initialDelay)
             while (isActive) {
                 if (!isExecuting) {
                     isExecuting = true
@@ -49,33 +56,20 @@ class ScanningScheduler(private val onScan: suspend () -> Unit) {
     fun pauseScanning() {
         isPaused = true
         println("[$uniqueId] Pausing scanning job")
-        scanningJob?.cancel() // Cancel the job but keep the configuration for resuming
+        scanningJob?.cancel()
     }
 
     fun resumeScanning() {
         if (isPaused) {
             isPaused = false
             println("[$uniqueId] Resuming scanning job")
-            // Resume with the original period, but without the initial delay
-            scanningJob = coroutineScope.launch {
-                delay(period) // Delay for the period before resuming regular scanning
-                while (isActive) {
-                    if (!isExecuting) {
-                        isExecuting = true
-                        try {
-                            onScan()
-                        } finally {
-                            isExecuting = false
-                        }
-                    }
-                    delay(period)
-                }
-            }
+            startScanning(initialDelay, period)
         }
     }
 
     fun shutdown() {
         println("[$uniqueId] Shutting down scope")
         coroutineScope.cancel() // Cancel all coroutines started by this scope
+        singleThreadContext.close() // Properly close the single-thread context to avoid memory leaks
     }
 }
