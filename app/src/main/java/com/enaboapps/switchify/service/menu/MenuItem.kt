@@ -6,6 +6,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.graphics.drawable.DrawableCompat
+import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 
 /**
  * This class represents a menu item
@@ -25,7 +26,7 @@ class MenuItem(
     var isMenuHierarchyManipulator: Boolean = false,
     var page: Int = 0,
     private val action: () -> Unit
-) {
+) : ScanNodeInterface {
     /**
      * The highlighted state of the menu item
      */
@@ -138,7 +139,7 @@ class MenuItem(
     /**
      * Select the menu item
      */
-    fun select() {
+    override fun select() {
         Log.d("MenuItem", "Selected menu item: $text")
         if (!isLinkToMenu && !isMenuHierarchyManipulator && closeOnSelect) {
             MenuManager.getInstance().closeMenuHierarchy()
@@ -149,7 +150,7 @@ class MenuItem(
     /**
      * Highlight the menu item
      */
-    fun highlight() {
+    override fun highlight() {
         try {
             highlighted = true
             view?.setBackgroundColor(
@@ -178,7 +179,7 @@ class MenuItem(
     /**
      * Unhighlight the menu item
      */
-    fun unhighlight() {
+    override fun unhighlight() {
         try {
             highlighted = false
             view?.setBackgroundColor(
@@ -202,5 +203,17 @@ class MenuItem(
         } catch (e: Exception) {
             Log.e("MenuItem", "Error unhighlighting menu item", e)
         }
+    }
+
+    override fun getX(): Int {
+        val location = IntArray(2)
+        view?.getLocationOnScreen(location)
+        return location[0]
+    }
+
+    override fun getY(): Int {
+        val location = IntArray(2)
+        view?.getLocationOnScreen(location)
+        return location[1]
     }
 }
