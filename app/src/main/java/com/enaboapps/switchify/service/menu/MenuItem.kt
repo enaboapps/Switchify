@@ -206,10 +206,14 @@ class MenuItem(
     }
 
     override fun getX(): Int {
-        return view?.x?.toInt() ?: 0
+        val location = IntArray(2)
+        view?.getLocationOnScreen(location)
+        return location[0]
     }
 
     override fun getY(): Int {
-        return view?.y?.toInt() ?: 0
+        val location = IntArray(2)
+        view?.getLocationOnScreen(location)
+        return location[1]
     }
 }

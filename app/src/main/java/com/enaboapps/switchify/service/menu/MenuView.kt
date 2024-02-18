@@ -129,6 +129,8 @@ class MenuView(
         // Remove the LinearLayout from the window
         baseLayout.removeAllViews()
         switchifyAccessibilityWindow.removeView(baseLayout)
+        // Shutdown the scan tree
+        scanTree.shutdown()
         // Call the listener
         menuViewListener?.onMenuViewClosed()
     }

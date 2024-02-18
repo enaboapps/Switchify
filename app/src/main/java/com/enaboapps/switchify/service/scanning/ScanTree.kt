@@ -40,7 +40,7 @@ class ScanTree(context: Context) : ScanStateInterface {
     /**
      * Scanning scheduler: This is for automatic scanning
      */
-    private var scanningScheduler = ScanningScheduler { stepAutoScanning() }
+    private var scanningScheduler: ScanningScheduler? = null
 
     private val preferenceManager = PreferenceManager(context)
 
@@ -56,15 +56,41 @@ class ScanTree(context: Context) : ScanStateInterface {
         var currentY = nodes[0].getY()
         for (node in nodes) {
             if (node.getY() != currentY) {
-                tree.add(currentRow)
+                addRow(currentRow)
                 currentRow = mutableListOf()
                 currentY = node.getY()
             }
             currentRow.add(node)
-            println("currentRow: $currentRow")
         }
-        tree.add(currentRow) // Add the last row
-        println("scanning tree: $tree")
+        addRow(currentRow)
+
+        setupScanningScheduler()
+    }
+
+    /**
+     * This function adds a row to the scanning tree sorted ascending by the x coordinate
+     * @param row The row to add
+     */
+    private fun addRow(row: List<ScanNodeInterface>) {
+        tree.add(row.sortedBy { it.getX() })
+    }
+
+    /**
+     * This function shuts down the scanning scheduler
+     */
+    fun shutdown() {
+        scanningScheduler?.shutdown()
+        scanningScheduler = null
+    }
+
+    /**
+     * This function sets the scanning scheduler
+     */
+    private fun setupScanningScheduler() {
+        reset()
+        shutdown()
+
+        scanningScheduler = ScanningScheduler { stepAutoScanning() }
     }
 
     /**
@@ -182,12 +208,15 @@ class ScanTree(context: Context) : ScanStateInterface {
      * It resumes scanning
      */
     private fun selectCurrentRow() {
-        if (tree[currentRow].size == 1) {
-            tree[currentRow][0].select()
-            return
+        if (tree.size > currentRow) {
+            if (tree[currentRow].size == 1) {
+                tree[currentRow][0].select()
+                return
+            }
         }
         isInRow = true
         currentColumn = 0
+        scanDirection = ScanDirection.RIGHT
         unhighlightCurrentRow()
         highlightCurrentNode()
         pauseScanning()
@@ -245,8 +274,6 @@ class ScanTree(context: Context) : ScanStateInterface {
                 }
             }
         }
-
-        Log.d("ScanTree", "stepAutoScanning scanState: $scanState")
     }
 
     /**
@@ -279,7 +306,7 @@ class ScanTree(context: Context) : ScanStateInterface {
     private fun startScanning() {
         val mode =
             ScanMode.fromId(preferenceManager.getIntegerValue(PreferenceManager.PREFERENCE_KEY_SCAN_MODE))
-        if (scanState == ScanState.STOPPED) {
+        if (scanState == ScanState.STOPPED && tree.isNotEmpty()) {
             reset()
             highlightCurrentRow() // Highlight the first row
             scanState = ScanState.SCANNING
@@ -288,28 +315,28 @@ class ScanTree(context: Context) : ScanStateInterface {
                 Log.d("ScanTree", "startScanning")
                 val rate =
                     preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SCAN_RATE)
-                scanningScheduler.startScanning(rate, rate)
+                scanningScheduler?.startScanning(rate, rate)
             }
         }
     }
 
     override fun pauseScanning() {
         if (scanState == ScanState.SCANNING) {
-            scanningScheduler.pauseScanning()
+            scanningScheduler?.pauseScanning()
             scanState = ScanState.PAUSED
         }
     }
 
     override fun resumeScanning() {
         if (scanState == ScanState.PAUSED) {
-            scanningScheduler.resumeScanning()
+            scanningScheduler?.resumeScanning()
             scanState = ScanState.SCANNING
         }
     }
 
     override fun stopScanning() {
         if (scanState == ScanState.SCANNING || scanState == ScanState.PAUSED) {
-            scanningScheduler.stopScanning()
+            scanningScheduler?.stopScanning()
             scanState = ScanState.STOPPED
         }
     }
@@ -324,6 +351,7 @@ class ScanTree(context: Context) : ScanStateInterface {
         currentColumn = 0
         isInRow = false
         scanDirection = ScanDirection.DOWN
+        stopScanning()
     }
 
     /**
