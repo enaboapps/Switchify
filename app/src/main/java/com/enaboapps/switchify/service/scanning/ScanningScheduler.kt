@@ -22,6 +22,9 @@ class ScanningScheduler(private val onScan: suspend () -> Unit) {
     private var scanState = ScanState.STOPPED
 
     fun startScanning(initialDelay: Long, period: Long) {
+        if (scanState == ScanState.SCANNING) {
+            return
+        }
         scanState = ScanState.SCANNING
         this.initialDelay = initialDelay
         this.period = period
