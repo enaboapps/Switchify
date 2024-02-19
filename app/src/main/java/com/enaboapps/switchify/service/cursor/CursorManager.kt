@@ -10,7 +10,6 @@ import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanMode
-import com.enaboapps.switchify.service.scanning.ScanState
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
@@ -33,8 +32,6 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
     private var x: Int = 0
     private var y: Int = 0
-
-    private var scanState = ScanState.STOPPED
 
     private var direction: ScanDirection = ScanDirection.RIGHT
 
@@ -128,8 +125,6 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
 
     private fun start() {
-        scanState = ScanState.SCANNING
-
         val mode =
             ScanMode(preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
         if (mode.id == ScanMode.Modes.MODE_MANUAL) {
@@ -213,31 +208,26 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     // Function to stop the scanning
     override fun stopScanning() {
         scanningScheduler.stopScanning()
-        scanState = ScanState.STOPPED
     }
 
 
     // Function to pause the scanning
     override fun pauseScanning() {
         scanningScheduler.pauseScanning()
-        scanState = ScanState.PAUSED
     }
 
 
     // Function to resume the scanning
     override fun resumeScanning() {
         scanningScheduler.resumeScanning()
-        scanState = ScanState.SCANNING
     }
 
 
     private fun move() {
-        if (scanState == ScanState.SCANNING) {
-            if (isInQuadrant) {
-                moveCursorLine()
-            } else {
-                moveToNextQuadrant()
-            }
+        if (isInQuadrant) {
+            moveCursorLine()
+        } else {
+            moveToNextQuadrant()
         }
     }
 
@@ -420,7 +410,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
 
     fun performSelectionAction() {
-        pauseScanning()
+        stopScanning()
 
         // If the event is triggered within the auto select delay, we don't perform the action
         if (checkAutoSelectDelay()) {
@@ -436,7 +426,6 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
         // We perform the action based on the direction
         when (direction) {
             ScanDirection.LEFT, ScanDirection.RIGHT -> {
-                stopScanning()
                 if (!isInQuadrant) {
                     isInQuadrant = true
 
@@ -459,7 +448,6 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
             }
 
             ScanDirection.UP, ScanDirection.DOWN -> {
-                stopScanning()
                 if (!isInQuadrant) {
                     isInQuadrant = true
 

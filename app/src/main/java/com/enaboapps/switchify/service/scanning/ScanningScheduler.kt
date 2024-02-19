@@ -15,12 +15,14 @@ class ScanningScheduler(private val onScan: suspend () -> Unit) {
     private val uniqueId = UUID.randomUUID().toString()
     private val coroutineScope = CoroutineScope(Dispatchers.Default + CoroutineName(uniqueId))
     private var scanningJob: Job? = null
-    private var isPaused = false
     private var isExecuting = false // Execution flag to track onScan execution
     private var initialDelay: Long = 0L
     private var period: Long = 1000L // Default period of 1 second
 
+    private var scanState = ScanState.STOPPED
+
     fun startScanning(initialDelay: Long, period: Long) {
+        scanState = ScanState.SCANNING
         this.initialDelay = initialDelay
         this.period = period
         scanningJob?.cancel() // Cancel any existing job
@@ -41,37 +43,30 @@ class ScanningScheduler(private val onScan: suspend () -> Unit) {
         }
     }
 
+    fun isScanning(): Boolean {
+        return scanState == ScanState.SCANNING
+    }
+
+    fun isPaused(): Boolean {
+        return scanState == ScanState.PAUSED
+    }
+
+    fun isStopped(): Boolean {
+        return scanState == ScanState.STOPPED
+    }
+
     fun stopScanning() {
-        println("[$uniqueId] Stopping scanning job")
+        scanState = ScanState.STOPPED
         scanningJob?.cancel()
     }
 
     fun pauseScanning() {
-        isPaused = true
-        println("[$uniqueId] Pausing scanning job")
-        scanningJob?.cancel() // Cancel the job but keep the configuration for resuming
+        scanState = ScanState.PAUSED
+        scanningJob?.cancel()
     }
 
     fun resumeScanning() {
-        if (isPaused) {
-            isPaused = false
-            println("[$uniqueId] Resuming scanning job")
-            // Resume with the original period, but without the initial delay
-            scanningJob = coroutineScope.launch {
-                delay(period) // Delay for the period before resuming regular scanning
-                while (isActive) {
-                    if (!isExecuting) {
-                        isExecuting = true
-                        try {
-                            onScan()
-                        } finally {
-                            isExecuting = false
-                        }
-                    }
-                    delay(period)
-                }
-            }
-        }
+        startScanning(initialDelay, period)
     }
 
     fun shutdown() {

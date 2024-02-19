@@ -33,11 +33,6 @@ class ScanTree(context: Context) : ScanStateInterface {
     private var scanDirection = ScanDirection.DOWN
 
     /**
-     * This property indicates the state of the scanning
-     */
-    private var scanState = ScanState.STOPPED
-
-    /**
      * Scanning scheduler: This is for automatic scanning
      */
     private var scanningScheduler: ScanningScheduler? = null
@@ -242,8 +237,9 @@ class ScanTree(context: Context) : ScanStateInterface {
      * If the scanning tree is not in a row, it selects the current row
      */
     fun performSelection() {
-        if (scanState == ScanState.STOPPED) {
+        if (scanningScheduler?.isScanning() == false) {
             startScanning()
+            println("Scanning started")
             return
         }
         if (isInRow) {
@@ -259,19 +255,17 @@ class ScanTree(context: Context) : ScanStateInterface {
      * This function steps through the scanning tree
      */
     private fun stepAutoScanning() {
-        if (scanState == ScanState.SCANNING) {
-            if (isInRow) {
-                if (scanDirection == ScanDirection.RIGHT) {
-                    moveSelectionToNextNode()
-                } else {
-                    moveSelectionToPreviousNode()
-                }
+        if (isInRow) {
+            if (scanDirection == ScanDirection.RIGHT) {
+                moveSelectionToNextNode()
             } else {
-                if (scanDirection == ScanDirection.DOWN) {
-                    moveSelectionToNextRow()
-                } else {
-                    moveSelectionToPreviousRow()
-                }
+                moveSelectionToPreviousNode()
+            }
+        } else {
+            if (scanDirection == ScanDirection.DOWN) {
+                moveSelectionToNextRow()
+            } else {
+                moveSelectionToPreviousRow()
             }
         }
     }
@@ -280,7 +274,6 @@ class ScanTree(context: Context) : ScanStateInterface {
      * This function is for manually scanning forward in the scanning tree
      */
     fun stepForward() {
-        scanState = ScanState.SCANNING
         if (isInRow) {
             moveSelectionToNextNode()
         } else {
@@ -292,7 +285,6 @@ class ScanTree(context: Context) : ScanStateInterface {
      * This function is for manually scanning backward in the scanning tree
      */
     fun stepBackward() {
-        scanState = ScanState.SCANNING
         if (isInRow) {
             moveSelectionToPreviousNode()
         } else {
@@ -306,10 +298,9 @@ class ScanTree(context: Context) : ScanStateInterface {
     private fun startScanning() {
         val mode =
             ScanMode.fromId(preferenceManager.getIntegerValue(PreferenceManager.PREFERENCE_KEY_SCAN_MODE))
-        if (scanState == ScanState.STOPPED && tree.isNotEmpty()) {
+        if (tree.isNotEmpty()) {
             reset()
             highlightCurrentRow() // Highlight the first row
-            scanState = ScanState.SCANNING
             Log.d("ScanTree", "mode: $mode")
             if (mode.id == ScanMode.Modes.MODE_AUTO) {
                 Log.d("ScanTree", "startScanning")
@@ -321,23 +312,20 @@ class ScanTree(context: Context) : ScanStateInterface {
     }
 
     override fun pauseScanning() {
-        if (scanState == ScanState.SCANNING) {
+        if (scanningScheduler?.isScanning() == true) {
             scanningScheduler?.pauseScanning()
-            scanState = ScanState.PAUSED
         }
     }
 
     override fun resumeScanning() {
-        if (scanState == ScanState.PAUSED) {
+        if (scanningScheduler?.isPaused() == true) {
             scanningScheduler?.resumeScanning()
-            scanState = ScanState.SCANNING
         }
     }
 
     override fun stopScanning() {
-        if (scanState == ScanState.SCANNING || scanState == ScanState.PAUSED) {
+        if (scanningScheduler?.isScanning() == true || scanningScheduler?.isPaused() == true) {
             scanningScheduler?.stopScanning()
-            scanState = ScanState.STOPPED
         }
     }
 
