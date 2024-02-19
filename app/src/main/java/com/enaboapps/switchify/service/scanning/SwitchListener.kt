@@ -28,6 +28,11 @@ class SwitchListener(
     // Timer for tracking switch hold duration
     private var switchHoldTimer: Timer? = null
 
+    // Variables for ignoring switch repeat
+    private var lastSwitchPressedTime: Long = 0
+    private var lastSwitchPressedCode: Int = 0
+
+
     // Function to start the switch hold timer
     private fun startSwitchHoldTimer() {
         switchHoldTimer = Timer()
@@ -48,11 +53,19 @@ class SwitchListener(
         )
     }
 
-    // Called when a switch is pressed
+    /**
+     * Called when a switch is pressed
+     * @param keyCode the key code of the switch event
+     * @return true if the event should be absorbed, false otherwise
+     */
     fun onSwitchPressed(keyCode: Int): Boolean {
         val switchEvent = switchEventStore.find(keyCode.toString())
         Log.d("SwitchListener", "onSwitchPressed: $keyCode")
         return switchEvent?.let {
+            if (shouldIgnoreSwitchRepeat(keyCode)) {
+                return false // Absorb the event, but don't perform any action
+            }
+
             latestAction = AbsorbedSwitchAction(it, System.currentTimeMillis())
 
             // Handle immediate press action or start hold timer for long press
@@ -69,12 +82,22 @@ class SwitchListener(
         } ?: true
     }
 
-    // Called when a switch is released
+    /**
+     * Called when a switch is released
+     * @param keyCode the key code of the switch event
+     * @return true if the event should be absorbed, false otherwise
+     */
     fun onSwitchReleased(keyCode: Int): Boolean {
         val switchEvent = switchEventStore.find(keyCode.toString())
         Log.d("SwitchListener", "onSwitchReleased: $keyCode")
         return switchEvent?.let { event ->
             latestAction?.takeIf { it.switchEvent == event }?.let {
+                // Check ignore repeat setting
+                if (shouldIgnoreSwitchRepeat(keyCode)) {
+                    switchHoldTimer?.cancel() // Cancel any running timer
+                    return false // Absorb the event, but don't perform any action
+                }
+
                 val timeElapsed = System.currentTimeMillis() - it.time
                 val switchHoldTime =
                     preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
@@ -105,7 +128,33 @@ class SwitchListener(
             false
         } ?: true
     }
-}
 
-// Data class representing a switch action absorbed by the listener
-data class AbsorbedSwitchAction(val switchEvent: SwitchEvent, val time: Long)
+    /**
+     * Check if the switch event should be ignored based on the repeat delay setting
+     * @param keyCode the key code of the switch event
+     * @return true if the event should be ignored, false otherwise
+     */
+    private fun shouldIgnoreSwitchRepeat(keyCode: Int): Boolean {
+        val currentTime = System.currentTimeMillis()
+        val ignoreRepeat =
+            preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_SWITCH_IGNORE_REPEAT)
+        val ignoreRepeatDelay =
+            preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_IGNORE_REPEAT_DELAY)
+
+        return if (ignoreRepeat && keyCode == lastSwitchPressedCode && currentTime - lastSwitchPressedTime < ignoreRepeatDelay) {
+            Log.d("SwitchListener", "Ignoring switch repeat: $keyCode")
+            true
+        } else {
+            lastSwitchPressedTime = currentTime
+            lastSwitchPressedCode = keyCode
+            false
+        }
+    }
+
+    /**
+     * Data class to hold the absorbed switch action and the time it was absorbed
+     * @param switchEvent the absorbed switch event
+     * @param time the time the switch event was absorbed
+     */
+    private data class AbsorbedSwitchAction(val switchEvent: SwitchEvent, val time: Long)
+}

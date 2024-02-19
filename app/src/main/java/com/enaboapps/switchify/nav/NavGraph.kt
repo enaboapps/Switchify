@@ -16,6 +16,7 @@ import com.enaboapps.switchify.screens.settings.SettingsScreen
 import com.enaboapps.switchify.screens.settings.scanning.ScanModeSelectionScreen
 import com.enaboapps.switchify.screens.settings.switches.AddNewSwitchScreen
 import com.enaboapps.switchify.screens.settings.switches.EditSwitchScreen
+import com.enaboapps.switchify.screens.settings.switches.SwitchStabilityScreen
 import com.enaboapps.switchify.screens.settings.switches.SwitchesScreen
 import com.enaboapps.switchify.screens.setup.SetupScreen
 
@@ -45,6 +46,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(NavigationRoute.Settings.name) {
             SettingsScreen(navController)
+        }
+        composable(NavigationRoute.SwitchStability.name) {
+            SwitchStabilityScreen(navController)
         }
         composable(NavigationRoute.About.name) {
             AboutScreen(navController)

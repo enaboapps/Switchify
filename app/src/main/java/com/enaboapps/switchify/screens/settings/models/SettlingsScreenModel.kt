@@ -29,12 +29,6 @@ class SettingsScreenModel(context: Context) : ViewModel() {
     }
     val switchHoldTime: LiveData<Long> = _switchHoldTime
 
-    private val _pauseScanOnSwitchHold = MutableLiveData<Boolean>().apply {
-        value =
-            preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)
-    }
-    val pauseScanOnSwitchHold: LiveData<Boolean> = _pauseScanOnSwitchHold
-
     private val _autoSelect = MutableLiveData<Boolean>().apply {
         value = preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT)
     }
@@ -67,7 +61,10 @@ class SettingsScreenModel(context: Context) : ViewModel() {
         }
         // If rate < pauseScanOnSwitchHoldThreshold, set pauseScanOnSwitchHold to true
         if (rate < pauseScanOnSwitchHoldThreshold) {
-            setPauseScanOnSwitchHold(true)
+            preferenceManager.setBooleanValue(
+                PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD,
+                true
+            )
         }
         updateSwitchStabilityVisible()
     }
@@ -82,29 +79,12 @@ class SettingsScreenModel(context: Context) : ViewModel() {
         }
         // If rate < pauseScanOnSwitchHoldThreshold, set pauseScanOnSwitchHold to true
         if (rate < pauseScanOnSwitchHoldThreshold) {
-            setPauseScanOnSwitchHold(true)
-        }
-        updateSwitchStabilityVisible()
-    }
-
-    fun setSwitchHoldTime(time: Long) {
-        viewModelScope.launch {
-            preferenceManager.setLongValue(
-                PreferenceManager.Keys.PREFERENCE_KEY_SWITCH_HOLD_TIME,
-                time
-            )
-            _switchHoldTime.postValue(time)
-        }
-    }
-
-    fun setPauseScanOnSwitchHold(pause: Boolean) {
-        viewModelScope.launch {
             preferenceManager.setBooleanValue(
                 PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD,
-                pause
+                true
             )
-            _pauseScanOnSwitchHold.postValue(pause)
         }
+        updateSwitchStabilityVisible()
     }
 
     fun setAutoSelect(autoSelect: Boolean) {
