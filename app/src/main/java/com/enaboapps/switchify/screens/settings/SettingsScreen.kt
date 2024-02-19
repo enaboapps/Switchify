@@ -9,7 +9,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -29,7 +28,8 @@ fun SettingsScreen(navController: NavController) {
     val verticalScrollState = rememberScrollState()
     val context = LocalContext.current
     val settingsScreenModel = SettingsScreenModel(context)
-    val stabilityVisible = settingsScreenModel.switchStabilityVisible.observeAsState()
+    val mode =
+        ScanMode.fromId(PreferenceManager(context).getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
     Scaffold(
         topBar = {
             NavBar(title = "Settings", navController = navController)
@@ -51,10 +51,15 @@ fun SettingsScreen(navController: NavController) {
                     route = NavigationRoute.ScanMode.name
                 )
             }
-            TimingSection(settingsScreenModel)
-            if (stabilityVisible.value == true) {
-                SwitchStabilitySection(settingsScreenModel)
+            if (mode.id == ScanMode.Modes.MODE_AUTO) {
+                TimingSection(settingsScreenModel)
             }
+            PreferenceLink(
+                title = "Switch Stability",
+                summary = "Configure switch stability settings",
+                navController = navController,
+                route = NavigationRoute.SwitchStability.name
+            )
             SelectionSection(settingsScreenModel)
             PreferenceLink(
                 title = "Switches",
@@ -76,53 +81,25 @@ fun SettingsScreen(navController: NavController) {
 
 @Composable
 private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
-    val mode =
-        PreferenceManager(LocalContext.current).getIntegerValue(PreferenceManager.PREFERENCE_KEY_SCAN_MODE)
     PreferenceSection(title = "Timing") {
-        if (mode == ScanMode.Modes.MODE_AUTO) {
-            PreferenceTimeStepper(
-                value = settingsScreenModel.scanRate.value ?: 0,
-                title = "Scan rate",
-                summary = "The interval at which the scanner will move to the next item",
-                min = 200,
-                max = 100000
-            ) {
-                settingsScreenModel.setScanRate(it)
-            }
-            PreferenceTimeStepper(
-                value = settingsScreenModel.refineScanRate.value ?: 0,
-                title = "Refine scan rate",
-                summary = "The interval at which the scanner will move when refining the selection",
-                min = 200,
-                max = 100000
-            ) {
-                settingsScreenModel.setRefineScanRate(it)
-            }
-        }
         PreferenceTimeStepper(
-            value = settingsScreenModel.switchHoldTime.value ?: 0,
-            title = "Switch hold time",
-            summary = "The time to hold the switch before the long pressed action is triggered",
-            min = 100,
+            value = settingsScreenModel.scanRate.value ?: 0,
+            title = "Scan rate",
+            summary = "The interval at which the scanner will move to the next item",
+            min = 200,
             max = 100000
         ) {
-            settingsScreenModel.setSwitchHoldTime(it)
+            settingsScreenModel.setScanRate(it)
         }
-    }
-}
-
-// Switch Stability Section
-@Composable
-private fun SwitchStabilitySection(screenModel: SettingsScreenModel) {
-    PreferenceSection(title = "Switch Stability") {
-        PreferenceSwitch(
-            title = "Pause scan on switch hold",
-            summary = "Pause the scan when a switch is held",
-            checked = screenModel.pauseScanOnSwitchHold.value ?: false,
-            onCheckedChange = {
-                screenModel.setPauseScanOnSwitchHold(it)
-            }
-        )
+        PreferenceTimeStepper(
+            value = settingsScreenModel.refineScanRate.value ?: 0,
+            title = "Refine scan rate",
+            summary = "The interval at which the scanner will move when refining the selection",
+            min = 200,
+            max = 100000
+        ) {
+            settingsScreenModel.setRefineScanRate(it)
+        }
     }
 }
 

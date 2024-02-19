@@ -14,6 +14,8 @@ class PreferenceManager(context: Context) {
         const val PREFERENCE_KEY_AUTO_SELECT = "auto_select"
         const val PREFERENCE_KEY_AUTO_SELECT_DELAY = "auto_select_delay"
         const val PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD = "pause_scan_on_switch_hold"
+        const val PREFERENCE_KEY_SWITCH_IGNORE_REPEAT = "switch_ignore_repeat"
+        const val PREFERENCE_KEY_SWITCH_IGNORE_REPEAT_DELAY = "switch_ignore_repeat_delay"
         private const val PREFERENCE_FILE_NAME = "switchify_preferences"
     }
 
