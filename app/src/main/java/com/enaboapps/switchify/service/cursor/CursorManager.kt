@@ -5,11 +5,10 @@ import android.graphics.PointF
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanDirection
-import com.enaboapps.switchify.service.scanning.ScanMode
+import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
@@ -22,7 +21,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
     private val cursorLineMovement = 40
 
-    private val preferenceManager: PreferenceManager = PreferenceManager(context)
+    private val scanSettings = ScanSettings(context)
 
     private val uiHandler = Handler(Looper.getMainLooper())
     private val cursorUI = CursorUI(context, uiHandler)
@@ -35,7 +34,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
     private var direction: ScanDirection = ScanDirection.RIGHT
 
-    private val scanningScheduler = ScanningScheduler { move() }
+    private val scanningScheduler = ScanningScheduler(context) { move() }
 
     // auto select variables
     private var isInAutoSelect = false // If true, we listen for a second event to activate the menu
@@ -125,20 +124,14 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
 
     private fun start() {
-        val mode =
-            ScanMode(preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
-        if (mode.id == ScanMode.Modes.MODE_MANUAL) {
-            return
+        if (scanSettings.isAutoScanMode()) {
+            val rate = if (isInQuadrant) {
+                scanSettings.getRefineScanRate()
+            } else {
+                scanSettings.getScanRate()
+            }
+            scanningScheduler.startScanning(rate, rate)
         }
-
-        var rate =
-            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
-        if (isInQuadrant) {
-            rate =
-                preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
-        }
-        Log.d(TAG, "start: $rate")
-        scanningScheduler.startScanning(initialDelay = rate, period = rate)
     }
 
 
@@ -483,8 +476,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
         }
 
         // check if auto select is enabled, if so, start the timer
-        val auto =
-            preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT)
+        val auto = scanSettings.isAutoSelectEnabled()
         if (auto && !isInAutoSelect) {
             startAutoSelectTimer()
         }
@@ -515,8 +507,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
     // Function to start auto select timer
     private fun startAutoSelectTimer() {
-        val delay =
-            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT_DELAY)
+        val delay = scanSettings.getAutoSelectDelay()
         isInAutoSelect = true
         if (autoSelectTimer == null) {
             autoSelectTimer = Timer()

@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.scanning
 
+import android.content.Context
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -10,7 +11,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-class ScanningScheduler(private val onScan: suspend () -> Unit) {
+class ScanningScheduler(context: Context, private val onScan: suspend () -> Unit) {
     // Generate a unique identifier for the scope
     private val uniqueId = UUID.randomUUID().toString()
     private val coroutineScope = CoroutineScope(Dispatchers.Default + CoroutineName(uniqueId))
@@ -21,17 +22,23 @@ class ScanningScheduler(private val onScan: suspend () -> Unit) {
 
     private var scanState = ScanState.STOPPED
 
-    fun startScanning(initialDelay: Long, period: Long) {
+    private val scanSettings = ScanSettings(context)
+
+    fun startScanning(
+        initialDelay: Long = scanSettings.getScanRate(),
+        period: Long = scanSettings.getScanRate()
+    ) {
         if (scanState == ScanState.SCANNING) {
             return
         }
         scanState = ScanState.SCANNING
+        val initialDelayPlusPause = initialDelay + scanSettings.getPauseOnFirstItemDelay()
         this.initialDelay = initialDelay
         this.period = period
         scanningJob?.cancel() // Cancel any existing job
         scanningJob = coroutineScope.launch {
             println("[$uniqueId] Starting scanning job")
-            delay(initialDelay) // Apply initial delay before starting the scanning
+            delay(initialDelayPlusPause)
             while (isActive) {
                 if (!isExecuting) {
                     isExecuting = true

@@ -23,11 +23,17 @@ class SettingsScreenModel(context: Context) : ViewModel() {
     }
     val refineScanRate: LiveData<Long> = _refineScanRate
 
-    private val _switchHoldTime = MutableLiveData<Long>().apply {
+    private val _pauseOnFirstItem = MutableLiveData<Boolean>().apply {
         value =
-            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SWITCH_HOLD_TIME)
+            preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_ON_FIRST_ITEM)
     }
-    val switchHoldTime: LiveData<Long> = _switchHoldTime
+    val pauseOnFirstItem: LiveData<Boolean> = _pauseOnFirstItem
+
+    private val _pauseOnFirstItemDelay = MutableLiveData<Long>().apply {
+        value =
+            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_ON_FIRST_ITEM_DELAY)
+    }
+    val pauseOnFirstItemDelay: LiveData<Long> = _pauseOnFirstItemDelay
 
     private val _autoSelect = MutableLiveData<Boolean>().apply {
         value = preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT)
@@ -43,15 +49,6 @@ class SettingsScreenModel(context: Context) : ViewModel() {
 
     private val pauseScanOnSwitchHoldThreshold: Long = 400
 
-    // LiveData for the switch stability setting visibility
-    private val _switchStabilityVisible = MutableLiveData<Boolean>()
-    val switchStabilityVisible: LiveData<Boolean> = _switchStabilityVisible
-
-
-    init {
-        updateSwitchStabilityVisible()
-    }
-
 
     // Update methods now update MutableLiveData which in turn updates the UI
     fun setScanRate(rate: Long) {
@@ -66,7 +63,6 @@ class SettingsScreenModel(context: Context) : ViewModel() {
                 true
             )
         }
-        updateSwitchStabilityVisible()
     }
 
     fun setRefineScanRate(rate: Long) {
@@ -84,7 +80,26 @@ class SettingsScreenModel(context: Context) : ViewModel() {
                 true
             )
         }
-        updateSwitchStabilityVisible()
+    }
+
+    fun setPauseOnFirstItem(pause: Boolean) {
+        viewModelScope.launch {
+            preferenceManager.setBooleanValue(
+                PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_ON_FIRST_ITEM,
+                pause
+            )
+            _pauseOnFirstItem.postValue(pause)
+        }
+    }
+
+    fun setPauseOnFirstItemDelay(delay: Long) {
+        viewModelScope.launch {
+            preferenceManager.setLongValue(
+                PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_ON_FIRST_ITEM_DELAY,
+                delay
+            )
+            _pauseOnFirstItemDelay.postValue(delay)
+        }
     }
 
     fun setAutoSelect(autoSelect: Boolean) {
@@ -105,15 +120,5 @@ class SettingsScreenModel(context: Context) : ViewModel() {
             )
             _autoSelectDelay.postValue(delay)
         }
-    }
-
-
-    // Update the switchStabilityVisible LiveData when scan rate or refine scan rate changes
-    private fun updateSwitchStabilityVisible() {
-        val scanRate =
-            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
-        val refineScanRate =
-            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
-        _switchStabilityVisible.postValue(scanRate > pauseScanOnSwitchHoldThreshold && refineScanRate > pauseScanOnSwitchHoldThreshold)
     }
 }

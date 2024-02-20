@@ -11,6 +11,8 @@ class PreferenceManager(context: Context) {
         const val PREFERENCE_KEY_SCAN_RATE = "scan_rate"
         const val PREFERENCE_KEY_REFINE_SCAN_RATE = "refine_scan_rate"
         const val PREFERENCE_KEY_SWITCH_HOLD_TIME = "switch_hold_time"
+        const val PREFERENCE_KEY_PAUSE_ON_FIRST_ITEM = "pause_on_first_item"
+        const val PREFERENCE_KEY_PAUSE_ON_FIRST_ITEM_DELAY = "pause_on_first_item_delay"
         const val PREFERENCE_KEY_AUTO_SELECT = "auto_select"
         const val PREFERENCE_KEY_AUTO_SELECT_DELAY = "auto_select_delay"
         const val PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD = "pause_scan_on_switch_hold"
