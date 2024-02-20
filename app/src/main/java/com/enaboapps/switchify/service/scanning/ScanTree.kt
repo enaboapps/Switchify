@@ -2,9 +2,8 @@ package com.enaboapps.switchify.service.scanning
 
 import android.content.Context
 import android.util.Log
-import com.enaboapps.switchify.preferences.PreferenceManager
 
-class ScanTree(context: Context) : ScanStateInterface {
+class ScanTree(private val context: Context) : ScanStateInterface {
     /**
      * This property represents the scanning tree
      */
@@ -37,7 +36,10 @@ class ScanTree(context: Context) : ScanStateInterface {
      */
     private var scanningScheduler: ScanningScheduler? = null
 
-    private val preferenceManager = PreferenceManager(context)
+    /**
+     * Scan settings
+     */
+    private val scanSettings = ScanSettings(context)
 
 
     /**
@@ -85,7 +87,7 @@ class ScanTree(context: Context) : ScanStateInterface {
         reset()
         shutdown()
 
-        scanningScheduler = ScanningScheduler { stepAutoScanning() }
+        scanningScheduler = ScanningScheduler(context) { stepAutoScanning() }
     }
 
     /**
@@ -296,17 +298,12 @@ class ScanTree(context: Context) : ScanStateInterface {
      * This function starts scanning
      */
     private fun startScanning() {
-        val mode =
-            ScanMode.fromId(preferenceManager.getIntegerValue(PreferenceManager.PREFERENCE_KEY_SCAN_MODE))
         if (tree.isNotEmpty()) {
             reset()
             highlightCurrentRow() // Highlight the first row
-            Log.d("ScanTree", "mode: $mode")
-            if (mode.id == ScanMode.Modes.MODE_AUTO) {
+            if (scanSettings.isAutoScanMode()) {
                 Log.d("ScanTree", "startScanning")
-                val rate =
-                    preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SCAN_RATE)
-                scanningScheduler?.startScanning(rate, rate)
+                scanningScheduler?.startScanning()
             }
         }
     }

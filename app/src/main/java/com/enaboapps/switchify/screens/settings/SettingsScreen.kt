@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -99,6 +100,24 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
             max = 100000
         ) {
             settingsScreenModel.setRefineScanRate(it)
+        }
+        PreferenceSwitch(
+            title = "Pause on first item",
+            summary = "Pause scanning when the first item is highlighted",
+            checked = settingsScreenModel.pauseOnFirstItem.value ?: false
+        ) {
+            settingsScreenModel.setPauseOnFirstItem(it)
+        }
+        if (settingsScreenModel.pauseOnFirstItem.observeAsState().value == true) {
+            PreferenceTimeStepper(
+                value = settingsScreenModel.pauseOnFirstItemDelay.value ?: 0,
+                title = "Pause on first item delay",
+                summary = "The delay to pause on the first item",
+                min = 100,
+                max = 100000
+            ) {
+                settingsScreenModel.setPauseOnFirstItemDelay(it)
+            }
         }
     }
 }
