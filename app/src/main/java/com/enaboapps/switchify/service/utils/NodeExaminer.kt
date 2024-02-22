@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.utils
 
+import android.graphics.PointF
 import android.graphics.Rect
 import android.view.accessibility.AccessibilityNodeInfo
 import kotlinx.coroutines.CoroutineScope
@@ -10,6 +11,7 @@ import kotlinx.coroutines.withContext
 import java.util.LinkedList
 import java.util.Queue
 import kotlin.math.abs
+import kotlin.math.sqrt
 
 object NodeExaminer {
 
@@ -83,6 +85,56 @@ object NodeExaminer {
 
             return@withContext allNodes
         }
+
+    /**
+     * Get the closest node to the given point
+     * @param point The point to search for
+     * @return The closest node point
+     */
+    fun getClosestNodeToPoint(point: PointF): PointF {
+        var closestNodePoint = PointF(Float.MAX_VALUE, Float.MAX_VALUE)
+        var closestDistance = Float.MAX_VALUE
+
+        val max = 200
+
+        var wasFound = false
+
+        for (row in currentRows) {
+            for (node in row) {
+                val nodeRect = Rect()
+                node.getBoundsInScreen(nodeRect)
+                val nodeCenter = PointF(
+                    nodeRect.centerX().toFloat(),
+                    nodeRect.centerY().toFloat()
+                )
+                val distance = distanceBetweenPoints(point, nodeCenter)
+                // The distance has to be less than the max distance and less than the current closest distance
+                if (distance < max && distance < closestDistance) {
+                    closestNodePoint = nodeCenter
+                    closestDistance = distance
+                    wasFound = true
+                }
+            }
+        }
+
+        return if (wasFound) {
+            closestNodePoint
+        } else {
+            point
+        }
+    }
+
+    /**
+     * Get the distance between two points
+     * @param point1 The first point
+     * @param point2 The second point
+     * @return The distance between the two points
+     */
+    private fun distanceBetweenPoints(point1: PointF, point2: PointF): Float {
+        val xDiff = point1.x - point2.x
+        val yDiff = point1.y - point2.y
+        return sqrt((xDiff * xDiff + yDiff * yDiff).toDouble()).toFloat()
+    }
 
     /**
      * Group nodes into rows
