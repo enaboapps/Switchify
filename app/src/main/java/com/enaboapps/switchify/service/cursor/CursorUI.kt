@@ -49,7 +49,9 @@ class CursorUI(private val context: Context, private val handler: Handler) {
             setBackgroundColor(CURSOR_LINE_COLOR)
         }
         handler.post {
-            window.addView(xCursorLine!!, xPosition, yPosition, CURSOR_LINE_THICKNESS, screenHeight)
+            xCursorLine?.let {
+                window.addView(it, xPosition, yPosition, CURSOR_LINE_THICKNESS, screenHeight)
+            }
         }
     }
 
@@ -64,7 +66,9 @@ class CursorUI(private val context: Context, private val handler: Handler) {
             setBackgroundColor(CURSOR_LINE_COLOR)
         }
         handler.post {
-            window.addView(yCursorLine!!, xPosition, yPosition, screenWidth, CURSOR_LINE_THICKNESS)
+            yCursorLine?.let {
+                window.addView(it, xPosition, yPosition, screenWidth, CURSOR_LINE_THICKNESS)
+            }
         }
     }
 
@@ -80,7 +84,9 @@ class CursorUI(private val context: Context, private val handler: Handler) {
             alpha = QUADRANT_ALPHA
         }
         handler.post {
-            window.addView(xQuadrant!!, xPosition, yPosition, getQuadrantWidth(), screenHeight)
+            xQuadrant?.let {
+                window.addView(it, xPosition, yPosition, getQuadrantWidth(), screenHeight)
+            }
         }
     }
 
@@ -96,7 +102,9 @@ class CursorUI(private val context: Context, private val handler: Handler) {
             alpha = QUADRANT_ALPHA
         }
         handler.post {
-            window.addView(yQuadrant!!, xPosition, yPosition, screenWidth, getQuadrantHeight())
+            yQuadrant?.let {
+                window.addView(it, xPosition, yPosition, screenWidth, getQuadrantHeight())
+            }
         }
     }
 

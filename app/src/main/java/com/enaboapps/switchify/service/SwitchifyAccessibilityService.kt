@@ -7,6 +7,7 @@ import android.view.accessibility.AccessibilityEvent
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.scanning.SwitchListener
+import com.enaboapps.switchify.service.utils.NodeExaminer
 
 class SwitchifyAccessibilityService : AccessibilityService() {
 
@@ -18,6 +19,18 @@ class SwitchifyAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         Log.d(TAG, "onAccessibilityEvent: ${event?.eventType}")
+
+        if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            val rootNode = rootInActiveWindow
+            if (rootNode != null) {
+                NodeExaminer.findRowsOfNodes(rootNode)
+                for (row in NodeExaminer.currentRows) {
+                    for (node in row) {
+                        Log.d(TAG, "Node: $node")
+                    }
+                }
+            }
+        }
     }
 
     override fun onInterrupt() {
