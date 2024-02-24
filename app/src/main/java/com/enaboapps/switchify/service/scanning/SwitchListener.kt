@@ -28,6 +28,9 @@ class SwitchListener(
     // Timer for tracking switch hold duration
     private var switchHoldTimer: Timer? = null
 
+    // Variable for tracking if long press action is performed
+    private var longPressPerformed = false
+
     // Variables for ignoring switch repeat
     private var lastSwitchPressedTime: Long = 0
     private var lastSwitchPressedCode: Int = 0
@@ -46,6 +49,7 @@ class SwitchListener(
                     // Perform long press action if available
                     latestAction?.let {
                         scanningManager.performAction(it.switchEvent.longPressAction)
+                        longPressPerformed = true
                     }
                 }
             },
@@ -102,28 +106,35 @@ class SwitchListener(
                 val switchHoldTime =
                     preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
 
+                // Toggle swipe lock if time elapsed is greater than hold time
+                if (timeElapsed > switchHoldTime && GestureManager.getInstance()
+                        .isSwipeLockEnabled()
+                ) {
+                    GestureManager.getInstance().toggleSwipeLock()
+                    longPressPerformed = false
+                    return true
+                }
+
+                // Resume scanning if the setting is enabled
+                if (preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)) {
+                    scanningManager.resumeScanning()
+                }
+
+                // Check if long press action is performed
+                if (longPressPerformed) {
+                    longPressPerformed = false
+                    return true // Absorb the event
+                }
+
                 if (event.longPressAction.id != SwitchAction.Actions.ACTION_NONE) {
-                    // Toggle swipe lock if time elapsed is greater than hold time
-                    if (timeElapsed > switchHoldTime && GestureManager.getInstance()
-                            .isSwipeLockEnabled()
-                    ) {
-                        GestureManager.getInstance().toggleSwipeLock()
-                        return true
-                    }
-
-                    // Resume scanning if the setting is enabled
-                    if (preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)) {
-                        scanningManager.resumeScanning()
-                    }
-
                     // Perform press action if time elapsed is less than hold time
                     if (timeElapsed < switchHoldTime) {
                         scanningManager.performAction(event.pressAction)
                     }
-
-                    // Cancel any running timer
-                    switchHoldTimer?.cancel()
                 }
+
+                // Cancel any running timer
+                switchHoldTimer?.cancel()
             }
             false
         } ?: true

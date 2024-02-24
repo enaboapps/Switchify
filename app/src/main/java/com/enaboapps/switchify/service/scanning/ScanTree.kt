@@ -192,6 +192,10 @@ class ScanTree(private val context: Context) : ScanStateInterface {
             ScanDirection.RIGHT -> ScanDirection.LEFT
             ScanDirection.LEFT -> ScanDirection.RIGHT
         }
+
+        if (scanSettings.isAutoScanMode()) {
+            resumeScanning()
+        }
     }
 
     /**
@@ -309,21 +313,15 @@ class ScanTree(private val context: Context) : ScanStateInterface {
     }
 
     override fun pauseScanning() {
-        if (scanningScheduler?.isScanning() == true) {
-            scanningScheduler?.pauseScanning()
-        }
+        scanningScheduler?.pauseScanning()
     }
 
     override fun resumeScanning() {
-        if (scanningScheduler?.isPaused() == true) {
-            scanningScheduler?.resumeScanning()
-        }
+        scanningScheduler?.resumeScanning()
     }
 
     override fun stopScanning() {
-        if (scanningScheduler?.isScanning() == true || scanningScheduler?.isPaused() == true) {
-            scanningScheduler?.stopScanning()
-        }
+        scanningScheduler?.stopScanning()
     }
 
     /**
