@@ -10,17 +10,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 class ScanningScheduler(context: Context, private val onScan: suspend () -> Unit) {
-    // Generate a unique identifier for the scope
     private val uniqueId = UUID.randomUUID().toString()
-    private val coroutineScope = CoroutineScope(Dispatchers.Default + CoroutineName(uniqueId))
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + CoroutineName(uniqueId))
     private var scanningJob: Job? = null
-    private var isExecuting = false // Execution flag to track onScan execution
+    private val isExecuting = AtomicBoolean(false)
     private var initialDelay: Long = 0L
     private var period: Long = 1000L // Default period of 1 second
 
-    private var scanState = ScanState.STOPPED
+    private var scanState = AtomicReference(ScanState.STOPPED)
 
     private val scanSettings = ScanSettings(context)
 
@@ -28,24 +29,26 @@ class ScanningScheduler(context: Context, private val onScan: suspend () -> Unit
         initialDelay: Long = scanSettings.getScanRate(),
         period: Long = scanSettings.getScanRate()
     ) {
-        if (scanState == ScanState.SCANNING) {
+        if (scanState.get() == ScanState.SCANNING) {
+            println("[$uniqueId] Already scanning")
             return
         }
-        scanState = ScanState.SCANNING
+        scanState.set(ScanState.SCANNING)
         val initialDelayPlusPause = initialDelay + scanSettings.getPauseOnFirstItemDelay()
         this.initialDelay = initialDelay
         this.period = period
-        scanningJob?.cancel() // Cancel any existing job
+        scanningJob?.cancel() // Ensure no previous job is running
         scanningJob = coroutineScope.launch {
             println("[$uniqueId] Starting scanning job")
             delay(initialDelayPlusPause)
             while (isActive) {
-                if (!isExecuting) {
-                    isExecuting = true
+                if (isExecuting.compareAndSet(false, true)) {
                     try {
                         onScan()
+                    } catch (e: Exception) {
+                        println("Error during scan: ${e.message}")
                     } finally {
-                        isExecuting = false
+                        isExecuting.set(false)
                     }
                 }
                 delay(period)
@@ -53,30 +56,30 @@ class ScanningScheduler(context: Context, private val onScan: suspend () -> Unit
         }
     }
 
-    fun isScanning(): Boolean {
-        return scanState == ScanState.SCANNING
-    }
-
-    fun isPaused(): Boolean {
-        return scanState == ScanState.PAUSED
-    }
-
-    fun isStopped(): Boolean {
-        return scanState == ScanState.STOPPED
-    }
+    fun isScanning(): Boolean = scanState.get() == ScanState.SCANNING
+    fun isPaused(): Boolean = scanState.get() == ScanState.PAUSED
+    fun isStopped(): Boolean = scanState.get() == ScanState.STOPPED
 
     fun stopScanning() {
-        scanState = ScanState.STOPPED
-        scanningJob?.cancel()
+        println("Attempting to stop scanning... $scanState")
+        if (scanState.get() == ScanState.SCANNING) {
+            scanState.set(ScanState.STOPPED)
+            scanningJob?.cancel()
+        }
     }
 
     fun pauseScanning() {
-        scanState = ScanState.PAUSED
-        scanningJob?.cancel()
+        println("Attempting to pause scanning... $scanState")
+        if (scanState.compareAndSet(ScanState.SCANNING, ScanState.PAUSED)) {
+            scanningJob?.cancel()
+        }
     }
 
     fun resumeScanning() {
-        startScanning(initialDelay, period)
+        println("Attempting to resume scanning... $scanState")
+        if (scanState.get() == ScanState.PAUSED) {
+            startScanning(initialDelay, period)
+        }
     }
 
     fun shutdown() {
