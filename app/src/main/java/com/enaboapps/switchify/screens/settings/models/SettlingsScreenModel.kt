@@ -46,6 +46,12 @@ class SettingsScreenModel(context: Context) : ViewModel() {
     }
     val autoSelectDelay: LiveData<Long> = _autoSelectDelay
 
+    private val _assistedSelection = MutableLiveData<Boolean>().apply {
+        value =
+            preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_ASSISTED_SELECTION)
+    }
+    val assistedSelection: LiveData<Boolean> = _assistedSelection
+
 
     private val pauseScanOnSwitchHoldThreshold: Long = 400
 
@@ -119,6 +125,16 @@ class SettingsScreenModel(context: Context) : ViewModel() {
                 delay
             )
             _autoSelectDelay.postValue(delay)
+        }
+    }
+
+    fun setAssistedSelection(assistedSelection: Boolean) {
+        viewModelScope.launch {
+            preferenceManager.setBooleanValue(
+                PreferenceManager.Keys.PREFERENCE_KEY_ASSISTED_SELECTION,
+                assistedSelection
+            )
+            _assistedSelection.postValue(assistedSelection)
         }
     }
 }
