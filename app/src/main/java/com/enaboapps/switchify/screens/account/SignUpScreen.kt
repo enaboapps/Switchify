@@ -70,6 +70,8 @@ fun SignUpScreen(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
+            Text(text = "Create an account to save your settings. This will allow you to access your settings on any device.")
+            Spacer(modifier = Modifier.height(16.dp))
             // Email TextField
             TextField(
                 value = email,
