@@ -142,5 +142,13 @@ private fun SelectionSection(screenModel: SettingsScreenModel) {
         ) {
             screenModel.setAutoSelectDelay(it)
         }
+        PreferenceSwitch(
+            title = "Assisted selection",
+            summary = "Assist the user in selecting items by selecting the closest available item to where they tap",
+            checked = screenModel.assistedSelection.value ?: false,
+            onCheckedChange = {
+                screenModel.setAssistedSelection(it)
+            }
+        )
     }
 }

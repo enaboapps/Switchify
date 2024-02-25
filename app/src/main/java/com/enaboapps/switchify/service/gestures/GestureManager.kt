@@ -3,6 +3,7 @@ package com.enaboapps.switchify.service.gestures
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.graphics.PointF
+import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.cursor.CursorPoint
 import com.enaboapps.switchify.service.gestures.utils.GestureUtils.getInBoundsCoordinate
@@ -54,9 +55,14 @@ class GestureManager {
     private var accessibilityService: SwitchifyAccessibilityService? = null
 
 
+    // preference manager
+    private var preferenceManager: PreferenceManager? = null
+
+
     fun setup(accessibilityService: SwitchifyAccessibilityService) {
         this.accessibilityService = accessibilityService
         swipeLockManager = SwipeLockManager()
+        preferenceManager = PreferenceManager(accessibilityService)
     }
 
 
@@ -77,16 +83,26 @@ class GestureManager {
     }
 
 
+    // Function to get current point
+    fun getAssistedCurrentPoint(): PointF? {
+        return if (preferenceManager?.getBooleanValue(PreferenceManager.PREFERENCE_KEY_ASSISTED_SELECTION) == true) {
+            CursorPoint.instance.point?.let { p ->
+                NodeExaminer.getClosestNodeToPoint(
+                    p
+                )
+            }
+        } else {
+            CursorPoint.instance.point
+        }
+    }
+
+
     // Function to perform a tap
     fun performTap() {
         try {
             accessibilityService.let {
                 val path = android.graphics.Path()
-                val currentPoint = CursorPoint.instance.point?.let { p ->
-                    NodeExaminer.getClosestNodeToPoint(
-                        p
-                    )
-                }
+                val currentPoint = getAssistedCurrentPoint()
                 currentPoint?.let { point ->
                     val gestureDrawing = GestureDrawing(it!!)
                     gestureDrawing.drawCircleAndRemove(
@@ -118,11 +134,7 @@ class GestureManager {
         try {
             accessibilityService.let {
                 val path = android.graphics.Path()
-                val currentPoint = CursorPoint.instance.point?.let { p ->
-                    NodeExaminer.getClosestNodeToPoint(
-                        p
-                    )
-                }
+                val currentPoint = getAssistedCurrentPoint()
                 currentPoint?.let { point ->
                     val gestureDrawing = GestureDrawing(it!!)
                     gestureDrawing.drawCircleAndRemove(
