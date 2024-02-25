@@ -98,14 +98,12 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
 fun AccountCard(navController: NavController) {
     val authManager = AuthManager.instance
 
-    val context = LocalContext.current
-
     val isUserSignedIn = authManager.isUserSignedIn()
     val currentUser = authManager.getCurrentUser()
 
     val title = if (isUserSignedIn) "Account" else "Sign In"
     val description =
-        if (isUserSignedIn) currentUser?.email ?: "" else "Sign in to access your account."
+        if (isUserSignedIn) currentUser?.email ?: "" else "Sign in to access your settings."
 
     UICard(
         title = title,

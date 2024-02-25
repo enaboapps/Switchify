@@ -69,6 +69,8 @@ fun SignInScreen(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
+            Text(text = "Sign in to access your settings.")
+            Spacer(modifier = Modifier.height(16.dp))
             // Email TextField with KeyboardOptions for Email
             TextField(
                 value = email,
