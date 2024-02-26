@@ -18,10 +18,15 @@ class CursorPoint {
 
     var listener: CursorPointListener? = null
 
-    var point: PointF? = null
+    var x = 0
+    var y = 0
 
     var lastXQuadrant = QuadrantInfo(0, 0, 0)
     var lastYQuadrant = QuadrantInfo(0, 0, 0)
+
+    fun getPoint(): PointF {
+        return PointF(x.toFloat(), y.toFloat())
+    }
 
     // This function returns the whole screen rect
     fun getRectForScreen(context: Context): Rect {

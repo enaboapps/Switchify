@@ -7,6 +7,7 @@ import android.view.accessibility.AccessibilityEvent
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.scanning.SwitchListener
+import com.enaboapps.switchify.service.utils.KeyboardInfo
 import com.enaboapps.switchify.service.utils.NodeExaminer
 
 class SwitchifyAccessibilityService : AccessibilityService() {
@@ -31,6 +32,8 @@ class SwitchifyAccessibilityService : AccessibilityService() {
                 }
             }
         }
+
+        KeyboardInfo.updateKeyboardState(windows)
     }
 
     override fun onInterrupt() {
