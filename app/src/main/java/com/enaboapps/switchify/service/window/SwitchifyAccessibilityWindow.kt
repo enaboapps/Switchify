@@ -36,7 +36,8 @@ class SwitchifyAccessibilityWindow {
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
-        params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        params.layoutInDisplayCutoutMode =
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 
         windowManager?.addView(baseLayout, params)
     }
@@ -60,10 +61,10 @@ class SwitchifyAccessibilityWindow {
     }
 
     fun updateViewLayout(view: ViewGroup, x: Int, y: Int) {
-        val params = view.layoutParams as RelativeLayout.LayoutParams
-        params.leftMargin = x
-        params.topMargin = y
         try {
+            val params = view.layoutParams as RelativeLayout.LayoutParams
+            params.leftMargin = x
+            params.topMargin = y
             baseLayout?.updateViewLayout(view, params)
         } catch (e: Exception) {
             e.printStackTrace()
