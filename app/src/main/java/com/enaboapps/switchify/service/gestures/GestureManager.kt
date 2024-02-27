@@ -68,7 +68,7 @@ class GestureManager {
 
     // Function to check if point is close to the center of the screen (within 400 pixels)
     fun isPointCloseToCenter(): Boolean {
-        val point = CursorPoint.instance.point ?: return false
+        val point = CursorPoint.instance.getPoint()
         accessibilityService?.let {
             val width = ScreenUtils.getWidth(it)
             val height = ScreenUtils.getHeight(it)
@@ -84,15 +84,11 @@ class GestureManager {
 
 
     // Function to get current point
-    fun getAssistedCurrentPoint(): PointF? {
+    private fun getAssistedCurrentPoint(): PointF {
         return if (preferenceManager?.getBooleanValue(PreferenceManager.PREFERENCE_KEY_ASSISTED_SELECTION) == true) {
-            CursorPoint.instance.point?.let { p ->
-                NodeExaminer.getClosestNodeToPoint(
-                    p
-                )
-            }
+            NodeExaminer.getClosestNodeToPoint(CursorPoint.instance.getPoint())
         } else {
-            CursorPoint.instance.point
+            CursorPoint.instance.getPoint()
         }
     }
 
@@ -102,19 +98,17 @@ class GestureManager {
         try {
             accessibilityService.let {
                 val path = android.graphics.Path()
-                val currentPoint = getAssistedCurrentPoint()
-                currentPoint?.let { point ->
-                    val gestureDrawing = GestureDrawing(it!!)
-                    gestureDrawing.drawCircleAndRemove(
-                        point.x.toInt(),
-                        point.y.toInt(),
-                        TAP_DURATION
-                    )
-                    path.moveTo(point.x, point.y)
-                }
+                val point = getAssistedCurrentPoint()
+                val gestureDrawing = GestureDrawing(it!!)
+                gestureDrawing.drawCircleAndRemove(
+                    point.x.toInt(),
+                    point.y.toInt(),
+                    TAP_DURATION
+                )
+                path.moveTo(point.x, point.y)
                 val gestureDescription = GestureDescription.Builder()
                     .addStroke(GestureDescription.StrokeDescription(path, 0, TAP_DURATION)).build()
-                it?.dispatchGesture(
+                it.dispatchGesture(
                     gestureDescription,
                     object : AccessibilityService.GestureResultCallback() {
                         override fun onCompleted(gestureDescription: GestureDescription?) {
@@ -134,16 +128,14 @@ class GestureManager {
         try {
             accessibilityService.let {
                 val path = android.graphics.Path()
-                val currentPoint = getAssistedCurrentPoint()
-                currentPoint?.let { point ->
-                    val gestureDrawing = GestureDrawing(it!!)
-                    gestureDrawing.drawCircleAndRemove(
-                        point.x.toInt(),
-                        point.y.toInt(),
-                        TAP_DURATION
-                    )
-                    path.moveTo(point.x, point.y)
-                }
+                val point = getAssistedCurrentPoint()
+                val gestureDrawing = GestureDrawing(it!!)
+                gestureDrawing.drawCircleAndRemove(
+                    point.x.toInt(),
+                    point.y.toInt(),
+                    TAP_DURATION
+                )
+                path.moveTo(point.x, point.y)
                 val tap1 = GestureDescription.StrokeDescription(path, 0, TAP_DURATION)
                 val tap2 =
                     GestureDescription.StrokeDescription(path, DOUBLE_TAP_INTERVAL, TAP_DURATION)
@@ -151,7 +143,7 @@ class GestureManager {
                     .addStroke(tap1)
                     .addStroke(tap2)
                     .build()
-                it?.dispatchGesture(
+                it.dispatchGesture(
                     gestureDescription,
                     object : AccessibilityService.GestureResultCallback() {
                         override fun onCompleted(gestureDescription: GestureDescription?) {
@@ -172,20 +164,18 @@ class GestureManager {
         try {
             accessibilityService.let {
                 val path = android.graphics.Path()
-                val currentPoint = CursorPoint.instance.point
-                currentPoint?.let { point ->
-                    val gestureDrawing = GestureDrawing(it!!)
-                    gestureDrawing.drawCircleAndRemove(
-                        point.x.toInt(),
-                        point.y.toInt(),
-                        TAP_AND_HOLD_DURATION
-                    )
-                    path.moveTo(point.x, point.y)
-                }
+                val point = getAssistedCurrentPoint()
+                val gestureDrawing = GestureDrawing(it!!)
+                gestureDrawing.drawCircleAndRemove(
+                    point.x.toInt(),
+                    point.y.toInt(),
+                    TAP_AND_HOLD_DURATION
+                )
+                path.moveTo(point.x, point.y)
                 val gestureDescription = GestureDescription.Builder()
                     .addStroke(GestureDescription.StrokeDescription(path, 0, TAP_AND_HOLD_DURATION))
                     .build()
-                it?.dispatchGesture(
+                it.dispatchGesture(
                     gestureDescription,
                     object : AccessibilityService.GestureResultCallback() {
                         override fun onCompleted(gestureDescription: GestureDescription?) {
@@ -233,90 +223,88 @@ class GestureManager {
                 swipeLockManager?.swipeLockDirection = direction
             }
             val path = android.graphics.Path()
-            val currentPoint = CursorPoint.instance.point
-            currentPoint?.let { point ->
-                path.moveTo(point.x, point.y)
-                accessibilityService?.let { accessibilityService ->
-                    val gestureDrawing = GestureDrawing(accessibilityService)
-                    when (direction) {
-                        SwipeDirection.UP -> {
-                            val fifthOfScreen = ScreenUtils.getHeight(accessibilityService) / 5
-                            val travel = getInBoundsCoordinate(
-                                ScreenUtils.getHeight(accessibilityService),
-                                point.y - fifthOfScreen
-                            )
-                            path.lineTo(point.x, travel)
-                            gestureDrawing.drawLineAndArrowAndRemove(
-                                point.x.toInt(),
-                                point.y.toInt(),
-                                point.x.toInt(),
-                                travel.toInt(),
-                                500
-                            )
-                        }
-
-                        SwipeDirection.DOWN -> {
-                            val fifthOfScreen = ScreenUtils.getHeight(accessibilityService) / 5
-                            val travel = getInBoundsCoordinate(
-                                ScreenUtils.getHeight(accessibilityService),
-                                point.y + fifthOfScreen
-                            )
-                            path.lineTo(point.x, travel)
-                            gestureDrawing.drawLineAndArrowAndRemove(
-                                point.x.toInt(),
-                                point.y.toInt(),
-                                point.x.toInt(),
-                                travel.toInt(),
-                                500
-                            )
-                        }
-
-                        SwipeDirection.LEFT -> {
-                            val quarterOfScreen = ScreenUtils.getWidth(accessibilityService) / 4
-                            val travel = getInBoundsCoordinate(
-                                ScreenUtils.getWidth(accessibilityService),
-                                point.x - quarterOfScreen
-                            )
-                            path.lineTo(travel, point.y)
-                            gestureDrawing.drawLineAndArrowAndRemove(
-                                point.x.toInt(),
-                                point.y.toInt(),
-                                travel.toInt(),
-                                point.y.toInt(),
-                                500
-                            )
-                        }
-
-                        SwipeDirection.RIGHT -> {
-                            val quarterOfScreen = ScreenUtils.getWidth(accessibilityService) / 4
-                            val travel = getInBoundsCoordinate(
-                                ScreenUtils.getWidth(accessibilityService),
-                                point.x + quarterOfScreen
-                            )
-                            path.lineTo(travel, point.y)
-                            gestureDrawing.drawLineAndArrowAndRemove(
-                                point.x.toInt(),
-                                point.y.toInt(),
-                                travel.toInt(),
-                                point.y.toInt(),
-                                500
-                            )
-                        }
+            val point = CursorPoint.instance.getPoint()
+            path.moveTo(point.x, point.y)
+            accessibilityService?.let { accessibilityService ->
+                val gestureDrawing = GestureDrawing(accessibilityService)
+                when (direction) {
+                    SwipeDirection.UP -> {
+                        val fifthOfScreen = ScreenUtils.getHeight(accessibilityService) / 5
+                        val travel = getInBoundsCoordinate(
+                            ScreenUtils.getHeight(accessibilityService),
+                            point.y - fifthOfScreen
+                        )
+                        path.lineTo(point.x, travel)
+                        gestureDrawing.drawLineAndArrowAndRemove(
+                            point.x.toInt(),
+                            point.y.toInt(),
+                            point.x.toInt(),
+                            travel.toInt(),
+                            500
+                        )
                     }
-                    val gestureDescription = GestureDescription.Builder()
-                        .addStroke(GestureDescription.StrokeDescription(path, 0, SWIPE_DURATION))
-                        .build()
-                    accessibilityService.dispatchGesture(
-                        gestureDescription,
-                        object : AccessibilityService.GestureResultCallback() {
-                            override fun onCompleted(gestureDescription: GestureDescription?) {
-                                super.onCompleted(gestureDescription)
-                                // Log.d(TAG, "onCompleted")
-                            }
-                        },
-                        null
-                    )
+
+                    SwipeDirection.DOWN -> {
+                        val fifthOfScreen = ScreenUtils.getHeight(accessibilityService) / 5
+                        val travel = getInBoundsCoordinate(
+                            ScreenUtils.getHeight(accessibilityService),
+                            point.y + fifthOfScreen
+                        )
+                        path.lineTo(point.x, travel)
+                        gestureDrawing.drawLineAndArrowAndRemove(
+                            point.x.toInt(),
+                            point.y.toInt(),
+                            point.x.toInt(),
+                            travel.toInt(),
+                            500
+                        )
+                    }
+
+                    SwipeDirection.LEFT -> {
+                        val quarterOfScreen = ScreenUtils.getWidth(accessibilityService) / 4
+                        val travel = getInBoundsCoordinate(
+                            ScreenUtils.getWidth(accessibilityService),
+                            point.x - quarterOfScreen
+                        )
+                        path.lineTo(travel, point.y)
+                        gestureDrawing.drawLineAndArrowAndRemove(
+                            point.x.toInt(),
+                            point.y.toInt(),
+                            travel.toInt(),
+                            point.y.toInt(),
+                            500
+                        )
+                    }
+
+                    SwipeDirection.RIGHT -> {
+                        val quarterOfScreen = ScreenUtils.getWidth(accessibilityService) / 4
+                        val travel = getInBoundsCoordinate(
+                            ScreenUtils.getWidth(accessibilityService),
+                            point.x + quarterOfScreen
+                        )
+                        path.lineTo(travel, point.y)
+                        gestureDrawing.drawLineAndArrowAndRemove(
+                            point.x.toInt(),
+                            point.y.toInt(),
+                            travel.toInt(),
+                            point.y.toInt(),
+                            500
+                        )
+                    }
                 }
+                val gestureDescription = GestureDescription.Builder()
+                    .addStroke(GestureDescription.StrokeDescription(path, 0, SWIPE_DURATION))
+                    .build()
+                accessibilityService.dispatchGesture(
+                    gestureDescription,
+                    object : AccessibilityService.GestureResultCallback() {
+                        override fun onCompleted(gestureDescription: GestureDescription?) {
+                            super.onCompleted(gestureDescription)
+                            // Log.d(TAG, "onCompleted")
+                        }
+                    },
+                    null
+                )
             }
         } catch (e: Exception) {
             // Log.e(TAG, "onSwipe: ", e)
@@ -325,7 +313,7 @@ class GestureManager {
 
     // Function to start dragging
     fun startDragGesture() {
-        dragStartPoint = CursorPoint.instance.point
+        dragStartPoint = CursorPoint.instance.getPoint()
         isDragging = true
 
         ServiceMessageHUD.instance.showMessage(
@@ -345,32 +333,30 @@ class GestureManager {
 
         // Dispatch the drag gesture
         val path = android.graphics.Path()
-        val currentPoint = CursorPoint.instance.point
-        currentPoint?.let { point ->
-            path.moveTo(dragStartPoint!!.x, dragStartPoint!!.y)
-            path.lineTo(point.x, point.y)
-            accessibilityService?.let { accessibilityService ->
-                val gestureDrawing = GestureDrawing(accessibilityService)
-                gestureDrawing.drawLineAndArrowAndRemove(
-                    dragStartPoint!!.x.toInt(),
-                    dragStartPoint!!.y.toInt(),
-                    point.x.toInt(),
-                    point.y.toInt(),
-                    500
-                )
-                val gestureDescription = GestureDescription.Builder()
-                    .addStroke(GestureDescription.StrokeDescription(path, 0, DRAG_DURATION)).build()
-                accessibilityService.dispatchGesture(
-                    gestureDescription,
-                    object : AccessibilityService.GestureResultCallback() {
-                        override fun onCompleted(gestureDescription: GestureDescription?) {
-                            super.onCompleted(gestureDescription)
-                            // Log.d(TAG, "onCompleted")
-                        }
-                    },
-                    null
-                )
-            }
+        val point = CursorPoint.instance.getPoint()
+        path.moveTo(dragStartPoint!!.x, dragStartPoint!!.y)
+        path.lineTo(point.x, point.y)
+        accessibilityService?.let { accessibilityService ->
+            val gestureDrawing = GestureDrawing(accessibilityService)
+            gestureDrawing.drawLineAndArrowAndRemove(
+                dragStartPoint!!.x.toInt(),
+                dragStartPoint!!.y.toInt(),
+                point.x.toInt(),
+                point.y.toInt(),
+                500
+            )
+            val gestureDescription = GestureDescription.Builder()
+                .addStroke(GestureDescription.StrokeDescription(path, 0, DRAG_DURATION)).build()
+            accessibilityService.dispatchGesture(
+                gestureDescription,
+                object : AccessibilityService.GestureResultCallback() {
+                    override fun onCompleted(gestureDescription: GestureDescription?) {
+                        super.onCompleted(gestureDescription)
+                        // Log.d(TAG, "onCompleted")
+                    }
+                },
+                null
+            )
         }
 
         // Reset the drag start point
