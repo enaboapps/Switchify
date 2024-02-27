@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Handler
 import android.widget.RelativeLayout
-import com.enaboapps.switchify.service.utils.ScreenUtils
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 class CursorUI(private val context: Context, private val handler: Handler) {
@@ -28,14 +27,14 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      * Get the width of a quadrant
      */
     fun getQuadrantWidth(): Int {
-        return ScreenUtils.getWidth(context) / NUMBER_OF_QUADRANTS
+        return CursorBounds.width(context) / NUMBER_OF_QUADRANTS
     }
 
     /**
      * Get the height of a quadrant
      */
     fun getQuadrantHeight(): Int {
-        return ScreenUtils.getHeight(context) / NUMBER_OF_QUADRANTS
+        return CursorBounds.height(context) / NUMBER_OF_QUADRANTS
     }
 
     /**
@@ -43,14 +42,14 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      */
     fun createXCursorLine(quadrantNumber: Int) {
         val xPosition = quadrantNumber * getQuadrantWidth()
-        val yPosition = 0
-        val screenHeight = ScreenUtils.getHeight(context)
+        val yPosition = CursorBounds.yMin(context)
+        val height = CursorBounds.height(context)
         xCursorLine = RelativeLayout(context).apply {
             setBackgroundColor(CURSOR_LINE_COLOR)
         }
         handler.post {
             xCursorLine?.let {
-                window.addView(it, xPosition, yPosition, CURSOR_LINE_THICKNESS, screenHeight)
+                window.addView(it, xPosition, yPosition, CURSOR_LINE_THICKNESS, height)
             }
         }
     }
@@ -59,15 +58,15 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      * Create a vertical line at the given quadrant number
      */
     fun createYCursorLine(quadrantNumber: Int) {
-        val xPosition = 0
-        val yPosition = quadrantNumber * getQuadrantHeight()
-        val screenWidth = ScreenUtils.getWidth(context)
+        val xPosition = CursorBounds.X_MIN
+        val yPosition = CursorBounds.yMin(context) + (quadrantNumber * getQuadrantHeight())
+        val width = CursorBounds.width(context)
         yCursorLine = RelativeLayout(context).apply {
             setBackgroundColor(CURSOR_LINE_COLOR)
         }
         handler.post {
             yCursorLine?.let {
-                window.addView(it, xPosition, yPosition, screenWidth, CURSOR_LINE_THICKNESS)
+                window.addView(it, xPosition, yPosition, width, CURSOR_LINE_THICKNESS)
             }
         }
     }
@@ -76,8 +75,8 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      * Create a horizontal quadrant at the given quadrant number
      */
     fun createXQuadrant(quadrantNumber: Int) {
-        val yPosition = 0
-        val screenHeight = ScreenUtils.getHeight(context)
+        val yPosition = CursorBounds.yMin(context)
+        val height = CursorBounds.height(context)
         val xPosition = quadrantNumber * getQuadrantWidth()
         xQuadrant = RelativeLayout(context).apply {
             setBackgroundColor(QUADRANT_COLOR)
@@ -85,7 +84,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
         }
         handler.post {
             xQuadrant?.let {
-                window.addView(it, xPosition, yPosition, getQuadrantWidth(), screenHeight)
+                window.addView(it, xPosition, yPosition, getQuadrantWidth(), height)
             }
         }
     }
@@ -94,16 +93,16 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      * Create a vertical quadrant at the given quadrant number
      */
     fun createYQuadrant(quadrantNumber: Int) {
-        val xPosition = 0
-        val screenWidth = ScreenUtils.getWidth(context)
-        val yPosition = quadrantNumber * getQuadrantHeight()
+        val xPosition = CursorBounds.X_MIN
+        val width = CursorBounds.width(context)
+        val yPosition = CursorBounds.yMin(context) + (quadrantNumber * getQuadrantHeight())
         yQuadrant = RelativeLayout(context).apply {
             setBackgroundColor(QUADRANT_COLOR)
             alpha = QUADRANT_ALPHA
         }
         handler.post {
             yQuadrant?.let {
-                window.addView(it, xPosition, yPosition, screenWidth, getQuadrantHeight())
+                window.addView(it, xPosition, yPosition, width, getQuadrantHeight())
             }
         }
     }
@@ -162,7 +161,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
     fun updateXCursorLine(xPosition: Int) {
         xCursorLine?.let {
             handler.post {
-                window.updateViewLayout(it, xPosition, 0)
+                window.updateViewLayout(it, xPosition, CursorBounds.yMin(context))
             }
         }
     }
@@ -182,11 +181,11 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      * Update the horizontal quadrant to the given quadrant number
      */
     fun updateXQuadrant(quadrantNumber: Int) {
-        val quadrantWidth = ScreenUtils.getWidth(context) / NUMBER_OF_QUADRANTS
+        val quadrantWidth = getQuadrantWidth()
         val xPosition = quadrantNumber * quadrantWidth
         xQuadrant?.let {
             handler.post {
-                window.updateViewLayout(it, xPosition, 0)
+                window.updateViewLayout(it, xPosition, CursorBounds.yMin(context))
             }
         }
     }
@@ -195,8 +194,8 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      * Update the vertical quadrant to the given quadrant number
      */
     fun updateYQuadrant(quadrantNumber: Int) {
-        val quadrantHeight = ScreenUtils.getHeight(context) / NUMBER_OF_QUADRANTS
-        val yPosition = quadrantNumber * quadrantHeight
+        val quadrantHeight = getQuadrantHeight()
+        val yPosition = CursorBounds.yMin(context) + (quadrantNumber * quadrantHeight)
         yQuadrant?.let {
             handler.post {
                 window.updateViewLayout(it, 0, yPosition)

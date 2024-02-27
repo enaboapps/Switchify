@@ -74,7 +74,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
 
     private fun setupYQuadrant() {
-        CursorPoint.instance.y = 0
+        CursorPoint.instance.y = CursorBounds.yMin(context)
         cursorUI.createYQuadrant(0)
         setQuadrantInfo(
             0,
@@ -84,7 +84,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
     private fun updateYQuadrant(quadrantIndex: Int) {
-        CursorPoint.instance.y = quadrantIndex * cursorUI.getQuadrantHeight()
+        CursorPoint.instance.y =
+            CursorBounds.yMin(context) + (quadrantIndex * cursorUI.getQuadrantHeight())
         cursorUI.updateYQuadrant(quadrantIndex)
         setQuadrantInfo(
             quadrantIndex,
@@ -94,7 +95,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
     private fun setupXQuadrant() {
-        CursorPoint.instance.x = 0
+        CursorPoint.instance.x = CursorBounds.X_MIN
         cursorUI.createXQuadrant(0)
         setQuadrantInfo(
             0,
