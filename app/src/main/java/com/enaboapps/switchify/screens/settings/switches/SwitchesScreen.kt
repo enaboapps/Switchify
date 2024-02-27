@@ -84,11 +84,15 @@ private fun SwitchEventItem(
     navController: NavController,
     switchEvent: SwitchEvent
 ) {
-    PreferenceLink(
-        title = switchEvent.name,
-        summary = "Edit this switch",
-        navController = navController,
-        route = "${NavigationRoute.EditSwitch.name}/${switchEvent.code}"
-    )
+    Column(
+        modifier = Modifier.padding(8.dp)
+    ) {
+        PreferenceLink(
+            title = switchEvent.name,
+            summary = "Edit this switch",
+            navController = navController,
+            route = "${NavigationRoute.EditSwitch.name}/${switchEvent.code}"
+        )
+    }
 }
 
