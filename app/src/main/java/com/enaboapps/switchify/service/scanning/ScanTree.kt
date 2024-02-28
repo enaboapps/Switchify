@@ -243,17 +243,21 @@ class ScanTree(private val context: Context) : ScanStateInterface {
      * If the scanning tree is not in a row, it selects the current row
      */
     fun performSelection() {
-        if (scanningScheduler?.isScanning() == false) {
-            startScanning()
-            println("Scanning started")
-            return
-        }
-        if (isInRow) {
-            selectCurrentColumn()
-            stopScanning()
-            reset()
-        } else {
-            selectCurrentRow()
+        try {
+            if (scanningScheduler?.isScanning() == false) {
+                startScanning()
+                println("Scanning started")
+                return
+            }
+            if (isInRow) {
+                selectCurrentColumn()
+                stopScanning()
+                reset()
+            } else {
+                selectCurrentRow()
+            }
+        } catch (e: Exception) {
+            println("Error performing selection: ${e.message}")
         }
     }
 
