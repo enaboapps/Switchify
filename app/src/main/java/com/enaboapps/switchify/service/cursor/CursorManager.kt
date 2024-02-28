@@ -16,7 +16,11 @@ import java.util.TimerTask
 
 class CursorManager(private val context: Context) : ScanStateInterface, CursorPointListener {
 
-    private val TAG = "CursorManager"
+    companion object {
+        private const val TAG = "CursorManager"
+
+        private const val MIN_QUADRANT_INDEX = 0
+    }
 
     private val cursorLineMovement = 40
 
@@ -148,6 +152,25 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
+    /**
+     * This function determines the max quadrant index
+     * It uses the direction to determine the max quadrant index
+     * The smaller the width or height of the screen, the smaller the max quadrant index
+     * @return The max quadrant index
+     */
+    private fun getMaxQuadrantIndex(): Int {
+        return when (direction) {
+            ScanDirection.LEFT, ScanDirection.RIGHT -> {
+                CursorUI.getNumberOfQuadrantsHorizontally(context) - 1
+            }
+
+            ScanDirection.UP, ScanDirection.DOWN -> {
+                CursorUI.getNumberOfQuadrantsVertically(context) - 1
+            }
+        }
+    }
+
+
     // Function to swap the direction
     fun swapDirection() {
         // Here we swap the direction
@@ -158,8 +181,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                 if (!isInQuadrant) {
                     quadrantInfo?.let {
                         if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
-                            updateXQuadrant(MAX_QUADRANT_INDEX)
-                        } else if (it.quadrantIndex == MAX_QUADRANT_INDEX) {
+                            updateXQuadrant(getMaxQuadrantIndex())
+                        } else if (it.quadrantIndex == getMaxQuadrantIndex()) {
                             updateXQuadrant(MIN_QUADRANT_INDEX)
                         }
                     }
@@ -171,8 +194,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                 if (!isInQuadrant) {
                     quadrantInfo?.let {
                         if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
-                            updateXQuadrant(MAX_QUADRANT_INDEX)
-                        } else if (it.quadrantIndex == MAX_QUADRANT_INDEX) {
+                            updateXQuadrant(getMaxQuadrantIndex())
+                        } else if (it.quadrantIndex == getMaxQuadrantIndex()) {
                             updateXQuadrant(MIN_QUADRANT_INDEX)
                         }
                     }
@@ -184,8 +207,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                 if (!isInQuadrant) {
                     quadrantInfo?.let {
                         if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
-                            updateYQuadrant(MAX_QUADRANT_INDEX)
-                        } else if (it.quadrantIndex == MAX_QUADRANT_INDEX) {
+                            updateYQuadrant(getMaxQuadrantIndex())
+                        } else if (it.quadrantIndex == getMaxQuadrantIndex()) {
                             updateYQuadrant(MIN_QUADRANT_INDEX)
                         }
                     }
@@ -197,8 +220,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                 if (!isInQuadrant) {
                     quadrantInfo?.let {
                         if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
-                            updateYQuadrant(MAX_QUADRANT_INDEX)
-                        } else if (it.quadrantIndex == MAX_QUADRANT_INDEX) {
+                            updateYQuadrant(getMaxQuadrantIndex())
+                        } else if (it.quadrantIndex == getMaxQuadrantIndex()) {
                             updateYQuadrant(MIN_QUADRANT_INDEX)
                         }
                     }
@@ -255,7 +278,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
             ScanDirection.RIGHT -> {
                 quadrantInfo?.let {
-                    if (it.quadrantIndex < MAX_QUADRANT_INDEX) {
+                    if (it.quadrantIndex < getMaxQuadrantIndex()) {
                         val quadrantIndex = it.quadrantIndex + 1
                         updateXQuadrant(quadrantIndex)
                     } else {
@@ -279,7 +302,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
             ScanDirection.DOWN -> {
                 quadrantInfo?.let {
-                    if (it.quadrantIndex < MAX_QUADRANT_INDEX) {
+                    if (it.quadrantIndex < getMaxQuadrantIndex()) {
                         val quadrantIndex = it.quadrantIndex + 1
                         updateYQuadrant(quadrantIndex)
                     } else {
@@ -499,7 +522,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     // Function to check if the event is triggered within the auto select delay
     private fun checkAutoSelectDelay(): Boolean {
         if (isInAutoSelect) {
-            Log.d(TAG, "checkAutoSelectDelay: true")
+            Log.d(Companion.TAG, "checkAutoSelectDelay: true")
             isInAutoSelect = false
             autoSelectTimer?.cancel()
             autoSelectTimer = null
@@ -532,12 +555,3 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 }
-
-data class QuadrantInfo(
-    val quadrantIndex: Int,
-    val start: Int,
-    val end: Int,
-)
-
-val MIN_QUADRANT_INDEX = 0
-val MAX_QUADRANT_INDEX = 3
