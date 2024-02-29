@@ -14,6 +14,10 @@ import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import java.util.Timer
 import java.util.TimerTask
 
+/**
+ * This class manages the cursor
+ * @param context The context
+ */
 class CursorManager(private val context: Context) : ScanStateInterface, CursorPointListener {
 
     companion object {
@@ -41,106 +45,144 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     private var autoSelectTimer: Timer? = null // Timer to wait for the second event
 
 
+    /**
+     * This function sets up the cursor
+     */
     fun setup() {
         SwitchifyAccessibilityWindow.instance.setup(context)
         SwitchifyAccessibilityWindow.instance.show()
 
-        CursorPoint.instance.listener = this
+        CursorPoint.listener = this
     }
 
 
+    /**
+     * This function is called when the cursor point is reselected
+     * It sets the quadrant to the last x quadrant
+     */
     override fun onCursorPointReselect() {
-        CursorPoint.instance.y = 0
+        CursorPoint.y = 0
         // find the last quadrant
-        quadrantInfo = CursorPoint.instance.lastXQuadrant
-        CursorPoint.instance.x = quadrantInfo?.start!!
+        quadrantInfo = CursorPoint.lastXQuadrant
+        CursorPoint.x = quadrantInfo?.start!!
         isInQuadrant = true
         setupXCursorLine()
-        start()
+        startAutoScanIfEnabled()
     }
 
 
-    // Function to set quadrant info
-    // Takes the quadrant index and the start and end points of the quadrant
+    /**
+     * This function sets the quadrant info
+     * @param quadrantIndex The quadrant index
+     * @param start The start point of the quadrant
+     * @param end The end point of the quadrant
+     */
     private fun setQuadrantInfo(quadrantIndex: Int, start: Int, end: Int) {
         quadrantInfo = QuadrantInfo(quadrantIndex, start, end)
 
         when (direction) {
             ScanDirection.LEFT, ScanDirection.RIGHT -> {
-                CursorPoint.instance.lastXQuadrant = quadrantInfo!!
+                CursorPoint.lastXQuadrant = quadrantInfo!!
             }
 
             ScanDirection.UP, ScanDirection.DOWN -> {
-                CursorPoint.instance.lastYQuadrant = quadrantInfo!!
+                CursorPoint.lastYQuadrant = quadrantInfo!!
             }
         }
     }
 
 
+    /**
+     * This function sets up the y quadrant
+     */
     private fun setupYQuadrant() {
-        CursorPoint.instance.y = CursorBounds.yMin(context)
+        CursorPoint.y = CursorBounds.yMin(context)
         cursorUI.createYQuadrant(0)
         setQuadrantInfo(
             0,
-            CursorPoint.instance.y,
-            CursorPoint.instance.y + cursorUI.getQuadrantHeight()
+            CursorPoint.y,
+            CursorPoint.y + cursorUI.getQuadrantHeight()
         )
     }
 
+    /**
+     * This function updates the y quadrant to the given quadrant index
+     */
     private fun updateYQuadrant(quadrantIndex: Int) {
-        CursorPoint.instance.y =
+        CursorPoint.y =
             CursorBounds.yMin(context) + (quadrantIndex * cursorUI.getQuadrantHeight())
         cursorUI.updateYQuadrant(quadrantIndex)
         setQuadrantInfo(
             quadrantIndex,
-            CursorPoint.instance.y,
-            CursorPoint.instance.y + cursorUI.getQuadrantHeight()
+            CursorPoint.y,
+            CursorPoint.y + cursorUI.getQuadrantHeight()
         )
     }
 
+    /**
+     * This function sets up the x quadrant
+     */
     private fun setupXQuadrant() {
-        CursorPoint.instance.x = CursorBounds.X_MIN
+        CursorPoint.x = CursorBounds.X_MIN
         cursorUI.createXQuadrant(0)
         setQuadrantInfo(
             0,
-            CursorPoint.instance.x,
-            CursorPoint.instance.x + cursorUI.getQuadrantWidth()
+            CursorPoint.x,
+            CursorPoint.x + cursorUI.getQuadrantWidth()
         )
     }
 
+    /**
+     * This function updates the x quadrant to the given quadrant index
+     */
     private fun updateXQuadrant(quadrantIndex: Int) {
-        CursorPoint.instance.x = quadrantIndex * cursorUI.getQuadrantWidth()
+        CursorPoint.x = quadrantIndex * cursorUI.getQuadrantWidth()
         cursorUI.updateXQuadrant(quadrantIndex)
         setQuadrantInfo(
             quadrantIndex,
-            CursorPoint.instance.x,
-            CursorPoint.instance.x + cursorUI.getQuadrantWidth()
+            CursorPoint.x,
+            CursorPoint.x + cursorUI.getQuadrantWidth()
         )
     }
 
 
+    /**
+     * This function sets up the y cursor line
+     */
     private fun setupYCursorLine() {
         quadrantInfo?.quadrantIndex?.let {
             cursorUI.createYCursorLine(it)
         }
     }
 
+    /**
+     * This function updates the y cursor line to the current y position
+     */
     private fun updateYCursorLine() {
-        cursorUI.updateYCursorLine(CursorPoint.instance.y)
+        cursorUI.updateYCursorLine(CursorPoint.y)
     }
 
+    /**
+     * This function sets up the x cursor line
+     */
     private fun setupXCursorLine() {
         quadrantInfo?.quadrantIndex?.let {
             cursorUI.createXCursorLine(it)
         }
     }
 
+    /**
+     * This function updates the x cursor line to the current x position
+     */
     private fun updateXCursorLine() {
-        cursorUI.updateXCursorLine(CursorPoint.instance.x)
+        cursorUI.updateXCursorLine(CursorPoint.x)
     }
 
 
-    private fun start() {
+    /**
+     * This function starts the auto scan if it is enabled
+     */
+    private fun startAutoScanIfEnabled() {
         if (scanSettings.isAutoScanMode()) {
             val rate = if (isInQuadrant) {
                 scanSettings.getRefineScanRate()
@@ -171,7 +213,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
-    // Function to swap the direction
+    /**
+     * This function swaps the scanning direction
+     */
     fun swapDirection() {
         // Here we swap the direction
         // If we are at the first quadrant, we swap the direction and go to the last quadrant, and vice versa
@@ -234,24 +278,33 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
-    // Function to stop the scanning
+    /**
+     * This function stops the scanning
+     */
     override fun stopScanning() {
         scanningScheduler.stopScanning()
     }
 
 
-    // Function to pause the scanning
+    /**
+     * This function pauses the scanning
+     */
     override fun pauseScanning() {
         scanningScheduler.pauseScanning()
     }
 
 
-    // Function to resume the scanning
+    /**
+     * This function resumes the scanning
+     */
     override fun resumeScanning() {
         scanningScheduler.resumeScanning()
     }
 
 
+    /**
+     * This function moves the cursor
+     */
     private fun move() {
         if (isInQuadrant) {
             moveCursorLine()
@@ -261,7 +314,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
-    // Function to move to the next quadrant
+    /**
+     * This function moves the cursor to the next quadrant
+     */
     private fun moveToNextQuadrant() {
         when (direction) {
             ScanDirection.LEFT -> {
@@ -315,13 +370,15 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
-    // Function to move the cursor line
+    /**
+     * This function moves the cursor line
+     */
     private fun moveCursorLine() {
         if (quadrantInfo != null) {
             when (direction) {
                 ScanDirection.LEFT ->
-                    if (CursorPoint.instance.x > quadrantInfo?.start!!) {
-                        CursorPoint.instance.x -= cursorLineMovement
+                    if (CursorPoint.x > quadrantInfo?.start!!) {
+                        CursorPoint.x -= cursorLineMovement
                         updateXCursorLine()
                     } else {
                         direction = ScanDirection.RIGHT
@@ -329,8 +386,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                     }
 
                 ScanDirection.RIGHT ->
-                    if (CursorPoint.instance.x < quadrantInfo?.end!!) {
-                        CursorPoint.instance.x += cursorLineMovement
+                    if (CursorPoint.x < quadrantInfo?.end!!) {
+                        CursorPoint.x += cursorLineMovement
                         updateXCursorLine()
                     } else {
                         direction = ScanDirection.LEFT
@@ -338,8 +395,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                     }
 
                 ScanDirection.UP ->
-                    if (CursorPoint.instance.y > quadrantInfo?.start!!) {
-                        CursorPoint.instance.y -= cursorLineMovement
+                    if (CursorPoint.y > quadrantInfo?.start!!) {
+                        CursorPoint.y -= cursorLineMovement
                         updateYCursorLine()
                     } else {
                         direction = ScanDirection.DOWN
@@ -347,8 +404,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                     }
 
                 ScanDirection.DOWN ->
-                    if (CursorPoint.instance.y < quadrantInfo?.end!!) {
-                        CursorPoint.instance.y += cursorLineMovement
+                    if (CursorPoint.y < quadrantInfo?.end!!) {
+                        CursorPoint.y += cursorLineMovement
                         updateYCursorLine()
                     } else {
                         direction = ScanDirection.UP
@@ -359,6 +416,10 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
+    /**
+     * This function resets the cursor
+     * It is used when the cursor is reset from outside the class
+     */
     fun externalReset() {
         uiHandler.post {
             internalReset()
@@ -373,6 +434,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
+    /**
+     * This function resets the cursor
+     */
     private fun internalReset() {
         stopScanning()
 
@@ -381,20 +445,29 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
         cursorUI.reset()
     }
 
+    /**
+     * This function checks if the cursor is reset
+     */
     private fun isReset(): Boolean {
         return cursorUI.isReset()
     }
 
+    /**
+     * This function resets the quadrants
+     */
     private fun resetQuadrants() {
         cursorUI.removeXQuadrant()
         cursorUI.removeYQuadrant()
     }
 
 
+    /**
+     * This function moves the cursor to the next item
+     */
     fun moveToNextItem() {
         if (isReset()) {
             setupXQuadrant()
-            start()
+            startAutoScanIfEnabled()
             return
         }
 
@@ -413,10 +486,13 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
+    /**
+     * This function moves the cursor to the previous item
+     */
     fun moveToPreviousItem() {
         if (isReset()) {
             setupXQuadrant()
-            start()
+            startAutoScanIfEnabled()
             return
         }
 
@@ -435,6 +511,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
+    /**
+     * This function performs the selection action
+     */
     fun performSelectionAction() {
         stopScanning()
 
@@ -445,7 +524,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
         if (isReset()) {
             setupXQuadrant()
-            start()
+            startAutoScanIfEnabled()
             return
         }
 
@@ -470,7 +549,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                         setupYQuadrant()
                     }
                 }
-                start()
+                startAutoScanIfEnabled()
             }
 
             ScanDirection.UP, ScanDirection.DOWN -> {
@@ -485,7 +564,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                         setupYCursorLine()
                     }
 
-                    start()
+                    startAutoScanIfEnabled()
                 } else {
                     isInQuadrant = false
 
@@ -496,6 +575,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
+    /**
+     * This function performs the final action
+     */
     private fun performFinalAction() {
         // check if drag is enabled, if so, select the end point
         if (GestureManager.getInstance().isDragging()) {
@@ -519,7 +601,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
-    // Function to check if the event is triggered within the auto select delay
+    /**
+     * This function checks if the auto select delay is triggered
+     */
     private fun checkAutoSelectDelay(): Boolean {
         if (isInAutoSelect) {
             Log.d(Companion.TAG, "checkAutoSelectDelay: true")
@@ -534,7 +618,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     }
 
 
-    // Function to start auto select timer
+    /**
+     * This function starts the auto select timer
+     */
     private fun startAutoSelectTimer() {
         val delay = scanSettings.getAutoSelectDelay()
         isInAutoSelect = true

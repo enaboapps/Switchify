@@ -20,7 +20,7 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
                     MenuManager.getInstance().openGesturesMenu()
                 },
                 MenuItem("Refine Selection") {
-                    CursorPoint.instance.setReselect(true)
+                    CursorPoint.setReselect(true)
                 },
                 MenuItem("System Control", isLinkToMenu = true) {
                     MenuManager.getInstance().openSystemControlMenu()

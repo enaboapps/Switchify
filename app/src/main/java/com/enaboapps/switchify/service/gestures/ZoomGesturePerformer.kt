@@ -33,7 +33,7 @@ object ZoomGesturePerformer {
      * @param accessibilityService The accessibility service
      */
     fun performZoomAction(zoomAction: ZoomAction, accessibilityService: AccessibilityService) {
-        val centerPoint = CursorPoint.instance.getPoint()
+        val centerPoint = CursorPoint.getPoint()
 
         // Initialize paths for the two fingers
         val path1 = android.graphics.Path()

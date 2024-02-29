@@ -68,7 +68,7 @@ class GestureManager {
 
     // Function to check if point is close to the center of the screen (within 400 pixels)
     fun isPointCloseToCenter(): Boolean {
-        val point = CursorPoint.instance.getPoint()
+        val point = CursorPoint.getPoint()
         accessibilityService?.let {
             val width = ScreenUtils.getWidth(it)
             val height = ScreenUtils.getHeight(it)
@@ -86,9 +86,9 @@ class GestureManager {
     // Function to get current point
     private fun getAssistedCurrentPoint(): PointF {
         return if (preferenceManager?.getBooleanValue(PreferenceManager.PREFERENCE_KEY_ASSISTED_SELECTION) == true) {
-            NodeExaminer.getClosestNodeToPoint(CursorPoint.instance.getPoint())
+            NodeExaminer.getClosestNodeToPoint(CursorPoint.getPoint())
         } else {
-            CursorPoint.instance.getPoint()
+            CursorPoint.getPoint()
         }
     }
 
@@ -223,7 +223,7 @@ class GestureManager {
                 swipeLockManager?.swipeLockDirection = direction
             }
             val path = android.graphics.Path()
-            val point = CursorPoint.instance.getPoint()
+            val point = CursorPoint.getPoint()
             path.moveTo(point.x, point.y)
             accessibilityService?.let { accessibilityService ->
                 val gestureDrawing = GestureDrawing(accessibilityService)
@@ -313,7 +313,7 @@ class GestureManager {
 
     // Function to start dragging
     fun startDragGesture() {
-        dragStartPoint = CursorPoint.instance.getPoint()
+        dragStartPoint = CursorPoint.getPoint()
         isDragging = true
 
         ServiceMessageHUD.instance.showMessage(
@@ -333,7 +333,7 @@ class GestureManager {
 
         // Dispatch the drag gesture
         val path = android.graphics.Path()
-        val point = CursorPoint.instance.getPoint()
+        val point = CursorPoint.getPoint()
         path.moveTo(dragStartPoint!!.x, dragStartPoint!!.y)
         path.lineTo(point.x, point.y)
         accessibilityService?.let { accessibilityService ->
