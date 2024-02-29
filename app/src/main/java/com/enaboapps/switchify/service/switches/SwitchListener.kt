@@ -1,14 +1,13 @@
-package com.enaboapps.switchify.service.scanning
+package com.enaboapps.switchify.service.switches
 
 import android.content.Context
 import android.util.Log
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
+import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
-import java.util.Timer
-import java.util.TimerTask
 
 // SwitchListener class to handle switch events
 class SwitchListener(
@@ -25,37 +24,10 @@ class SwitchListener(
     // Variable to track the latest absorbed switch action
     private var latestAction: AbsorbedSwitchAction? = null
 
-    // Timer for tracking switch hold duration
-    private var switchHoldTimer: Timer? = null
-
-    // Variable for tracking if long press action is performed
-    private var longPressPerformed = false
-
     // Variables for ignoring switch repeat
     private var lastSwitchPressedTime: Long = 0
     private var lastSwitchPressedCode: Int = 0
 
-
-    // Function to start the switch hold timer
-    private fun startSwitchHoldTimer() {
-        switchHoldTimer = Timer()
-        switchHoldTimer?.schedule(
-            object : TimerTask() {
-                override fun run() {
-                    // Cancel the timer when it runs out
-                    switchHoldTimer?.cancel()
-                    switchHoldTimer = null
-
-                    // Perform long press action if available
-                    latestAction?.let {
-                        scanningManager.performAction(it.switchEvent.longPressAction)
-                        longPressPerformed = true
-                    }
-                }
-            },
-            preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
-        )
-    }
 
     /**
      * Called when a switch is pressed
@@ -76,7 +48,7 @@ class SwitchListener(
             if (it.longPressAction.id == SwitchAction.Actions.ACTION_NONE) {
                 scanningManager.performAction(it.pressAction)
             } else {
-                startSwitchHoldTimer()
+                SwitchLongPressHandler.startLongPress(context, it.longPressAction, scanningManager)
                 // Pause scanning if the setting is enabled
                 if (preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)) {
                     scanningManager.pauseScanning()
@@ -96,9 +68,10 @@ class SwitchListener(
         Log.d("SwitchListener", "onSwitchReleased: $keyCode")
         return switchEvent?.let { event ->
             latestAction?.takeIf { it.switchEvent == event }?.let {
+                SwitchLongPressHandler.stopLongPress()
+
                 // Check ignore repeat setting
                 if (shouldIgnoreSwitchRepeat(keyCode)) {
-                    switchHoldTimer?.cancel() // Cancel any running timer
                     return false // Absorb the event, but don't perform any action
                 }
 
@@ -111,7 +84,6 @@ class SwitchListener(
                         .isSwipeLockEnabled()
                 ) {
                     GestureManager.getInstance().toggleSwipeLock()
-                    longPressPerformed = false
                     return true
                 }
 
@@ -120,21 +92,12 @@ class SwitchListener(
                     scanningManager.resumeScanning()
                 }
 
-                // Check if long press action is performed
-                if (longPressPerformed) {
-                    longPressPerformed = false
-                    return true // Absorb the event
-                }
-
                 if (event.longPressAction.id != SwitchAction.Actions.ACTION_NONE) {
                     // Perform press action if time elapsed is less than hold time
                     if (timeElapsed < switchHoldTime) {
                         scanningManager.performAction(event.pressAction)
                     }
                 }
-
-                // Cancel any running timer
-                switchHoldTimer?.cancel()
             }
             false
         } ?: true
