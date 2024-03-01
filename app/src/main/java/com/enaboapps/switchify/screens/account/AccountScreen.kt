@@ -1,13 +1,23 @@
 package com.enaboapps.switchify.screens.account
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -20,12 +30,18 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun AccountScreen(navController: NavController) {
-    val authManager = AuthManager.instance // Assuming AuthManager is already defined in your project
+    val authManager =
+        AuthManager.instance // Assuming AuthManager is already defined in your project
     val currentUser = FirebaseAuth.getInstance().currentUser
     val userEmail = currentUser?.email ?: "Not Logged In"
     val verticalScrollState = rememberScrollState()
 
-    Scaffold(topBar = { NavBar(title = "Account", navController = navController) }) { paddingValues ->
+    Scaffold(topBar = {
+        NavBar(
+            title = "Account",
+            navController = navController
+        )
+    }) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -35,7 +51,7 @@ fun AccountScreen(navController: NavController) {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Email: $userEmail", style = MaterialTheme.typography.h6)
+            EmailAddressView(email = userEmail)
             Spacer(modifier = Modifier.height(20.dp))
 
             FullWidthButton(
@@ -52,6 +68,39 @@ fun AccountScreen(navController: NavController) {
                     navController.popBackStack(navController.graph.startDestinationId, false)
                 }
             )
+        }
+    }
+}
+
+/**
+ * This composable represents the email address view
+ * @param email The email address
+ */
+@Composable
+private fun EmailAddressView(email: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = "Email address",
+                style = MaterialTheme.typography.h6,
+                modifier = Modifier.padding(8.dp)
+            )
+            Row {
+                Icon(
+                    imageVector = Icons.Default.Email,
+                    contentDescription = "Email Icon",
+                    modifier = Modifier.padding(8.dp)
+                )
+                Text(text = email, modifier = Modifier.padding(8.dp))
+            }
         }
     }
 }
