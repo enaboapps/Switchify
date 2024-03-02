@@ -6,6 +6,7 @@ import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.cursor.CursorManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
+import com.enaboapps.switchify.service.nodes.NodeScanner
 import com.enaboapps.switchify.switches.SwitchAction
 
 class ScanningManager(
@@ -15,6 +16,9 @@ class ScanningManager(
 
     // cursor manager
     private val cursorManager = CursorManager(context)
+
+    // node scanner
+    private val nodeScanner = NodeScanner(context)
 
 
     // This function sets up the scanning manager
@@ -50,6 +54,7 @@ class ScanningManager(
 
             ScanReceiver.ReceiverState.ITEM_SCAN -> {
                 // Perform the item scan action
+                nodeScanner.scanTree.performSelection()
             }
 
             ScanReceiver.ReceiverState.MENU -> {
@@ -87,6 +92,7 @@ class ScanningManager(
 
                     ScanReceiver.ReceiverState.ITEM_SCAN -> {
                         // Stop item scanning
+                        nodeScanner.scanTree.stopScanning()
                     }
 
                     ScanReceiver.ReceiverState.MENU -> {
@@ -105,6 +111,7 @@ class ScanningManager(
 
                     ScanReceiver.ReceiverState.ITEM_SCAN -> {
                         // Change the item scan direction
+                        nodeScanner.scanTree.swapScanDirection()
                     }
 
                     ScanReceiver.ReceiverState.MENU -> {
@@ -123,6 +130,7 @@ class ScanningManager(
 
                     ScanReceiver.ReceiverState.ITEM_SCAN -> {
                         // Move to the next item
+                        nodeScanner.scanTree.stepForward()
                     }
 
                     ScanReceiver.ReceiverState.MENU -> {
@@ -141,6 +149,7 @@ class ScanningManager(
 
                     ScanReceiver.ReceiverState.ITEM_SCAN -> {
                         // Move to the previous item
+                        nodeScanner.scanTree.stepBackward()
                     }
 
                     ScanReceiver.ReceiverState.MENU -> {
@@ -166,6 +175,7 @@ class ScanningManager(
 
             ScanReceiver.ReceiverState.ITEM_SCAN -> {
                 // Pause the item scan
+                nodeScanner.scanTree.pauseScanning()
             }
 
             ScanReceiver.ReceiverState.MENU -> {
@@ -184,6 +194,7 @@ class ScanningManager(
 
             ScanReceiver.ReceiverState.ITEM_SCAN -> {
                 // Resume the item scan
+                nodeScanner.scanTree.resumeScanning()
             }
 
             ScanReceiver.ReceiverState.MENU -> {
