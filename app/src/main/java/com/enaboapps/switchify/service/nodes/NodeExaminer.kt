@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.utils
+package com.enaboapps.switchify.service.nodes
 
 import android.graphics.PointF
 import android.graphics.Rect
@@ -15,7 +15,7 @@ import kotlin.math.sqrt
 
 object NodeExaminer {
 
-    var currentRows: List<List<AccessibilityNodeInfo>> = emptyList()
+    var currentRows: List<List<Node>> = emptyList()
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private var examineJob: Job? = null
@@ -101,12 +101,7 @@ object NodeExaminer {
 
         for (row in currentRows) {
             for (node in row) {
-                val nodeRect = Rect()
-                node.getBoundsInScreen(nodeRect)
-                val nodeCenter = PointF(
-                    nodeRect.centerX().toFloat(),
-                    nodeRect.centerY().toFloat()
-                )
+                val nodeCenter = PointF(node.getCenterX().toFloat(), node.getCenterY().toFloat())
                 val distance = distanceBetweenPoints(point, nodeCenter)
                 // The distance has to be less than the max distance and less than the current closest distance
                 if (distance < max && distance < closestDistance) {
@@ -141,34 +136,29 @@ object NodeExaminer {
      * @param nodes The nodes to group
      * @return The list of rows
      */
-    private fun groupNodesIntoRows(nodes: List<AccessibilityNodeInfo>): List<List<AccessibilityNodeInfo>> {
+    private fun groupNodesIntoRows(nodes: List<AccessibilityNodeInfo>): List<List<Node>> {
         val sortedNodes = nodes.sortedBy { node ->
             val rect = Rect()
             node.getBoundsInScreen(rect)
             rect.top
         }
 
-        val rows: MutableList<List<AccessibilityNodeInfo>> = mutableListOf()
-        var currentRow: MutableList<AccessibilityNodeInfo> = mutableListOf()
+        val rows: MutableList<List<Node>> = mutableListOf()
+        var currentRow: MutableList<Node> = mutableListOf()
 
         sortedNodes.forEach { node ->
             val nodeRect = Rect()
             node.getBoundsInScreen(nodeRect)
 
             if (currentRow.isEmpty()) {
-                currentRow.add(node)
+                currentRow.add(Node.fromAccessibilityNodeInfo(node))
             } else {
                 val lastNodeInRow = currentRow.last()
-                val lastNodeRect = Rect()
-                lastNodeInRow.getBoundsInScreen(lastNodeRect)
-
-                if (abs(nodeRect.top - lastNodeRect.top) <= ROW_TOLERANCE ||
-                    abs(nodeRect.bottom - lastNodeRect.bottom) <= ROW_TOLERANCE
-                ) {
-                    currentRow.add(node)
+                if (abs(nodeRect.top - lastNodeInRow.getY()) < ROW_TOLERANCE) {
+                    currentRow.add(Node.fromAccessibilityNodeInfo(node))
                 } else {
                     rows.add(ArrayList(currentRow))
-                    currentRow = mutableListOf(node)
+                    currentRow = mutableListOf(Node.fromAccessibilityNodeInfo(node))
                 }
             }
         }

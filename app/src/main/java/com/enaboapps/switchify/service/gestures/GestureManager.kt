@@ -8,7 +8,7 @@ import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.cursor.CursorPoint
 import com.enaboapps.switchify.service.gestures.utils.GestureUtils.getInBoundsCoordinate
 import com.enaboapps.switchify.service.gestures.visuals.GestureDrawing
-import com.enaboapps.switchify.service.utils.NodeExaminer
+import com.enaboapps.switchify.service.nodes.NodeExaminer
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import com.enaboapps.switchify.service.window.ServiceMessageHUD
 import kotlin.math.pow

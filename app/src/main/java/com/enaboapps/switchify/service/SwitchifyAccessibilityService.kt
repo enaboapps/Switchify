@@ -5,10 +5,10 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import com.enaboapps.switchify.service.gestures.GestureManager
+import com.enaboapps.switchify.service.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.switches.SwitchListener
 import com.enaboapps.switchify.service.utils.KeyboardInfo
-import com.enaboapps.switchify.service.utils.NodeExaminer
 
 class SwitchifyAccessibilityService : AccessibilityService() {
 
