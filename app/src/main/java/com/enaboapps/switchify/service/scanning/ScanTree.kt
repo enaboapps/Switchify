@@ -25,6 +25,11 @@ class ScanTree(private val context: Context) : ScanStateInterface {
     private var isInRow = false
 
     /**
+     * This property indicates whether the current row should be escaped
+     */
+    private var shouldEscapeRow = false
+
+    /**
      * This property indicates the scanning direction
      * Rows can scan up or down
      * Columns can scan left or right
@@ -95,6 +100,9 @@ class ScanTree(private val context: Context) : ScanStateInterface {
      */
     private fun moveSelectionToNextNode() {
         unhighlightCurrentNode()
+        if (shouldEscapeCurrentRow()) {
+            return
+        }
         if (currentColumn < tree[currentRow].size - 1) {
             currentColumn++
         } else {
@@ -108,12 +116,31 @@ class ScanTree(private val context: Context) : ScanStateInterface {
      */
     private fun moveSelectionToPreviousNode() {
         unhighlightCurrentNode()
+        if (shouldEscapeCurrentRow()) {
+            return
+        }
         if (currentColumn > 0) {
             currentColumn--
         } else {
             currentColumn = tree[currentRow].size - 1
         }
         highlightCurrentNode()
+    }
+
+    /**
+     * This function checks if escaping the current row is necessary
+     * @return True if escaping the current row is necessary, false otherwise
+     */
+    private fun shouldEscapeCurrentRow(): Boolean {
+        // If at the last node, activate the escape row
+        if (currentColumn == tree[currentRow].size - 1 && !shouldEscapeRow) {
+            shouldEscapeRow = true
+            highlightCurrentRow()
+        } else if (shouldEscapeRow) {
+            shouldEscapeRow = false
+            unhighlightCurrentRow()
+        }
+        return shouldEscapeRow
     }
 
     /**
@@ -239,6 +266,8 @@ class ScanTree(private val context: Context) : ScanStateInterface {
 
     /**
      * This function performs the selection
+     * It starts scanning if it is not already scanning
+     * It escapes the row if the row should be escaped
      * If the scanning tree is in a row, it selects the current node
      * If the scanning tree is not in a row, it selects the current row
      */
@@ -247,6 +276,12 @@ class ScanTree(private val context: Context) : ScanStateInterface {
             if (scanningScheduler?.isScanning() == false) {
                 startScanning()
                 println("Scanning started")
+                return
+            }
+            if (shouldEscapeRow) {
+                shouldEscapeRow = false
+                unhighlightCurrentRow()
+                reset()
                 return
             }
             if (isInRow) {
