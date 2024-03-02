@@ -24,12 +24,7 @@ class SwitchifyAccessibilityService : AccessibilityService() {
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
             val rootNode = rootInActiveWindow
             if (rootNode != null) {
-                NodeExaminer.findRowsOfNodes(rootNode)
-                for (row in NodeExaminer.currentRows) {
-                    for (node in row) {
-                        Log.d(TAG, "Node: $node")
-                    }
-                }
+                NodeExaminer.findNodes(rootNode)
             }
         }
 
