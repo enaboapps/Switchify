@@ -7,14 +7,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.enaboapps.switchify.R
 import com.enaboapps.switchify.widgets.NavBar
 
 @Composable
@@ -27,23 +30,33 @@ fun AboutScreen(navController: NavController) {
             NavBar(title = "About", navController = navController)
         }
     ) {
-        Column(
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(verticalScrollState)
                 .padding(it)
-                .padding(all = 16.dp),
-            verticalArrangement = Arrangement.Top
+                .fillMaxSize()
         ) {
-            Text(
-                text = context.getString(com.enaboapps.switchify.R.string.app_name),
-                style = MaterialTheme.typography.h4
-            )
-            Spacer(modifier = Modifier.padding(8.dp))
-            Text(
-                text = "Version $version",
-                style = MaterialTheme.typography.body1
-            )
+            Column(
+                modifier = Modifier
+                    .verticalScroll(verticalScrollState)
+                    .padding(all = 16.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = context.getString(R.string.app_name),
+                    style = MaterialTheme.typography.h4
+                )
+                Spacer(modifier = Modifier.padding(4.dp))
+                Text(
+                    text = "Version $version",
+                    style = MaterialTheme.typography.body1
+                )
+                Spacer(modifier = Modifier.padding(16.dp))
+                Text(
+                    text = context.getString(R.string.app_description),
+                    style = MaterialTheme.typography.body2
+                )
+            }
         }
     }
 }
