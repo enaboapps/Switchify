@@ -24,6 +24,9 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
                 },
                 MenuItem("System Control", isLinkToMenu = true) {
                     MenuManager.getInstance().openSystemControlMenu()
+                },
+                MenuItem(MenuManager.getInstance().getStateToSwitchTo()) {
+                    MenuManager.getInstance().changeBetweenCursorAndItemScan()
                 }
             )
         }

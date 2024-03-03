@@ -7,6 +7,7 @@ import android.util.Log
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanDirection
+import com.enaboapps.switchify.service.scanning.ScanReceiver
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
@@ -585,6 +586,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
             internalReset()
             return
         }
+
+        // set the state from which the menu was activated
+        MenuManager.getInstance().scanReceiverState = ScanReceiver.ReceiverState.CURSOR
 
         // check if auto select is enabled, if so, start the timer
         val auto = scanSettings.isAutoSelectEnabled()
