@@ -7,6 +7,7 @@ import android.view.accessibility.AccessibilityEvent
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanningManager
+import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.service.switches.SwitchListener
 import com.enaboapps.switchify.service.utils.KeyboardInfo
 
@@ -46,6 +47,8 @@ class SwitchifyAccessibilityService : AccessibilityService() {
         switchListener = SwitchListener(this, scanningManager!!)
 
         GestureManager.getInstance().setup(this)
+
+        AutoSelectionHandler.init(this)
     }
 
 
