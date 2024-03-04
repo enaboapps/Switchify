@@ -6,9 +6,7 @@ import android.os.Looper
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.GesturePointListener
-import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanDirection
-import com.enaboapps.switchify.service.scanning.ScanReceiver
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
@@ -573,9 +571,6 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
             internalReset()
             return
         }
-
-        // set the state from which the menu was activated
-        MenuManager.getInstance().scanReceiverState = ScanReceiver.ReceiverState.CURSOR
 
         AutoSelectionHandler.setSelectAction { performTapAction() }
         AutoSelectionHandler.performSelectionAction()

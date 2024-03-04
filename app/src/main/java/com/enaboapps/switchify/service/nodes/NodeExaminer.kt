@@ -58,7 +58,7 @@ object NodeExaminer {
                 val node = q.poll()
                 if (node != null) {
                     // Add the node to the list if it is actionable
-                    if (node.isClickable || node.isFocusable) {
+                    if (node.isClickable) {
                         allNodes.add(node)
                     }
 

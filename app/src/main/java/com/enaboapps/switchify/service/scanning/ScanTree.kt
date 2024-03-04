@@ -7,7 +7,7 @@ class ScanTree(private val context: Context) : ScanStateInterface {
     /**
      * This property represents the scanning tree
      */
-    private var tree: MutableList<List<ScanNodeInterface>> = mutableListOf()
+    private var tree: MutableList<Row> = mutableListOf()
 
     /**
      * This property indicates the current row of the scanning tree
@@ -48,23 +48,38 @@ class ScanTree(private val context: Context) : ScanStateInterface {
 
 
     /**
+     * Data class representing a row
+     * @param nodes The nodes in the row
+     * @param y The y coordinate of the row
+     */
+    private data class Row(val nodes: List<ScanNodeInterface>, val y: Int)
+
+
+    /**
      * This function builds the scanning tree
      * by examining the x and y coordinates of the nodes
      * and organizing them into a tree of rows
      * @param nodes The nodes to build the tree from
      */
     fun buildTree(nodes: List<ScanNodeInterface>) {
-        var currentRow = mutableListOf<ScanNodeInterface>()
-        var currentY = nodes[0].getY()
-        for (node in nodes) {
-            if (node.getY() != currentY) {
-                addRow(currentRow)
-                currentRow = mutableListOf()
-                currentY = node.getY()
+        reset()
+        clearTree()
+        if (nodes.isNotEmpty()) {
+            var currentRow = mutableListOf<ScanNodeInterface>()
+            var currentY = nodes[0].getY()
+            for (node in nodes) {
+                if (node.getY() != currentY) {
+                    addRow(currentRow)
+                    currentRow = mutableListOf()
+                    currentY = node.getY()
+                }
+                currentRow.add(node)
             }
-            currentRow.add(node)
+            addRow(currentRow)
         }
-        addRow(currentRow)
+
+        // sort the rows by the y coordinate
+        tree.sortBy { it.y }
 
         setupScanningScheduler()
     }
@@ -74,7 +89,8 @@ class ScanTree(private val context: Context) : ScanStateInterface {
      * @param row The row to add
      */
     private fun addRow(row: List<ScanNodeInterface>) {
-        tree.add(row.sortedBy { it.getX() })
+        val sortedRow = row.sortedBy { it.getX() }
+        tree.add(Row(sortedRow, sortedRow[0].getY()))
     }
 
     /**
@@ -103,7 +119,7 @@ class ScanTree(private val context: Context) : ScanStateInterface {
         if (shouldEscapeCurrentRow()) {
             return
         }
-        if (currentColumn < tree[currentRow].size - 1) {
+        if (currentColumn < tree[currentRow].nodes.size - 1) {
             currentColumn++
         } else {
             currentColumn = 0
@@ -122,7 +138,7 @@ class ScanTree(private val context: Context) : ScanStateInterface {
         if (currentColumn > 0) {
             currentColumn--
         } else {
-            currentColumn = tree[currentRow].size - 1
+            currentColumn = tree[currentRow].nodes.size - 1
         }
         highlightCurrentNode()
     }
@@ -133,7 +149,7 @@ class ScanTree(private val context: Context) : ScanStateInterface {
      */
     private fun shouldEscapeCurrentRow(): Boolean {
         // If at the last node, activate the escape row
-        if (currentColumn == tree[currentRow].size - 1 && !shouldEscapeRow) {
+        if (currentColumn == tree[currentRow].nodes.size - 1 && !shouldEscapeRow) {
             shouldEscapeRow = true
             highlightCurrentRow()
         } else if (shouldEscapeRow) {
@@ -174,7 +190,7 @@ class ScanTree(private val context: Context) : ScanStateInterface {
      */
     private fun highlightCurrentRow() {
         if (tree.size > currentRow) {
-            for (node in tree[currentRow]) {
+            for (node in tree[currentRow].nodes) {
                 node.highlight()
             }
         }
@@ -185,7 +201,7 @@ class ScanTree(private val context: Context) : ScanStateInterface {
      */
     private fun unhighlightCurrentRow() {
         if (tree.size > currentRow) {
-            for (node in tree[currentRow]) {
+            for (node in tree[currentRow].nodes) {
                 node.unhighlight()
             }
         }
@@ -195,8 +211,10 @@ class ScanTree(private val context: Context) : ScanStateInterface {
      * This function highlights the current node
      */
     private fun highlightCurrentNode() {
-        if (tree.isNotEmpty()) {
-            tree[currentRow][currentColumn].highlight()
+        if (tree.size > currentRow) {
+            if (tree[currentRow].nodes.size > currentColumn) {
+                tree[currentRow].nodes[currentColumn].highlight()
+            }
         }
     }
 
@@ -204,8 +222,10 @@ class ScanTree(private val context: Context) : ScanStateInterface {
      * This function unhighlights the current node
      */
     private fun unhighlightCurrentNode() {
-        if (tree.isNotEmpty()) {
-            tree[currentRow][currentColumn].unhighlight()
+        if (tree.size > currentRow) {
+            if (tree[currentRow].nodes.size > currentColumn) {
+                tree[currentRow].nodes[currentColumn].unhighlight()
+            }
         }
     }
 
@@ -237,8 +257,8 @@ class ScanTree(private val context: Context) : ScanStateInterface {
      */
     private fun selectCurrentRow() {
         if (tree.size > currentRow) {
-            if (tree[currentRow].size == 1) {
-                tree[currentRow][0].select()
+            if (tree[currentRow].nodes.size == 1) {
+                tree[currentRow].nodes[0].select()
                 return
             }
         }
@@ -258,8 +278,8 @@ class ScanTree(private val context: Context) : ScanStateInterface {
         // Check if the row exists
         if (tree.size > currentRow) {
             // Check if the column exists
-            if (tree[currentRow].size > currentColumn) {
-                tree[currentRow][currentColumn].select()
+            if (tree[currentRow].nodes.size > currentColumn) {
+                tree[currentRow].nodes[currentColumn].select()
             }
         }
     }
@@ -367,8 +387,15 @@ class ScanTree(private val context: Context) : ScanStateInterface {
      * This function resets the scanning tree
      */
     private fun reset() {
-        unhighlightCurrentNode()
-        unhighlightCurrentRow()
+        try {
+            for (row in tree) {
+                for (node in row.nodes) {
+                    node.unhighlight()
+                }
+            }
+        } catch (e: Exception) {
+            println("Error resetting scanning tree: ${e.message}")
+        }
         currentRow = 0
         currentColumn = 0
         isInRow = false

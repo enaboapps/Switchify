@@ -5,7 +5,10 @@ import android.os.Handler
 import android.os.Looper
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.RelativeLayout
+import com.enaboapps.switchify.service.gestures.GestureManager
+import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
+import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 /**
@@ -74,7 +77,15 @@ class Node : ScanNodeInterface {
     }
 
     override fun select() {
-        TODO("Not yet implemented")
+        unhighlight()
+
+        GesturePoint.x = centerX
+        GesturePoint.y = centerY
+
+        AutoSelectionHandler.setSelectAction {
+            GestureManager.getInstance().performTap()
+        }
+        AutoSelectionHandler.performSelectionAction()
     }
 
 
