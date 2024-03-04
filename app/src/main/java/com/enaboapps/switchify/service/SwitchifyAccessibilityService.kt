@@ -22,11 +22,9 @@ class SwitchifyAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         Log.d(TAG, "onAccessibilityEvent: ${event?.eventType}")
 
-        if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            val rootNode = rootInActiveWindow
-            if (rootNode != null) {
-                NodeExaminer.findNodes(rootNode)
-            }
+        val rootNode = rootInActiveWindow
+        if (rootNode != null) {
+            NodeExaminer.findNodes(rootNode, this)
         }
 
         KeyboardInfo.updateKeyboardState(windows)

@@ -1,7 +1,9 @@
 package com.enaboapps.switchify.service.nodes
 
+import android.content.Context
 import android.graphics.PointF
 import android.view.accessibility.AccessibilityNodeInfo
+import com.enaboapps.switchify.service.utils.ScreenUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -34,11 +36,15 @@ object NodeExaminer {
      * Find the nodes in the tree
      * @param rootNode The root node to start from
      */
-    fun findNodes(rootNode: AccessibilityNodeInfo) {
+    fun findNodes(rootNode: AccessibilityNodeInfo, context: Context) {
         examineJob?.cancel()
         examineJob = coroutineScope.launch {
             val allNodes = flattenTree(rootNode)
             currentNodes = allNodes.map { Node.fromAccessibilityNodeInfo(it) }
+            val width = ScreenUtils.getWidth(context)
+            val height = ScreenUtils.getHeight(context)
+            currentNodes =
+                currentNodes.filter { it.getX() >= 0 && it.getY() >= 0 && it.getX() <= width && it.getY() <= height }
             nodeUpdateDelegate?.onNodesUpdated(currentNodes)
         }
     }

@@ -3,7 +3,10 @@ package com.enaboapps.switchify.service.scanning
 import android.content.Context
 import android.util.Log
 
-class ScanTree(private val context: Context) : ScanStateInterface {
+class ScanTree(
+    private val context: Context,
+    private var stopScanningOnSelect: Boolean = false
+) : ScanStateInterface {
     /**
      * This property represents the scanning tree
      */
@@ -79,7 +82,7 @@ class ScanTree(private val context: Context) : ScanStateInterface {
         }
 
         // sort the rows by the y coordinate
-        tree.sortBy { it.y }
+        tree = tree.sortedBy { it.y }.toMutableList()
 
         setupScanningScheduler()
     }
@@ -259,6 +262,9 @@ class ScanTree(private val context: Context) : ScanStateInterface {
         if (tree.size > currentRow) {
             if (tree[currentRow].nodes.size == 1) {
                 tree[currentRow].nodes[0].select()
+                if (stopScanningOnSelect) {
+                    reset()
+                }
                 return
             }
         }
@@ -280,6 +286,9 @@ class ScanTree(private val context: Context) : ScanStateInterface {
             // Check if the column exists
             if (tree[currentRow].nodes.size > currentColumn) {
                 tree[currentRow].nodes[currentColumn].select()
+                if (stopScanningOnSelect) {
+                    reset()
+                }
             }
         }
     }
@@ -306,8 +315,6 @@ class ScanTree(private val context: Context) : ScanStateInterface {
             }
             if (isInRow) {
                 selectCurrentColumn()
-                stopScanning()
-                reset()
             } else {
                 selectCurrentRow()
             }
@@ -386,7 +393,7 @@ class ScanTree(private val context: Context) : ScanStateInterface {
     /**
      * This function resets the scanning tree
      */
-    private fun reset() {
+    fun reset() {
         try {
             for (row in tree) {
                 for (node in row.nodes) {
