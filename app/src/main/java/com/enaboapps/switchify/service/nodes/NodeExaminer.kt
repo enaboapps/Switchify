@@ -14,45 +14,67 @@ import java.util.Queue
 import kotlin.math.sqrt
 
 /**
- * This interface delegates the node updates
+ * This interface is used to delegate node updates.
  */
 interface NodeUpdateDelegate {
     fun onNodesUpdated(nodes: List<Node>)
 }
 
 /**
- * This class is responsible for examining the nodes
+ * This object is responsible for examining accessibility nodes within an application's UI.
  */
 object NodeExaminer {
 
+    // Delegate to notify about node updates.
     var nodeUpdateDelegate: NodeUpdateDelegate? = null
 
+    // Holds the current list of nodes.
     private var currentNodes: List<Node> = emptyList()
 
+    // Scope for launching coroutines.
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
+
+    // Job for managing the examination process, allowing it to be cancelled if a new one starts.
     private var examineJob: Job? = null
 
     /**
-     * Find the nodes in the tree
-     * @param rootNode The root node to start from
+     * Initiates the process of finding and updating the list of nodes.
+     * It first flattens the accessibility tree starting from the rootNode, then filters
+     * out nodes not on the screen, and finally updates the currentNodes if they differ.
+     *
+     * @param rootNode The root node to start the examination from.
+     * @param context The current context, used to get screen dimensions for filtering nodes.
      */
     fun findNodes(rootNode: AccessibilityNodeInfo, context: Context) {
+        // Cancel any ongoing examination job.
         examineJob?.cancel()
         examineJob = coroutineScope.launch {
+            // Flatten the accessibility tree to get all nodes.
             val allNodes = flattenTree(rootNode)
-            currentNodes = allNodes.map { Node.fromAccessibilityNodeInfo(it) }
+            // Map each AccessibilityNodeInfo to a custom Node instance.
+            val newNodes = allNodes.map { Node.fromAccessibilityNodeInfo(it) }
+            // Get screen dimensions.
             val width = ScreenUtils.getWidth(context)
             val height = ScreenUtils.getHeight(context)
-            currentNodes =
-                currentNodes.filter { it.getX() >= 0 && it.getY() >= 0 && it.getX() <= width && it.getY() <= height }
-            nodeUpdateDelegate?.onNodesUpdated(currentNodes)
+            // Filter nodes to those that are on-screen.
+            val filteredNewNodes =
+                newNodes.filter { it.getX() >= 0 && it.getY() >= 0 && it.getX() <= width && it.getY() <= height }
+
+            // Compare the current nodes with the new ones using sets.
+            if (currentNodes.toSet() != filteredNewNodes.toSet()) {
+                currentNodes = filteredNewNodes
+                // Notify the delegate if there's an update.
+                nodeUpdateDelegate?.onNodesUpdated(currentNodes)
+            }
         }
     }
 
     /**
-     * Flatten the tree of nodes
-     * @param rootNode The root node to start from
-     * @return The list of nodes
+     * Flattens the given tree of AccessibilityNodeInfo objects into a list.
+     * This method explores the tree breadth-first to collect all nodes.
+     *
+     * @param rootNode The root node of the tree to start flattening from.
+     * @return A list of all nodes in the tree.
      */
     private suspend fun flattenTree(rootNode: AccessibilityNodeInfo): List<AccessibilityNodeInfo> =
         withContext(Dispatchers.IO) {
@@ -62,60 +84,50 @@ object NodeExaminer {
 
             while (q.isNotEmpty()) {
                 val node = q.poll()
-                if (node != null) {
-                    // Add the node to the list if it is actionable
+                node?.let {
+                    // Add actionable nodes to the list.
                     if (node.isClickable) {
                         allNodes.add(node)
                     }
-
+                    // Add all child nodes to the queue for further examination.
                     for (i in 0 until node.childCount) {
-                        val child = node.getChild(i)
-                        if (child != null) {
-                            q.add(child)
-                        }
+                        node.getChild(i)?.let { q.add(it) }
                     }
                 }
             }
-
-            return@withContext allNodes
+            allNodes
         }
 
     /**
-     * Get the closest node to the given point
-     * @param point The point to search for
-     * @return The closest node point
+     * Finds the closest node to a given point on the screen.
+     *
+     * @param point The point for which to find the closest node.
+     * @return The closest node's center point. Returns the original point if no close node is found.
      */
     fun getClosestNodeToPoint(point: PointF): PointF {
         var closestNodePoint = PointF(Float.MAX_VALUE, Float.MAX_VALUE)
         var closestDistance = Float.MAX_VALUE
 
-        val max = 200
-
-        var wasFound = false
+        val maxDistance = 200
 
         for (node in currentNodes) {
             val nodeCenter = PointF(node.getCenterX().toFloat(), node.getCenterY().toFloat())
             val distance = distanceBetweenPoints(point, nodeCenter)
-            // The distance has to be less than the max distance and less than the current closest distance
-            if (distance < max && distance < closestDistance) {
+            if (distance < maxDistance && distance < closestDistance) {
                 closestNodePoint = nodeCenter
                 closestDistance = distance
-                wasFound = true
             }
         }
 
-        return if (wasFound) {
-            closestNodePoint
-        } else {
-            point
-        }
+        return if (closestDistance < Float.MAX_VALUE) closestNodePoint else point
     }
 
     /**
-     * Get the distance between two points
-     * @param point1 The first point
-     * @param point2 The second point
-     * @return The distance between the two points
+     * Calculates the distance between two points.
+     *
+     * @param point1 The first point.
+     * @param point2 The second point.
+     * @return The distance between point1 and point2.
      */
     private fun distanceBetweenPoints(point1: PointF, point2: PointF): Float {
         val xDiff = point1.x - point2.x

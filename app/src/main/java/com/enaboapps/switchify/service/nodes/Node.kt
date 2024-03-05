@@ -89,6 +89,31 @@ class Node : ScanNodeInterface {
     }
 
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Node) return false
+
+        if (x != other.x) return false
+        if (y != other.y) return false
+        if (centerX != other.centerX) return false
+        if (centerY != other.centerY) return false
+        if (width != other.width) return false
+        if (height != other.height) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = x
+        result = 31 * result + y
+        result = 31 * result + centerX
+        result = 31 * result + centerY
+        result = 31 * result + width
+        result = 31 * result + height
+        return result
+    }
+
+
     /**
      * This function shows the bounds of the node
      * by rendering a red rectangle around the node
