@@ -5,10 +5,11 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import com.enaboapps.switchify.service.gestures.GestureManager
+import com.enaboapps.switchify.service.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanningManager
+import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.service.switches.SwitchListener
 import com.enaboapps.switchify.service.utils.KeyboardInfo
-import com.enaboapps.switchify.service.utils.NodeExaminer
 
 class SwitchifyAccessibilityService : AccessibilityService() {
 
@@ -21,16 +22,9 @@ class SwitchifyAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         Log.d(TAG, "onAccessibilityEvent: ${event?.eventType}")
 
-        if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            val rootNode = rootInActiveWindow
-            if (rootNode != null) {
-                NodeExaminer.findRowsOfNodes(rootNode)
-                for (row in NodeExaminer.currentRows) {
-                    for (node in row) {
-                        Log.d(TAG, "Node: $node")
-                    }
-                }
-            }
+        val rootNode = rootInActiveWindow
+        if (rootNode != null) {
+            NodeExaminer.findNodes(rootNode, this)
         }
 
         KeyboardInfo.updateKeyboardState(windows)
@@ -51,6 +45,8 @@ class SwitchifyAccessibilityService : AccessibilityService() {
         switchListener = SwitchListener(this, scanningManager!!)
 
         GestureManager.getInstance().setup(this)
+
+        AutoSelectionHandler.init(this)
     }
 
 

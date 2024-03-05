@@ -3,22 +3,21 @@ package com.enaboapps.switchify.service.cursor
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import com.enaboapps.switchify.service.gestures.GestureManager
-import com.enaboapps.switchify.service.menu.MenuManager
+import com.enaboapps.switchify.service.gestures.GesturePoint
+import com.enaboapps.switchify.service.gestures.GesturePointListener
 import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
+import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
-import java.util.Timer
-import java.util.TimerTask
 
 /**
  * This class manages the cursor
  * @param context The context
  */
-class CursorManager(private val context: Context) : ScanStateInterface, CursorPointListener {
+class CursorManager(private val context: Context) : ScanStateInterface, GesturePointListener {
 
     companion object {
         private const val TAG = "CursorManager"
@@ -40,10 +39,6 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
     private val scanningScheduler = ScanningScheduler(context) { move() }
 
-    // auto select variables
-    private var isInAutoSelect = false // If true, we listen for a second event to activate the menu
-    private var autoSelectTimer: Timer? = null // Timer to wait for the second event
-
 
     /**
      * This function sets up the cursor
@@ -52,7 +47,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
         SwitchifyAccessibilityWindow.instance.setup(context)
         SwitchifyAccessibilityWindow.instance.show()
 
-        CursorPoint.listener = this
+        GesturePoint.listener = this
     }
 
 
@@ -60,11 +55,11 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
      * This function is called when the cursor point is reselected
      * It sets the quadrant to the last x quadrant
      */
-    override fun onCursorPointReselect() {
-        CursorPoint.y = 0
+    override fun onGesturePointReselect() {
+        GesturePoint.y = 0
         // find the last quadrant
-        quadrantInfo = CursorPoint.lastXQuadrant
-        CursorPoint.x = quadrantInfo?.start!!
+        quadrantInfo = GesturePoint.lastXQuadrant
+        GesturePoint.x = quadrantInfo?.start!!
         isInQuadrant = true
         setupXCursorLine()
         startAutoScanIfEnabled()
@@ -82,11 +77,11 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
 
         when (direction) {
             ScanDirection.LEFT, ScanDirection.RIGHT -> {
-                CursorPoint.lastXQuadrant = quadrantInfo!!
+                GesturePoint.lastXQuadrant = quadrantInfo!!
             }
 
             ScanDirection.UP, ScanDirection.DOWN -> {
-                CursorPoint.lastYQuadrant = quadrantInfo!!
+                GesturePoint.lastYQuadrant = quadrantInfo!!
             }
         }
     }
@@ -96,12 +91,12 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
      * This function sets up the y quadrant
      */
     private fun setupYQuadrant() {
-        CursorPoint.y = CursorBounds.yMin(context)
+        GesturePoint.y = CursorBounds.yMin(context)
         cursorUI.createYQuadrant(0)
         setQuadrantInfo(
             0,
-            CursorPoint.y,
-            CursorPoint.y + cursorUI.getQuadrantHeight()
+            GesturePoint.y,
+            GesturePoint.y + cursorUI.getQuadrantHeight()
         )
     }
 
@@ -109,13 +104,13 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
      * This function updates the y quadrant to the given quadrant index
      */
     private fun updateYQuadrant(quadrantIndex: Int) {
-        CursorPoint.y =
+        GesturePoint.y =
             CursorBounds.yMin(context) + (quadrantIndex * cursorUI.getQuadrantHeight())
         cursorUI.updateYQuadrant(quadrantIndex)
         setQuadrantInfo(
             quadrantIndex,
-            CursorPoint.y,
-            CursorPoint.y + cursorUI.getQuadrantHeight()
+            GesturePoint.y,
+            GesturePoint.y + cursorUI.getQuadrantHeight()
         )
     }
 
@@ -123,12 +118,12 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
      * This function sets up the x quadrant
      */
     private fun setupXQuadrant() {
-        CursorPoint.x = CursorBounds.X_MIN
+        GesturePoint.x = CursorBounds.X_MIN
         cursorUI.createXQuadrant(0)
         setQuadrantInfo(
             0,
-            CursorPoint.x,
-            CursorPoint.x + cursorUI.getQuadrantWidth()
+            GesturePoint.x,
+            GesturePoint.x + cursorUI.getQuadrantWidth()
         )
     }
 
@@ -136,12 +131,12 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
      * This function updates the x quadrant to the given quadrant index
      */
     private fun updateXQuadrant(quadrantIndex: Int) {
-        CursorPoint.x = quadrantIndex * cursorUI.getQuadrantWidth()
+        GesturePoint.x = quadrantIndex * cursorUI.getQuadrantWidth()
         cursorUI.updateXQuadrant(quadrantIndex)
         setQuadrantInfo(
             quadrantIndex,
-            CursorPoint.x,
-            CursorPoint.x + cursorUI.getQuadrantWidth()
+            GesturePoint.x,
+            GesturePoint.x + cursorUI.getQuadrantWidth()
         )
     }
 
@@ -159,7 +154,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
      * This function updates the y cursor line to the current y position
      */
     private fun updateYCursorLine() {
-        cursorUI.updateYCursorLine(CursorPoint.y)
+        cursorUI.updateYCursorLine(GesturePoint.y)
     }
 
     /**
@@ -175,7 +170,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
      * This function updates the x cursor line to the current x position
      */
     private fun updateXCursorLine() {
-        cursorUI.updateXCursorLine(CursorPoint.x)
+        cursorUI.updateXCursorLine(GesturePoint.x)
     }
 
 
@@ -377,8 +372,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
         if (quadrantInfo != null) {
             when (direction) {
                 ScanDirection.LEFT ->
-                    if (CursorPoint.x > quadrantInfo?.start!!) {
-                        CursorPoint.x -= cursorLineMovement
+                    if (GesturePoint.x > quadrantInfo?.start!!) {
+                        GesturePoint.x -= cursorLineMovement
                         updateXCursorLine()
                     } else {
                         direction = ScanDirection.RIGHT
@@ -386,8 +381,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                     }
 
                 ScanDirection.RIGHT ->
-                    if (CursorPoint.x < quadrantInfo?.end!!) {
-                        CursorPoint.x += cursorLineMovement
+                    if (GesturePoint.x < quadrantInfo?.end!!) {
+                        GesturePoint.x += cursorLineMovement
                         updateXCursorLine()
                     } else {
                         direction = ScanDirection.LEFT
@@ -395,8 +390,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                     }
 
                 ScanDirection.UP ->
-                    if (CursorPoint.y > quadrantInfo?.start!!) {
-                        CursorPoint.y -= cursorLineMovement
+                    if (GesturePoint.y > quadrantInfo?.start!!) {
+                        GesturePoint.y -= cursorLineMovement
                         updateYCursorLine()
                     } else {
                         direction = ScanDirection.DOWN
@@ -404,8 +399,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
                     }
 
                 ScanDirection.DOWN ->
-                    if (CursorPoint.y < quadrantInfo?.end!!) {
-                        CursorPoint.y += cursorLineMovement
+                    if (GesturePoint.y < quadrantInfo?.end!!) {
+                        GesturePoint.y += cursorLineMovement
                         updateYCursorLine()
                     } else {
                         direction = ScanDirection.UP
@@ -423,10 +418,6 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     fun externalReset() {
         uiHandler.post {
             internalReset()
-
-            isInAutoSelect = false
-            autoSelectTimer?.cancel()
-            autoSelectTimer = null
 
             isInQuadrant = false
             quadrantInfo = null
@@ -517,11 +508,6 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
     fun performSelectionAction() {
         stopScanning()
 
-        // If the event is triggered within the auto select delay, we don't perform the action
-        if (checkAutoSelectDelay()) {
-            return
-        }
-
         if (isReset()) {
             setupXQuadrant()
             startAutoScanIfEnabled()
@@ -586,58 +572,17 @@ class CursorManager(private val context: Context) : ScanStateInterface, CursorPo
             return
         }
 
-        // check if auto select is enabled, if so, start the timer
-        val auto = scanSettings.isAutoSelectEnabled()
-        if (auto && !isInAutoSelect) {
-            startAutoSelectTimer()
-        }
-
-        if (!auto) {
-            // open menu
-            MenuManager.getInstance().openMainMenu()
-        }
+        AutoSelectionHandler.setSelectAction { performTapAction() }
+        AutoSelectionHandler.performSelectionAction()
 
         internalReset()
     }
 
 
     /**
-     * This function checks if the auto select delay is triggered
+     * This function performs the tap action
      */
-    private fun checkAutoSelectDelay(): Boolean {
-        if (isInAutoSelect) {
-            Log.d(Companion.TAG, "checkAutoSelectDelay: true")
-            isInAutoSelect = false
-            autoSelectTimer?.cancel()
-            autoSelectTimer = null
-            // open menu
-            MenuManager.getInstance().openMainMenu()
-            return true
-        }
-        return false
+    private fun performTapAction() {
+        GestureManager.getInstance().performTap()
     }
-
-
-    /**
-     * This function starts the auto select timer
-     */
-    private fun startAutoSelectTimer() {
-        val delay = scanSettings.getAutoSelectDelay()
-        isInAutoSelect = true
-        if (autoSelectTimer == null) {
-            autoSelectTimer = Timer()
-        }
-        autoSelectTimer?.schedule(object : TimerTask() {
-            override fun run() {
-                uiHandler.post {
-                    if (isInAutoSelect) {
-                        isInAutoSelect = false
-                        // tap
-                        GestureManager.getInstance().performTap()
-                    }
-                }
-            }
-        }, delay)
-    }
-
 }

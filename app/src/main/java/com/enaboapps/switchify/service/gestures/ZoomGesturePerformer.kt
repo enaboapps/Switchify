@@ -2,7 +2,6 @@ package com.enaboapps.switchify.service.gestures
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
-import com.enaboapps.switchify.service.cursor.CursorPoint
 import com.enaboapps.switchify.service.gestures.utils.GestureUtils.getInBoundsCoordinate
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import kotlin.math.abs
@@ -33,7 +32,7 @@ object ZoomGesturePerformer {
      * @param accessibilityService The accessibility service
      */
     fun performZoomAction(zoomAction: ZoomAction, accessibilityService: AccessibilityService) {
-        val centerPoint = CursorPoint.getPoint()
+        val centerPoint = GesturePoint.getPoint()
 
         // Initialize paths for the two fingers
         val path1 = android.graphics.Path()

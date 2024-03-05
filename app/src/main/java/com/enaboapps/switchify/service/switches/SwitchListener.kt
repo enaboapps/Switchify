@@ -5,6 +5,7 @@ import android.util.Log
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
+import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
@@ -46,6 +47,11 @@ class SwitchListener(
 
             // Handle immediate press action or start hold timer for long press
             if (it.longPressAction.id == SwitchAction.Actions.ACTION_NONE) {
+                // Check selection handling
+                if (AutoSelectionHandler.isAutoSelectInProgress()) {
+                    AutoSelectionHandler.performSelectionAction() // Interrupt auto-select process
+                    return false // Absorb the event, but don't perform any action
+                }
                 scanningManager.performAction(it.pressAction)
             } else {
                 SwitchLongPressHandler.startLongPress(context, it.longPressAction, scanningManager)
@@ -85,6 +91,12 @@ class SwitchListener(
                 ) {
                     GestureManager.getInstance().toggleSwipeLock()
                     return true
+                }
+
+                // Check selection handling
+                if (AutoSelectionHandler.isAutoSelectInProgress()) {
+                    AutoSelectionHandler.performSelectionAction() // Interrupt auto-select process
+                    return false // Absorb the event, but don't perform any action
                 }
 
                 // Resume scanning if the setting is enabled

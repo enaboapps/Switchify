@@ -6,6 +6,7 @@ import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.cursor.CursorManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
+import com.enaboapps.switchify.service.nodes.NodeScanner
 import com.enaboapps.switchify.switches.SwitchAction
 
 class ScanningManager(
@@ -16,14 +17,8 @@ class ScanningManager(
     // cursor manager
     private val cursorManager = CursorManager(context)
 
-    // This enum represents the state of the scanning manager (cursor or menu)
-    private enum class State {
-        CURSOR,
-        MENU
-    }
-
-    // This variable represents the current state of the scanning manager
-    private var state = State.CURSOR
+    // node scanner
+    private val nodeScanner = NodeScanner(context)
 
 
     // This function sets up the scanning manager
@@ -35,24 +30,34 @@ class ScanningManager(
 
     // This function explicitly sets the state of the scanning manager to cursor
     fun setCursorState() {
-        state = State.CURSOR
+        ScanReceiver.state = ScanReceiver.ReceiverState.CURSOR
+    }
+
+    // This function explicitly sets the state of the scanning manager to item scan
+    fun setItemScanState() {
+        ScanReceiver.state = ScanReceiver.ReceiverState.ITEM_SCAN
     }
 
     // This function explicitly sets the state of the scanning manager to menu
     fun setMenuState() {
-        state = State.MENU
+        ScanReceiver.state = ScanReceiver.ReceiverState.MENU
     }
 
 
     // This function makes a selection
     fun select() {
-        when (state) {
-            State.CURSOR -> {
+        when (ScanReceiver.state) {
+            ScanReceiver.ReceiverState.CURSOR -> {
                 // Perform the cursor action
                 cursorManager.performSelectionAction()
             }
 
-            State.MENU -> {
+            ScanReceiver.ReceiverState.ITEM_SCAN -> {
+                // Perform the item scan action
+                nodeScanner.scanTree.performSelection()
+            }
+
+            ScanReceiver.ReceiverState.MENU -> {
                 // Select the menu item
                 MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.performSelection()
             }
@@ -79,13 +84,18 @@ class ScanningManager(
             }
 
             SwitchAction.Actions.ACTION_STOP_SCANNING -> {
-                when (state) {
-                    State.CURSOR -> {
+                when (ScanReceiver.state) {
+                    ScanReceiver.ReceiverState.CURSOR -> {
                         // reset the cursor
                         cursorManager.externalReset()
                     }
 
-                    State.MENU -> {
+                    ScanReceiver.ReceiverState.ITEM_SCAN -> {
+                        // Stop item scanning
+                        nodeScanner.scanTree.stopScanning()
+                    }
+
+                    ScanReceiver.ReceiverState.MENU -> {
                         // Stop scanning
                         MenuManager.getInstance().closeMenuHierarchy()
                     }
@@ -93,13 +103,18 @@ class ScanningManager(
             }
 
             SwitchAction.Actions.ACTION_CHANGE_SCANNING_DIRECTION -> {
-                when (state) {
-                    State.CURSOR -> {
+                when (ScanReceiver.state) {
+                    ScanReceiver.ReceiverState.CURSOR -> {
                         // Change the cursor direction
                         cursorManager.swapDirection()
                     }
 
-                    State.MENU -> {
+                    ScanReceiver.ReceiverState.ITEM_SCAN -> {
+                        // Change the item scan direction
+                        nodeScanner.scanTree.swapScanDirection()
+                    }
+
+                    ScanReceiver.ReceiverState.MENU -> {
                         // Change the menu direction
                         MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.swapScanDirection()
                     }
@@ -107,13 +122,18 @@ class ScanningManager(
             }
 
             SwitchAction.Actions.ACTION_MOVE_TO_NEXT_ITEM -> {
-                when (state) {
-                    State.CURSOR -> {
+                when (ScanReceiver.state) {
+                    ScanReceiver.ReceiverState.CURSOR -> {
                         // Move the cursor to the next item
                         cursorManager.moveToNextItem()
                     }
 
-                    State.MENU -> {
+                    ScanReceiver.ReceiverState.ITEM_SCAN -> {
+                        // Move to the next item
+                        nodeScanner.scanTree.stepForward()
+                    }
+
+                    ScanReceiver.ReceiverState.MENU -> {
                         // Move the menu to the next item
                         MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stepForward()
                     }
@@ -121,13 +141,18 @@ class ScanningManager(
             }
 
             SwitchAction.Actions.ACTION_MOVE_TO_PREVIOUS_ITEM -> {
-                when (state) {
-                    State.CURSOR -> {
+                when (ScanReceiver.state) {
+                    ScanReceiver.ReceiverState.CURSOR -> {
                         // Move the cursor to the previous item
                         cursorManager.moveToPreviousItem()
                     }
 
-                    State.MENU -> {
+                    ScanReceiver.ReceiverState.ITEM_SCAN -> {
+                        // Move to the previous item
+                        nodeScanner.scanTree.stepBackward()
+                    }
+
+                    ScanReceiver.ReceiverState.MENU -> {
                         // Move the menu to the previous item
                         MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stepBackward()
                     }
@@ -142,13 +167,18 @@ class ScanningManager(
     }
 
     fun pauseScanning() {
-        when (state) {
-            State.CURSOR -> {
+        when (ScanReceiver.state) {
+            ScanReceiver.ReceiverState.CURSOR -> {
                 // Pause the cursor
                 cursorManager.pauseScanning()
             }
 
-            State.MENU -> {
+            ScanReceiver.ReceiverState.ITEM_SCAN -> {
+                // Pause the item scan
+                nodeScanner.scanTree.pauseScanning()
+            }
+
+            ScanReceiver.ReceiverState.MENU -> {
                 // Pause the menu
                 MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.pauseScanning()
             }
@@ -156,13 +186,18 @@ class ScanningManager(
     }
 
     fun resumeScanning() {
-        when (state) {
-            State.CURSOR -> {
+        when (ScanReceiver.state) {
+            ScanReceiver.ReceiverState.CURSOR -> {
                 // Resume the cursor
                 cursorManager.resumeScanning()
             }
 
-            State.MENU -> {
+            ScanReceiver.ReceiverState.ITEM_SCAN -> {
+                // Resume the item scan
+                nodeScanner.scanTree.resumeScanning()
+            }
+
+            ScanReceiver.ReceiverState.MENU -> {
                 // Resume the menu
                 MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.resumeScanning()
             }
