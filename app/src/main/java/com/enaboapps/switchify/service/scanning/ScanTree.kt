@@ -152,7 +152,10 @@ class ScanTree(
      */
     private fun shouldEscapeCurrentRow(): Boolean {
         // If at the last node, activate the escape row
-        if (currentColumn == tree[currentRow].nodes.size - 1 && !shouldEscapeRow) {
+        if (currentColumn == tree[currentRow].nodes.size - 1 && !shouldEscapeRow && scanDirection == ScanDirection.RIGHT) {
+            shouldEscapeRow = true
+            highlightCurrentRow()
+        } else if (currentColumn == 0 && !shouldEscapeRow && scanDirection == ScanDirection.LEFT) {
             shouldEscapeRow = true
             highlightCurrentRow()
         } else if (shouldEscapeRow) {
