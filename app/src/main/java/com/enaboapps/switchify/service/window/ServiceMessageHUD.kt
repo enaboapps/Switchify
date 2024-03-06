@@ -7,8 +7,8 @@ import android.os.Looper
 import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.utils.ScreenUtils
-import java.util.Timer
 
 class ServiceMessageHUD {
     private val TAG = "MessageManager"
@@ -21,7 +21,8 @@ class ServiceMessageHUD {
 
     private var context: Context? = null
 
-    private var switchifyAccessibilityWindow: SwitchifyAccessibilityWindow = SwitchifyAccessibilityWindow.instance
+    private var switchifyAccessibilityWindow: SwitchifyAccessibilityWindow =
+        SwitchifyAccessibilityWindow.instance
 
     private var message = ""
     private var shownMessageType: MessageType? = null
@@ -45,7 +46,7 @@ class ServiceMessageHUD {
             messageView = LinearLayout(it)
             messageView?.orientation = LinearLayout.VERTICAL
             messageView?.gravity = Gravity.CENTER
-            messageView?.setBackgroundColor(Color.parseColor("#CC000000"))
+            messageView?.background = it.getDrawable(R.drawable.rounded_corners)
             messageView?.setPadding(16, 16, 16, 16)
             messageView?.layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -104,7 +105,7 @@ class ServiceMessageHUD {
     }
 
 
-    fun hideMessage() {
+    private fun hideMessage() {
         if (messageView != null) {
             handler.post {
                 switchifyAccessibilityWindow.removeView(messageView!!)
