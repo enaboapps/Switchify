@@ -29,8 +29,10 @@ object KeyboardInfo {
             isKeyboardVisible = false
             keyboardHeight = 0
 
-            // Go back to previous state
-            ScanReceiver.state = previousScanReceiverState
+            // Go back to previous state if not in menu state
+            if (ScanReceiver.state != ScanReceiver.ReceiverState.MENU) {
+                ScanReceiver.state = previousScanReceiverState
+            }
         }
         Log.d("KeyboardInfo", "isKeyboardVisible: $isKeyboardVisible window count: ${windows.size}")
     }
