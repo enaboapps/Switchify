@@ -17,6 +17,18 @@ interface ScanNodeInterface {
     fun getY(): Int
 
     /**
+     * This function gets the width of the node
+     * @return The width of the node
+     */
+    fun getWidth(): Int
+
+    /**
+     * This function gets the height of the node
+     * @return The height of the node
+     */
+    fun getHeight(): Int
+
+    /**
      * This function highlights the node
      */
     fun highlight()

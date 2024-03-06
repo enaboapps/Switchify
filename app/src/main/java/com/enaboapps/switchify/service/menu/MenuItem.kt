@@ -216,4 +216,12 @@ class MenuItem(
         view?.getLocationOnScreen(location)
         return location[1]
     }
+
+    override fun getWidth(): Int {
+        return view?.width ?: 0
+    }
+
+    override fun getHeight(): Int {
+        return view?.height ?: 0
+    }
 }

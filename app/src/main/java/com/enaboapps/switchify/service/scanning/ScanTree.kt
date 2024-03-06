@@ -2,6 +2,8 @@ package com.enaboapps.switchify.service.scanning
 
 import android.content.Context
 import android.util.Log
+import com.enaboapps.switchify.service.utils.ScreenUtils
+import kotlin.math.abs
 
 class ScanTree(
     private val context: Context,
@@ -61,28 +63,67 @@ class ScanTree(
     /**
      * This function builds the scanning tree
      * by examining the x and y coordinates of the nodes
-     * and organizing them into a tree of rows
+     * and organizing them into a tree of rows and columns
      * @param nodes The nodes to build the tree from
+     * @param rowThreshold The threshold for determining if a node is in a row
      */
-    fun buildTree(nodes: List<ScanNodeInterface>) {
+    fun buildTree(nodes: List<ScanNodeInterface>, rowThreshold: Int = 100) {
         reset()
         clearTree()
         if (nodes.isNotEmpty()) {
-            var currentRow = mutableListOf<ScanNodeInterface>()
-            var currentY = nodes[0].getY()
-            for (node in nodes) {
-                if (node.getY() != currentY) {
-                    addRow(currentRow)
-                    currentRow = mutableListOf()
-                    currentY = node.getY()
-                }
-                currentRow.add(node)
-            }
-            addRow(currentRow)
-        }
+            // Initial sort of nodes by their Y position to process from top to bottom.
+            val sortedNodes = nodes.sortedBy { it.getY() }
 
-        // sort the rows by the y coordinate
-        tree = tree.sortedBy { it.y }.toMutableList()
+            // Initialize the list for the first row with the first node.
+            var currentRow = mutableListOf<ScanNodeInterface>(sortedNodes.first())
+            // Set the Y position baseline for the first row.
+            var currentYBaseline = sortedNodes.first().getY()
+
+            // Get screen dimensions.
+            val screenWidth = ScreenUtils.getWidth(context)
+            val screenHeight = ScreenUtils.getHeight(context)
+
+            // Function to add the node to the current row.
+            val addNodeToRow: (ScanNodeInterface) -> Unit = { node ->
+                // If node is under 80% of the screen dimensions
+                // And larger than 0, add it to the current row
+                val width = node.getWidth()
+                val height = node.getHeight()
+                val isCloseToFullScreen = width > 0.8 * screenWidth && height > 0.8 * screenHeight
+                val isBiggerThanZero = width > 0 && height > 0
+                if (!isCloseToFullScreen && isBiggerThanZero) {
+                    currentRow.add(node)
+                }
+            }
+
+            // Start iterating from the second node since the first is already included.
+            for (node in sortedNodes.drop(1)) {
+                // Determine if the current node's Y position is within the threshold of the current row's baseline.
+                if (abs(node.getY() - currentYBaseline) <= rowThreshold) {
+                    // Node is close enough to be considered part of the current row.
+                    addNodeToRow(node)
+                } else {
+                    // Node is too far from the current row's baseline, indicating a new row.
+                    // Process the current row before starting a new one.
+                    if (currentRow.isNotEmpty()) {
+                        // Remove duplicates from the row.
+                        currentRow = currentRow.distinct().toMutableList()
+                        // Add the current row to the scanning tree.
+                        addRow(currentRow)
+                        // Clear the current row for the next iteration.
+                        currentRow = mutableListOf()
+                    }
+                    // Add the current node to the new row and update the baseline Y position.
+                    addNodeToRow(node)
+                    currentYBaseline = node.getY()
+                }
+            }
+
+            // Ensure the last row is added after processing all nodes.
+            if (currentRow.isNotEmpty()) {
+                addRow(currentRow)
+            }
+        }
 
         setupScanningScheduler()
     }
@@ -92,8 +133,10 @@ class ScanTree(
      * @param row The row to add
      */
     private fun addRow(row: List<ScanNodeInterface>) {
-        val sortedRow = row.sortedBy { it.getX() }
-        tree.add(Row(sortedRow, sortedRow[0].getY()))
+        if (row.isNotEmpty()) {
+            val sortedRow = row.sortedBy { it.getX() }
+            tree.add(Row(sortedRow, sortedRow[0].getY()))
+        }
     }
 
     /**

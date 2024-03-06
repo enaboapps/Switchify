@@ -58,6 +58,14 @@ class Node : ScanNodeInterface {
         return y
     }
 
+    override fun getWidth(): Int {
+        return width
+    }
+
+    override fun getHeight(): Int {
+        return height
+    }
+
     fun getCenterX(): Int {
         return centerX
     }
