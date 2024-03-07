@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.RelativeLayout
+import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
@@ -133,7 +134,7 @@ class Node : ScanNodeInterface {
             }
             boundsLayout = RelativeLayout(window.getContext())
             boundsLayout?.let {
-                it.setBackgroundColor(0x55FF0000)
+                it.background = window.getContext()?.getDrawable(R.drawable.scan_item_border)
                 window.addView(it, x, y, width, height)
             }
         }
