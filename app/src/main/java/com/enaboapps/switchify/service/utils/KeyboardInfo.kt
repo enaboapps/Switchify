@@ -20,7 +20,9 @@ object KeyboardInfo {
             keyboardHeight = rect.height()
 
             // Go to cursor as keyboard keys don't report AccessibilityNodeInfo
-            ScanReceiver.state = ScanReceiver.ReceiverState.CURSOR
+            if (ScanReceiver.state == ScanReceiver.ReceiverState.ITEM_SCAN) {
+                ScanReceiver.state = ScanReceiver.ReceiverState.CURSOR
+            }
         } else {
             isKeyboardVisible = false
             keyboardHeight = 0
