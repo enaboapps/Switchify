@@ -31,21 +31,29 @@ class ScanningManager(
     // This function explicitly sets the state of the scanning manager to cursor
     fun setCursorState() {
         ScanReceiver.state = ScanReceiver.ReceiverState.CURSOR
+        ScanReceiver.isInMenu = false
     }
 
     // This function explicitly sets the state of the scanning manager to item scan
     fun setItemScanState() {
         ScanReceiver.state = ScanReceiver.ReceiverState.ITEM_SCAN
+        ScanReceiver.isInMenu = false
     }
 
     // This function explicitly sets the state of the scanning manager to menu
     fun setMenuState() {
-        ScanReceiver.state = ScanReceiver.ReceiverState.MENU
+        ScanReceiver.isInMenu = true
     }
 
 
     // This function makes a selection
     fun select() {
+        if (ScanReceiver.isInMenu) {
+            // Select the menu item
+            MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.performSelection()
+            return
+        }
+
         when (ScanReceiver.state) {
             ScanReceiver.ReceiverState.CURSOR -> {
                 // Perform the cursor action
@@ -55,11 +63,6 @@ class ScanningManager(
             ScanReceiver.ReceiverState.ITEM_SCAN -> {
                 // Perform the item scan action
                 nodeScanner.scanTree.performSelection()
-            }
-
-            ScanReceiver.ReceiverState.MENU -> {
-                // Select the menu item
-                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.performSelection()
             }
         }
     }
@@ -84,6 +87,12 @@ class ScanningManager(
             }
 
             SwitchAction.Actions.ACTION_STOP_SCANNING -> {
+                if (ScanReceiver.isInMenu) {
+                    // Stop the menu scanning
+                    MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stopScanning()
+                    return
+                }
+
                 when (ScanReceiver.state) {
                     ScanReceiver.ReceiverState.CURSOR -> {
                         // reset the cursor
@@ -94,15 +103,16 @@ class ScanningManager(
                         // Stop item scanning
                         nodeScanner.scanTree.stopScanning()
                     }
-
-                    ScanReceiver.ReceiverState.MENU -> {
-                        // Stop scanning
-                        MenuManager.getInstance().closeMenuHierarchy()
-                    }
                 }
             }
 
             SwitchAction.Actions.ACTION_CHANGE_SCANNING_DIRECTION -> {
+                if (ScanReceiver.isInMenu) {
+                    // Change the menu scanning direction
+                    MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.swapScanDirection()
+                    return
+                }
+
                 when (ScanReceiver.state) {
                     ScanReceiver.ReceiverState.CURSOR -> {
                         // Change the cursor direction
@@ -113,15 +123,16 @@ class ScanningManager(
                         // Change the item scan direction
                         nodeScanner.scanTree.swapScanDirection()
                     }
-
-                    ScanReceiver.ReceiverState.MENU -> {
-                        // Change the menu direction
-                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.swapScanDirection()
-                    }
                 }
             }
 
             SwitchAction.Actions.ACTION_MOVE_TO_NEXT_ITEM -> {
+                if (ScanReceiver.isInMenu) {
+                    // Move the menu to the next item
+                    MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stepForward()
+                    return
+                }
+
                 when (ScanReceiver.state) {
                     ScanReceiver.ReceiverState.CURSOR -> {
                         // Move the cursor to the next item
@@ -132,15 +143,16 @@ class ScanningManager(
                         // Move to the next item
                         nodeScanner.scanTree.stepForward()
                     }
-
-                    ScanReceiver.ReceiverState.MENU -> {
-                        // Move the menu to the next item
-                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stepForward()
-                    }
                 }
             }
 
             SwitchAction.Actions.ACTION_MOVE_TO_PREVIOUS_ITEM -> {
+                if (ScanReceiver.isInMenu) {
+                    // Move the menu to the previous item
+                    MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stepBackward()
+                    return
+                }
+
                 when (ScanReceiver.state) {
                     ScanReceiver.ReceiverState.CURSOR -> {
                         // Move the cursor to the previous item
@@ -150,11 +162,6 @@ class ScanningManager(
                     ScanReceiver.ReceiverState.ITEM_SCAN -> {
                         // Move to the previous item
                         nodeScanner.scanTree.stepBackward()
-                    }
-
-                    ScanReceiver.ReceiverState.MENU -> {
-                        // Move the menu to the previous item
-                        MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stepBackward()
                     }
                 }
             }
@@ -167,6 +174,12 @@ class ScanningManager(
     }
 
     fun pauseScanning() {
+        if (ScanReceiver.isInMenu) {
+            // Pause the menu
+            MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.pauseScanning()
+            return
+        }
+
         when (ScanReceiver.state) {
             ScanReceiver.ReceiverState.CURSOR -> {
                 // Pause the cursor
@@ -177,15 +190,16 @@ class ScanningManager(
                 // Pause the item scan
                 nodeScanner.scanTree.pauseScanning()
             }
-
-            ScanReceiver.ReceiverState.MENU -> {
-                // Pause the menu
-                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.pauseScanning()
-            }
         }
     }
 
     fun resumeScanning() {
+        if (ScanReceiver.isInMenu) {
+            // Resume the menu
+            MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.resumeScanning()
+            return
+        }
+        
         when (ScanReceiver.state) {
             ScanReceiver.ReceiverState.CURSOR -> {
                 // Resume the cursor
@@ -195,11 +209,6 @@ class ScanningManager(
             ScanReceiver.ReceiverState.ITEM_SCAN -> {
                 // Resume the item scan
                 nodeScanner.scanTree.resumeScanning()
-            }
-
-            ScanReceiver.ReceiverState.MENU -> {
-                // Resume the menu
-                MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.resumeScanning()
             }
         }
     }
