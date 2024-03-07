@@ -148,7 +148,6 @@ class Node : ScanNodeInterface {
             boundsLayout?.let {
                 window.removeView(it)
             }
-            boundsLayout = null
         }
     }
 }

@@ -6,8 +6,8 @@ import android.os.Looper
 import android.widget.LinearLayout
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
-import com.enaboapps.switchify.service.scanning.ScanTree
 import com.enaboapps.switchify.service.scanning.ScanningManager
+import com.enaboapps.switchify.service.scanning.tree.ScanTree
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
