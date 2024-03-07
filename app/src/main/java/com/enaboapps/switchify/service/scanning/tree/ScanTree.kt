@@ -1,18 +1,31 @@
-package com.enaboapps.switchify.service.scanning
+package com.enaboapps.switchify.service.scanning.tree
 
 import android.content.Context
 import android.util.Log
+import com.enaboapps.switchify.service.scanning.ScanDirection
+import com.enaboapps.switchify.service.scanning.ScanNodeInterface
+import com.enaboapps.switchify.service.scanning.ScanSettings
+import com.enaboapps.switchify.service.scanning.ScanStateInterface
+import com.enaboapps.switchify.service.scanning.ScanningScheduler
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import kotlin.math.abs
 
+/**
+ * This class represents the scanning tree
+ * @param context The context
+ * @param stopScanningOnSelect Whether to stop scanning on select
+ * @param individualHighlightingItemsInRow Whether to highlight items individually in a row
+ */
+
 class ScanTree(
     private val context: Context,
-    private var stopScanningOnSelect: Boolean = false
+    private var stopScanningOnSelect: Boolean = false,
+    private var individualHighlightingItemsInRow: Boolean = true
 ) : ScanStateInterface {
     /**
      * This property represents the scanning tree
      */
-    private var tree: MutableList<Row> = mutableListOf()
+    private var tree: MutableList<ScanTreeRow> = mutableListOf()
 
     /**
      * This property indicates the current row of the scanning tree
@@ -50,14 +63,6 @@ class ScanTree(
      * Scan settings
      */
     private val scanSettings = ScanSettings(context)
-
-
-    /**
-     * Data class representing a row
-     * @param nodes The nodes in the row
-     * @param y The y coordinate of the row
-     */
-    private data class Row(val nodes: List<ScanNodeInterface>, val y: Int)
 
 
     /**
@@ -135,7 +140,7 @@ class ScanTree(
     private fun addRow(row: List<ScanNodeInterface>) {
         if (row.isNotEmpty()) {
             val sortedRow = row.sortedBy { it.getX() }
-            tree.add(Row(sortedRow, sortedRow[0].getY()))
+            tree.add(ScanTreeRow(sortedRow, sortedRow[0].getY(), individualHighlightingItemsInRow))
         }
     }
 
@@ -239,9 +244,7 @@ class ScanTree(
      */
     private fun highlightCurrentRow() {
         if (tree.size > currentRow) {
-            for (node in tree[currentRow].nodes) {
-                node.highlight()
-            }
+            tree[currentRow].highlight()
         }
     }
 
@@ -250,9 +253,7 @@ class ScanTree(
      */
     private fun unhighlightCurrentRow() {
         if (tree.size > currentRow) {
-            for (node in tree[currentRow].nodes) {
-                node.unhighlight()
-            }
+            tree[currentRow].unhighlight()
         }
     }
 
@@ -442,6 +443,7 @@ class ScanTree(
     fun reset() {
         try {
             for (row in tree) {
+                row.unhighlight()
                 for (node in row.nodes) {
                     node.unhighlight()
                 }

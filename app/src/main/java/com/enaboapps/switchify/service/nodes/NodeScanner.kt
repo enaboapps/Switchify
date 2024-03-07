@@ -2,7 +2,7 @@ package com.enaboapps.switchify.service.nodes
 
 import android.content.Context
 import com.enaboapps.switchify.service.scanning.ScanReceiver
-import com.enaboapps.switchify.service.scanning.ScanTree
+import com.enaboapps.switchify.service.scanning.tree.ScanTree
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -18,7 +18,8 @@ class NodeScanner(context: Context) : NodeUpdateDelegate {
     private val coroutineScope =
         CoroutineScope(Dispatchers.Main + job) // Use Main dispatcher for UI operations.
 
-    val scanTree = ScanTree(context, true)
+    val scanTree =
+        ScanTree(context, stopScanningOnSelect = true, individualHighlightingItemsInRow = false)
 
     private var nodes: List<Node> = emptyList()
 
