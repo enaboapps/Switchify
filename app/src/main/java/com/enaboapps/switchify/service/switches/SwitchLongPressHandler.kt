@@ -2,6 +2,7 @@ package com.enaboapps.switchify.service.switches
 
 import android.content.Context
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.switches.SwitchAction
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +30,13 @@ object SwitchLongPressHandler {
             PreferenceManager(context).getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
         longPressJob = CoroutineScope(Dispatchers.Main).launch {
             delay(holdTime)
+
+            // Toggle swipe lock if enabled 
+            if (GestureManager.getInstance().isSwipeLockEnabled()) {
+                GestureManager.getInstance().toggleSwipeLock()
+                return@launch
+            }
+
             longPressAction?.let {
                 scanningManager.performAction(it)
             }

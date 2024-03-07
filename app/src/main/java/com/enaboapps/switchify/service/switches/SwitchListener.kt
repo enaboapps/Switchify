@@ -3,7 +3,6 @@ package com.enaboapps.switchify.service.switches
 import android.content.Context
 import android.util.Log
 import com.enaboapps.switchify.preferences.PreferenceManager
-import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.switches.SwitchAction
@@ -84,14 +83,6 @@ class SwitchListener(
                 val timeElapsed = System.currentTimeMillis() - it.time
                 val switchHoldTime =
                     preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
-
-                // Toggle swipe lock if time elapsed is greater than hold time
-                if (timeElapsed > switchHoldTime && GestureManager.getInstance()
-                        .isSwipeLockEnabled()
-                ) {
-                    GestureManager.getInstance().toggleSwipeLock()
-                    return true
-                }
 
                 // Check selection handling
                 if (AutoSelectionHandler.isAutoSelectInProgress()) {
