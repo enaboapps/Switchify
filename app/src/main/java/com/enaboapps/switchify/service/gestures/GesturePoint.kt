@@ -44,7 +44,7 @@ object GesturePoint {
      */
     fun setReselect(reselect: Boolean) {
         if (reselect) {
-            ScanReceiver.state = ScanReceiver.ReceiverState.CURSOR
+            ScanReceiver.setState(ScanReceiver.ReceiverState.CURSOR)
             listener?.onGesturePointReselect()
         }
     }

@@ -43,7 +43,7 @@ object AutoSelectionHandler {
      */
     fun performSelectionAction() {
         // Set the scan receiver to go back to after the menu is closed
-        MenuManager.getInstance().scanReceiverState = ScanReceiver.state
+        MenuManager.getInstance().scanReceiverState = ScanReceiver.getState()
 
         // If auto-select is in progress, cancel it and open the main menu
         if (autoSelectInProgress) {
