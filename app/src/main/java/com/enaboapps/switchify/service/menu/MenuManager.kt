@@ -8,7 +8,7 @@ import com.enaboapps.switchify.service.menu.menus.gestures.ZoomGesturesMenu
 import com.enaboapps.switchify.service.menu.menus.main.MainMenu
 import com.enaboapps.switchify.service.menu.menus.system.SystemControlMenu
 import com.enaboapps.switchify.service.menu.menus.system.VolumeControlMenu
-import com.enaboapps.switchify.service.scanning.ScanReceiver
+import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.scanning.ScanningManager
 
 /**
@@ -40,9 +40,9 @@ class MenuManager {
     private var accessibilityService: SwitchifyAccessibilityService? = null
 
     /**
-     * The state of the scan receiver when the menu was activated
+     * The scan method to revert to when the menu is closed
      */
-    var scanReceiverState: Int = ScanReceiver.ReceiverState.CURSOR
+    var scanMethodToRevertTo: Int = ScanMethod.MethodType.CURSOR
 
     /**
      * The menu hierarchy
@@ -64,29 +64,30 @@ class MenuManager {
     }
 
     /**
-     * This function sets the scan receiver state back to the state that activated the menu
+     * This function resets the scan method type to the original type
      */
-    fun resetScanReceiverState() {
-        ScanReceiver.setState(scanReceiverState)
+    fun resetScanMethodType() {
+        ScanMethod.isInMenu = false
+        ScanMethod.setType(scanMethodToRevertTo)
     }
 
     /**
-     * This function changes between cursor and item scan based on the current state
+     * This function changes between cursor and item scan based on the current type
      */
     fun changeBetweenCursorAndItemScan() {
-        if (scanReceiverState == ScanReceiver.ReceiverState.CURSOR) {
-            scanningManager?.setItemScanState()
+        if (scanMethodToRevertTo == ScanMethod.MethodType.CURSOR) {
+            scanningManager?.setItemScanType()
         } else {
-            scanningManager?.setCursorState()
+            scanningManager?.setCursorType()
         }
     }
 
     /**
-     * This function gets the name of the state to switch to (cursor or item scan)
-     * @return The name of the state to switch to
+     * This function gets the name of the type to switch to (cursor or item scan)
+     * @return The name of the type to switch to
      */
-    fun getStateToSwitchTo(): String {
-        return if (scanReceiverState == ScanReceiver.ReceiverState.CURSOR) {
+    fun getTypeToSwitchTo(): String {
+        return if (scanMethodToRevertTo == ScanMethod.MethodType.CURSOR) {
             "Item Scan"
         } else {
             "Cursor"

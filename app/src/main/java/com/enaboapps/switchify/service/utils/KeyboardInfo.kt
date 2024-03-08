@@ -3,14 +3,14 @@ package com.enaboapps.switchify.service.utils
 import android.graphics.Rect
 import android.util.Log
 import android.view.accessibility.AccessibilityWindowInfo
-import com.enaboapps.switchify.service.scanning.ScanReceiver
+import com.enaboapps.switchify.service.scanning.ScanMethod
 
 object KeyboardInfo {
     var isKeyboardVisible = false
     var keyboardHeight = 0
 
-    // Track last scan state to go back to it after keyboard is dismissed
-    private var lastScanState: Int = ScanReceiver.getState()
+    // Track last scan type to go back to it after keyboard is dismissed
+    private var lastScanType: Int = ScanMethod.getType()
 
     // Track last update time to prevent multiple updates in a short time
     private var lastUpdateTime: Long = 0
@@ -26,11 +26,11 @@ object KeyboardInfo {
         if (keyboardWindow != null) {
             if (!isKeyboardVisible) {
                 // Go to cursor as keyboard keys don't report AccessibilityNodeInfo
-                if (ScanReceiver.getState() == ScanReceiver.ReceiverState.ITEM_SCAN) {
-                    lastScanState = ScanReceiver.ReceiverState.ITEM_SCAN
-                    ScanReceiver.setState(ScanReceiver.ReceiverState.CURSOR)
+                if (ScanMethod.getType() == ScanMethod.MethodType.ITEM_SCAN) {
+                    lastScanType = ScanMethod.MethodType.ITEM_SCAN
+                    ScanMethod.setType(ScanMethod.MethodType.CURSOR)
                 } else {
-                    lastScanState = ScanReceiver.getState()
+                    lastScanType = ScanMethod.getType()
                 }
             }
 
@@ -40,8 +40,8 @@ object KeyboardInfo {
             keyboardHeight = rect.height()
         } else {
             if (isKeyboardVisible) {
-                // Go back to last scan state
-                ScanReceiver.setState(lastScanState)
+                // Go back to last scan type
+                ScanMethod.setType(lastScanType)
             }
 
             isKeyboardVisible = false

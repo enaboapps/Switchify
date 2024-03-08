@@ -49,7 +49,7 @@ class MenuHierarchy(
         tree = mutableListOf()
 
         // reset the scanning manager state
-        MenuManager.getInstance().resetScanReceiverState()
+        MenuManager.getInstance().resetScanMethodType()
     }
 
     fun getTopMenu(): MenuView? {
@@ -57,7 +57,5 @@ class MenuHierarchy(
     }
 
 
-    override fun onMenuViewClosed() {
-        scanningManager.setCursorState()
-    }
+    override fun onMenuViewClosed() {}
 }

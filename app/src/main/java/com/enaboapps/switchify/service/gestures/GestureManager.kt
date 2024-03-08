@@ -8,7 +8,7 @@ import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.gestures.utils.GestureUtils.getInBoundsCoordinate
 import com.enaboapps.switchify.service.gestures.visuals.GestureDrawing
 import com.enaboapps.switchify.service.nodes.NodeExaminer
-import com.enaboapps.switchify.service.scanning.ScanReceiver
+import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import com.enaboapps.switchify.service.window.ServiceMessageHUD
 import kotlin.math.pow
@@ -316,7 +316,7 @@ class GestureManager {
         dragStartPoint = GesturePoint.getPoint()
         isDragging = true
 
-        ScanReceiver.setState(ScanReceiver.ReceiverState.CURSOR)
+        ScanMethod.setType(ScanMethod.MethodType.CURSOR)
 
         ServiceMessageHUD.instance.showMessage(
             "Select where to drag to",

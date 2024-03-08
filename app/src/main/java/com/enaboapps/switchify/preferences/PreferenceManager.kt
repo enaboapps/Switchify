@@ -9,6 +9,7 @@ class PreferenceManager(context: Context) {
         const val PREFERENCE_KEY_SETUP_COMPLETE = "setup_complete"
         const val PREFERENCE_KEY_SCAN_MODE = "scan_mode"
         const val PREFERENCE_KEY_SCAN_RATE = "scan_rate"
+        const val PREFERENCE_KEY_SCAN_METHOD = "scan_method"
         const val PREFERENCE_KEY_REFINE_SCAN_RATE = "refine_scan_rate"
         const val PREFERENCE_KEY_SWITCH_HOLD_TIME = "switch_hold_time"
         const val PREFERENCE_KEY_PAUSE_ON_FIRST_ITEM = "pause_on_first_item"
@@ -20,7 +21,6 @@ class PreferenceManager(context: Context) {
         const val PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD = "pause_scan_on_switch_hold"
         const val PREFERENCE_KEY_SWITCH_IGNORE_REPEAT = "switch_ignore_repeat"
         const val PREFERENCE_KEY_SWITCH_IGNORE_REPEAT_DELAY = "switch_ignore_repeat_delay"
-        const val PREFERENCE_KEY_SCAN_RECEIVER = "scan_receiver"
         private const val PREFERENCE_FILE_NAME = "switchify_preferences"
     }
 

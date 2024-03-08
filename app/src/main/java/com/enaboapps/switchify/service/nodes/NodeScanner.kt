@@ -1,7 +1,7 @@
 package com.enaboapps.switchify.service.nodes
 
 import android.content.Context
-import com.enaboapps.switchify.service.scanning.ScanReceiver
+import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.scanning.tree.ScanTree
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,15 +39,15 @@ class NodeScanner private constructor(context: Context) : NodeUpdateDelegate {
     }
 
     /**
-     * Starts a timeout that resets the scanTree and changes the state of the ScanReceiver
+     * Starts a timeout that resets the scanTree and changes the state of the ScanMethod
      * if the state is ITEM_SCAN and there are no nodes after 5 seconds.
      */
     fun startTimeoutToRevertToCursor() {
         coroutineScope.launch {
             delay(5000)
-            if (ScanReceiver.getState() == ScanReceiver.ReceiverState.ITEM_SCAN && this@NodeScanner.nodes.isEmpty()) {
+            if (ScanMethod.getType() == ScanMethod.MethodType.ITEM_SCAN && this@NodeScanner.nodes.isEmpty()) {
                 scanTree.reset()
-                ScanReceiver.setState(ScanReceiver.ReceiverState.CURSOR)
+                ScanMethod.setType(ScanMethod.MethodType.CURSOR)
             }
         }
     }

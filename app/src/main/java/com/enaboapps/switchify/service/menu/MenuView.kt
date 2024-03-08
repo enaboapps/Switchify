@@ -125,8 +125,8 @@ class MenuView(
         addToWindow()
         // Inflate the menu
         inflateMenu()
-        // Set the menu state
-        scanningManager.setMenuState()
+        // Set the menu type
+        scanningManager.setMenuType()
     }
 
     // This function is called when the menu is closed
