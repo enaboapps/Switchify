@@ -585,4 +585,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     private fun performTapAction() {
         GestureManager.getInstance().performTap()
     }
+
+    fun cleanup() {
+        cursorUI.reset()
+        scanningScheduler.shutdown()
+    }
 }

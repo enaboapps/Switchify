@@ -18,7 +18,7 @@ class ScanningManager(
     private val cursorManager = CursorManager(context)
 
     // node scanner
-    private val nodeScanner = NodeScanner(context)
+    private val nodeScanner = NodeScanner.getInstance(context)
 
 
     // This function sets up the scanning manager
@@ -30,14 +30,17 @@ class ScanningManager(
 
     // This function explicitly sets the state of the scanning manager to cursor
     fun setCursorState() {
-        ScanReceiver.state = ScanReceiver.ReceiverState.CURSOR
+        ScanReceiver.setState(ScanReceiver.ReceiverState.CURSOR)
         ScanReceiver.isInMenu = false
     }
 
     // This function explicitly sets the state of the scanning manager to item scan
     fun setItemScanState() {
-        ScanReceiver.state = ScanReceiver.ReceiverState.ITEM_SCAN
+        ScanReceiver.setState(ScanReceiver.ReceiverState.ITEM_SCAN)
         ScanReceiver.isInMenu = false
+
+        // Start the NodeScanner timeout
+        nodeScanner.startTimeoutToRevertToCursor()
     }
 
     // This function explicitly sets the state of the scanning manager to menu
@@ -54,7 +57,7 @@ class ScanningManager(
             return
         }
 
-        when (ScanReceiver.state) {
+        when (ScanReceiver.getState()) {
             ScanReceiver.ReceiverState.CURSOR -> {
                 // Perform the cursor action
                 cursorManager.performSelectionAction()
@@ -93,7 +96,7 @@ class ScanningManager(
                     return
                 }
 
-                when (ScanReceiver.state) {
+                when (ScanReceiver.getState()) {
                     ScanReceiver.ReceiverState.CURSOR -> {
                         // reset the cursor
                         cursorManager.externalReset()
@@ -113,7 +116,7 @@ class ScanningManager(
                     return
                 }
 
-                when (ScanReceiver.state) {
+                when (ScanReceiver.getState()) {
                     ScanReceiver.ReceiverState.CURSOR -> {
                         // Change the cursor direction
                         cursorManager.swapDirection()
@@ -133,7 +136,7 @@ class ScanningManager(
                     return
                 }
 
-                when (ScanReceiver.state) {
+                when (ScanReceiver.getState()) {
                     ScanReceiver.ReceiverState.CURSOR -> {
                         // Move the cursor to the next item
                         cursorManager.moveToNextItem()
@@ -153,7 +156,7 @@ class ScanningManager(
                     return
                 }
 
-                when (ScanReceiver.state) {
+                when (ScanReceiver.getState()) {
                     ScanReceiver.ReceiverState.CURSOR -> {
                         // Move the cursor to the previous item
                         cursorManager.moveToPreviousItem()
@@ -180,7 +183,7 @@ class ScanningManager(
             return
         }
 
-        when (ScanReceiver.state) {
+        when (ScanReceiver.getState()) {
             ScanReceiver.ReceiverState.CURSOR -> {
                 // Pause the cursor
                 cursorManager.pauseScanning()
@@ -199,8 +202,8 @@ class ScanningManager(
             MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.resumeScanning()
             return
         }
-        
-        when (ScanReceiver.state) {
+
+        when (ScanReceiver.getState()) {
             ScanReceiver.ReceiverState.CURSOR -> {
                 // Resume the cursor
                 cursorManager.resumeScanning()
@@ -211,5 +214,14 @@ class ScanningManager(
                 nodeScanner.scanTree.resumeScanning()
             }
         }
+    }
+
+    fun shutdown() {
+        // Stop scanning
+        pauseScanning()
+
+        // Clean up resources
+        cursorManager.cleanup()
+        nodeScanner.cleanup()
     }
 }

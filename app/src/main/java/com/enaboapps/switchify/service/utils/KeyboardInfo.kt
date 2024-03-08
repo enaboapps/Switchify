@@ -10,7 +10,7 @@ object KeyboardInfo {
     var keyboardHeight = 0
 
     // Track last scan state to go back to it after keyboard is dismissed
-    private var lastScanState: ScanReceiver.ReceiverState = ScanReceiver.state
+    private var lastScanState: Int = ScanReceiver.getState()
 
     // Track last update time to prevent multiple updates in a short time
     private var lastUpdateTime: Long = 0
@@ -26,11 +26,11 @@ object KeyboardInfo {
         if (keyboardWindow != null) {
             if (!isKeyboardVisible) {
                 // Go to cursor as keyboard keys don't report AccessibilityNodeInfo
-                if (ScanReceiver.state == ScanReceiver.ReceiverState.ITEM_SCAN) {
+                if (ScanReceiver.getState() == ScanReceiver.ReceiverState.ITEM_SCAN) {
                     lastScanState = ScanReceiver.ReceiverState.ITEM_SCAN
-                    ScanReceiver.state = ScanReceiver.ReceiverState.CURSOR
+                    ScanReceiver.setState(ScanReceiver.ReceiverState.CURSOR)
                 } else {
-                    lastScanState = ScanReceiver.state
+                    lastScanState = ScanReceiver.getState()
                 }
             }
 
@@ -41,7 +41,7 @@ object KeyboardInfo {
         } else {
             if (isKeyboardVisible) {
                 // Go back to last scan state
-                ScanReceiver.state = lastScanState
+                ScanReceiver.setState(lastScanState)
             }
 
             isKeyboardVisible = false

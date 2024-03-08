@@ -42,7 +42,7 @@ class MenuManager {
     /**
      * The state of the scan receiver when the menu was activated
      */
-    var scanReceiverState: ScanReceiver.ReceiverState = ScanReceiver.ReceiverState.CURSOR
+    var scanReceiverState: Int = ScanReceiver.ReceiverState.CURSOR
 
     /**
      * The menu hierarchy
@@ -67,7 +67,7 @@ class MenuManager {
      * This function sets the scan receiver state back to the state that activated the menu
      */
     fun resetScanReceiverState() {
-        ScanReceiver.state = scanReceiverState
+        ScanReceiver.setState(scanReceiverState)
     }
 
     /**

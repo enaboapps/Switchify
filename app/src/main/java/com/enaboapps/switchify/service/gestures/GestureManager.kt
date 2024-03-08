@@ -316,7 +316,7 @@ class GestureManager {
         dragStartPoint = GesturePoint.getPoint()
         isDragging = true
 
-        ScanReceiver.state = ScanReceiver.ReceiverState.CURSOR
+        ScanReceiver.setState(ScanReceiver.ReceiverState.CURSOR)
 
         ServiceMessageHUD.instance.showMessage(
             "Select where to drag to",
