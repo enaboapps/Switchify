@@ -13,6 +13,7 @@ sealed class NavigationRoute(val name: String) {
     data object SwitchStability : NavigationRoute("SwitchStability")
     data object About : NavigationRoute("About")
     data object ScanMode : NavigationRoute("ScanMode")
+    data object ScanMethod : NavigationRoute("ScanMethod")
     data object Switches : NavigationRoute("Switches")
     data object AddNewSwitch : NavigationRoute("AddNewSwitch")
     data object EditSwitch : NavigationRoute("EditSwitch")

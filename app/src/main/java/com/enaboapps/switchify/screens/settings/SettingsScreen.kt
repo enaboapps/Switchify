@@ -51,6 +51,13 @@ fun SettingsScreen(navController: NavController) {
                     navController = navController,
                     route = NavigationRoute.ScanMode.name
                 )
+                Spacer(modifier = Modifier.padding(top = 16.dp))
+                PreferenceLink(
+                    title = "Scan Method",
+                    summary = "Configure the scan method",
+                    navController = navController,
+                    route = NavigationRoute.ScanMethod.name
+                )
             }
             if (mode.id == ScanMode.Modes.MODE_AUTO) {
                 TimingSection(settingsScreenModel)

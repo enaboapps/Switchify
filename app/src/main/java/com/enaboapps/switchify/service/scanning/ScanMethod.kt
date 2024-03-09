@@ -45,6 +45,32 @@ object ScanMethod {
     }
 
     /**
+     * This function gets the name of the scanning method
+     * @param type The type of the scanning method
+     * @return The name of the scanning method
+     */
+    fun getName(type: Int): String {
+        return when (type) {
+            MethodType.CURSOR -> "Cursor"
+            MethodType.ITEM_SCAN -> "Item Scan"
+            else -> "Unknown"
+        }
+    }
+
+    /**
+     * This function gets the description of the scanning method
+     * @param type The type of the scanning method
+     * @return The description of the scanning method
+     */
+    fun getDescription(type: Int): String {
+        return when (type) {
+            MethodType.CURSOR -> "Cursor allows you to select items by moving a set of crosshairs over the screen."
+            MethodType.ITEM_SCAN -> "Item Scan allows you to select items by scanning through them sequentially."
+            else -> "Unknown"
+        }
+    }
+
+    /**
      * This function is used to set the type of the scanning method
      */
     fun setType(value: Int) {
