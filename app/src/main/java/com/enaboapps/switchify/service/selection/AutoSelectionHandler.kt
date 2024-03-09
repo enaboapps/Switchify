@@ -3,7 +3,7 @@ package com.enaboapps.switchify.service.selection
 import android.content.Context
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.menu.MenuManager
-import com.enaboapps.switchify.service.scanning.ScanReceiver
+import com.enaboapps.switchify.service.scanning.ScanMethod
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -42,8 +42,7 @@ object AutoSelectionHandler {
      * Performs the selection action based on the current settings and state.
      */
     fun performSelectionAction() {
-        // Set the scan receiver to go back to after the menu is closed
-        MenuManager.getInstance().scanReceiverState = ScanReceiver.getState()
+        MenuManager.getInstance().scanMethodToRevertTo = ScanMethod.getType()
 
         // If auto-select is in progress, cancel it and open the main menu
         if (autoSelectInProgress) {

@@ -6,7 +6,7 @@ import android.view.accessibility.AccessibilityEvent
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.nodes.NodeExaminer
-import com.enaboapps.switchify.service.scanning.ScanReceiver
+import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.service.switches.SwitchListener
@@ -58,7 +58,7 @@ class SwitchifyAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
 
-        ScanReceiver.preferenceManager = PreferenceManager(this)
+        ScanMethod.preferenceManager = PreferenceManager(this.applicationContext)
 
         scanningManager = ScanningManager(this, this)
         scanningManager.setup()
