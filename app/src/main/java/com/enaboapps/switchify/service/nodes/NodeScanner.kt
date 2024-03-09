@@ -39,6 +39,13 @@ class NodeScanner private constructor(context: Context) : NodeUpdateDelegate {
     }
 
     /**
+     * Sets up the scanTree.
+     */
+    fun setup() {
+        scanTree.setup()
+    }
+
+    /**
      * Starts a timeout that resets the scanTree and changes the state of the ScanMethod
      * if the state is ITEM_SCAN and there are no nodes after 5 seconds.
      */

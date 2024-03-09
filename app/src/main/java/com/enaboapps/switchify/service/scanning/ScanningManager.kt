@@ -7,12 +7,13 @@ import com.enaboapps.switchify.service.cursor.CursorManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.nodes.NodeScanner
+import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.switches.SwitchAction
 
 class ScanningManager(
     private val accessibilityService: SwitchifyAccessibilityService,
     val context: Context
-) {
+) : ScanMethodObserver {
 
     // cursor manager
     private val cursorManager = CursorManager(context)
@@ -23,8 +24,28 @@ class ScanningManager(
 
     // This function sets up the scanning manager
     fun setup() {
-        cursorManager.setup()
+        SwitchifyAccessibilityWindow.instance.setup(context)
+        SwitchifyAccessibilityWindow.instance.show()
+
         MenuManager.getInstance().setup(this, accessibilityService)
+
+        ScanMethod.observer = this
+
+        setupScanningMethods()
+    }
+
+
+    // This function sets up the respective scanning methods
+    private fun setupScanningMethods() {
+        when (ScanMethod.getType()) {
+            ScanMethod.MethodType.CURSOR -> {
+                cursorManager.setup()
+            }
+
+            ScanMethod.MethodType.ITEM_SCAN -> {
+                nodeScanner.setup()
+            }
+        }
     }
 
 
@@ -214,6 +235,21 @@ class ScanningManager(
                 nodeScanner.scanTree.resumeScanning()
             }
         }
+    }
+
+    // This function is called when the scanning method is changed
+    override fun onScanMethodChanged(scanMethod: Int) {
+        when (scanMethod) {
+            ScanMethod.MethodType.CURSOR -> {
+                nodeScanner.cleanup()
+            }
+
+            ScanMethod.MethodType.ITEM_SCAN -> {
+                cursorManager.cleanup()
+            }
+        }
+
+        setupScanningMethods()
     }
 
     fun shutdown() {
