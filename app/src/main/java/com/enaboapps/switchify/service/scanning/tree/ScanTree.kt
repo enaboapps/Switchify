@@ -195,22 +195,36 @@ class ScanTree(
     }
 
     /**
-     * This function checks if escaping the current row is necessary
-     * @return True if escaping the current row is necessary, false otherwise
+     * This function checks if the current row should be escaped
+     * @return Whether the current row should be escaped
      */
     private fun shouldEscapeCurrentRow(): Boolean {
         // If at the last node, activate the escape row
         if (currentColumn == tree[currentRow].nodes.size - 1 && !shouldEscapeRow && scanDirection == ScanDirection.RIGHT) {
             shouldEscapeRow = true
             highlightCurrentRow()
+
+            return true
         } else if (currentColumn == 0 && !shouldEscapeRow && scanDirection == ScanDirection.LEFT) {
             shouldEscapeRow = true
             highlightCurrentRow()
+
+            return true
         } else if (shouldEscapeRow) {
             shouldEscapeRow = false
             unhighlightCurrentRow()
+
+            // Ensure that the index is correct
+            currentColumn = if (scanDirection == ScanDirection.RIGHT) {
+                0
+            } else {
+                tree[currentRow].nodes.size - 1
+            }
+            highlightCurrentNode()
+
+            return true
         }
-        return shouldEscapeRow
+        return false
     }
 
     /**
