@@ -129,8 +129,6 @@ class ScanTree(
                 addRow(currentRow)
             }
         }
-
-        setupScanningScheduler()
     }
 
     /**
@@ -155,11 +153,14 @@ class ScanTree(
     /**
      * This function sets the scanning scheduler
      */
-    private fun setupScanningScheduler() {
+    fun setup() {
         reset()
-        shutdown()
 
-        scanningScheduler = ScanningScheduler(context) { stepAutoScanning() }
+        if (scanningScheduler == null) {
+            scanningScheduler = ScanningScheduler(context) {
+                stepAutoScanning()
+            }
+        }
     }
 
     /**

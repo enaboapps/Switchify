@@ -11,7 +11,6 @@ import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
-import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 /**
  * This class manages the cursor
@@ -37,17 +36,14 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
 
     private var direction: ScanDirection = ScanDirection.RIGHT
 
-    private val scanningScheduler = ScanningScheduler(context) { move() }
-
+    private var scanningScheduler: ScanningScheduler? = null
 
     /**
      * This function sets up the cursor
      */
     fun setup() {
-        SwitchifyAccessibilityWindow.instance.setup(context)
-        SwitchifyAccessibilityWindow.instance.show()
-
         GesturePoint.listener = this
+        scanningScheduler = ScanningScheduler(context) { move() }
     }
 
 
@@ -184,7 +180,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
             } else {
                 scanSettings.getScanRate()
             }
-            scanningScheduler.startScanning(rate, rate)
+            scanningScheduler?.startScanning(rate, rate)
         }
     }
 
@@ -277,7 +273,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * This function stops the scanning
      */
     override fun stopScanning() {
-        scanningScheduler.stopScanning()
+        scanningScheduler?.stopScanning()
     }
 
 
@@ -285,7 +281,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * This function pauses the scanning
      */
     override fun pauseScanning() {
-        scanningScheduler.pauseScanning()
+        scanningScheduler?.pauseScanning()
     }
 
 
@@ -293,7 +289,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * This function resumes the scanning
      */
     override fun resumeScanning() {
-        scanningScheduler.resumeScanning()
+        scanningScheduler?.resumeScanning()
     }
 
 
@@ -588,6 +584,6 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
 
     fun cleanup() {
         cursorUI.reset()
-        scanningScheduler.shutdown()
+        scanningScheduler?.shutdown()
     }
 }

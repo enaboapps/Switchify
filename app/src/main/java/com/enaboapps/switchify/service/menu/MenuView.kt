@@ -92,6 +92,7 @@ class MenuView(
         baseLayout.addView(menuPages[currentPage].getMenuLayout())
         // Build the scan tree after half a second
         Handler(Looper.getMainLooper()).postDelayed({
+            scanTree.setup()
             scanTree.buildTree(menuPages[currentPage].getMenuItems(), 0)
         }, 500)
     }
