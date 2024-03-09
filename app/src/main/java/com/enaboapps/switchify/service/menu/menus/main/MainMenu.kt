@@ -6,29 +6,39 @@ import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
+import com.enaboapps.switchify.service.scanning.ScanMethod
 
 class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
     BaseMenu(accessibilityService, buildMainMenuItems(accessibilityService)) {
 
     companion object {
         private fun buildMainMenuItems(accessibilityService: SwitchifyAccessibilityService): List<MenuItem> {
-            return listOf(
-                MenuItem("Tap") {
-                    GestureManager.getInstance().performTap()
-                },
-                MenuItem("Gestures", isLinkToMenu = true) {
-                    MenuManager.getInstance().openGesturesMenu()
-                },
-                MenuItem("Refine Selection") {
+            val menuItems = mutableListOf<MenuItem>()
+
+            menuItems.add(MenuItem("Tap") {
+                GestureManager.getInstance().performTap()
+            })
+
+            menuItems.add(MenuItem("Gestures", isLinkToMenu = true) {
+                MenuManager.getInstance().openGesturesMenu()
+            })
+
+            // Only add "Refine Selection" if the current scan method is not item scan
+            if (ScanMethod.getType() != ScanMethod.MethodType.ITEM_SCAN) {
+                menuItems.add(MenuItem("Refine Selection") {
                     GesturePoint.setReselect(true)
-                },
-                MenuItem("System Control", isLinkToMenu = true) {
-                    MenuManager.getInstance().openSystemControlMenu()
-                },
-                MenuItem(MenuManager.getInstance().getTypeToSwitchTo()) {
-                    MenuManager.getInstance().changeBetweenCursorAndItemScan()
-                }
-            )
+                })
+            }
+
+            menuItems.add(MenuItem("System Control", isLinkToMenu = true) {
+                MenuManager.getInstance().openSystemControlMenu()
+            })
+
+            menuItems.add(MenuItem(MenuManager.getInstance().getTypeToSwitchTo()) {
+                MenuManager.getInstance().changeBetweenCursorAndItemScan()
+            })
+
+            return menuItems
         }
     }
 }
