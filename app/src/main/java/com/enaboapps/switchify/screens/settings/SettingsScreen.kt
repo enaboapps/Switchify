@@ -70,6 +70,7 @@ fun SettingsScreen(navController: NavController) {
             )
             SelectionSection(settingsScreenModel)
             CursorSection(settingsScreenModel)
+            ItemScanSection(settingsScreenModel)
             PreferenceLink(
                 title = "Switches",
                 summary = "Configure your switches",
@@ -170,6 +171,20 @@ private fun CursorSection(screenModel: SettingsScreenModel) {
             checked = screenModel.restrictCursorToKeyboard.value ?: false,
             onCheckedChange = {
                 screenModel.setRestrictCursorToKeyboard(it)
+            }
+        )
+    }
+}
+
+@Composable
+private fun ItemScanSection(screenModel: SettingsScreenModel) {
+    PreferenceSection(title = "Item Scan") {
+        PreferenceSwitch(
+            title = "Row column scan",
+            summary = "Scan items in a row column pattern",
+            checked = screenModel.rowColumnScan.value ?: false,
+            onCheckedChange = {
+                screenModel.setRowColumnScan(it)
             }
         )
     }

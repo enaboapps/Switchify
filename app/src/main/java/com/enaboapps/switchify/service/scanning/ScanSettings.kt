@@ -81,4 +81,12 @@ class ScanSettings(context: Context) {
             0
         }
     }
+
+    /**
+     * Check if row column scan is enabled
+     * @return true if row column scan is enabled, false otherwise
+     */
+    fun isRowColumnScanEnabled(): Boolean {
+        return preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_ROW_COLUMN_SCAN)
+    }
 }

@@ -20,7 +20,11 @@ import kotlinx.coroutines.withContext
  */
 class NodeScanner private constructor(context: Context) : NodeUpdateDelegate {
     val scanTree =
-        ScanTree(context, stopScanningOnSelect = true, individualHighlightingItemsInRow = false)
+        ScanTree(
+            context,
+            stopScanningOnSelect = true,
+            individualHighlightingItemsInTreeItem = false
+        )
 
     private var nodes: List<Node> = emptyList()
 

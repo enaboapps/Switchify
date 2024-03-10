@@ -58,6 +58,12 @@ class SettingsScreenModel(context: Context) : ViewModel() {
     }
     val restrictCursorToKeyboard: LiveData<Boolean> = _restrictCursorToKeyboard
 
+    private val _rowColumnScan = MutableLiveData<Boolean>().apply {
+        value =
+            preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_ROW_COLUMN_SCAN)
+    }
+    val rowColumnScan: LiveData<Boolean> = _rowColumnScan
+
 
     private val pauseScanOnSwitchHoldThreshold: Long = 400
 
@@ -151,6 +157,16 @@ class SettingsScreenModel(context: Context) : ViewModel() {
                 restrictCursorToKeyboard
             )
             _restrictCursorToKeyboard.postValue(restrictCursorToKeyboard)
+        }
+    }
+
+    fun setRowColumnScan(rowColumnScan: Boolean) {
+        viewModelScope.launch {
+            preferenceManager.setBooleanValue(
+                PreferenceManager.Keys.PREFERENCE_KEY_ROW_COLUMN_SCAN,
+                rowColumnScan
+            )
+            _rowColumnScan.postValue(rowColumnScan)
         }
     }
 }
