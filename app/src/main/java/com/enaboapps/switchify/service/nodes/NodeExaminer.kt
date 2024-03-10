@@ -56,9 +56,13 @@ object NodeExaminer {
             // Get screen dimensions.
             val width = ScreenUtils.getWidth(context)
             val height = ScreenUtils.getHeight(context)
-            // Filter nodes to those that are on-screen.
+            // Filter nodes to those that are on-screen and have non-zero width and height.
             val filteredNewNodes =
-                newNodes.filter { it.getX() >= 0 && it.getY() >= 0 && it.getX() <= width && it.getY() <= height }
+                newNodes.filter {
+                    it.getX() >= 0 && it.getY() >= 0 &&
+                            it.getX() <= width && it.getY() <= height &&
+                            it.getWidth() > 0 && it.getHeight() > 0
+                }
 
             // Compare the current nodes with the new ones using sets.
             if (currentNodes.toSet() != filteredNewNodes.toSet()) {
