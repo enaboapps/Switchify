@@ -10,6 +10,13 @@ import com.enaboapps.switchify.service.nodes.NodeScanner
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.switches.SwitchAction
 
+/**
+ * ScanningManager is responsible for managing the scanning process in the application.
+ * It sets up and controls the scanning methods, performs actions and manages the scanning state.
+ *
+ * @property accessibilityService the accessibility service instance.
+ * @property context the application context.
+ */
 class ScanningManager(
     private val accessibilityService: SwitchifyAccessibilityService,
     val context: Context
@@ -21,8 +28,10 @@ class ScanningManager(
     // node scanner
     private val nodeScanner = NodeScanner.getInstance(context)
 
-
-    // This function sets up the scanning manager
+    /**
+     * This function sets up the scanning manager.
+     * It initializes the accessibility window, menu manager and scanning methods.
+     */
     fun setup() {
         SwitchifyAccessibilityWindow.instance.setup(context)
         SwitchifyAccessibilityWindow.instance.show()
@@ -34,8 +43,10 @@ class ScanningManager(
         setupScanningMethods()
     }
 
-
-    // This function sets up the respective scanning methods
+    /**
+     * This function sets up the respective scanning methods.
+     * It checks the current scanning method type and sets up the corresponding manager.
+     */
     private fun setupScanningMethods() {
         when (ScanMethod.getType()) {
             ScanMethod.MethodType.CURSOR -> {
@@ -48,14 +59,18 @@ class ScanningManager(
         }
     }
 
-
-    // This function explicitly sets the type of the scanning manager to cursor
+    /**
+     * This function explicitly sets the type of the scanning manager to cursor.
+     */
     fun setCursorType() {
         ScanMethod.setType(ScanMethod.MethodType.CURSOR)
         ScanMethod.isInMenu = false
     }
 
-    // This function explicitly sets the type of the scanning manager to item scan
+    /**
+     * This function explicitly sets the type of the scanning manager to item scan.
+     * It also starts the NodeScanner timeout.
+     */
     fun setItemScanType() {
         ScanMethod.setType(ScanMethod.MethodType.ITEM_SCAN)
         ScanMethod.isInMenu = false
@@ -64,13 +79,17 @@ class ScanningManager(
         nodeScanner.startTimeoutToRevertToCursor()
     }
 
-    // This function explicitly sets the type of the scanning manager to menu
+    /**
+     * This function explicitly sets the type of the scanning manager to menu.
+     */
     fun setMenuType() {
         ScanMethod.isInMenu = true
     }
 
-
-    // This function makes a selection
+    /**
+     * This function makes a selection.
+     * It checks the current scanning method type and performs the corresponding selection action.
+     */
     fun select() {
         if (ScanMethod.isInMenu) {
             // Select the menu item
@@ -91,14 +110,17 @@ class ScanningManager(
         }
     }
 
-
-    // This function performs an action
+    /**
+     * This function performs an action.
+     * It checks the action id and performs the corresponding action.
+     *
+     * @param action the action to be performed.
+     */
     fun performAction(action: SwitchAction) {
         // If swipe lock is enabled, swipe and return
         if (GestureManager.getInstance().performSwipeLock()) {
             return
         }
-
 
         // Perform the action based on the action id
         when (action.id) {
@@ -197,6 +219,10 @@ class ScanningManager(
         }
     }
 
+    /**
+     * This function pauses the scanning.
+     * It checks the current scanning method type and pauses the corresponding scanning process.
+     */
     fun pauseScanning() {
         if (ScanMethod.isInMenu) {
             // Pause the menu
@@ -217,6 +243,10 @@ class ScanningManager(
         }
     }
 
+    /**
+     * This function resumes the scanning.
+     * It checks the current scanning method type and resumes the corresponding scanning process.
+     */
     fun resumeScanning() {
         if (ScanMethod.isInMenu) {
             // Resume the menu
@@ -237,7 +267,12 @@ class ScanningManager(
         }
     }
 
-    // This function is called when the scanning method is changed
+    /**
+     * This function is called when the scanning method is changed.
+     * It cleans up the previous scanning method and sets up the new one.
+     *
+     * @param scanMethod the new scanning method.
+     */
     override fun onScanMethodChanged(scanMethod: Int) {
         when (scanMethod) {
             ScanMethod.MethodType.CURSOR -> {
@@ -252,6 +287,10 @@ class ScanningManager(
         setupScanningMethods()
     }
 
+    /**
+     * This function shuts down the scanning manager.
+     * It stops the scanning and cleans up the resources.
+     */
     fun shutdown() {
         // Stop scanning
         pauseScanning()
