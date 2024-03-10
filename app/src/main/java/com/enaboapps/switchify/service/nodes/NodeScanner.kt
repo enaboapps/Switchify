@@ -6,24 +6,19 @@ import com.enaboapps.switchify.service.scanning.tree.ScanTree
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * NodeScanner is a class that handles the scanning of nodes.
  * It implements the NodeUpdateDelegate interface.
+ * It uses a ScanTree instance to manage the scanning process.
  *
- * @property job Job instance used for managing coroutines.
- * @property coroutineScope CoroutineScope instance used for launching coroutines.
  * @property scanTree ScanTree instance used for managing the scanning process.
  * @property nodes List of Node instances that are currently being managed.
  */
 class NodeScanner private constructor(context: Context) : NodeUpdateDelegate {
-    private val job = Job()
-    private val coroutineScope =
-        CoroutineScope(Dispatchers.Main + job)
-
     val scanTree =
         ScanTree(context, stopScanningOnSelect = true, individualHighlightingItemsInRow = false)
 
@@ -50,11 +45,19 @@ class NodeScanner private constructor(context: Context) : NodeUpdateDelegate {
      * if the state is ITEM_SCAN and there are no nodes after 5 seconds.
      */
     fun startTimeoutToRevertToCursor() {
-        coroutineScope.launch {
+        val timeoutJob = Job()
+        val timeoutScope = CoroutineScope(Dispatchers.Default + timeoutJob)
+
+        timeoutScope.launch {
             delay(5000)
             if (ScanMethod.getType() == ScanMethod.MethodType.ITEM_SCAN && this@NodeScanner.nodes.isEmpty()) {
-                scanTree.reset()
-                ScanMethod.setType(ScanMethod.MethodType.CURSOR)
+                withContext(Dispatchers.Main) {
+                    scanTree.reset()
+                    ScanMethod.setType(ScanMethod.MethodType.CURSOR)
+                    println("ScanMethod changed to cursor")
+                }
+            } else {
+                println("ScanMethod not changed, nodes.size: ${this@NodeScanner.nodes.size}")
             }
         }
     }
@@ -71,18 +74,15 @@ class NodeScanner private constructor(context: Context) : NodeUpdateDelegate {
 
         scanTree.buildTree(nodes)
 
-        if (nodes.isNotEmpty()) {
-            job.cancelChildren()
-        } else {
+        if (nodes.isEmpty()) {
             startTimeoutToRevertToCursor()
         }
     }
 
     /**
-     * Cleans up the NodeScanner by cancelling the job and shutting down the scanTree.
+     * Cleans up the NodeScanner by shutting down the scanTree.
      */
     fun cleanup() {
-        job.cancel()
         scanTree.shutdown()
     }
 
