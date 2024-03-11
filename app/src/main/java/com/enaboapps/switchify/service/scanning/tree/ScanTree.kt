@@ -72,7 +72,7 @@ class ScanTree(
      * @param nodes The nodes to build the tree from
      * @param itemThreshold The threshold for determining if a node is in an item
      */
-    fun buildTree(nodes: List<ScanNodeInterface>, itemThreshold: Int = 100) {
+    fun buildTree(nodes: List<ScanNodeInterface>, itemThreshold: Int = 40) {
         reset()
         clearTree()
         if (nodes.isNotEmpty()) {
@@ -104,7 +104,11 @@ class ScanTree(
             // Start iterating from the second node since the first is already included.
             for (node in sortedNodes.drop(1)) {
                 // Determine if the current node's Y position is within the threshold of the current item's baseline.
-                if (abs(node.getY() - currentYBaseline) <= itemThreshold) {
+                if (abs(node.getY() - currentYBaseline) <= ScreenUtils.dpToPx(
+                        context,
+                        itemThreshold
+                    )
+                ) {
                     // Node is close enough to be considered part of the current item.
                     addNodeToTreeItem(node)
                 } else {
