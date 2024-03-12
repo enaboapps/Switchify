@@ -43,7 +43,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      */
     fun setup() {
         GesturePoint.listener = this
-        scanningScheduler = ScanningScheduler(context) { move() }
+        scanningScheduler = ScanningScheduler("cursor", context) { move() }
     }
 
 

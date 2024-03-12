@@ -46,9 +46,11 @@ class SwitchifyAccessibilityService : AccessibilityService() {
 
     /**
      * This method is called when the service is interrupted.
-     * Currently, it does nothing.
+     * It shuts down the scanning manager.
      */
-    override fun onInterrupt() {}
+    override fun onInterrupt() {
+        scanningManager.shutdown()
+    }
 
     /**
      * This method is called when the service is connected.
