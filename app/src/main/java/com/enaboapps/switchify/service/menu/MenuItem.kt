@@ -205,13 +205,25 @@ class MenuItem(
         }
     }
 
-    override fun getX(): Int {
+    override fun getMidX(): Int {
+        val location = IntArray(2)
+        view?.getLocationOnScreen(location)
+        return location[0] + (view?.width ?: 0) / 2
+    }
+
+    override fun getMidY(): Int {
+        val location = IntArray(2)
+        view?.getLocationOnScreen(location)
+        return location[1] + (view?.height ?: 0) / 2
+    }
+
+    override fun getLeft(): Int {
         val location = IntArray(2)
         view?.getLocationOnScreen(location)
         return location[0]
     }
 
-    override fun getY(): Int {
+    override fun getTop(): Int {
         val location = IntArray(2)
         view?.getLocationOnScreen(location)
         return location[1]

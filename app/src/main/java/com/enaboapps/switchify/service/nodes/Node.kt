@@ -51,11 +51,19 @@ class Node : ScanNodeInterface {
         }
     }
 
-    override fun getX(): Int {
+    override fun getMidX(): Int {
+        return centerX
+    }
+
+    override fun getMidY(): Int {
+        return centerY
+    }
+
+    override fun getLeft(): Int {
         return x
     }
 
-    override fun getY(): Int {
+    override fun getTop(): Int {
         return y
     }
 
@@ -65,14 +73,6 @@ class Node : ScanNodeInterface {
 
     override fun getHeight(): Int {
         return height
-    }
-
-    fun getCenterX(): Int {
-        return centerX
-    }
-
-    fun getCenterY(): Int {
-        return centerY
     }
 
     override fun highlight() {

@@ -59,8 +59,8 @@ object NodeExaminer {
             // Filter nodes to those that are on-screen and have non-zero width and height.
             val filteredNewNodes =
                 newNodes.filter {
-                    it.getX() >= 0 && it.getY() >= 0 &&
-                            it.getX() <= width && it.getY() <= height &&
+                    it.getLeft() >= 0 && it.getTop() >= 0 &&
+                            it.getLeft() <= width && it.getTop() <= height &&
                             it.getWidth() > 0 && it.getHeight() > 0
                 }
 
@@ -115,7 +115,7 @@ object NodeExaminer {
         val maxDistance = 200
 
         for (node in currentNodes) {
-            val nodeCenter = PointF(node.getCenterX().toFloat(), node.getCenterY().toFloat())
+            val nodeCenter = PointF(node.getMidX().toFloat(), node.getMidY().toFloat())
             val distance = distanceBetweenPoints(point, nodeCenter)
             if (distance < maxDistance && distance < closestDistance) {
                 closestNodePoint = nodeCenter
