@@ -17,28 +17,18 @@ import java.util.concurrent.atomic.AtomicReference
  * ScanningScheduler is a class that manages the scheduling of scanning tasks.
  * It uses coroutines to run the scanning tasks asynchronously.
  *
- * @property uniqueId A unique identifier for the scanning scheduler.
  * @property context The application context.
  * @property onScan A suspend function that gets executed during each scan.
  */
 class ScanningScheduler(
-    private var uniqueId: String,
     private val context: Context,
     private val onScan: suspend () -> Unit
 ) {
 
     /**
-     * The secondary constructor for the ScanningScheduler class.
-     * It generates a unique identifier for the scanning scheduler.
-     *
-     * @param context The application context.
-     * @param onScan A suspend function that gets executed during each scan.
+     * The unique identifier of the scanner.
      */
-    constructor(context: Context, onScan: suspend () -> Unit) : this(
-        UUID.randomUUID().toString(),
-        context,
-        onScan
-    )
+    private val uniqueId = UUID.randomUUID().toString()
 
     /**
      * The CoroutineScope in which the scanning tasks are launched.
