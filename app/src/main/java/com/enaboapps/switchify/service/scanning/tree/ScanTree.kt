@@ -67,7 +67,7 @@ class ScanTree(
 
     /**
      * This function builds the scanning tree
-     * by examining the x and y coordinates of the nodes
+     * by examining the mid y coordinates of the nodes
      * and organizing them into a tree of items and columns
      * @param nodes The nodes to build the tree from
      * @param itemThreshold The threshold for determining if a node is in an item
@@ -77,12 +77,12 @@ class ScanTree(
         clearTree()
         if (nodes.isNotEmpty()) {
             // Initial sort of nodes by their Y position to process from top to bottom.
-            val sortedNodes = nodes.sortedBy { it.getY() }
+            val sortedNodes = nodes.sortedBy { it.getMidY() }
 
             // Initialize the list for the first item with the first node.
             var currentTreeItem = mutableListOf<ScanNodeInterface>(sortedNodes.first())
             // Set the Y position baseline for the first item.
-            var currentYBaseline = sortedNodes.first().getY()
+            var currentYBaseline = sortedNodes.first().getMidY()
 
             // Get screen dimensions.
             val screenWidth = ScreenUtils.getWidth(context)
@@ -103,8 +103,8 @@ class ScanTree(
 
             // Start iterating from the second node since the first is already included.
             for (node in sortedNodes.drop(1)) {
-                // Determine if the current node's Y position is within the threshold of the current item's baseline.
-                if (abs(node.getY() - currentYBaseline) <= ScreenUtils.dpToPx(
+                // Determine if the current node's mid Y position is within the threshold of the current item's baseline.
+                if (abs(node.getMidY() - currentYBaseline) <= ScreenUtils.dpToPx(
                         context,
                         itemThreshold
                     )
@@ -124,7 +124,7 @@ class ScanTree(
                     }
                     // Add the current node to the new item and update the baseline Y position.
                     addNodeToTreeItem(node)
-                    currentYBaseline = node.getY()
+                    currentYBaseline = node.getMidY()
                 }
             }
 
@@ -141,15 +141,15 @@ class ScanTree(
      */
     private fun addItem(children: List<ScanNodeInterface>) {
         if (children.isNotEmpty()) {
-            val sorted = children.sortedBy { it.getX() }
+            val sorted = children.sortedBy { it.getLeft() }
             if (scanSettings.isRowColumnScanEnabled()) {
                 val item =
-                    ScanTreeItem(sorted, sorted[0].getY(), individualHighlightingItemsInTreeItem)
+                    ScanTreeItem(sorted, sorted[0].getTop(), individualHighlightingItemsInTreeItem)
                 tree.add(item)
             } else {
                 sorted.forEach {
                     val item =
-                        ScanTreeItem(listOf(it), it.getY(), individualHighlightingItemsInTreeItem)
+                        ScanTreeItem(listOf(it), it.getTop(), individualHighlightingItemsInTreeItem)
                     tree.add(item)
                 }
             }

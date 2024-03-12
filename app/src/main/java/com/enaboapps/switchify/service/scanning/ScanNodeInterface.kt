@@ -5,16 +5,28 @@ package com.enaboapps.switchify.service.scanning
  */
 interface ScanNodeInterface {
     /**
-     * This function gets the X coordinate of the node
-     * @return The X coordinate of the node
+     * This function gets the left coordinate of the node
+     * @return The left coordinate of the node
      */
-    fun getX(): Int
+    fun getLeft(): Int
 
     /**
-     * This function gets the Y coordinate of the node
-     * @return The Y coordinate of the node
+     * This function gets the top coordinate of the node
+     * @return The top coordinate of the node
      */
-    fun getY(): Int
+    fun getTop(): Int
+
+    /**
+     * This function gets the mid x coordinate of the node
+     * @return The mid x coordinate of the node
+     */
+    fun getMidX(): Int
+
+    /**
+     * This function gets the mid y coordinate of the node
+     * @return The mid y coordinate of the node
+     */
+    fun getMidY(): Int
 
     /**
      * This function gets the width of the node

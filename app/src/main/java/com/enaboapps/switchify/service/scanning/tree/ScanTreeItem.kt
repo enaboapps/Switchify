@@ -64,8 +64,8 @@ class ScanTreeItem(
     private fun getX(): Int {
         var minX = Int.MAX_VALUE
         children.forEach {
-            if (it.getX() < minX) {
-                minX = it.getX()
+            if (it.getLeft() < minX) {
+                minX = it.getLeft()
             }
         }
         return minX
@@ -76,8 +76,8 @@ class ScanTreeItem(
      * @return The width of the item
      */
     private fun getWidth(): Int {
-        val firstX = children.minOfOrNull { it.getX() } ?: 0
-        val lastX = children.maxOfOrNull { it.getX() + it.getWidth() } ?: 0
+        val firstX = children.minOfOrNull { it.getLeft() } ?: 0
+        val lastX = children.maxOfOrNull { it.getLeft() + it.getWidth() } ?: 0
         return lastX - firstX
     }
 
@@ -86,8 +86,8 @@ class ScanTreeItem(
      * @return The height of the item
      */
     private fun getHeight(): Int {
-        val minY = children.minOfOrNull { it.getY() } ?: 0
-        val maxY = children.maxOfOrNull { it.getY() + it.getHeight() } ?: 0
+        val minY = children.minOfOrNull { it.getTop() } ?: 0
+        val maxY = children.maxOfOrNull { it.getTop() + it.getHeight() } ?: 0
         return maxY - minY
     }
 }
