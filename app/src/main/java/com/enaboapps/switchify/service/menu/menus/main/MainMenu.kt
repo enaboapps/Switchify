@@ -31,8 +31,8 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
                 })
             }
 
-            menuItems.add(MenuItem("System Control", isLinkToMenu = true) {
-                MenuManager.getInstance().openSystemControlMenu()
+            menuItems.add(MenuItem("Device", isLinkToMenu = true) {
+                MenuManager.getInstance().openDeviceMenu()
             })
 
             if (!KeyboardInfo.isKeyboardVisible) {

@@ -7,12 +7,12 @@ import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
 
-class SystemControlMenu(
+class DeviceMenu(
     accessibilityService: SwitchifyAccessibilityService
-) : BaseMenu(accessibilityService, buildSystemControlItems(accessibilityService)) {
+) : BaseMenu(accessibilityService, buildDeviceItems(accessibilityService)) {
 
     companion object {
-        private fun buildSystemControlItems(accessibilityService: AccessibilityService): List<MenuItem> {
+        private fun buildDeviceItems(accessibilityService: AccessibilityService): List<MenuItem> {
             val packageManager = accessibilityService.packageManager
             return listOfNotNull(
                 MenuItem("Back") {
