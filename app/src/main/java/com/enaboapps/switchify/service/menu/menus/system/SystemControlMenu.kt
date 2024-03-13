@@ -12,7 +12,7 @@ class SystemControlMenu(
 
     companion object {
         private fun buildSystemControlItems(accessibilityService: AccessibilityService): List<MenuItem> {
-            return listOf(
+            return listOfNotNull(
                 MenuItem("Back") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
                 },
@@ -25,6 +25,11 @@ class SystemControlMenu(
                 MenuItem("Notifications") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS)
                 },
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                    MenuItem("All Apps") {
+                        accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_ACCESSIBILITY_ALL_APPS)
+                    }
+                } else null,
                 MenuItem("Quick Settings") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS)
                 },
