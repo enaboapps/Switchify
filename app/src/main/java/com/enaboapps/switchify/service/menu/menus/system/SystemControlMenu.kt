@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.menu.menus.system
 
 import android.accessibilityservice.AccessibilityService
+import android.content.pm.PackageManager
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuManager
@@ -12,6 +13,7 @@ class SystemControlMenu(
 
     companion object {
         private fun buildSystemControlItems(accessibilityService: AccessibilityService): List<MenuItem> {
+            val packageManager = accessibilityService.packageManager
             return listOfNotNull(
                 MenuItem("Back") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
@@ -28,6 +30,11 @@ class SystemControlMenu(
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
                     MenuItem("All Apps") {
                         accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_ACCESSIBILITY_ALL_APPS)
+                    }
+                } else null,
+                if (packageManager.hasSystemFeature(PackageManager.FEATURE_ACTIVITIES_ON_SECONDARY_DISPLAYS)) {
+                    MenuItem("Toggle Split Screen") {
+                        accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN)
                     }
                 } else null,
                 MenuItem("Quick Settings") {
