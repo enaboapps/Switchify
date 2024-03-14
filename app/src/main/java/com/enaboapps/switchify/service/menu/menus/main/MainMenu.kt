@@ -6,6 +6,7 @@ import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
+import com.enaboapps.switchify.service.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.utils.KeyboardInfo
 
@@ -34,6 +35,13 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
             menuItems.add(MenuItem("Device", isLinkToMenu = true) {
                 MenuManager.getInstance().openDeviceMenu()
             })
+
+            val canEdit = NodeExaminer.canPerformEditActions(GesturePoint.getPoint())
+            if (canEdit) {
+                menuItems.add(MenuItem("Edit", isLinkToMenu = true) {
+                    MenuManager.getInstance().openEditMenu()
+                })
+            }
 
             if (!KeyboardInfo.isKeyboardVisible) {
                 menuItems.add(MenuItem(MenuManager.getInstance().getTypeToSwitchTo()) {

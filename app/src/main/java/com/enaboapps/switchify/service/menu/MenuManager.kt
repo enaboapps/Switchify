@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.menu
 
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
+import com.enaboapps.switchify.service.menu.menus.edit.EditMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.GesturesMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.SwipeGesturesMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.TapGesturesMenu
@@ -108,6 +109,14 @@ class MenuManager {
     fun openDeviceMenu() {
         val deviceMenu = DeviceMenu(accessibilityService!!)
         openMenu(deviceMenu.build())
+    }
+
+    /**
+     * This function opens the edit menu
+     */
+    fun openEditMenu() {
+        val editMenu = EditMenu(accessibilityService!!)
+        openMenu(editMenu.build())
     }
 
     /**

@@ -16,6 +16,7 @@ import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
  * This class represents a node
  */
 class Node : ScanNodeInterface {
+    private var nodeInfo: AccessibilityNodeInfo? = null
     private var x: Int = 0
     private var y: Int = 0
     private var centerX: Int = 0
@@ -41,6 +42,7 @@ class Node : ScanNodeInterface {
             val node = Node()
             val rect = Rect()
             nodeInfo.getBoundsInScreen(rect)
+            node.nodeInfo = nodeInfo
             node.x = rect.left
             node.y = rect.top
             node.centerX = rect.centerX()
@@ -49,6 +51,27 @@ class Node : ScanNodeInterface {
             node.height = rect.height()
             return node
         }
+    }
+
+    enum class ActionType {
+        CUT, COPY, PASTE
+    }
+
+    fun isActionable(actionType: ActionType): Boolean {
+        return when (actionType) {
+            ActionType.CUT -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_CUT)
+                ?: false
+
+            ActionType.COPY -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_COPY)
+                ?: false
+
+            ActionType.PASTE -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_PASTE)
+                ?: false
+        }
+    }
+
+    fun performAction(action: Int) {
+        nodeInfo?.performAction(action)
     }
 
     override fun getMidX(): Int {
