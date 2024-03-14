@@ -167,14 +167,21 @@ class ScanTree(
     /**
      * This function sets the scanning scheduler
      */
-    fun setup() {
-        reset()
-
-        if (scanningScheduler == null) {
+    private fun setup() {
+        if (isSetupRequired()) {
+            reset()
             scanningScheduler = ScanningScheduler(context) {
                 stepAutoScanning()
             }
         }
+    }
+
+    /**
+     * This function checks if setup is required
+     * @return Whether setup is required
+     */
+    private fun isSetupRequired(): Boolean {
+        return scanningScheduler == null
     }
 
     /**
@@ -378,6 +385,7 @@ class ScanTree(
      */
     fun performSelection() {
         try {
+            setup()
             if (scanningScheduler?.isScanning() == false) {
                 startScanning()
                 println("Scanning started")

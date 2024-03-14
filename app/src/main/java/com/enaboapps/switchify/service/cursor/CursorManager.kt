@@ -41,11 +41,19 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     /**
      * This function sets up the cursor
      */
-    fun setup() {
-        GesturePoint.listener = this
-        if (scanningScheduler == null) {
+    private fun setup() {
+        if (isSetupRequired()) {
+            GesturePoint.listener = this
             scanningScheduler = ScanningScheduler(context) { move() }
         }
+    }
+
+    /**
+     * This function checks if setup is required
+     * @return True if setup is required, false otherwise
+     */
+    private fun isSetupRequired(): Boolean {
+        return scanningScheduler == null
     }
 
 
@@ -504,6 +512,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * This function performs the selection action
      */
     fun performSelectionAction() {
+        setup()
+
         stopScanning()
 
         if (isReset()) {

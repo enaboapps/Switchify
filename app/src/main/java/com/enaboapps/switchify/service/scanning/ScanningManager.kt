@@ -40,24 +40,6 @@ class ScanningManager(
         MenuManager.getInstance().setup(this, accessibilityService)
 
         ScanMethod.observer = this
-
-        setupScanningMethods()
-    }
-
-    /**
-     * This function sets up the respective scanning methods.
-     * It checks the current scanning method type and sets up the corresponding manager.
-     */
-    private fun setupScanningMethods() {
-        when (ScanMethod.getType()) {
-            ScanMethod.MethodType.CURSOR -> {
-                cursorManager.setup()
-            }
-
-            ScanMethod.MethodType.ITEM_SCAN -> {
-                nodeScanner.setup()
-            }
-        }
     }
 
     /**
@@ -286,8 +268,6 @@ class ScanningManager(
                 cursorManager.cleanup()
             }
         }
-
-        setupScanningMethods()
     }
 
     /**
