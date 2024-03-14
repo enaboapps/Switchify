@@ -1,10 +1,7 @@
 package com.enaboapps.switchify.service.scanning.tree
 
-import android.os.Handler
-import android.os.Looper
-import android.widget.RelativeLayout
+import com.enaboapps.switchify.service.nodes.NodeScannerUI
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
-import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 /**
  * This class represents an item in the scan tree
@@ -17,11 +14,6 @@ class ScanTreeItem(
     val y: Int,
     private val individualHighlighting: Boolean
 ) {
-    private val window = SwitchifyAccessibilityWindow.instance
-    private var boundsLayout: RelativeLayout? = null
-
-    private val handler = Handler(Looper.getMainLooper())
-
     /**
      * This function highlights the item
      */
@@ -30,15 +22,7 @@ class ScanTreeItem(
             children.forEach { it.highlight() }
         } else {
             unhighlight()
-            boundsLayout = RelativeLayout(window.getContext()).apply {
-                background = window.getContext()
-                    ?.getDrawable(com.enaboapps.switchify.R.drawable.scan_row_border)
-            }
-            boundsLayout?.let {
-                handler.post {
-                    window.addView(it, getX(), y, getWidth(), getHeight())
-                }
-            }
+            NodeScannerUI.instance.showRowBounds(getX(), y, getWidth(), getHeight())
         }
     }
 
@@ -49,11 +33,7 @@ class ScanTreeItem(
         if (individualHighlighting || children.size == 1) {
             children.forEach { it.unhighlight() }
         } else {
-            boundsLayout?.let {
-                handler.post {
-                    window.removeView(it)
-                }
-            }
+            NodeScannerUI.instance.hideRowBounds()
         }
     }
 

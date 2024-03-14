@@ -1,16 +1,11 @@
 package com.enaboapps.switchify.service.nodes
 
 import android.graphics.Rect
-import android.os.Handler
-import android.os.Looper
 import android.view.accessibility.AccessibilityNodeInfo
-import android.widget.RelativeLayout
-import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
-import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 /**
  * This class represents a node
@@ -24,12 +19,6 @@ class Node : ScanNodeInterface {
     private var width: Int = 0
     private var height: Int = 0
     private var highlighted: Boolean = false
-
-    private var window = SwitchifyAccessibilityWindow.instance
-
-    private var boundsLayout: RelativeLayout? = null
-
-    private val handler = Handler(Looper.getMainLooper())
 
 
     companion object {
@@ -99,12 +88,12 @@ class Node : ScanNodeInterface {
     }
 
     override fun highlight() {
-        showBounds()
+        NodeScannerUI.instance.showItemBounds(x, y, width, height)
         highlighted = true
     }
 
     override fun unhighlight() {
-        hideBounds()
+        NodeScannerUI.instance.hideItemBounds()
         highlighted = false
     }
 
@@ -143,34 +132,5 @@ class Node : ScanNodeInterface {
         result = 31 * result + width
         result = 31 * result + height
         return result
-    }
-
-
-    /**
-     * This function shows the bounds of the node
-     * by rendering a red rectangle around the node
-     */
-    private fun showBounds() {
-        handler.post {
-            boundsLayout?.let {
-                window.removeView(it)
-            }
-            boundsLayout = RelativeLayout(window.getContext())
-            boundsLayout?.let {
-                it.background = window.getContext()?.getDrawable(R.drawable.scan_item_border)
-                window.addView(it, x, y, width, height)
-            }
-        }
-    }
-
-    /**
-     * This function hides the bounds of the node
-     */
-    private fun hideBounds() {
-        handler.post {
-            boundsLayout?.let {
-                window.removeView(it)
-            }
-        }
     }
 }
