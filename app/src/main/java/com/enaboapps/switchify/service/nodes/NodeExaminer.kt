@@ -103,6 +103,42 @@ object NodeExaminer {
         }
 
     /**
+     * Finds the node that can perform the given action at the given point.
+     *
+     * @param point The point to find the node at.
+     * @param actionType The action to find the node for.
+     * @return The node that can perform the given action at the given point.
+     */
+    fun findNodeForAction(point: PointF, actionType: Node.ActionType): Node? {
+        for (node in currentNodes) {
+            val width = node.getWidth()
+            val height = node.getHeight()
+            val left = node.getLeft()
+            val top = node.getTop()
+            if (point.x >= left && point.x <= left + width &&
+                point.y >= top && point.y <= top + height &&
+                node.isActionable(actionType)
+            ) {
+                return node
+            }
+        }
+        return null
+    }
+
+    /**
+     * Checks if a node can perform any edit actions at the given point.
+     *
+     * @param point The point to check for edit actions.
+     * @return True if a node can perform any edit actions at the given point, false otherwise.
+     */
+    fun canPerformEditActions(point: PointF): Boolean {
+        val cutNode = findNodeForAction(point, Node.ActionType.CUT)
+        val copyNode = findNodeForAction(point, Node.ActionType.COPY)
+        val pasteNode = findNodeForAction(point, Node.ActionType.PASTE)
+        return cutNode != null || copyNode != null || pasteNode != null
+    }
+
+    /**
      * Finds the closest node to a given point on the screen.
      *
      * @param point The point for which to find the closest node.
