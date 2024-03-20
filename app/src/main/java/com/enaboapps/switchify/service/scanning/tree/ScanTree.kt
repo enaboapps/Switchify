@@ -393,8 +393,8 @@ class ScanTree(
             }
             if (shouldEscapeTreeItem) {
                 shouldEscapeTreeItem = false
-                unhighlightCurrentTreeItem()
-                reset()
+                scanDirection = ScanDirection.DOWN
+                isInTreeItem = false
                 return
             }
             if (isInTreeItem) {
