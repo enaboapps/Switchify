@@ -11,6 +11,8 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
 
     private lateinit var keyboardLayout: LinearLayout
 
+    private lateinit var keyboardAccessibilityManager: KeyboardAccessibilityManager
+
     override fun onCreateInputView(): View {
         // Create the main keyboard layout programmatically
         keyboardLayout = LinearLayout(this).apply {
@@ -18,6 +20,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
             orientation = LinearLayout.VERTICAL
             background = resources.getDrawable(R.drawable.keyboard_background, null)
         }
+
+        // Initialize the keyboard accessibility manager
+        keyboardAccessibilityManager = KeyboardAccessibilityManager(this)
 
         // Set the layout listener
         KeyboardLayoutManager.listener = this
@@ -51,6 +56,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
 
             keyboardLayout.addView(rowLayout)
         }
+
+        // Capture and broadcast the keyboard layout info
+        keyboardAccessibilityManager.captureAndBroadcastLayoutInfo(keyboardLayout)
     }
 
     private fun handleKeyPress(keyType: KeyType) {
