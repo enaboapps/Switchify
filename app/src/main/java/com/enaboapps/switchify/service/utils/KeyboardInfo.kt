@@ -10,7 +10,7 @@ object KeyboardInfo {
     var keyboardHeight = 0
 
     // Track last scan type to go back to it after keyboard is dismissed
-    private var lastScanType: Int = ScanMethod.getType()
+    private var lastScanType: String = ScanMethod.getType()
 
     // Track last update time to prevent multiple updates in a short time
     private var lastUpdateTime: Long = 0

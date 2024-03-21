@@ -23,12 +23,12 @@ import com.enaboapps.switchify.widgets.NavBar
 fun ScanMethodSelectionScreen(navController: NavController) {
     val methods = listOf(ScanMethod.MethodType.CURSOR, ScanMethod.MethodType.ITEM_SCAN)
     val preferenceManager = PreferenceManager(LocalContext.current)
-    val currentMethod = MutableLiveData<Int>()
+    val currentMethod = MutableLiveData<String>()
     currentMethod.value =
-        preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_METHOD)
+        preferenceManager.getStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_METHOD)
     val currentMethodState = currentMethod.observeAsState()
-    val setScanMethod = { method: Int ->
-        preferenceManager.setIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_METHOD, method)
+    val setScanMethod = { method: String ->
+        preferenceManager.setStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_METHOD, method)
         currentMethod.value = method
     }
     Scaffold(
@@ -66,7 +66,7 @@ fun ScanMethodSelectionScreen(navController: NavController) {
 }
 
 @Composable
-fun ScanMethodInfo(method: Int) {
+fun ScanMethodInfo(method: String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()

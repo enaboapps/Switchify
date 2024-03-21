@@ -6,7 +6,7 @@ import com.enaboapps.switchify.preferences.PreferenceManager
  * This interface is used to observe the changes in the scanning method
  */
 interface ScanMethodObserver {
-    fun onScanMethodChanged(scanMethod: Int)
+    fun onScanMethodChanged(scanMethod: String)
 }
 
 /**
@@ -32,21 +32,21 @@ object ScanMethod {
         /**
          * This type represents the cursor
          */
-        const val CURSOR = 0
+        const val CURSOR = "cursor"
 
         /**
          * This type represents the item scan
          * Sequentially scanning the items on the screen
          */
-        const val ITEM_SCAN = 1
+        const val ITEM_SCAN = "item_scan"
     }
 
     /**
      * This function is used to get the type of the scanning method
      */
-    fun getType(): Int {
+    fun getType(): String {
         preferenceManager?.let { preferenceManager ->
-            val storedType = preferenceManager.getIntegerValue(
+            val storedType = preferenceManager.getStringValue(
                 PreferenceManager.PREFERENCE_KEY_SCAN_METHOD
             )
             println("Stored type: $storedType")
@@ -64,7 +64,7 @@ object ScanMethod {
      * @param type The type of the scanning method
      * @return The name of the scanning method
      */
-    fun getName(type: Int): String {
+    fun getName(type: String): String {
         return when (type) {
             MethodType.CURSOR -> "Cursor"
             MethodType.ITEM_SCAN -> "Item Scan"
@@ -77,7 +77,7 @@ object ScanMethod {
      * @param type The type of the scanning method
      * @return The description of the scanning method
      */
-    fun getDescription(type: Int): String {
+    fun getDescription(type: String): String {
         return when (type) {
             MethodType.CURSOR -> "Cursor allows you to select items by moving a set of crosshairs over the screen."
             MethodType.ITEM_SCAN -> "Item Scan allows you to select items by scanning through them sequentially."
@@ -88,8 +88,8 @@ object ScanMethod {
     /**
      * This function is used to set the type of the scanning method
      */
-    fun setType(value: Int) {
-        preferenceManager?.setIntegerValue(
+    fun setType(value: String) {
+        preferenceManager?.setStringValue(
             PreferenceManager.PREFERENCE_KEY_SCAN_METHOD,
             value
         )

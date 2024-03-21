@@ -68,6 +68,13 @@ class PreferenceManager(context: Context) {
         }
     }
 
+    fun setStringValue(key: String, value: String) {
+        with(sharedPreferences.edit()) {
+            putString(key, value)
+            apply()
+        }
+    }
+
     fun getFloatValue(key: String, defaultValue: Float = 0f): Float {
         return sharedPreferences.getFloat(key, defaultValue)
     }
@@ -84,6 +91,15 @@ class PreferenceManager(context: Context) {
         // Due to an old version of the app storing some values as different types, we need to do try/catch
         return try {
             sharedPreferences.getLong(key, defaultValue)
+        } catch (e: ClassCastException) {
+            defaultValue
+        }
+    }
+
+    fun getStringValue(key: String, defaultValue: String = ""): String {
+        // Due to an old version of the app storing some values as different types, we need to do try/catch
+        return try {
+            sharedPreferences.getString(key, defaultValue) ?: defaultValue
         } catch (e: ClassCastException) {
             defaultValue
         }

@@ -43,7 +43,7 @@ class MenuManager {
     /**
      * The scan method to revert to when the menu is closed
      */
-    var scanMethodToRevertTo: Int = ScanMethod.MethodType.CURSOR
+    var scanMethodToRevertTo: String = ScanMethod.MethodType.CURSOR
 
     /**
      * The menu hierarchy
