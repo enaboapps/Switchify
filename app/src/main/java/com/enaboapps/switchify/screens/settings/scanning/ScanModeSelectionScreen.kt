@@ -24,10 +24,11 @@ fun ScanModeSelectionScreen(navController: NavController) {
     val modes = ScanMode.modes
     val preferenceManager = PreferenceManager(LocalContext.current)
     val currentMode = MutableLiveData<ScanMode>()
-    currentMode.value = ScanMode.fromId(preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
+    currentMode.value =
+        ScanMode.fromId(preferenceManager.getStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
     val currentModeState = currentMode.observeAsState()
     val setScanMode = { mode: ScanMode ->
-        preferenceManager.setIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE, mode.id)
+        preferenceManager.setStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE, mode.id)
         currentMode.value = mode
     }
     Scaffold(

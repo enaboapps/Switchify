@@ -15,7 +15,7 @@ class ScanSettings(context: Context) {
      * @return true if the scan mode is auto, false otherwise
      */
     fun isAutoScanMode(): Boolean {
-        return ScanMode.fromId(preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE)).id == ScanMode.Modes.MODE_AUTO
+        return ScanMode.fromId(preferenceManager.getStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE)).id == ScanMode.Modes.MODE_AUTO
     }
 
     /**
@@ -23,7 +23,7 @@ class ScanSettings(context: Context) {
      * @return true if the scan mode is manual, false otherwise
      */
     fun isManualScanMode(): Boolean {
-        return ScanMode.fromId(preferenceManager.getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE)).id == ScanMode.Modes.MODE_MANUAL
+        return ScanMode.fromId(preferenceManager.getStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE)).id == ScanMode.Modes.MODE_MANUAL
     }
 
     /**

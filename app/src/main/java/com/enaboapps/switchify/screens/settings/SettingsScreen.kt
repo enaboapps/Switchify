@@ -30,7 +30,7 @@ fun SettingsScreen(navController: NavController) {
     val context = LocalContext.current
     val settingsScreenModel = SettingsScreenModel(context)
     val mode =
-        ScanMode.fromId(PreferenceManager(context).getIntegerValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
+        ScanMode.fromId(PreferenceManager(context).getStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
     Scaffold(
         topBar = {
             NavBar(title = "Settings", navController = navController)

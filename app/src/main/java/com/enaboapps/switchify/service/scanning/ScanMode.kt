@@ -2,39 +2,35 @@ package com.enaboapps.switchify.service.scanning
 
 /**
  * This class represents a scanning mode.
- * @property id The unique identifier of the scanning mode.
+ * @property id The id of the scanning mode.
  */
-class ScanMode(val id: Int) {
+class ScanMode(val id: String) {
 
     /**
-     * This object holds the constants for the different scanning modes.
+     * This object represents the different modes available.
      */
     object Modes {
-        const val MODE_AUTO = 0
-        const val MODE_MANUAL = 1
+        const val MODE_AUTO = "auto"
+        const val MODE_MANUAL = "manual"
     }
 
-    /**
-     * This companion object holds an array of the different scanning modes and a function to get a scanning mode from its id.
-     */
     companion object {
-        // An array of the different scanning modes.
-        val modes = arrayOf(
+        /**
+         * This function returns the scanning modes.
+         * @return The scanning modes.
+         */
+        val modes = listOf(
             ScanMode(Modes.MODE_AUTO),
             ScanMode(Modes.MODE_MANUAL)
         )
 
         /**
-         * This function returns a scanning mode from its id.
+         * This function returns the scanning mode with the given id.
          * @param id The id of the scanning mode.
          * @return The scanning mode with the given id.
          */
-        fun fromId(id: Int): ScanMode {
-            return when (id) {
-                Modes.MODE_AUTO -> ScanMode(Modes.MODE_AUTO)
-                Modes.MODE_MANUAL -> ScanMode(Modes.MODE_MANUAL)
-                else -> ScanMode(Modes.MODE_AUTO)
-            }
+        fun fromId(id: String): ScanMode {
+            return modes.firstOrNull { it.id == id } ?: modes[0]
         }
     }
 
@@ -79,6 +75,6 @@ class ScanMode(val id: Int) {
      * @return The hash code of this scanning mode.
      */
     override fun hashCode(): Int {
-        return id
+        return id.hashCode()
     }
 }

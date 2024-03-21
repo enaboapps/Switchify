@@ -258,7 +258,7 @@ class ScanningManager(
      *
      * @param scanMethod the new scanning method.
      */
-    override fun onScanMethodChanged(scanMethod: Int) {
+    override fun onScanMethodChanged(scanMethod: String) {
         when (scanMethod) {
             ScanMethod.MethodType.CURSOR -> {
                 nodeScanner.cleanup()
