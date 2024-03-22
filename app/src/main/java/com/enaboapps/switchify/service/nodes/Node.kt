@@ -2,6 +2,7 @@ package com.enaboapps.switchify.service.nodes
 
 import android.graphics.Rect
 import android.view.accessibility.AccessibilityNodeInfo
+import com.enaboapps.switchify.keyboard.KeyInfo
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
@@ -38,6 +39,22 @@ class Node : ScanNodeInterface {
             node.centerY = rect.centerY()
             node.width = rect.width()
             node.height = rect.height()
+            return node
+        }
+
+        /**
+         * This function creates a node from a KeyInfo object
+         * @param keyInfo The KeyInfo object
+         * @return The node
+         */
+        fun fromKeyInfo(keyInfo: KeyInfo): Node {
+            val node = Node()
+            node.x = keyInfo.x
+            node.y = keyInfo.y
+            node.centerX = keyInfo.x + keyInfo.width / 2
+            node.centerY = keyInfo.y + keyInfo.height / 2
+            node.width = keyInfo.width
+            node.height = keyInfo.height
             return node
         }
     }

@@ -27,7 +27,7 @@ class ScanningManager(
     private val cursorManager = CursorManager(context)
 
     // node scanner
-    private val nodeScanner = NodeScanner.getInstance(context)
+    private val nodeScanner = NodeScanner()
 
     /**
      * This function sets up the scanning manager.
@@ -36,6 +36,8 @@ class ScanningManager(
     fun setup() {
         SwitchifyAccessibilityWindow.instance.setup(context)
         SwitchifyAccessibilityWindow.instance.show()
+
+        nodeScanner.start(context)
 
         MenuManager.getInstance().setup(this, accessibilityService)
 

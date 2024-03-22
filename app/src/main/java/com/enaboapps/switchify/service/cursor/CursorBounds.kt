@@ -2,7 +2,7 @@ package com.enaboapps.switchify.service.cursor
 
 import android.content.Context
 import com.enaboapps.switchify.preferences.PreferenceManager
-import com.enaboapps.switchify.service.utils.KeyboardInfo
+import com.enaboapps.switchify.service.utils.KeyboardBridge
 import com.enaboapps.switchify.service.utils.ScreenUtils
 
 object CursorBounds {
@@ -16,8 +16,8 @@ object CursorBounds {
     fun yMin(context: Context): Int {
         val restrictToKeyboard =
             PreferenceManager(context).getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_RESTRICT_CURSOR_TO_KEYBOARD)
-        return if (KeyboardInfo.isKeyboardVisible && restrictToKeyboard) {
-            ScreenUtils.getHeight(context) - KeyboardInfo.keyboardHeight
+        return if (KeyboardBridge.isKeyboardVisible && restrictToKeyboard) {
+            ScreenUtils.getHeight(context) - KeyboardBridge.keyboardHeight
         } else {
             0
         }

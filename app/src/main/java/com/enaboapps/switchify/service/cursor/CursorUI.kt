@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Handler
 import android.widget.RelativeLayout
-import com.enaboapps.switchify.service.utils.KeyboardInfo
+import com.enaboapps.switchify.service.utils.KeyboardBridge
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 class CursorUI(private val context: Context, private val handler: Handler) {
@@ -30,7 +30,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
          * @return The number of quadrants horizontally
          */
         fun getNumberOfQuadrantsHorizontally(context: Context): Int {
-            return if (KeyboardInfo.isKeyboardVisible) {
+            return if (KeyboardBridge.isKeyboardVisible) {
                 7 // The average keyboard has 7 columns of keys (each row can differ)
             } else {
                 val cursorBounds = CursorBounds.width(context)
@@ -46,7 +46,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
          * @return The number of quadrants vertically
          */
         fun getNumberOfQuadrantsVertically(context: Context): Int {
-            return if (KeyboardInfo.isKeyboardVisible) {
+            return if (KeyboardBridge.isKeyboardVisible) {
                 3 // The average keyboard has 3 rows of keys
             } else {
                 val cursorBounds = CursorBounds.height(context)

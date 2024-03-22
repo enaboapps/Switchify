@@ -8,7 +8,7 @@ import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
 import com.enaboapps.switchify.service.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
-import com.enaboapps.switchify.service.utils.KeyboardInfo
+import com.enaboapps.switchify.service.utils.KeyboardBridge
 
 class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
     BaseMenu(accessibilityService, buildMainMenuItems(accessibilityService)) {
@@ -43,7 +43,7 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
                 })
             }
 
-            if (!KeyboardInfo.isKeyboardVisible) {
+            if (!KeyboardBridge.isKeyboardVisible) {
                 menuItems.add(MenuItem(MenuManager.getInstance().getTypeToSwitchTo()) {
                     MenuManager.getInstance().changeBetweenCursorAndItemScan()
                 })

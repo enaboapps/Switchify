@@ -3,7 +3,6 @@ package com.enaboapps.switchify.keyboard
 import android.content.Context
 import android.content.Intent
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.gson.Gson
 
@@ -40,7 +39,7 @@ class KeyboardAccessibilityManager(private val context: Context) {
             if (child is ViewGroup) {
                 // Recursive call for nested ViewGroup
                 keyInfos.addAll(captureKeyboardLayoutInfo(child).keys)
-            } else if (child is Button) {
+            } else if (child is KeyboardKey) {
                 child.getLocationOnScreen(intArray)
                 keyInfos.add(
                     KeyInfo(
@@ -62,7 +61,8 @@ class KeyboardAccessibilityManager(private val context: Context) {
         val intent = Intent(ACTION_KEYBOARD_LAYOUT_INFO).apply {
             putExtra(EXTRA_KEYBOARD_LAYOUT_INFO, jsonLayoutInfo)
         }
+        println(jsonLayoutInfo)
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
     }
-    
+
 }
