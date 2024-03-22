@@ -10,7 +10,7 @@ import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.service.switches.SwitchListener
-import com.enaboapps.switchify.service.utils.KeyboardInfo
+import com.enaboapps.switchify.service.utils.KeyboardBridge
 
 /**
  * This is the main service class for the Switchify application.
@@ -41,7 +41,7 @@ class SwitchifyAccessibilityService : AccessibilityService() {
         rootInActiveWindow?.let { rootNode ->
             NodeExaminer.findNodes(rootNode, this)
         }
-        KeyboardInfo.updateKeyboardState(windows)
+        KeyboardBridge.updateKeyboardState(windows, this)
     }
 
     /**
@@ -73,7 +73,7 @@ class SwitchifyAccessibilityService : AccessibilityService() {
         rootInActiveWindow?.let { rootNode ->
             NodeExaminer.findNodes(rootNode, this)
         }
-        KeyboardInfo.updateKeyboardState(windows)
+        KeyboardBridge.updateKeyboardState(windows, this)
     }
 
     /**

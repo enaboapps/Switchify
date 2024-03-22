@@ -1,8 +1,16 @@
 package com.enaboapps.switchify.service.nodes
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.enaboapps.switchify.keyboard.KeyboardAccessibilityManager
+import com.enaboapps.switchify.keyboard.KeyboardLayoutInfo
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.scanning.tree.ScanTree
+import com.enaboapps.switchify.service.utils.KeyboardBridge
+import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -14,27 +22,85 @@ import kotlinx.coroutines.withContext
  * NodeScanner is a class that handles the scanning of nodes.
  * It implements the NodeUpdateDelegate interface.
  * It uses a ScanTree instance to manage the scanning process.
- *
- * @property scanTree ScanTree instance used for managing the scanning process.
- * @property nodes List of Node instances that are currently being managed.
  */
-class NodeScanner private constructor(context: Context) : NodeUpdateDelegate {
-    val scanTree =
-        ScanTree(
-            context,
-            stopScanningOnSelect = true,
-            individualHighlightingItemsInTreeItem = false
-        )
+class NodeScanner : NodeUpdateDelegate {
+    /**
+     * Context in which the NodeScanner is started.
+     */
+    private lateinit var context: Context
 
+    /**
+     * ScanTree instance used for managing the scanning process.
+     */
+    lateinit var scanTree: ScanTree
+
+    /**
+     * List of Node instances that are currently being managed.
+     */
     private var nodes: List<Node> = emptyList()
 
     /**
-     * Initialization block for the NodeScanner class.
-     * Sets the nodeUpdateDelegate of the NodeExaminer to this instance and starts the timeout.
+     * BroadcastReceiver that listens for keyboard layout updates.
      */
-    init {
+    private val keyboardLayoutReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val jsonLayoutInfo =
+                intent.getStringExtra(KeyboardAccessibilityManager.EXTRA_KEYBOARD_LAYOUT_INFO)
+            val layoutInfo = Gson().fromJson(jsonLayoutInfo, KeyboardLayoutInfo::class.java)
+            updateNodesWithLayoutInfo(layoutInfo)
+        }
+    }
+
+    /**
+     * Starts the NodeScanner.
+     * Sets the nodeUpdateDelegate of the NodeExaminer to this instance and starts the timeout.
+     * Also starts listening for keyboard layout updates.
+     *
+     * @param context The context in which the NodeScanner is started.
+     */
+    fun start(context: Context) {
+        this.context = context
         NodeExaminer.nodeUpdateDelegate = this
         startTimeoutToRevertToCursor()
+        startListeningForKeyboardLayoutInfo(context)
+        scanTree = ScanTree(
+            context = context,
+            stopScanningOnSelect = true,
+            individualHighlightingItemsInTreeItem = false
+        )
+    }
+
+    /**
+     * Registers the keyboardLayoutReceiver to listen for keyboard layout updates.
+     *
+     * @param context The context in which the receiver is registered.
+     */
+    private fun startListeningForKeyboardLayoutInfo(context: Context) {
+        LocalBroadcastManager.getInstance(context).registerReceiver(
+            keyboardLayoutReceiver,
+            IntentFilter(KeyboardAccessibilityManager.ACTION_KEYBOARD_LAYOUT_INFO)
+        )
+    }
+
+    /**
+     * Unregisters the keyboardLayoutReceiver.
+     *
+     * @param context The context in which the receiver is unregistered.
+     */
+    private fun stopListeningForKeyboardLayoutInfo(context: Context) {
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(keyboardLayoutReceiver)
+    }
+
+    /**
+     * Updates the nodes with the layout info from the keyboard.
+     * It creates a new list of nodes from the layout info and updates the nodes.
+     *
+     * @param layoutInfo KeyboardLayoutInfo instance.
+     */
+    private fun updateNodesWithLayoutInfo(layoutInfo: KeyboardLayoutInfo) {
+        val newNodes = layoutInfo.keys.map { Node.fromKeyInfo(it) }
+        newNodes.forEach { println(it) }
+        updateNodes(newNodes)
     }
 
     /**
@@ -60,17 +126,14 @@ class NodeScanner private constructor(context: Context) : NodeUpdateDelegate {
     }
 
     /**
-     * Updates the nodes and rebuilds the scanTree when new nodes are detected.
-     * If nodes are present, it cancels any children of the job.
+     * Updates the nodes and rebuilds the scanTree.
      * If no nodes are present, it starts the timeout.
      *
      * @param nodes List of new Node instances.
      */
-    override fun onNodesUpdated(nodes: List<Node>) {
+    private fun updateNodes(nodes: List<Node>) {
         this.nodes = nodes
-
         scanTree.buildTree(nodes)
-
         if (nodes.isEmpty()) {
             startTimeoutToRevertToCursor()
         }
@@ -83,14 +146,15 @@ class NodeScanner private constructor(context: Context) : NodeUpdateDelegate {
         scanTree.shutdown()
     }
 
-    companion object {
-        @Volatile
-        private var INSTANCE: NodeScanner? = null
-
-        fun getInstance(context: Context): NodeScanner {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: NodeScanner(context).also { INSTANCE = it }
-            }
+    /**
+     * Called when the nodes are updated.
+     * Updates the nodes if our keyboard is not active and a keyboard is not visible.
+     *
+     * @param nodes List of new Node instances.
+     */
+    override fun onNodesUpdated(nodes: List<Node>) {
+        if (!KeyboardBridge.isOurKeyboardActive(context) && !KeyboardBridge.isKeyboardVisible) {
+            updateNodes(nodes)
         }
     }
 }
