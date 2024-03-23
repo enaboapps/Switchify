@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.keyboard
 
+import android.content.Intent
 import android.inputmethodservice.InputMethodService
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -7,6 +8,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.ViewTreeObserver
 import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.enaboapps.switchify.R
 
 /**
@@ -23,6 +25,11 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
 
     // The global layout listener
     private var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
+
+    companion object {
+        const val ACTION_KEYBOARD_SHOW = "com.enaboapps.switchify.keyboard.ACTION_KEYBOARD_SHOW"
+        const val ACTION_KEYBOARD_HIDE = "com.enaboapps.switchify.keyboard.ACTION_KEYBOARD_HIDE"
+    }
 
     /**
      * This method is called when the input view is created.
@@ -58,6 +65,10 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
             keyboardAccessibilityManager.captureAndBroadcastLayoutInfo(keyboardLayout)
         }
         keyboardLayout.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
+
+        // Broadcast keyboard show event
+        val intent = Intent(ACTION_KEYBOARD_SHOW)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
     /**
@@ -68,6 +79,10 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
         super.onFinishInputView(finishingInput)
         // Remove the global layout listener when the input view is finished
         keyboardLayout.viewTreeObserver.removeOnGlobalLayoutListener(globalLayoutListener)
+
+        // Broadcast keyboard hide event
+        val intent = Intent(ACTION_KEYBOARD_HIDE)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
     /**

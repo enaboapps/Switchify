@@ -7,9 +7,9 @@ import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.enaboapps.switchify.keyboard.KeyboardAccessibilityManager
 import com.enaboapps.switchify.keyboard.KeyboardLayoutInfo
+import com.enaboapps.switchify.keyboard.SwitchifyKeyboardService
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.scanning.tree.ScanTree
-import com.enaboapps.switchify.service.utils.KeyboardBridge
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,9 +52,36 @@ class NodeScanner : NodeUpdateDelegate {
     }
 
     /**
+     * BroadcastReceiver that listens for keyboard show events.
+     */
+    private val keyboardShowReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            isKeyboardVisible = true
+            println("Keyboard shown")
+        }
+    }
+
+    /**
+     * BroadcastReceiver that listens for keyboard hide events.
+     */
+    private val keyboardHideReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            isKeyboardVisible = false
+            updateNodes(nodes)
+            println("Keyboard hidden, updating nodes")
+        }
+    }
+
+    /**
+     * Boolean flag indicating whether the keyboard is visible.
+     */
+    private var isKeyboardVisible = false
+
+    /**
      * Starts the NodeScanner.
      * Sets the nodeUpdateDelegate of the NodeExaminer to this instance and starts the timeout.
-     * Also starts listening for keyboard layout updates.
+     * Also initializes the scanTree with the context.
+     * Registers the required event receivers.
      *
      * @param context The context in which the NodeScanner is started.
      */
@@ -62,33 +89,33 @@ class NodeScanner : NodeUpdateDelegate {
         this.context = context
         NodeExaminer.nodeUpdateDelegate = this
         startTimeoutToRevertToCursor()
-        startListeningForKeyboardLayoutInfo(context)
         scanTree = ScanTree(
             context = context,
             stopScanningOnSelect = true,
             individualHighlightingItemsInTreeItem = false
         )
+
+        registerEventReceivers(context)
     }
 
     /**
-     * Registers the keyboardLayoutReceiver to listen for keyboard layout updates.
+     * Registers the required event receivers.
      *
-     * @param context The context in which the receiver is registered.
+     * @param context The context in which the receivers are registered.
      */
-    private fun startListeningForKeyboardLayoutInfo(context: Context) {
+    private fun registerEventReceivers(context: Context) {
         LocalBroadcastManager.getInstance(context).registerReceiver(
             keyboardLayoutReceiver,
             IntentFilter(KeyboardAccessibilityManager.ACTION_KEYBOARD_LAYOUT_INFO)
         )
-    }
-
-    /**
-     * Unregisters the keyboardLayoutReceiver.
-     *
-     * @param context The context in which the receiver is unregistered.
-     */
-    private fun stopListeningForKeyboardLayoutInfo(context: Context) {
-        LocalBroadcastManager.getInstance(context).unregisterReceiver(keyboardLayoutReceiver)
+        LocalBroadcastManager.getInstance(context).registerReceiver(
+            keyboardShowReceiver,
+            IntentFilter(SwitchifyKeyboardService.ACTION_KEYBOARD_SHOW)
+        )
+        LocalBroadcastManager.getInstance(context).registerReceiver(
+            keyboardHideReceiver,
+            IntentFilter(SwitchifyKeyboardService.ACTION_KEYBOARD_HIDE)
+        )
     }
 
     /**
@@ -132,7 +159,6 @@ class NodeScanner : NodeUpdateDelegate {
      * @param nodes List of new Node instances.
      */
     private fun updateNodes(nodes: List<Node>) {
-        this.nodes = nodes
         scanTree.buildTree(nodes)
         if (nodes.isEmpty()) {
             startTimeoutToRevertToCursor()
@@ -153,7 +179,8 @@ class NodeScanner : NodeUpdateDelegate {
      * @param nodes List of new Node instances.
      */
     override fun onNodesUpdated(nodes: List<Node>) {
-        if (!KeyboardBridge.isOurKeyboardActive(context) && !KeyboardBridge.isKeyboardVisible) {
+        this.nodes = nodes
+        if (!isKeyboardVisible) {
             updateNodes(nodes)
         }
     }
