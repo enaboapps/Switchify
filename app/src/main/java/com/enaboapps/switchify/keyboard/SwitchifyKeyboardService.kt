@@ -124,13 +124,13 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
     private fun handleKeyPress(keyType: KeyType) {
         when (keyType) {
             is KeyType.Character -> currentInputConnection.commitText(keyType.char, 1)
+            is KeyType.Special -> currentInputConnection.commitText(keyType.symbol, 1)
             KeyType.Backspace -> currentInputConnection.deleteSurroundingText(1, 0)
             KeyType.Space -> currentInputConnection.commitText(" ", 1)
             KeyType.Return -> currentInputConnection.commitText("\n", 1)
             KeyType.Shift -> KeyboardLayoutManager.toggleShift()
             KeyType.SwitchToSymbols -> KeyboardLayoutManager.switchLayout(KeyboardLayoutType.Symbols)
             KeyType.SwitchToAlphabetic -> KeyboardLayoutManager.switchLayout(KeyboardLayoutType.AlphabeticLower)
-            else -> {} // Handle other key types as necessary
         }
     }
 
