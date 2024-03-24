@@ -17,7 +17,7 @@ sealed class KeyType {
         override fun toString() = "⏎"
     }
 
-    object Shift : KeyType() {
+    object ShiftCaps : KeyType() {
         override fun toString() = "⇧"
     }
 
@@ -38,12 +38,20 @@ enum class KeyboardLayoutType {
     AlphabeticLower, AlphabeticUpper, Symbols
 }
 
+enum class KeyboardLayoutState {
+    Lower, Shift, Caps
+}
+
 interface KeyboardLayoutListener {
     fun onLayoutChanged(layoutType: KeyboardLayoutType)
 }
 
 object KeyboardLayoutManager {
     var listener: KeyboardLayoutListener? = null
+
+    private var currentLayoutType: KeyboardLayoutType = KeyboardLayoutType.AlphabeticLower
+
+    private var currentLayoutState: KeyboardLayoutState = KeyboardLayoutState.Lower
 
     private val alphabeticLowerLayout = listOf(
         listOf(
@@ -70,7 +78,7 @@ object KeyboardLayoutManager {
             KeyType.Character("l")
         ),
         listOf(
-            KeyType.Shift,
+            KeyType.ShiftCaps,
             KeyType.Character("z"),
             KeyType.Character("x"),
             KeyType.Character("c"),
@@ -118,7 +126,7 @@ object KeyboardLayoutManager {
             KeyType.Special(")")
         ),
         listOf(
-            KeyType.Shift,
+            KeyType.ShiftCaps,
             KeyType.Special("!"),
             KeyType.Special("\""),
             KeyType.Special("'"),
@@ -137,8 +145,6 @@ object KeyboardLayoutManager {
         KeyboardLayoutType.Symbols to symbolsLayout
     )
 
-    var currentLayoutType: KeyboardLayoutType = KeyboardLayoutType.AlphabeticLower
-
     val currentLayout: List<List<KeyType>>
         get() = layouts[currentLayoutType] ?: listOf()
 
@@ -147,14 +153,19 @@ object KeyboardLayoutManager {
         listener?.onLayoutChanged(layoutType)
     }
 
-    fun toggleShift() {
-        currentLayoutType = when (currentLayoutType) {
-            KeyboardLayoutType.AlphabeticLower -> KeyboardLayoutType.AlphabeticUpper
-            KeyboardLayoutType.AlphabeticUpper -> KeyboardLayoutType.AlphabeticLower
-            else -> return
+    fun toggleState() {
+        currentLayoutState = when (currentLayoutState) {
+            KeyboardLayoutState.Lower -> KeyboardLayoutState.Shift
+            KeyboardLayoutState.Shift, KeyboardLayoutState.Caps -> KeyboardLayoutState.Lower
         }
+        switchLayout(if (currentLayoutState == KeyboardLayoutState.Lower) KeyboardLayoutType.AlphabeticLower else KeyboardLayoutType.AlphabeticUpper)
         listener?.onLayoutChanged(currentLayoutType)
     }
 
-    // Additional functionality as needed
+    fun updateStateAfterInput() {
+        if (currentLayoutState == KeyboardLayoutState.Shift) {
+            currentLayoutState = KeyboardLayoutState.Lower
+            switchLayout(KeyboardLayoutType.AlphabeticLower)
+        }
+    }
 }

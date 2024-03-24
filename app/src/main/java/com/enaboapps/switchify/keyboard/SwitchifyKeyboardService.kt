@@ -123,14 +123,63 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
      */
     private fun handleKeyPress(keyType: KeyType) {
         when (keyType) {
-            is KeyType.Character -> currentInputConnection.commitText(keyType.char, 1)
-            is KeyType.Special -> currentInputConnection.commitText(keyType.symbol, 1)
-            KeyType.Backspace -> currentInputConnection.deleteSurroundingText(1, 0)
-            KeyType.Space -> currentInputConnection.commitText(" ", 1)
-            KeyType.Return -> currentInputConnection.commitText("\n", 1)
-            KeyType.Shift -> KeyboardLayoutManager.toggleShift()
-            KeyType.SwitchToSymbols -> KeyboardLayoutManager.switchLayout(KeyboardLayoutType.Symbols)
-            KeyType.SwitchToAlphabetic -> KeyboardLayoutManager.switchLayout(KeyboardLayoutType.AlphabeticLower)
+            is KeyType.Character -> {
+                val text = keyType.char
+                currentInputConnection.commitText(text, 1)
+                KeyboardLayoutManager.updateStateAfterInput()
+            }
+
+            is KeyType.Special -> {
+                val text = keyType.symbol
+                currentInputConnection.commitText(text, 1)
+            }
+
+            KeyType.ShiftCaps -> {
+                KeyboardLayoutManager.toggleState()
+            }
+
+            KeyType.SwitchToAlphabetic -> {
+                KeyboardLayoutManager.switchLayout(KeyboardLayoutType.AlphabeticLower)
+            }
+
+            KeyType.Space -> {
+                currentInputConnection.commitText(" ", 1)
+                KeyboardLayoutManager.updateStateAfterInput()
+            }
+
+            KeyType.Return -> {
+                currentInputConnection.sendKeyEvent(
+                    android.view.KeyEvent(
+                        android.view.KeyEvent.ACTION_DOWN,
+                        android.view.KeyEvent.KEYCODE_ENTER
+                    )
+                )
+                currentInputConnection.sendKeyEvent(
+                    android.view.KeyEvent(
+                        android.view.KeyEvent.ACTION_UP,
+                        android.view.KeyEvent.KEYCODE_ENTER
+                    )
+                )
+            }
+
+            KeyType.Backspace -> {
+                currentInputConnection.sendKeyEvent(
+                    android.view.KeyEvent(
+                        android.view.KeyEvent.ACTION_DOWN,
+                        android.view.KeyEvent.KEYCODE_DEL
+                    )
+                )
+                currentInputConnection.sendKeyEvent(
+                    android.view.KeyEvent(
+                        android.view.KeyEvent.ACTION_UP,
+                        android.view.KeyEvent.KEYCODE_DEL
+                    )
+                )
+            }
+
+            KeyType.SwitchToSymbols -> {
+                KeyboardLayoutManager.switchLayout(KeyboardLayoutType.Symbols)
+            }
         }
     }
 
