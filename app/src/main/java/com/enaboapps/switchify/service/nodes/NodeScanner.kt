@@ -35,9 +35,14 @@ class NodeScanner : NodeUpdateDelegate {
     lateinit var scanTree: ScanTree
 
     /**
-     * List of Node instances that are currently being managed.
+     * List of Node instances that are currently being managed on the screen.
      */
-    private var nodes: List<Node> = emptyList()
+    private var screenNodes: List<Node> = emptyList()
+
+    /**
+     * List of Node instances that are currently being managed on the keyboard.
+     */
+    private var keyboardNodes: List<Node> = emptyList()
 
     /**
      * BroadcastReceiver that listens for keyboard layout updates.
@@ -67,7 +72,7 @@ class NodeScanner : NodeUpdateDelegate {
     private val keyboardHideReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             isKeyboardVisible = false
-            updateNodes(nodes)
+            setScreenNodes(screenNodes)
             println("Keyboard hidden, updating nodes")
         }
     }
@@ -81,7 +86,6 @@ class NodeScanner : NodeUpdateDelegate {
      * Starts the NodeScanner.
      * Sets the nodeUpdateDelegate of the NodeExaminer to this instance and starts the timeout.
      * Also initializes the scanTree with the context.
-     * Registers the required event receivers.
      *
      * @param context The context in which the NodeScanner is started.
      */
@@ -94,8 +98,6 @@ class NodeScanner : NodeUpdateDelegate {
             stopScanningOnSelect = true,
             individualHighlightingItemsInTreeItem = false
         )
-
-        registerEventReceivers(context)
     }
 
     /**
@@ -103,7 +105,7 @@ class NodeScanner : NodeUpdateDelegate {
      *
      * @param context The context in which the receivers are registered.
      */
-    private fun registerEventReceivers(context: Context) {
+    fun registerEventReceivers(context: Context) {
         LocalBroadcastManager.getInstance(context).registerReceiver(
             keyboardLayoutReceiver,
             IntentFilter(KeyboardAccessibilityManager.ACTION_KEYBOARD_LAYOUT_INFO)
@@ -127,7 +129,7 @@ class NodeScanner : NodeUpdateDelegate {
     private fun updateNodesWithLayoutInfo(layoutInfo: KeyboardLayoutInfo) {
         val newNodes = layoutInfo.keys.map { Node.fromKeyInfo(it) }
         newNodes.forEach { println(it) }
-        updateNodes(newNodes)
+        setKeyboardNodes(newNodes)
     }
 
     /**
@@ -140,15 +142,39 @@ class NodeScanner : NodeUpdateDelegate {
 
         timeoutScope.launch {
             delay(5000)
-            if (ScanMethod.getType() == ScanMethod.MethodType.ITEM_SCAN && this@NodeScanner.nodes.isEmpty()) {
+            if (ScanMethod.getType() == ScanMethod.MethodType.ITEM_SCAN && this@NodeScanner.screenNodes.isEmpty()) {
                 withContext(Dispatchers.Main) {
                     scanTree.reset()
                     ScanMethod.setType(ScanMethod.MethodType.CURSOR)
                     println("ScanMethod changed to cursor")
                 }
             } else {
-                println("ScanMethod not changed, nodes.size: ${this@NodeScanner.nodes.size}")
+                println("ScanMethod not changed, nodes.size: ${this@NodeScanner.screenNodes.size}")
             }
+        }
+    }
+
+    /**
+     * Sets the keyboard nodes.
+     *
+     * @param nodes List of new Node instances.
+     */
+    private fun setKeyboardNodes(nodes: List<Node>) {
+        this.keyboardNodes = nodes
+        if (isKeyboardVisible) {
+            updateNodes(nodes)
+        }
+    }
+
+    /**
+     * Sets the screen nodes.
+     *
+     * @param nodes List of new Node instances.
+     */
+    private fun setScreenNodes(nodes: List<Node>) {
+        this.screenNodes = nodes
+        if (!isKeyboardVisible) {
+            updateNodes(nodes)
         }
     }
 
@@ -174,14 +200,11 @@ class NodeScanner : NodeUpdateDelegate {
 
     /**
      * Called when the nodes are updated.
-     * Updates the nodes if our keyboard is not active and a keyboard is not visible.
+     * Sets the screen nodes.
      *
      * @param nodes List of new Node instances.
      */
     override fun onNodesUpdated(nodes: List<Node>) {
-        this.nodes = nodes
-        if (!isKeyboardVisible) {
-            updateNodes(nodes)
-        }
+        setScreenNodes(nodes)
     }
 }
