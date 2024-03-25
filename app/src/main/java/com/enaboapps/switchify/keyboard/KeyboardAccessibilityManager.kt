@@ -7,7 +7,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.gson.Gson
 
 data class KeyInfo(
-    val label: String,
     val x: Int,
     val y: Int,
     val width: Int,
@@ -36,14 +35,13 @@ class KeyboardAccessibilityManager(private val context: Context) {
 
         for (i in 0 until keyboardView.childCount) {
             val child = keyboardView.getChildAt(i)
-            if (child is ViewGroup) {
+            if (child !is KeyboardKey && child is ViewGroup) {
                 // Recursive call for nested ViewGroup
                 keyInfos.addAll(captureKeyboardLayoutInfo(child).keys)
             } else if (child is KeyboardKey) {
                 child.getLocationOnScreen(intArray)
                 keyInfos.add(
                     KeyInfo(
-                        label = child.text.toString(),
                         x = intArray[0],
                         y = intArray[1],
                         width = child.width,

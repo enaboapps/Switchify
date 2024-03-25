@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.keyboard
 
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.inputmethodservice.InputMethodService
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -104,17 +105,44 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
                 LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             // The third parameter (weight) ensures each button takes equal space within its row.
 
-            row.forEach { keyType ->
+            row.forEach { type ->
                 val keyButton = KeyboardKey(this).apply {
-                    text = keyType.toString()
-                    setOnClickListener { handleKeyPress(keyType) }
                     layoutParams = buttonLayoutParams
+                    action = { handleKeyPress(type) }
+                    if (getDrawableResource(type) != null) {
+                        setKeyContent(drawable = getDrawableResource(type))
+                    } else {
+                        setKeyContent(text = type.toString())
+                    }
                 }
                 rowLayout.addView(keyButton)
             }
 
             keyboardLayout.addView(rowLayout)
         }
+    }
+
+    /**
+     * This function returns the correct drawable resource for the given key type.
+     *
+     * @param keyType the key type.
+     * @return the drawable resource.
+     */
+    private fun getDrawableResource(keyType: KeyType): Drawable? {
+        if (keyType is KeyType.Backspace) {
+            return resources.getDrawable(R.drawable.ic_backspace, null)
+        }
+        if (keyType is KeyType.Return) {
+            return resources.getDrawable(R.drawable.ic_return, null)
+        }
+        if (keyType is KeyType.ShiftCaps) {
+            return if (KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Lower) {
+                resources.getDrawable(R.drawable.ic_shift, null)
+            } else {
+                resources.getDrawable(R.drawable.ic_caps, null)
+            }
+        }
+        return null
     }
 
     /**
