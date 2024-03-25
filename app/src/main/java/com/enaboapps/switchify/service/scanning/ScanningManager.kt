@@ -38,6 +38,7 @@ class ScanningManager(
         SwitchifyAccessibilityWindow.instance.show()
 
         nodeScanner.start(context)
+        nodeScanner.registerEventReceivers(context)
 
         MenuManager.getInstance().setup(this, accessibilityService)
 
