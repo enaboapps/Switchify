@@ -51,7 +51,7 @@ object KeyboardLayoutManager {
 
     private var currentLayoutType: KeyboardLayoutType = KeyboardLayoutType.AlphabeticLower
 
-    private var currentLayoutState: KeyboardLayoutState = KeyboardLayoutState.Lower
+    var currentLayoutState: KeyboardLayoutState = KeyboardLayoutState.Lower
 
     private val alphabeticLowerLayout = listOf(
         listOf(
