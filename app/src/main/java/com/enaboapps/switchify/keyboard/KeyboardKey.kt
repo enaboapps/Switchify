@@ -1,11 +1,13 @@
 package com.enaboapps.switchify.keyboard
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import com.enaboapps.switchify.R
 
 class KeyboardKey @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -34,6 +36,8 @@ class KeyboardKey @JvmOverloads constructor(
                 LayoutParams.MATCH_PARENT,
                 225
             )
+            setTextColor(Color.WHITE)
+            background = context.getDrawable(R.drawable.keyboard_key_background)
         }
         addView(button)
     }
@@ -46,6 +50,7 @@ class KeyboardKey @JvmOverloads constructor(
                 LayoutParams.MATCH_PARENT,
                 225
             )
+            background = context.getDrawable(R.drawable.keyboard_key_background)
         }
         addView(imageButton)
     }
