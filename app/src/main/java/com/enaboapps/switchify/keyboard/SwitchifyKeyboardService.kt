@@ -114,6 +114,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
                     } else {
                         setKeyContent(text = type.toString())
                     }
+                    if (type is KeyType.ShiftCaps) {
+                        setPinned(KeyboardLayoutManager.currentLayoutState != KeyboardLayoutState.Lower)
+                    }
                 }
                 rowLayout.addView(keyButton)
             }
@@ -136,7 +139,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
             return resources.getDrawable(R.drawable.ic_return, null)
         }
         if (keyType is KeyType.ShiftCaps) {
-            return if (KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Lower) {
+            return if (KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Lower ||
+                KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Shift
+            ) {
                 resources.getDrawable(R.drawable.ic_shift, null)
             } else {
                 resources.getDrawable(R.drawable.ic_caps, null)

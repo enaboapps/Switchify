@@ -15,6 +15,9 @@ class KeyboardKey @JvmOverloads constructor(
 
     var action: (() -> Unit)? = null
 
+    private var button: Button? = null
+    private var imageButton: ImageButton? = null
+
     init {
         orientation = VERTICAL // Or HORIZONTAL, depending on your design
     }
@@ -29,7 +32,7 @@ class KeyboardKey @JvmOverloads constructor(
     }
 
     private fun addTextView(text: String) {
-        val button = Button(context).apply {
+        button = Button(context).apply {
             setText(text)
             setOnClickListener { action?.invoke() }
             layoutParams = LayoutParams(
@@ -43,7 +46,7 @@ class KeyboardKey @JvmOverloads constructor(
     }
 
     private fun addImageView(drawable: Drawable) {
-        val imageButton = ImageButton(context).apply {
+        imageButton = ImageButton(context).apply {
             setImageDrawable(drawable)
             setOnClickListener { action?.invoke() }
             layoutParams = LayoutParams(
@@ -53,5 +56,15 @@ class KeyboardKey @JvmOverloads constructor(
             background = context.getDrawable(R.drawable.keyboard_key_background)
         }
         addView(imageButton)
+    }
+
+    fun setPinned(pinned: Boolean) {
+        val background = if (pinned) {
+            context.getDrawable(R.drawable.keyboard_key_background_pinned)
+        } else {
+            context.getDrawable(R.drawable.keyboard_key_background)
+        }
+        button?.background = background
+        imageButton?.background = background
     }
 }
