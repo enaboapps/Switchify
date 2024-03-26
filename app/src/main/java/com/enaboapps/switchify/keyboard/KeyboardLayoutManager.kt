@@ -156,7 +156,8 @@ object KeyboardLayoutManager {
     fun toggleState() {
         currentLayoutState = when (currentLayoutState) {
             KeyboardLayoutState.Lower -> KeyboardLayoutState.Shift
-            KeyboardLayoutState.Shift, KeyboardLayoutState.Caps -> KeyboardLayoutState.Lower
+            KeyboardLayoutState.Shift -> KeyboardLayoutState.Caps
+            KeyboardLayoutState.Caps -> KeyboardLayoutState.Lower
         }
         switchLayout(if (currentLayoutState == KeyboardLayoutState.Lower) KeyboardLayoutType.AlphabeticLower else KeyboardLayoutType.AlphabeticUpper)
         listener?.onLayoutChanged(currentLayoutType)
