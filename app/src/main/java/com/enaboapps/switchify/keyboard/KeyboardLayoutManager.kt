@@ -5,6 +5,10 @@ sealed class KeyType {
         override fun toString() = char
     }
 
+    data class Prediction(val prediction: String) : KeyType() {
+        override fun toString() = prediction
+    }
+
     object Backspace : KeyType() {
         override fun toString() = "⌫"
     }
