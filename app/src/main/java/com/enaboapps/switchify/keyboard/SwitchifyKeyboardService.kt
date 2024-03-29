@@ -11,12 +11,17 @@ import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.enaboapps.switchify.R
+import com.enaboapps.switchify.keyboard.prediction.PredictionListener
+import com.enaboapps.switchify.keyboard.prediction.PredictionManager
+import com.enaboapps.switchify.keyboard.prediction.PredictionView
+import com.enaboapps.switchify.keyboard.utils.TextParser
+import java.util.Locale
 
 /**
  * This class is responsible for managing the keyboard service.
  * It extends InputMethodService and implements KeyboardLayoutListener.
  */
-class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
+class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, PredictionListener {
 
     // The main keyboard layout
     private lateinit var keyboardLayout: LinearLayout
@@ -26,6 +31,18 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
 
     // The global layout listener
     private var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
+
+    // The prediction manager
+    private lateinit var predictionManager: PredictionManager
+
+    // The prediction view
+    private lateinit var predictionView: PredictionView
+
+    // The current predictions
+    private var currentPredictions: List<String> = emptyList()
+
+    // The text parser
+    private val textParser = TextParser.getInstance()
 
     companion object {
         const val ACTION_KEYBOARD_SHOW = "com.enaboapps.switchify.keyboard.ACTION_KEYBOARD_SHOW"
@@ -50,8 +67,18 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
         // Set the layout listener
         KeyboardLayoutManager.listener = this
 
+        // Initialize the prediction manager
+        predictionManager = PredictionManager(this, this)
+        predictionManager.initialize()
+
+        // Initialize the prediction view
+        predictionView = PredictionView(this) { prediction ->
+            handleKeyPress(prediction)
+        }
+
         // Initialize the keyboard layout
         initializeKeyboardLayout(keyboardLayout)
+
         return keyboardLayout
     }
 
@@ -66,6 +93,8 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
             keyboardAccessibilityManager.captureAndBroadcastLayoutInfo(keyboardLayout)
         }
         keyboardLayout.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
+
+        updateTextState()
 
         // Broadcast keyboard show event
         val intent = Intent(ACTION_KEYBOARD_SHOW)
@@ -87,11 +116,73 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
     }
 
     /**
+     * This method is called when the text selection changes.
+     */
+    override fun onUpdateSelection(
+        oldSelStart: Int,
+        oldSelEnd: Int,
+        newSelStart: Int,
+        newSelEnd: Int,
+        candidatesStart: Int,
+        candidatesEnd: Int
+    ) {
+        super.onUpdateSelection(
+            oldSelStart,
+            oldSelEnd,
+            newSelStart,
+            newSelEnd,
+            candidatesStart,
+            candidatesEnd
+        )
+
+        updateTextState()
+    }
+
+    /**
+     * This method is called when the text changes.
+     */
+    private fun updateTextState() {
+        val text =
+            currentInputConnection.getTextBeforeCursor(100, 0)
+        predictionManager.predict(text.toString())
+
+        // Parse the text
+        textParser.parseText(text.toString())
+    }
+
+    /**
+     * This method is called when the predictions are available.
+     */
+    override fun onPredictionsAvailable(predictions: List<String>) {
+        currentPredictions = predictions
+        predictionView.setPredictions(predictions)
+        updatePredictionsCase()
+        println("Predictions available: $predictions")
+    }
+
+    /**
+     * This method updates the case of the predictions.
+     */
+    private fun updatePredictionsCase() {
+        currentPredictions = currentPredictions.map { prediction ->
+            when (KeyboardLayoutManager.currentLayoutState) {
+                KeyboardLayoutState.Lower -> prediction.lowercase(Locale.ROOT)
+                KeyboardLayoutState.Shift -> prediction.replaceFirstChar { it.titlecase(Locale.ROOT) }
+                else -> prediction.uppercase(Locale.ROOT)
+            }
+        }
+        predictionView.setPredictions(currentPredictions)
+    }
+
+    /**
      * This method initializes the keyboard layout.
      * It creates a new row layout for each row in the current layout,
      * and a new key button for each key type in the row.
      */
     private fun initializeKeyboardLayout(keyboardLayout: LinearLayout) {
+        // Set up the predictions view
+        keyboardLayout.addView(predictionView)
+
         KeyboardLayoutManager.currentLayout.forEach { row ->
             val rowLayout = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
@@ -167,8 +258,19 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener {
                 currentInputConnection.commitText(text, 1)
             }
 
+            is KeyType.Prediction -> {
+                val text = keyType.prediction
+                val currentWordLength =
+                    textParser.getWordFromLatestSentenceBySubtractingNumberFromLastIndex(0).length
+                currentInputConnection.deleteSurroundingText(currentWordLength, 0)
+                currentInputConnection.commitText(text, 1)
+                currentInputConnection.commitText(" ", 1)
+                KeyboardLayoutManager.updateStateAfterInput()
+            }
+
             KeyType.ShiftCaps -> {
                 KeyboardLayoutManager.toggleState()
+                updatePredictionsCase()
             }
 
             KeyType.SwitchToAlphabetic -> {
