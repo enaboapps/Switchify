@@ -142,12 +142,11 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
      * This method is called when the text changes.
      */
     private fun updateTextState() {
-        val text =
-            currentInputConnection.getTextBeforeCursor(100, 0)
-        predictionManager.predict(text.toString())
-
-        // Parse the text
-        textParser.parseText(text.toString())
+        currentInputConnection?.let {
+            val text = it.getTextBeforeCursor(100, 0).toString()
+            textParser.parseText(text)
+            predictionManager.predict(text)
+        }
     }
 
     /**
