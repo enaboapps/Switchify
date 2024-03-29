@@ -273,7 +273,13 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             }
 
             KeyType.SwitchToAlphabetic -> {
-                KeyboardLayoutManager.switchLayout(KeyboardLayoutType.AlphabeticLower)
+                if (KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Shift ||
+                    KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Caps
+                ) {
+                    KeyboardLayoutManager.switchLayout(KeyboardLayoutType.AlphabeticUpper)
+                } else {
+                    KeyboardLayoutManager.switchLayout(KeyboardLayoutType.AlphabeticLower)
+                }
             }
 
             KeyType.Space -> {
