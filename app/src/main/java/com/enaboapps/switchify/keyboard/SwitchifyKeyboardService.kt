@@ -93,6 +93,8 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         }
         keyboardLayout.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
 
+        updateTextState()
+
         // Broadcast keyboard show event
         val intent = Intent(ACTION_KEYBOARD_SHOW)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
@@ -113,7 +115,7 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
     }
 
     /**
-     * This method is called when the text changes.
+     * This method is called when the text selection changes.
      */
     override fun onUpdateSelection(
         oldSelStart: Int,
@@ -131,8 +133,14 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             candidatesStart,
             candidatesEnd
         )
-        // Update the prediction when the text changes
-        println("Text changed")
+
+        updateTextState()
+    }
+
+    /**
+     * This method is called when the text changes.
+     */
+    private fun updateTextState() {
         val text =
             currentInputConnection.getTextBeforeCursor(100, 0)
         predictionManager.predict(text.toString())
