@@ -13,6 +13,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.keyboard.prediction.PredictionListener
 import com.enaboapps.switchify.keyboard.prediction.PredictionManager
+import com.enaboapps.switchify.keyboard.prediction.PredictionView
 
 /**
  * This class is responsible for managing the keyboard service.
@@ -31,6 +32,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
     // The prediction manager
     private lateinit var predictionManager: PredictionManager
+
+    // The prediction view
+    private lateinit var predictionView: PredictionView
 
     // The current predictions
     private var currentPredictions: List<String> = emptyList()
@@ -58,12 +62,17 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         // Set the layout listener
         KeyboardLayoutManager.listener = this
 
-        // Initialize the keyboard layout
-        initializeKeyboardLayout(keyboardLayout)
-
         // Initialize the prediction manager
         predictionManager = PredictionManager(this, this)
         predictionManager.initialize()
+
+        // Initialize the prediction view
+        predictionView = PredictionView(this) { prediction ->
+            handleKeyPress(prediction)
+        }
+
+        // Initialize the keyboard layout
+        initializeKeyboardLayout(keyboardLayout)
 
         return keyboardLayout
     }
@@ -130,6 +139,7 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
      */
     override fun onPredictionsAvailable(predictions: List<String>) {
         currentPredictions = predictions
+        predictionView.setPredictions(predictions)
         println("Predictions available: $predictions")
     }
 
@@ -139,29 +149,8 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
      * and a new key button for each key type in the row.
      */
     private fun initializeKeyboardLayout(keyboardLayout: LinearLayout) {
-        // Set up the predictions row
-        val predictionsRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-        }
-
-        currentPredictions.forEach { prediction ->
-            val predictionButton = KeyboardKey(this).apply {
-                layoutParams =
-                    LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                setKeyContent(text = prediction)
-                action = {
-                    handleKeyPress(KeyType.Prediction(prediction))
-                }
-            }
-            predictionsRow.addView(predictionButton)
-        }
-
-        keyboardLayout.addView(predictionsRow)
-
+        // Set up the predictions view
+        keyboardLayout.addView(predictionView)
 
         KeyboardLayoutManager.currentLayout.forEach { row ->
             val rowLayout = LinearLayout(this).apply {
