@@ -15,6 +15,7 @@ import com.enaboapps.switchify.keyboard.prediction.PredictionListener
 import com.enaboapps.switchify.keyboard.prediction.PredictionManager
 import com.enaboapps.switchify.keyboard.prediction.PredictionView
 import com.enaboapps.switchify.keyboard.utils.TextParser
+import java.util.Locale
 
 /**
  * This class is responsible for managing the keyboard service.
@@ -155,7 +156,22 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
     override fun onPredictionsAvailable(predictions: List<String>) {
         currentPredictions = predictions
         predictionView.setPredictions(predictions)
+        updatePredictionsCase()
         println("Predictions available: $predictions")
+    }
+
+    /**
+     * This method updates the case of the predictions.
+     */
+    private fun updatePredictionsCase() {
+        currentPredictions = currentPredictions.map { prediction ->
+            when (KeyboardLayoutManager.currentLayoutState) {
+                KeyboardLayoutState.Lower -> prediction.lowercase(Locale.ROOT)
+                KeyboardLayoutState.Shift -> prediction.replaceFirstChar { it.titlecase(Locale.ROOT) }
+                else -> prediction.uppercase(Locale.ROOT)
+            }
+        }
+        predictionView.setPredictions(currentPredictions)
     }
 
     /**
@@ -254,6 +270,7 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
             KeyType.ShiftCaps -> {
                 KeyboardLayoutManager.toggleState()
+                updatePredictionsCase()
             }
 
             KeyType.SwitchToAlphabetic -> {
