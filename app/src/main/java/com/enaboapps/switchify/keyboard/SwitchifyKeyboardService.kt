@@ -9,6 +9,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.ViewTreeObserver
 import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
+import androidx.core.content.res.ResourcesCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.keyboard.prediction.PredictionListener
@@ -58,7 +59,8 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         keyboardLayout = LinearLayout(this).apply {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             orientation = LinearLayout.VERTICAL
-            background = resources.getDrawable(R.drawable.keyboard_background, null)
+            background =
+                ResourcesCompat.getDrawable(resources, R.drawable.keyboard_background, null)
         }
 
         // Initialize the keyboard accessibility manager
@@ -223,18 +225,18 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
      */
     private fun getDrawableResource(keyType: KeyType): Drawable? {
         if (keyType is KeyType.Backspace) {
-            return resources.getDrawable(R.drawable.ic_backspace, null)
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_backspace, null)
         }
         if (keyType is KeyType.Return) {
-            return resources.getDrawable(R.drawable.ic_return, null)
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_return, null)
         }
         if (keyType is KeyType.ShiftCaps) {
             return if (KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Lower ||
                 KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Shift
             ) {
-                resources.getDrawable(R.drawable.ic_shift, null)
+                ResourcesCompat.getDrawable(resources, R.drawable.ic_shift, null)
             } else {
-                resources.getDrawable(R.drawable.ic_caps, null)
+                ResourcesCompat.getDrawable(resources, R.drawable.ic_caps, null)
             }
         }
         return null
