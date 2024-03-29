@@ -92,7 +92,13 @@ object KeyboardLayoutManager {
             KeyType.Character("m"),
             KeyType.Backspace
         ),
-        listOf(KeyType.SwitchToSymbols, KeyType.Space, KeyType.Return)
+        listOf(
+            KeyType.SwitchToSymbols,
+            KeyType.Space,
+            KeyType.Special("."),
+            KeyType.Special(","),
+            KeyType.Return
+        )
     )
 
     private val alphabeticUpperLayout = alphabeticLowerLayout.map { row ->
@@ -130,7 +136,8 @@ object KeyboardLayoutManager {
             KeyType.Special(")")
         ),
         listOf(
-            KeyType.ShiftCaps,
+            KeyType.Special("."),
+            KeyType.Special(","),
             KeyType.Special("!"),
             KeyType.Special("\""),
             KeyType.Special("'"),
