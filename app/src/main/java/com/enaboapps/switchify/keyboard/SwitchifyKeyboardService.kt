@@ -14,6 +14,7 @@ import com.enaboapps.switchify.R
 import com.enaboapps.switchify.keyboard.prediction.PredictionListener
 import com.enaboapps.switchify.keyboard.prediction.PredictionManager
 import com.enaboapps.switchify.keyboard.prediction.PredictionView
+import com.enaboapps.switchify.keyboard.utils.TextParser
 
 /**
  * This class is responsible for managing the keyboard service.
@@ -38,6 +39,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
     // The current predictions
     private var currentPredictions: List<String> = emptyList()
+
+    // The text parser
+    private val textParser = TextParser.getInstance()
 
     companion object {
         const val ACTION_KEYBOARD_SHOW = "com.enaboapps.switchify.keyboard.ACTION_KEYBOARD_SHOW"
@@ -132,6 +136,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         val text =
             currentInputConnection.getTextBeforeCursor(100, 0)
         predictionManager.predict(text.toString())
+
+        // Parse the text
+        textParser.parseText(text.toString())
     }
 
     /**
@@ -229,7 +236,11 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
             is KeyType.Prediction -> {
                 val text = keyType.prediction
-                currentInputConnection.commitText("$text ", 1)
+                val currentWordLength =
+                    textParser.getWordFromLatestSentenceBySubtractingNumberFromLastIndex(0).length
+                currentInputConnection.deleteSurroundingText(currentWordLength, 0)
+                currentInputConnection.commitText(text, 1)
+                currentInputConnection.commitText(" ", 1)
                 KeyboardLayoutManager.updateStateAfterInput()
             }
 
