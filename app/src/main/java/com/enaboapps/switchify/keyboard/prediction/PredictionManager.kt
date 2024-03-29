@@ -51,10 +51,10 @@ class PredictionManager(private val context: Context, private val listener: Pred
             if (result.isSuccess) {
                 val predictions = result.getOrNull()
                 if (predictions != null) {
-                    for (prediction in predictions) {
-                        println(prediction.label)
-                    }
-                    listener.onPredictionsAvailable(predictions.map { it.label })
+                    // Prevent duplicate predictions
+                    val uniquePredictions = predictions.distinctBy { it.label }
+                    println("Unique predictions: ${uniquePredictions.map { it.label }}")
+                    listener.onPredictionsAvailable(uniquePredictions.map { it.label })
                 }
             } else {
                 println("Error: ${result.exceptionOrNull()}")
@@ -70,10 +70,10 @@ class PredictionManager(private val context: Context, private val listener: Pred
             if (result.isSuccess) {
                 val predictions = result.getOrNull()
                 if (predictions != null) {
-                    for (prediction in predictions) {
-                        println(prediction.label)
-                    }
-                    listener.onPredictionsAvailable(predictions.map { it.label })
+                    // Prevent duplicate predictions
+                    val uniquePredictions = predictions.distinctBy { it.label }
+                    println("Unique predictions: ${uniquePredictions.map { it.label }}")
+                    listener.onPredictionsAvailable(uniquePredictions.map { it.label })
                 }
             } else {
                 println("Error: ${result.exceptionOrNull()}")
