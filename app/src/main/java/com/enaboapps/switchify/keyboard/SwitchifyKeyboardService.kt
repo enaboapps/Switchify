@@ -167,7 +167,7 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
     private fun updatePredictionsCase() {
         currentPredictions = currentPredictions.map { prediction ->
             when (KeyboardLayoutManager.currentLayoutState) {
-                KeyboardLayoutState.Lower -> prediction.lowercase(Locale.ROOT)
+                KeyboardLayoutState.Lower -> prediction
                 KeyboardLayoutState.Shift -> prediction.replaceFirstChar { it.titlecase(Locale.ROOT) }
                 else -> prediction.uppercase(Locale.ROOT)
             }
