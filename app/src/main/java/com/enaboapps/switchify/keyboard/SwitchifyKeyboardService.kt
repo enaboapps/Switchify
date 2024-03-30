@@ -148,6 +148,7 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             val text = it.getTextBeforeCursor(100, 0).toString()
             textParser.parseText(text)
             predictionManager.predict(text)
+            updateShiftState()
         }
     }
 
@@ -239,6 +240,16 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             }
         }
         return null
+    }
+
+    /**
+     * This method updates the shift state of the keyboard based on the current text.
+     */
+    private fun updateShiftState() {
+        val isNewSentence = textParser.isNewSentence()
+        if (KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Lower && isNewSentence) {
+            KeyboardLayoutManager.toggleState()
+        }
     }
 
     /**
