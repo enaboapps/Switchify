@@ -193,13 +193,12 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                 )
             }
 
-            val buttonLayoutParams =
-                LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            // The third parameter (weight) ensures each button takes equal space within its row.
-
             row.forEach { type ->
                 val keyButton = KeyboardKey(this).apply {
-                    layoutParams = buttonLayoutParams
+                    // Set a higher weight for the space key
+                    val weight = if (type is KeyType.Space) 3f else 1f
+                    layoutParams =
+                        LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, weight)
                     action = { handleKeyPress(type) }
                     if (getDrawableResource(type) != null) {
                         setKeyContent(drawable = getDrawableResource(type))
