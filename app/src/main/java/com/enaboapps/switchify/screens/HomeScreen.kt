@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.auth.AuthManager
+import com.enaboapps.switchify.keyboard.utils.KeyboardUtils
 import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.utils.ServiceUtils
@@ -29,6 +30,7 @@ import com.enaboapps.switchify.widgets.UICard
 fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = ServiceUtils()) {
     val context = LocalContext.current
     val isAccessibilityServiceEnabled = serviceUtils.isAccessibilityServiceEnabled(context)
+    val isSwitchifyKeyboardEnabled = KeyboardUtils.isSwitchifyKeyboardEnabled(context)
     val isSetupComplete = PreferenceManager(context).isSetupComplete()
 
     LaunchedEffect(isSetupComplete) {
@@ -77,6 +79,16 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
                         title = "Accessibility Service",
                         description = "Tap here to enable the accessibility service.",
                         onClick = { navController.navigate(NavigationRoute.EnableAccessibilityService.name) }
+                    )
+                }
+            }
+
+            if (!isSwitchifyKeyboardEnabled) {
+                item {
+                    UICard(
+                        title = "Switchify Keyboard",
+                        description = "Tap here to enable the Switchify keyboard.",
+                        onClick = { navController.navigate(NavigationRoute.EnableSwitchifyKeyboard.name) }
                     )
                 }
             }
