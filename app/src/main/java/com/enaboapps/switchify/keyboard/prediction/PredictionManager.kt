@@ -5,6 +5,7 @@ import co.thingthing.fleksy.lib.api.FleksyLib
 import co.thingthing.fleksy.lib.api.LibraryConfiguration
 import co.thingthing.fleksy.lib.model.LanguageFile
 import co.thingthing.fleksy.lib.model.TypingContext
+import com.enaboapps.switchify.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,8 +27,8 @@ class PredictionManager(private val context: Context, private val listener: Pred
         get() = Dispatchers.Main + predictionJob
 
     fun initialize() {
-        val apiKey = "68e0cd20-363e-4668-b52f-80c60757e9bf"
-        val secret = "fa9473585679692b7e0f3390cbd04820"
+        val apiKey = BuildConfig.FLEKSY_API_KEY
+        val secret = BuildConfig.FLEKSY_API_SECRET
         val licence = LibraryConfiguration.LicenseConfiguration(apiKey, secret)
         val languageFile = LanguageFile.Asset("encrypted/resourceArchive-en-US.jet")
         val config = LibraryConfiguration(licence)
