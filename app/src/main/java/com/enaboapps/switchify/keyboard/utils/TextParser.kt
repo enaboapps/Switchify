@@ -22,15 +22,17 @@ class TextParser private constructor() {
 
     fun getAllText(): String = allText
 
-    fun getLengthOfTextAfterLatestWord(): Int {
+    fun getLengthOfWhitespacesAtEndOfLatestSentence(): Int {
         var index = allText.length - 1
-        var length = 0
-        while (index > 0) {
-            if (isAlphanumeric(allText[index])) return length
-            length++
+        var count = 0
+        while (index >= 0 && allText[index] == ' ') {
+            if (isNewline(allText[index])) {
+                break
+            }
+            count++
             index--
         }
-        return 0
+        return count
     }
 
     fun getWordFromLatestSentenceBySubtractingNumberFromLastIndex(number: Int): String {
@@ -88,6 +90,10 @@ class TextParser private constructor() {
                 index--
             }
         }
+    }
+
+    fun shouldFormatSpecialCharacter(char: Char): Boolean {
+        return char.toString().matches("[.,!?]".toRegex())
     }
 
     private fun isSentenceDelimiter(ch: Char): Boolean = ch.toString().matches("[.!?]".toRegex())

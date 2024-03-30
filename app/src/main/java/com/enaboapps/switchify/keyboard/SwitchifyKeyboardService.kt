@@ -266,7 +266,15 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
             is KeyType.Special -> {
                 val text = keyType.symbol
-                currentInputConnection.commitText(text, 1)
+                if (textParser.shouldFormatSpecialCharacter(text[0])) {
+                    val whitespace = textParser.getLengthOfWhitespacesAtEndOfLatestSentence()
+                    currentInputConnection.deleteSurroundingText(whitespace, 0)
+                    currentInputConnection.commitText(text, 1)
+                    currentInputConnection.commitText(" ", 1)
+                } else {
+                    currentInputConnection.commitText(text, 1)
+                }
+                KeyboardLayoutManager.updateStateAfterInput()
             }
 
             is KeyType.Prediction -> {
