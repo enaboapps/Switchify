@@ -62,8 +62,10 @@ class KeyboardKey @JvmOverloads constructor(
     }
 
     private fun getHeightInDp(): Int {
-        val density = resources.displayMetrics.density
-        return (150 / density).toInt()
+        val displayMetrics = resources.displayMetrics
+        val screenHeight = displayMetrics.heightPixels
+        val percentage = 0.08 // 8% of the screen height
+        return (screenHeight * percentage).toInt()
     }
 
     fun setPinned(pinned: Boolean) {
