@@ -33,7 +33,7 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
     private var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
 
     // The prediction manager
-    private lateinit var predictionManager: PredictionManager
+    private var predictionManager: PredictionManager? = null
 
     // The prediction view
     private lateinit var predictionView: PredictionView
@@ -44,6 +44,24 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
     companion object {
         const val ACTION_KEYBOARD_SHOW = "com.enaboapps.switchify.keyboard.ACTION_KEYBOARD_SHOW"
         const val ACTION_KEYBOARD_HIDE = "com.enaboapps.switchify.keyboard.ACTION_KEYBOARD_HIDE"
+    }
+
+    /**
+     * This method is called when the service is created.
+     * It initializes the keyboard accessibility manager and the prediction manager.
+     */
+    override fun onCreate() {
+        super.onCreate()
+
+        // Initialize the keyboard accessibility manager
+        keyboardAccessibilityManager = KeyboardAccessibilityManager(this)
+
+        // Set the layout listener
+        KeyboardLayoutManager.listener = this
+
+        // Initialize the prediction manager
+        predictionManager = PredictionManager(this, this)
+        predictionManager?.initialize()
     }
 
     /**
@@ -58,16 +76,6 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             background =
                 ResourcesCompat.getDrawable(resources, R.drawable.keyboard_background, null)
         }
-
-        // Initialize the keyboard accessibility manager
-        keyboardAccessibilityManager = KeyboardAccessibilityManager(this)
-
-        // Set the layout listener
-        KeyboardLayoutManager.listener = this
-
-        // Initialize the prediction manager
-        predictionManager = PredictionManager(this, this)
-        predictionManager.initialize()
 
         // Initialize the prediction view
         predictionView = PredictionView(this) { prediction ->
@@ -143,7 +151,7 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         currentInputConnection?.let {
             val text = it.getTextBeforeCursor(100, 0).toString()
             textParser.parseText(text)
-            predictionManager.predict(text)
+            predictionManager?.predict(text)
             updateShiftState()
         }
     }
