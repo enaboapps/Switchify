@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import androidx.core.content.res.ResourcesCompat
 import com.enaboapps.switchify.R
 
 class KeyboardKey @JvmOverloads constructor(
@@ -37,10 +38,11 @@ class KeyboardKey @JvmOverloads constructor(
             setOnClickListener { action?.invoke() }
             layoutParams = LayoutParams(
                 LayoutParams.MATCH_PARENT,
-                225
+                getHeightInDp()
             )
             setTextColor(Color.WHITE)
-            background = context.getDrawable(R.drawable.keyboard_key_background)
+            background =
+                ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background, null)
         }
         addView(button)
     }
@@ -51,18 +53,24 @@ class KeyboardKey @JvmOverloads constructor(
             setOnClickListener { action?.invoke() }
             layoutParams = LayoutParams(
                 LayoutParams.MATCH_PARENT,
-                225
+                getHeightInDp()
             )
-            background = context.getDrawable(R.drawable.keyboard_key_background)
+            background =
+                ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background, null)
         }
         addView(imageButton)
     }
 
+    private fun getHeightInDp(): Int {
+        val density = resources.displayMetrics.density
+        return (150 / density).toInt()
+    }
+
     fun setPinned(pinned: Boolean) {
         val background = if (pinned) {
-            context.getDrawable(R.drawable.keyboard_key_background_pinned)
+            ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background_pinned, null)
         } else {
-            context.getDrawable(R.drawable.keyboard_key_background)
+            ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background, null)
         }
         button?.background = background
         imageButton?.background = background
