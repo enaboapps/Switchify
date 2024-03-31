@@ -90,7 +90,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      */
     fun createXCursorLine(quadrantNumber: Int) {
         val xPosition = quadrantNumber * getQuadrantWidth()
-        val yPosition = CursorBounds.yMin(context)
+        val yPosition = CursorBounds.Y_MIN
         val height = CursorBounds.height(context)
         xCursorLine = RelativeLayout(context).apply {
             setBackgroundColor(CURSOR_LINE_COLOR)
@@ -107,7 +107,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      */
     fun createYCursorLine(quadrantNumber: Int) {
         val xPosition = CursorBounds.X_MIN
-        val yPosition = CursorBounds.yMin(context) + (quadrantNumber * getQuadrantHeight())
+        val yPosition = CursorBounds.Y_MIN + (quadrantNumber * getQuadrantHeight())
         val width = CursorBounds.width(context)
         yCursorLine = RelativeLayout(context).apply {
             setBackgroundColor(CURSOR_LINE_COLOR)
@@ -123,7 +123,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      * Create a horizontal quadrant at the given quadrant number
      */
     fun createXQuadrant(quadrantNumber: Int) {
-        val yPosition = CursorBounds.yMin(context)
+        val yPosition = CursorBounds.Y_MIN
         val height = CursorBounds.height(context)
         val xPosition = quadrantNumber * getQuadrantWidth()
         xQuadrant = RelativeLayout(context).apply {
@@ -143,7 +143,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
     fun createYQuadrant(quadrantNumber: Int) {
         val xPosition = CursorBounds.X_MIN
         val width = CursorBounds.width(context)
-        val yPosition = CursorBounds.yMin(context) + (quadrantNumber * getQuadrantHeight())
+        val yPosition = CursorBounds.Y_MIN + (quadrantNumber * getQuadrantHeight())
         yQuadrant = RelativeLayout(context).apply {
             setBackgroundColor(QUADRANT_COLOR)
             alpha = QUADRANT_ALPHA
@@ -209,7 +209,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
     fun updateXCursorLine(xPosition: Int) {
         xCursorLine?.let {
             handler.post {
-                window.updateViewLayout(it, xPosition, CursorBounds.yMin(context))
+                window.updateViewLayout(it, xPosition, CursorBounds.Y_MIN)
             }
         }
     }
@@ -233,7 +233,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
         val xPosition = quadrantNumber * quadrantWidth
         xQuadrant?.let {
             handler.post {
-                window.updateViewLayout(it, xPosition, CursorBounds.yMin(context))
+                window.updateViewLayout(it, xPosition, CursorBounds.Y_MIN)
             }
         }
     }
@@ -243,7 +243,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      */
     fun updateYQuadrant(quadrantNumber: Int) {
         val quadrantHeight = getQuadrantHeight()
-        val yPosition = CursorBounds.yMin(context) + (quadrantNumber * quadrantHeight)
+        val yPosition = CursorBounds.Y_MIN + (quadrantNumber * quadrantHeight)
         yQuadrant?.let {
             handler.post {
                 window.updateViewLayout(it, 0, yPosition)
