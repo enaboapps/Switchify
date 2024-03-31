@@ -97,7 +97,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * This function sets up the y quadrant
      */
     private fun setupYQuadrant() {
-        GesturePoint.y = CursorBounds.yMin(context)
+        GesturePoint.y = CursorBounds.Y_MIN
         cursorUI.createYQuadrant(0)
         setQuadrantInfo(
             0,
@@ -111,7 +111,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      */
     private fun updateYQuadrant(quadrantIndex: Int) {
         GesturePoint.y =
-            CursorBounds.yMin(context) + (quadrantIndex * cursorUI.getQuadrantHeight())
+            CursorBounds.Y_MIN + (quadrantIndex * cursorUI.getQuadrantHeight())
         cursorUI.updateYQuadrant(quadrantIndex)
         setQuadrantInfo(
             quadrantIndex,
