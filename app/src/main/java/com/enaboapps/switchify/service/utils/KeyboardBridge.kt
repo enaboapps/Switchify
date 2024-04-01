@@ -14,7 +14,7 @@ object KeyboardBridge {
     // Track last scan type to go back to it after keyboard is dismissed
     private var lastScanType: String = ScanMethod.getType()
 
-    fun isOurKeyboardActive(context: Context): Boolean {
+    private fun isOurKeyboardActive(context: Context): Boolean {
         val current = Settings.Secure.getString(
             context.contentResolver,
             Settings.Secure.DEFAULT_INPUT_METHOD
@@ -31,6 +31,7 @@ object KeyboardBridge {
                 // Check if our keyboard is active
                 if (isOurKeyboardActive(context)) {
                     // Set scan method to ITEM_SCAN
+                    lastScanType = ScanMethod.getType()
                     ScanMethod.setType(ScanMethod.MethodType.ITEM_SCAN)
                 } else {
                     // Go to cursor as keyboard keys don't report AccessibilityNodeInfo
