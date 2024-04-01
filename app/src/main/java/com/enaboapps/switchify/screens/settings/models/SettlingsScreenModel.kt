@@ -52,12 +52,6 @@ class SettingsScreenModel(context: Context) : ViewModel() {
     }
     val assistedSelection: LiveData<Boolean> = _assistedSelection
 
-    private val _restrictCursorToKeyboard = MutableLiveData<Boolean>().apply {
-        value =
-            preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_RESTRICT_CURSOR_TO_KEYBOARD)
-    }
-    val restrictCursorToKeyboard: LiveData<Boolean> = _restrictCursorToKeyboard
-
     private val _rowColumnScan = MutableLiveData<Boolean>().apply {
         value =
             preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_ROW_COLUMN_SCAN)
@@ -147,16 +141,6 @@ class SettingsScreenModel(context: Context) : ViewModel() {
                 assistedSelection
             )
             _assistedSelection.postValue(assistedSelection)
-        }
-    }
-
-    fun setRestrictCursorToKeyboard(restrictCursorToKeyboard: Boolean) {
-        viewModelScope.launch {
-            preferenceManager.setBooleanValue(
-                PreferenceManager.Keys.PREFERENCE_KEY_RESTRICT_CURSOR_TO_KEYBOARD,
-                restrictCursorToKeyboard
-            )
-            _restrictCursorToKeyboard.postValue(restrictCursorToKeyboard)
         }
     }
 

@@ -69,7 +69,6 @@ fun SettingsScreen(navController: NavController) {
                 route = NavigationRoute.SwitchStability.name
             )
             SelectionSection(settingsScreenModel)
-            CursorSection(settingsScreenModel)
             ItemScanSection(settingsScreenModel)
             PreferenceLink(
                 title = "Switches",
@@ -157,20 +156,6 @@ private fun SelectionSection(screenModel: SettingsScreenModel) {
             checked = screenModel.assistedSelection.value ?: false,
             onCheckedChange = {
                 screenModel.setAssistedSelection(it)
-            }
-        )
-    }
-}
-
-@Composable
-private fun CursorSection(screenModel: SettingsScreenModel) {
-    PreferenceSection(title = "Cursor") {
-        PreferenceSwitch(
-            title = "Restrict cursor to keyboard",
-            summary = "Restrict the cursor to the keyboard area when the keyboard is visible",
-            checked = screenModel.restrictCursorToKeyboard.value ?: false,
-            onCheckedChange = {
-                screenModel.setRestrictCursorToKeyboard(it)
             }
         )
     }
