@@ -42,7 +42,7 @@ class PredictionView : LinearLayout {
         for (prediction in predictions) {
             val predictionKey = KeyboardKey(context).apply {
                 setKeyContent(prediction)
-                action = { onPredictionTapped(KeyType.Prediction(prediction)) }
+                tapAction = { onPredictionTapped(KeyType.Prediction(prediction)) }
                 layoutParams = LayoutParams(0, LayoutParams.MATCH_PARENT, 1f)
             }
             addView(predictionKey)

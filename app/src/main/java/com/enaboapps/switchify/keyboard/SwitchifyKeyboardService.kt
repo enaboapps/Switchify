@@ -189,7 +189,14 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                     val weight = if (type is KeyType.Space) 3f else 1f
                     layoutParams =
                         LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, weight)
-                    action = { handleKeyPress(type) }
+                    tapAction = {
+                        handleKeyPress(type)
+                    }
+                    if (type is KeyType.Backspace) {
+                        holdAction = {
+                            handleKeyPress(type)
+                        }
+                    }
                     if (getDrawableResource(type) != null) {
                         setKeyContent(drawable = getDrawableResource(type))
                     } else {

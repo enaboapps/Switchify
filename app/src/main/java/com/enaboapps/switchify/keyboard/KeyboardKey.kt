@@ -3,7 +3,11 @@ package com.enaboapps.switchify.keyboard
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
+import android.view.MotionEvent
+import android.view.View.OnTouchListener
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -14,10 +18,52 @@ class KeyboardKey @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
-    var action: (() -> Unit)? = null
+    var tapAction: (() -> Unit)? = null
+    var holdAction: (() -> Unit)? = null
 
     private var button: Button? = null
     private var imageButton: ImageButton? = null
+
+    private val handler = Handler(Looper.getMainLooper())
+    private var isHolding = false
+
+    private val repeatUpdateTask = object : Runnable {
+        override fun run() {
+            if (isHolding) {
+                holdAction?.invoke()
+                handler.postDelayed(this, 100) // subsequent repeats every 100ms
+            }
+        }
+    }
+
+    private val onTouchListener = OnTouchListener { view, event ->
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                isHolding = false // Reset the holding flag
+                handler.postDelayed({
+                    if (isHolding) {
+                        holdAction?.invoke() // Trigger initial hold action after delay
+                        handler.postDelayed(repeatUpdateTask, 100) // Start repeating
+                    }
+                }, 400) // Wait for long press threshold
+                isHolding = true
+                return@OnTouchListener true
+            }
+
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                if (isHolding) {
+                    handler.removeCallbacksAndMessages(null)
+                    isHolding = false
+                    if (event.action == MotionEvent.ACTION_UP) {
+                        tapAction?.invoke() // Execute tap action if it was a tap
+                        view.performClick() // Ensure performClick is called for accessibility
+                    }
+                }
+                return@OnTouchListener true
+            }
+        }
+        false
+    }
 
     init {
         orientation = VERTICAL // Or HORIZONTAL, depending on your design
@@ -35,7 +81,7 @@ class KeyboardKey @JvmOverloads constructor(
     private fun addTextView(text: String) {
         button = Button(context).apply {
             setText(text)
-            setOnClickListener { action?.invoke() }
+            setOnTouchListener(onTouchListener)
             layoutParams = LayoutParams(
                 LayoutParams.MATCH_PARENT,
                 getHeightInDp()
@@ -50,7 +96,7 @@ class KeyboardKey @JvmOverloads constructor(
     private fun addImageView(drawable: Drawable) {
         imageButton = ImageButton(context).apply {
             setImageDrawable(drawable)
-            setOnClickListener { action?.invoke() }
+            setOnTouchListener(onTouchListener)
             layoutParams = LayoutParams(
                 LayoutParams.MATCH_PARENT,
                 getHeightInDp()
