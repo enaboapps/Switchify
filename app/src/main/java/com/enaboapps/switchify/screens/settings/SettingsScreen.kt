@@ -59,6 +59,7 @@ fun SettingsScreen(navController: NavController) {
                     route = NavigationRoute.ScanMethod.name
                 )
             }
+            CursorSection(navController)
             if (mode.id == ScanMode.Modes.MODE_AUTO) {
                 TimingSection(settingsScreenModel)
             }
@@ -127,6 +128,18 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
                 settingsScreenModel.setPauseOnFirstItemDelay(it)
             }
         }
+    }
+}
+
+@Composable
+private fun CursorSection(navController: NavController) {
+    PreferenceSection(title = "Cursor") {
+        PreferenceLink(
+            title = "Cursor Mode",
+            summary = "Configure the cursor mode",
+            navController = navController,
+            route = NavigationRoute.CursorMode.name
+        )
     }
 }
 

@@ -46,6 +46,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
             GesturePoint.listener = this
             scanningScheduler = ScanningScheduler(context) { move() }
         }
+
+        CursorMode.init(context)
     }
 
     /**
@@ -185,7 +187,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      */
     private fun startAutoScanIfEnabled() {
         if (scanSettings.isAutoScanMode()) {
-            val rate = if (isInQuadrant) {
+            val rate = if (isInQuadrant || CursorMode.isSingleMode()) {
                 scanSettings.getRefineScanRate()
             } else {
                 scanSettings.getScanRate()
@@ -204,11 +206,11 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     private fun getMaxQuadrantIndex(): Int {
         return when (direction) {
             ScanDirection.LEFT, ScanDirection.RIGHT -> {
-                CursorUI.getNumberOfQuadrantsHorizontally(context) - 1
+                CursorUI.getNumberOfQuadrants(CursorBounds.width(context)) - 1
             }
 
             ScanDirection.UP, ScanDirection.DOWN -> {
-                CursorUI.getNumberOfQuadrantsVertically(context) - 1
+                CursorUI.getNumberOfQuadrants(CursorBounds.height(context)) - 1
             }
         }
     }
@@ -517,7 +519,14 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         stopScanning()
 
         if (isReset()) {
-            setupXQuadrant()
+            if (CursorMode.isBlockMode()) {
+                setupXQuadrant()
+            } else {
+                isInQuadrant = true
+                setQuadrantInfo(0, CursorBounds.X_MIN, CursorBounds.width(context))
+                GesturePoint.x = CursorBounds.X_MIN
+                setupXCursorLine()
+            }
             startAutoScanIfEnabled()
             return
         }
@@ -525,7 +534,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         // We perform the action based on the direction
         when (direction) {
             ScanDirection.LEFT, ScanDirection.RIGHT -> {
-                if (!isInQuadrant) {
+                if (!isInQuadrant && CursorMode.isBlockMode()) {
                     isInQuadrant = true
 
                     direction = ScanDirection.RIGHT
@@ -537,17 +546,26 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
                     }
                 } else {
                     direction = ScanDirection.DOWN
-                    isInQuadrant = false
+                    if (CursorMode.isBlockMode()) {
+                        isInQuadrant = false
 
-                    if (!cursorUI.isYQuadrantVisible()) {
-                        setupYQuadrant()
+                        if (!cursorUI.isYQuadrantVisible()) {
+                            setupYQuadrant()
+                        }
+                    } else {
+                        setQuadrantInfo(0, CursorBounds.Y_MIN, CursorBounds.height(context))
+                        GesturePoint.y = CursorBounds.Y_MIN
+
+                        if (!cursorUI.isYCursorLineVisible()) {
+                            setupYCursorLine()
+                        }
                     }
                 }
                 startAutoScanIfEnabled()
             }
 
             ScanDirection.UP, ScanDirection.DOWN -> {
-                if (!isInQuadrant) {
+                if (!isInQuadrant && CursorMode.isBlockMode()) {
                     isInQuadrant = true
 
                     direction = ScanDirection.DOWN

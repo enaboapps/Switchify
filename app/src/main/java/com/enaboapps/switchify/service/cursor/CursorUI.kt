@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Handler
 import android.widget.RelativeLayout
-import com.enaboapps.switchify.service.utils.KeyboardBridge
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 class CursorUI(private val context: Context, private val handler: Handler) {
@@ -23,47 +22,17 @@ class CursorUI(private val context: Context, private val handler: Handler) {
         private const val QUADRANT_COLOR = Color.BLUE
 
         /**
-         * This function determines the number of quadrants horizontally
-         * It uses the width of the cursor bounds to determine the number of quadrants
-         * Or it uses the keyboard visibility to determine the number of quadrants
-         * @param context The context
-         * @return The number of quadrants horizontally
-         */
-        fun getNumberOfQuadrantsHorizontally(context: Context): Int {
-            return if (KeyboardBridge.isKeyboardVisible) {
-                7 // The average keyboard has 7 columns of keys (each row can differ)
-            } else {
-                val cursorBounds = CursorBounds.width(context)
-                getNumberOfQuadrants(cursorBounds)
-            }
-        }
-
-        /**
-         * This function determines the number of quadrants vertically
-         * It uses the height of the cursor bounds to determine the number of quadrants
-         * Or it uses the keyboard visibility to determine the number of quadrants
-         * @param context The context
-         * @return The number of quadrants vertically
-         */
-        fun getNumberOfQuadrantsVertically(context: Context): Int {
-            return if (KeyboardBridge.isKeyboardVisible) {
-                3 // The average keyboard has 3 rows of keys
-            } else {
-                val cursorBounds = CursorBounds.height(context)
-                getNumberOfQuadrants(cursorBounds)
-            }
-        }
-
-        /**
          * This function determines the number of quadrants
          * It uses the size of the cursor bounds to determine the number of quadrants
          * @param size The size of the cursor bounds
          * @return The number of quadrants
          */
-        private fun getNumberOfQuadrants(size: Int): Int {
+        fun getNumberOfQuadrants(size: Int): Int {
             val minThreshold = 500
             val quarterBounds = size / 4
-            return if (quarterBounds < minThreshold) {
+            return if (CursorMode.isSingleMode()) {
+                1
+            } else if (quarterBounds < minThreshold) {
                 2
             } else {
                 4
@@ -75,14 +44,22 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      * Get the width of a quadrant
      */
     fun getQuadrantWidth(): Int {
-        return CursorBounds.width(context) / getNumberOfQuadrantsHorizontally(context)
+        return if (CursorMode.isBlockMode()) {
+            CursorBounds.width(context) / getNumberOfQuadrants(CursorBounds.width(context))
+        } else {
+            CursorBounds.width(context)
+        }
     }
 
     /**
      * Get the height of a quadrant
      */
     fun getQuadrantHeight(): Int {
-        return CursorBounds.height(context) / getNumberOfQuadrantsVertically(context)
+        return if (CursorMode.isBlockMode()) {
+            CursorBounds.height(context) / getNumberOfQuadrants(CursorBounds.height(context))
+        } else {
+            CursorBounds.height(context)
+        }
     }
 
     /**
