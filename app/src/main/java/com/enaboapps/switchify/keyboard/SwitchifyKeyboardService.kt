@@ -3,6 +3,7 @@ package com.enaboapps.switchify.keyboard
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.inputmethodservice.InputMethodService
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -304,37 +305,44 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             }
 
             KeyType.Return -> {
-                currentInputConnection.sendKeyEvent(
-                    android.view.KeyEvent(
-                        android.view.KeyEvent.ACTION_DOWN,
-                        android.view.KeyEvent.KEYCODE_ENTER
-                    )
-                )
-                currentInputConnection.sendKeyEvent(
-                    android.view.KeyEvent(
-                        android.view.KeyEvent.ACTION_UP,
-                        android.view.KeyEvent.KEYCODE_ENTER
-                    )
-                )
+                handleEnterKey()
             }
 
             KeyType.Backspace -> {
-                currentInputConnection.sendKeyEvent(
-                    android.view.KeyEvent(
-                        android.view.KeyEvent.ACTION_DOWN,
-                        android.view.KeyEvent.KEYCODE_DEL
-                    )
-                )
-                currentInputConnection.sendKeyEvent(
-                    android.view.KeyEvent(
-                        android.view.KeyEvent.ACTION_UP,
-                        android.view.KeyEvent.KEYCODE_DEL
-                    )
-                )
+                currentInputConnection.deleteSurroundingText(1, 0)
             }
 
             KeyType.SwitchToSymbols -> {
                 KeyboardLayoutManager.switchLayout(KeyboardLayoutType.Symbols)
+            }
+        }
+    }
+
+    /**
+     * This method handles the enter key press event.
+     * It performs different actions based on the current input type.
+     */
+    private fun handleEnterKey() {
+        val inputConnection = currentInputConnection
+        val currentEditorInfo = currentInputEditorInfo
+
+        inputConnection?.let { ic ->
+            currentEditorInfo?.let { editorInfo ->
+                when (val actionId = editorInfo.imeOptions and EditorInfo.IME_MASK_ACTION) {
+                    EditorInfo.IME_ACTION_SEARCH,
+                    EditorInfo.IME_ACTION_SEND,
+                    EditorInfo.IME_ACTION_GO,
+                    EditorInfo.IME_ACTION_DONE ->
+                        // Trigger the action.
+                        ic.performEditorAction(actionId)
+
+                    else -> {
+                        // If no specific action is specified, simulate ENTER key events.
+                        // Or you can opt to perform a custom default action here.
+                        ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+                        ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+                    }
+                }
             }
         }
     }
