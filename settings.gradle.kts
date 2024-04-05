@@ -3,9 +3,7 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
-        maven {
-            url = "https://maven.fleksy.com/maven"
-        }
+        maven("https://maven.fleksy.com/maven")
     }
 }
 dependencyResolutionManagement {
@@ -13,10 +11,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url = uri("https://maven.fleksy.com/maven")
-        }
+        maven("https://maven.fleksy.com/maven")
     }
 }
 rootProject.name = "Switchify"
-include ':app'
+include(":app")
