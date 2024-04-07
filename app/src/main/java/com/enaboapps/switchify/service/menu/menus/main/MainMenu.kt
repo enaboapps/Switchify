@@ -43,11 +43,9 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
                 })
             }
 
-            if (!KeyboardBridge.isKeyboardVisible) {
-                menuItems.add(MenuItem(MenuManager.getInstance().getTypeToSwitchTo()) {
-                    MenuManager.getInstance().changeBetweenCursorAndItemScan()
-                })
-            }
+            menuItems.add(MenuItem(MenuManager.getInstance().getTypeToSwitchTo()) {
+                MenuManager.getInstance().changeBetweenCursorAndItemScan()
+            })
 
             return menuItems
         }
