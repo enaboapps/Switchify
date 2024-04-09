@@ -101,6 +101,8 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         }
         keyboardLayout.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
 
+        predictionManager?.reloadLanguage()
+
         updateTextState()
 
         // Broadcast keyboard show event

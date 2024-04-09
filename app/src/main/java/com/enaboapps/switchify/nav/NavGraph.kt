@@ -14,6 +14,7 @@ import com.enaboapps.switchify.screens.account.SignInScreen
 import com.enaboapps.switchify.screens.account.SignUpScreen
 import com.enaboapps.switchify.screens.settings.AboutScreen
 import com.enaboapps.switchify.screens.settings.SettingsScreen
+import com.enaboapps.switchify.screens.settings.prediction.PredictionLanguageScreen
 import com.enaboapps.switchify.screens.settings.scanning.CursorModeSelectionScreen
 import com.enaboapps.switchify.screens.settings.scanning.ScanMethodSelectionScreen
 import com.enaboapps.switchify.screens.settings.scanning.ScanModeSelectionScreen
@@ -49,6 +50,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(NavigationRoute.Settings.name) {
             SettingsScreen(navController)
+        }
+        composable(NavigationRoute.PredictionLanguage.name) {
+            PredictionLanguageScreen(navController)
         }
         composable(NavigationRoute.SwitchStability.name) {
             SwitchStabilityScreen(navController)

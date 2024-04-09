@@ -71,6 +71,7 @@ fun SettingsScreen(navController: NavController) {
             )
             SelectionSection(settingsScreenModel)
             ItemScanSection(settingsScreenModel)
+            KeyboardSection(navController)
             PreferenceLink(
                 title = "Switches",
                 summary = "Configure your switches",
@@ -128,6 +129,18 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
                 settingsScreenModel.setPauseOnFirstItemDelay(it)
             }
         }
+    }
+}
+
+@Composable
+private fun KeyboardSection(navController: NavController) {
+    PreferenceSection(title = "Keyboard") {
+        PreferenceLink(
+            title = "Choose Prediction Language",
+            summary = "Choose the prediction language",
+            navController = navController,
+            route = NavigationRoute.PredictionLanguage.name
+        )
     }
 }
 
