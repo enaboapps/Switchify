@@ -3,7 +3,6 @@ package com.enaboapps.switchify.keyboard.prediction
 import android.content.Context
 import co.thingthing.fleksy.lib.api.FleksyLib
 import co.thingthing.fleksy.lib.api.LibraryConfiguration
-import co.thingthing.fleksy.lib.model.LanguageFile
 import co.thingthing.fleksy.lib.model.TypingContext
 import com.enaboapps.switchify.BuildConfig
 import kotlinx.coroutines.CoroutineScope
@@ -21,6 +20,8 @@ class PredictionManager(private val context: Context, private val listener: Pred
 
     private lateinit var fleksyLib: FleksyLib
 
+    private val predictionLanguageManager = PredictionLanguageManager(context)
+
     private val predictionJob = Job()
 
     override val coroutineContext: CoroutineContext
@@ -30,9 +31,14 @@ class PredictionManager(private val context: Context, private val listener: Pred
         val apiKey = BuildConfig.FLEKSY_API_KEY
         val secret = BuildConfig.FLEKSY_API_SECRET
         val licence = LibraryConfiguration.LicenseConfiguration(apiKey, secret)
-        val languageFile = LanguageFile.Asset("encrypted/resourceArchive-en-US.jet")
+        val languageFile = predictionLanguageManager.getFleksyLanguage()
         val config = LibraryConfiguration(licence)
         fleksyLib = FleksyLib(context.applicationContext, languageFile, config)
+    }
+
+    fun reloadLanguage() {
+        val languageFile = predictionLanguageManager.getFleksyLanguage()
+        fleksyLib.reloadLanguageFile(languageFile)
     }
 
     fun predict(text: String) {
