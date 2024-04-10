@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 object AutoSelectionHandler {
     private var selectAction: (() -> Unit)? = null
     private var autoSelectInProgress = false
+    private var bypassAutoSelect = false
     private var preferenceManager: PreferenceManager? = null
 
     /**
@@ -39,10 +40,25 @@ object AutoSelectionHandler {
     }
 
     /**
+     * Sets the bypass auto-select flag.
+     *
+     * @param bypass True to bypass auto-select
+     */
+    fun setBypassAutoSelect(bypass: Boolean) {
+        bypassAutoSelect = bypass
+    }
+
+    /**
      * Performs the selection action based on the current settings and state.
      */
     fun performSelectionAction() {
         MenuManager.getInstance().scanMethodToRevertTo = ScanMethod.getType()
+
+        // If bypass auto-select is enabled, perform the selection action and return
+        if (bypassAutoSelect) {
+            selectAction?.invoke()
+            return
+        }
 
         // If auto-select is in progress, cancel it and open the main menu
         if (autoSelectInProgress) {
