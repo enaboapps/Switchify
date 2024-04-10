@@ -25,6 +25,10 @@ sealed class KeyType {
         override fun toString() = "⇧"
     }
 
+    object HideKeyboard : KeyType() {
+        override fun toString() = "⌨"
+    }
+
     data class Special(val symbol: String) : KeyType() {
         override fun toString() = symbol
     }
@@ -97,7 +101,8 @@ object KeyboardLayoutManager {
             KeyType.Space,
             KeyType.Special("."),
             KeyType.Special(","),
-            KeyType.Return
+            KeyType.Return,
+            KeyType.HideKeyboard
         )
     )
 
@@ -147,7 +152,12 @@ object KeyboardLayoutManager {
             KeyType.Special("?"),
             KeyType.Backspace
         ),
-        listOf(KeyType.SwitchToAlphabetic, KeyType.Space, KeyType.Return)
+        listOf(
+            KeyType.SwitchToAlphabetic,
+            KeyType.Space,
+            KeyType.Return,
+            KeyType.HideKeyboard
+        )
     )
 
     private val layouts = mapOf(
