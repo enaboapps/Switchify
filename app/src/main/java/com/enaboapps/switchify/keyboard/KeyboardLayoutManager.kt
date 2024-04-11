@@ -191,7 +191,7 @@ object KeyboardLayoutManager {
     }
 
     fun updateStateAfterInput() {
-        if (currentLayoutState == KeyboardLayoutState.Shift) {
+        if (currentLayoutState == KeyboardLayoutState.Shift && currentLayoutType == KeyboardLayoutType.AlphabeticUpper) {
             currentLayoutState = KeyboardLayoutState.Lower
             switchLayout(KeyboardLayoutType.AlphabeticLower)
         }
