@@ -35,6 +35,19 @@ class TextParser private constructor() {
         return count
     }
 
+    fun getLengthOfWordToDelete(): Int {
+        var index = allText.length - 1
+        // first we need to get the count of whitespaces at the end of the latest sentence
+        var count = getLengthOfWhitespacesAtEndOfLatestSentence()
+        index -= count
+        // next we need to delete the count of characters until we reach a whitespace
+        while (index >= 0 && allText[index] != ' ') {
+            count++
+            index--
+        }
+        return count
+    }
+
     fun getWordFromLatestSentenceBySubtractingNumberFromLastIndex(number: Int): String {
         return if (wordsInLatestSentence.size > number && !newSentence) {
             wordsInLatestSentence[wordsInLatestSentence.size - number - 1]
