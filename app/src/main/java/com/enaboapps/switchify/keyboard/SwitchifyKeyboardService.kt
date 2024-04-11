@@ -226,6 +226,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         if (keyType is KeyType.Backspace) {
             return ResourcesCompat.getDrawable(resources, R.drawable.ic_backspace, null)
         }
+        if (keyType is KeyType.DeleteWord) {
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_deleteword, null)
+        }
         if (keyType is KeyType.Return) {
             return ResourcesCompat.getDrawable(resources, R.drawable.ic_return, null)
         }
@@ -319,6 +322,11 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
             KeyType.Backspace -> {
                 currentInputConnection.deleteSurroundingText(1, 0)
+            }
+
+            KeyType.DeleteWord -> {
+                val count = textParser.getLengthOfWordToDelete()
+                currentInputConnection.deleteSurroundingText(count, 0)
             }
 
             KeyType.SwitchToSymbols -> {

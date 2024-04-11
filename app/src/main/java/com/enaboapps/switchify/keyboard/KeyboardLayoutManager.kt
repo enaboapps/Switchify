@@ -13,6 +13,10 @@ sealed class KeyType {
         override fun toString() = "⌫"
     }
 
+    object DeleteWord : KeyType() {
+        override fun toString() = "⌦"
+    }
+
     object Space : KeyType() {
         override fun toString() = " "
     }
@@ -94,6 +98,7 @@ object KeyboardLayoutManager {
             KeyType.Character("b"),
             KeyType.Character("n"),
             KeyType.Character("m"),
+            KeyType.DeleteWord,
             KeyType.Backspace
         ),
         listOf(
@@ -150,6 +155,7 @@ object KeyboardLayoutManager {
             KeyType.Special(";"),
             KeyType.Special("/"),
             KeyType.Special("?"),
+            KeyType.DeleteWord,
             KeyType.Backspace
         ),
         listOf(
