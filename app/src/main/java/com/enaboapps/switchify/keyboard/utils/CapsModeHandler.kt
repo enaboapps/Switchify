@@ -32,5 +32,6 @@ object CapsModeHandler {
             editorInfo.inputType and EditorInfo.TYPE_TEXT_FLAG_CAP_CHARACTERS != 0 -> CapsMode.CHARACTERS
             else -> CapsMode.NONE
         }
+        println("Caps mode updated to: $currentCapsMode")
     }
 }
