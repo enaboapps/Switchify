@@ -63,7 +63,7 @@ class TextParser private constructor() {
     fun isNewSentence(): Boolean = newSentence
 
     fun isNewWord(): Boolean {
-        if (allText.isEmpty()) return false
+        if (allText.isEmpty()) return true
         return allText[allText.length - 1] == ' '
     }
 

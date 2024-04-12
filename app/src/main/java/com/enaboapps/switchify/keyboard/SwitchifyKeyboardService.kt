@@ -104,11 +104,11 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
         predictionManager?.reloadLanguage()
 
-        updateTextState()
-
         info?.let {
             CapsModeHandler.updateCapsMode(it)
         }
+
+        updateTextState()
 
         // Broadcast keyboard show event
         val intent = Intent(ACTION_KEYBOARD_SHOW)
@@ -259,9 +259,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         val isNewSentence = textParser.isNewSentence()
         val isNewWord = textParser.isNewWord()
         val mode = CapsModeHandler.currentCapsMode
-        if (isNewSentence || mode == CapsModeHandler.CapsMode.SENTENCES) {
+        if (isNewSentence && mode == CapsModeHandler.CapsMode.SENTENCES) {
             KeyboardLayoutManager.setLayoutState(KeyboardLayoutState.Shift)
-        } else if (isNewWord || mode == CapsModeHandler.CapsMode.WORDS) {
+        } else if (isNewWord && mode == CapsModeHandler.CapsMode.WORDS) {
             KeyboardLayoutManager.setLayoutState(KeyboardLayoutState.Shift)
         } else if (mode == CapsModeHandler.CapsMode.CHARACTERS) {
             KeyboardLayoutManager.setLayoutState(KeyboardLayoutState.Caps)
