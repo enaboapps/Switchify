@@ -16,6 +16,7 @@ import com.enaboapps.switchify.R
 import com.enaboapps.switchify.keyboard.prediction.PredictionListener
 import com.enaboapps.switchify.keyboard.prediction.PredictionManager
 import com.enaboapps.switchify.keyboard.prediction.PredictionView
+import com.enaboapps.switchify.keyboard.utils.CapsModeHandler
 import com.enaboapps.switchify.keyboard.utils.TextParser
 
 /**
@@ -104,6 +105,10 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         predictionManager?.reloadLanguage()
 
         updateTextState()
+
+        info?.let {
+            CapsModeHandler.updateCapsMode(it)
+        }
 
         // Broadcast keyboard show event
         val intent = Intent(ACTION_KEYBOARD_SHOW)
@@ -252,8 +257,16 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
      */
     private fun updateShiftState() {
         val isNewSentence = textParser.isNewSentence()
-        if (KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Lower && isNewSentence) {
-            KeyboardLayoutManager.toggleState()
+        val isNewWord = textParser.isNewWord()
+        val mode = CapsModeHandler.currentCapsMode
+        if (isNewSentence || mode == CapsModeHandler.CapsMode.SENTENCES) {
+            KeyboardLayoutManager.setLayoutState(KeyboardLayoutState.Shift)
+        } else if (isNewWord || mode == CapsModeHandler.CapsMode.WORDS) {
+            KeyboardLayoutManager.setLayoutState(KeyboardLayoutState.Shift)
+        } else if (mode == CapsModeHandler.CapsMode.CHARACTERS) {
+            KeyboardLayoutManager.setLayoutState(KeyboardLayoutState.Caps)
+        } else {
+            KeyboardLayoutManager.setLayoutState(KeyboardLayoutState.Lower)
         }
     }
 

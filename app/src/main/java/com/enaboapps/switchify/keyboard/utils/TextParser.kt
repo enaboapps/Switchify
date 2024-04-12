@@ -62,6 +62,11 @@ class TextParser private constructor() {
 
     fun isNewSentence(): Boolean = newSentence
 
+    fun isNewWord(): Boolean {
+        if (allText.isEmpty()) return false
+        return allText[allText.length - 1] == ' '
+    }
+
     fun parseText(text: String) {
         Log.d(TAG, "parseText with $text")
 
