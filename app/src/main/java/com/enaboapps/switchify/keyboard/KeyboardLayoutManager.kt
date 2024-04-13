@@ -192,14 +192,9 @@ object KeyboardLayoutManager {
 
     fun setLayoutState(state: KeyboardLayoutState) {
         currentLayoutState = state
-        switchLayout(if (currentLayoutState == KeyboardLayoutState.Lower) KeyboardLayoutType.AlphabeticLower else KeyboardLayoutType.AlphabeticUpper)
-        listener?.onLayoutChanged(currentLayoutType)
-    }
-
-    fun updateStateAfterInput() {
-        if (currentLayoutState == KeyboardLayoutState.Shift && currentLayoutType == KeyboardLayoutType.AlphabeticUpper) {
-            currentLayoutState = KeyboardLayoutState.Lower
-            switchLayout(KeyboardLayoutType.AlphabeticLower)
+        if (currentLayoutType == KeyboardLayoutType.AlphabeticLower || currentLayoutType == KeyboardLayoutType.AlphabeticUpper) {
+            switchLayout(if (currentLayoutState == KeyboardLayoutState.Lower) KeyboardLayoutType.AlphabeticLower else KeyboardLayoutType.AlphabeticUpper)
         }
+        listener?.onLayoutChanged(currentLayoutType)
     }
 }
