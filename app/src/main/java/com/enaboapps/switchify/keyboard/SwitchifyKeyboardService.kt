@@ -279,7 +279,6 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             is KeyType.Character -> {
                 val text = keyType.char
                 currentInputConnection.commitText(text, 1)
-                KeyboardLayoutManager.updateStateAfterInput()
             }
 
             is KeyType.Special -> {
@@ -292,7 +291,6 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                 } else {
                     currentInputConnection.commitText(text, 1)
                 }
-                KeyboardLayoutManager.updateStateAfterInput()
             }
 
             is KeyType.Prediction -> {
@@ -302,7 +300,6 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                 currentInputConnection.deleteSurroundingText(currentWordLength, 0)
                 currentInputConnection.commitText(text, 1)
                 currentInputConnection.commitText(" ", 1)
-                KeyboardLayoutManager.updateStateAfterInput()
             }
 
             KeyType.ShiftCaps -> {
@@ -326,7 +323,6 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
             KeyType.Space -> {
                 currentInputConnection.commitText(" ", 1)
-                KeyboardLayoutManager.updateStateAfterInput()
             }
 
             KeyType.Return -> {
