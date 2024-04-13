@@ -5,6 +5,7 @@ import co.thingthing.fleksy.lib.api.FleksyLib
 import co.thingthing.fleksy.lib.api.LibraryConfiguration
 import co.thingthing.fleksy.lib.model.TypingContext
 import com.enaboapps.switchify.BuildConfig
+import com.enaboapps.switchify.keyboard.utils.TextParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,7 +42,13 @@ class PredictionManager(private val context: Context, private val listener: Pred
         fleksyLib.reloadLanguageFile(languageFile)
     }
 
-    fun predict(text: String) {
+    fun predict(text: String, textParser: TextParser) {
+        // If the latest word has a number, don't get predictions
+        if (textParser.latestWordHasNumber()) {
+            listener.onPredictionsAvailable(emptyList())
+            return
+        }
+
         // If the last character is a space, get predictions for the next word
         if (text.isNotEmpty() && text.last() == ' ') {
             getPredictionsForNextWord(text)

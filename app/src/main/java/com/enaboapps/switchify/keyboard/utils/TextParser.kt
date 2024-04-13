@@ -60,6 +60,12 @@ class TextParser private constructor() {
         } else ""
     }
 
+    fun latestWordHasNumber(): Boolean {
+        return wordsInLatestSentence.isNotEmpty() && wordsInLatestSentence[wordsInLatestSentence.size - 1].matches(
+            ".*\\d.*".toRegex()
+        )
+    }
+
     fun isNewSentence(): Boolean = newSentence
 
     fun isNewWord(): Boolean {
