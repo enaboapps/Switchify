@@ -5,7 +5,9 @@ import android.view.Gravity
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 
 /**
@@ -68,7 +70,11 @@ class MenuItem(
             imageView = ImageView(linearLayout.context)
             // get the drawable in white
             val wrappedDrawable = DrawableCompat.wrap(
-                linearLayout.context.resources.getDrawable(drawableId, null)
+                ResourcesCompat.getDrawable(
+                    linearLayout.context.resources,
+                    drawableId,
+                    null
+                )!!
             ).mutate()
             DrawableCompat.setTint(
                 wrappedDrawable,
@@ -100,11 +106,10 @@ class MenuItem(
             view?.addView(textView)
         }
 
-        view?.setBackgroundColor(
-            linearLayout.context.resources.getColor(
-                getBackgroundColor(),
-                null
-            )
+        view?.background = ResourcesCompat.getDrawable(
+            linearLayout.context.resources,
+            getBackgroundDrawable(),
+            null
         )
         view?.setOnClickListener {
             select()
@@ -113,14 +118,14 @@ class MenuItem(
     }
 
     /**
-     * Get the correct background color for the menu item
-     * @return The background color
+     * Get the correct background drawable for the menu item
+     * @return The background drawable
      */
-    private fun getBackgroundColor(): Int {
+    private fun getBackgroundDrawable(): Int {
         return if (highlighted) {
-            android.R.color.white
+            R.drawable.menu_item_background_highlighted
         } else {
-            android.R.color.black
+            R.drawable.menu_item_background
         }
     }
 
@@ -153,11 +158,10 @@ class MenuItem(
     override fun highlight() {
         try {
             highlighted = true
-            view?.setBackgroundColor(
-                view?.context?.resources?.getColor(
-                    getBackgroundColor(),
-                    null
-                )!!
+            view?.background = ResourcesCompat.getDrawable(
+                view?.context?.resources!!,
+                getBackgroundDrawable(),
+                null
             )
             textView?.setTextColor(
                 textView?.context?.resources?.getColor(
@@ -182,11 +186,10 @@ class MenuItem(
     override fun unhighlight() {
         try {
             highlighted = false
-            view?.setBackgroundColor(
-                view?.context?.resources?.getColor(
-                    getBackgroundColor(),
-                    null
-                )!!
+            view?.background = ResourcesCompat.getDrawable(
+                view?.context?.resources!!,
+                getBackgroundDrawable(),
+                null
             )
             textView?.setTextColor(
                 textView?.context?.resources?.getColor(
