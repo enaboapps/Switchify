@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.widget.LinearLayout
+import androidx.core.content.res.ResourcesCompat
+import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
 import com.enaboapps.switchify.service.scanning.ScanningManager
@@ -103,12 +105,11 @@ class MenuView(
         baseLayout = LinearLayout(context)
         baseLayout.alpha = if (transparency) 0.6f else 1f
         baseLayout.orientation = LinearLayout.VERTICAL
-        baseLayout.setPadding(10, 10, 10, 10)
-        baseLayout.setBackgroundColor(
-            context.resources.getColor(
-                android.R.color.darker_gray,
-                null
-            )
+        baseLayout.setPadding(20, 20, 20, 20)
+        baseLayout.background = ResourcesCompat.getDrawable(
+            context.resources,
+            R.drawable.menu_background,
+            null
         )
     }
 
