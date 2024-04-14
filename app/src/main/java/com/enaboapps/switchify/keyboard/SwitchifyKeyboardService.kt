@@ -108,6 +108,8 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             CapsModeHandler.updateCapsMode(it)
         }
 
+        resetKeyboardLayout()
+
         updateTextState()
 
         // Broadcast keyboard show event
@@ -127,6 +129,13 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         // Broadcast keyboard hide event
         val intent = Intent(ACTION_KEYBOARD_HIDE)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    /**
+     * This method resets the keyboard layout.
+     */
+    private fun resetKeyboardLayout() {
+        KeyboardLayoutManager.setLayoutState(KeyboardLayoutState.Lower)
     }
 
     /**
