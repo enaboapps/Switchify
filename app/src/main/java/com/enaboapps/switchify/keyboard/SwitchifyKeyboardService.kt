@@ -256,6 +256,10 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
      * This method updates the shift state of the keyboard based on the current text.
      */
     private fun updateShiftState() {
+        if (KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Caps) {
+            return
+        }
+
         val isNewSentence = textParser.isNewSentence()
         val isNewWord = textParser.isNewWord()
         val mode = CapsModeHandler.currentCapsMode
