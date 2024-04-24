@@ -5,9 +5,7 @@ import android.util.AttributeSet
 import android.widget.LinearLayout
 import com.enaboapps.switchify.keyboard.KeyType
 import com.enaboapps.switchify.keyboard.KeyboardKey
-import com.enaboapps.switchify.keyboard.KeyboardLayoutManager
-import com.enaboapps.switchify.keyboard.KeyboardLayoutState
-import java.util.Locale
+import com.enaboapps.switchify.keyboard.utils.CapsModeHandler
 
 class PredictionView : LinearLayout {
 
@@ -50,18 +48,8 @@ class PredictionView : LinearLayout {
     }
 
     fun updateCase() {
-        val state = KeyboardLayoutManager.currentLayoutState
         modifiedPredictions = originalPredictions.map { prediction ->
-            when (state) {
-                KeyboardLayoutState.Lower -> prediction
-                KeyboardLayoutState.Shift -> prediction.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase(
-                        Locale.ROOT
-                    ) else it.toString()
-                }
-
-                KeyboardLayoutState.Caps -> prediction.uppercase(Locale.ROOT)
-            }
+            CapsModeHandler.getCapitalizedText(prediction)
         }
         for (i in 0 until childCount) {
             (getChildAt(i) as KeyboardKey).setKeyContent(modifiedPredictions[i])
