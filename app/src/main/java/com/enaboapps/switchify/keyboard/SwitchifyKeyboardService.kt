@@ -243,6 +243,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         if (keyType is KeyType.DeleteWord) {
             return ResourcesCompat.getDrawable(resources, R.drawable.ic_deleteword, null)
         }
+        if (keyType is KeyType.Clear) {
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_bin, null)
+        }
         if (keyType is KeyType.Return) {
             return ResourcesCompat.getDrawable(resources, R.drawable.ic_return, null)
         }
@@ -349,6 +352,11 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             KeyType.DeleteWord -> {
                 val count = textParser.getLengthOfWordToDelete()
                 currentInputConnection.deleteSurroundingText(count, 0)
+            }
+
+            KeyType.Clear -> {
+                val allCount = textParser.getAllText().length
+                currentInputConnection.deleteSurroundingText(allCount, 0)
             }
 
             KeyType.SwitchToSymbols -> {
