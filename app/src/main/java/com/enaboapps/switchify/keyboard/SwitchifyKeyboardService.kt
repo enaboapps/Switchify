@@ -310,7 +310,7 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             }
 
             is KeyType.Prediction -> {
-                val text = keyType.prediction
+                val text = CapsModeHandler.getCapitalizedText(keyType.prediction)
                 val currentWordLength =
                     textParser.getWordFromLatestSentenceBySubtractingNumberFromLastIndex(0).length
                 currentInputConnection.deleteSurroundingText(currentWordLength, 0)

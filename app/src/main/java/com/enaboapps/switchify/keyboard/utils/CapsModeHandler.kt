@@ -1,6 +1,9 @@
 package com.enaboapps.switchify.keyboard.utils
 
 import android.view.inputmethod.EditorInfo
+import com.enaboapps.switchify.keyboard.KeyboardLayoutManager
+import com.enaboapps.switchify.keyboard.KeyboardLayoutState
+import java.util.Locale
 
 /**
  * Singleton object for handling capitalization modes in an Input Method Service.
@@ -33,5 +36,22 @@ object CapsModeHandler {
             else -> CapsMode.NONE
         }
         println("Caps mode updated to: $currentCapsMode")
+    }
+
+    /**
+     * Gets the passed string with the appropriate capitalization based on the current caps mode.
+     * @param text The text to capitalize.
+     */
+    fun getCapitalizedText(text: String): String {
+        return when (KeyboardLayoutManager.currentLayoutState) {
+            KeyboardLayoutState.Lower -> text
+            KeyboardLayoutState.Shift -> text.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(
+                    Locale.ROOT
+                ) else it.toString()
+            }
+
+            KeyboardLayoutState.Caps -> text.uppercase(Locale.ROOT)
+        }
     }
 }
