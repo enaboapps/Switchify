@@ -17,6 +17,10 @@ sealed class KeyType {
         override fun toString() = "⌦"
     }
 
+    object Clear : KeyType() {
+        override fun toString() = "C"
+    }
+
     object Space : KeyType() {
         override fun toString() = " "
     }
@@ -105,7 +109,7 @@ object KeyboardLayoutManager {
             KeyType.SwitchToSymbols,
             KeyType.Space,
             KeyType.Special("."),
-            KeyType.Special(","),
+            KeyType.Clear,
             KeyType.Return,
             KeyType.HideKeyboard
         )
