@@ -13,6 +13,7 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.core.content.res.ResourcesCompat
 import com.enaboapps.switchify.R
+import com.enaboapps.switchify.service.utils.ScreenUtils
 
 class KeyboardKey @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -67,6 +68,8 @@ class KeyboardKey @JvmOverloads constructor(
 
     init {
         orientation = VERTICAL // Or HORIZONTAL, depending on your design
+        val padding = ScreenUtils.dpToPx(context, 2)
+        setPadding(padding, padding, padding, padding)
     }
 
     fun setKeyContent(text: String? = null, drawable: Drawable? = null) {
@@ -86,7 +89,7 @@ class KeyboardKey @JvmOverloads constructor(
                 LayoutParams.MATCH_PARENT,
                 getHeightInDp()
             )
-            setTextColor(Color.WHITE)
+            setTextColor(Color.BLACK)
             background =
                 ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background, null)
         }
@@ -96,6 +99,7 @@ class KeyboardKey @JvmOverloads constructor(
     private fun addImageView(drawable: Drawable) {
         imageButton = ImageButton(context).apply {
             setImageDrawable(drawable)
+            setColorFilter(Color.BLACK)
             setOnTouchListener(onTouchListener)
             layoutParams = LayoutParams(
                 LayoutParams.MATCH_PARENT,
