@@ -90,6 +90,7 @@ class KeyboardKey @JvmOverloads constructor(
                 getHeightInDp()
             )
             setTextColor(Color.BLACK)
+            textSize = 20f
             background =
                 ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background, null)
         }
