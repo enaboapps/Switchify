@@ -45,13 +45,21 @@ sealed class KeyType {
         override fun toString() = "?123"
     }
 
+    object SwitchToSymbolsOne : KeyType() {
+        override fun toString() = "123"
+    }
+
+    object SwitchToSymbolsTwo : KeyType() {
+        override fun toString() = "#+="
+    }
+
     object SwitchToAlphabetic : KeyType() {
         override fun toString() = "ABC"
     }
 }
 
 enum class KeyboardLayoutType {
-    AlphabeticLower, AlphabeticUpper, Symbols
+    AlphabeticLower, AlphabeticUpper, SymbolsPageOne, SymbolsPageTwo
 }
 
 enum class KeyboardLayoutState {
@@ -124,7 +132,7 @@ object KeyboardLayoutManager {
         }
     }
 
-    private val symbolsLayout = listOf(
+    private val symbolsOneLayout = listOf(
         listOf(
             KeyType.Special("1"),
             KeyType.Special("2"),
@@ -138,27 +146,67 @@ object KeyboardLayoutManager {
             KeyType.Special("0")
         ),
         listOf(
-            KeyType.Special("@"),
-            KeyType.Special("#"),
-            KeyType.Special("$"),
-            KeyType.Special("%"),
-            KeyType.Special("&"),
-            KeyType.Special("*"),
             KeyType.Special("-"),
-            KeyType.Special("+"),
-            KeyType.Special("("),
-            KeyType.Special(")")
-        ),
-        listOf(
-            KeyType.Special("."),
-            KeyType.Special(","),
-            KeyType.Special("!"),
-            KeyType.Special("\""),
-            KeyType.Special("'"),
+            KeyType.Special("/"),
             KeyType.Special(":"),
             KeyType.Special(";"),
-            KeyType.Special("/"),
+            KeyType.Special("("),
+            KeyType.Special(")"),
+            KeyType.Special("$"),
+            KeyType.Special("&"),
+            KeyType.Special("@"),
+            KeyType.Special("\"")
+        ),
+        listOf(
+            KeyType.SwitchToSymbolsTwo,
+            KeyType.Special("."),
+            KeyType.Special(","),
             KeyType.Special("?"),
+            KeyType.Special("!"),
+            KeyType.Special("'"),
+            KeyType.DeleteWord,
+            KeyType.Backspace
+        ),
+        listOf(
+            KeyType.SwitchToAlphabetic,
+            KeyType.Space,
+            KeyType.Return,
+            KeyType.HideKeyboard
+        )
+    )
+
+    private val symbolsTwoLayout = listOf(
+        listOf(
+            KeyType.Special("["),
+            KeyType.Special("]"),
+            KeyType.Special("{"),
+            KeyType.Special("}"),
+            KeyType.Special("#"),
+            KeyType.Special("%"),
+            KeyType.Special("^"),
+            KeyType.Special("*"),
+            KeyType.Special("+"),
+            KeyType.Special("=")
+        ),
+        listOf(
+            KeyType.Special("_"),
+            KeyType.Special("\\"),
+            KeyType.Special("|"),
+            KeyType.Special("~"),
+            KeyType.Special("<"),
+            KeyType.Special(">"),
+            KeyType.Special("€"),
+            KeyType.Special("£"),
+            KeyType.Special("¥"),
+            KeyType.Special("•")
+        ),
+        listOf(
+            KeyType.SwitchToSymbolsOne,
+            KeyType.Special("."),
+            KeyType.Special(","),
+            KeyType.Special("?"),
+            KeyType.Special("!"),
+            KeyType.Special("'"),
             KeyType.DeleteWord,
             KeyType.Backspace
         ),
@@ -173,7 +221,8 @@ object KeyboardLayoutManager {
     private val layouts = mapOf(
         KeyboardLayoutType.AlphabeticLower to alphabeticLowerLayout,
         KeyboardLayoutType.AlphabeticUpper to alphabeticUpperLayout,
-        KeyboardLayoutType.Symbols to symbolsLayout
+        KeyboardLayoutType.SymbolsPageOne to symbolsOneLayout,
+        KeyboardLayoutType.SymbolsPageTwo to symbolsTwoLayout
     )
 
     val currentLayout: List<List<KeyType>>
