@@ -360,7 +360,15 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             }
 
             KeyType.SwitchToSymbols -> {
-                KeyboardLayoutManager.switchLayout(KeyboardLayoutType.Symbols)
+                KeyboardLayoutManager.switchLayout(KeyboardLayoutType.SymbolsPageOne)
+            }
+
+            KeyType.SwitchToSymbolsOne -> {
+                KeyboardLayoutManager.switchLayout(KeyboardLayoutType.SymbolsPageOne)
+            }
+
+            KeyType.SwitchToSymbolsTwo -> {
+                KeyboardLayoutManager.switchLayout(KeyboardLayoutType.SymbolsPageTwo)
             }
         }
     }
