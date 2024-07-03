@@ -37,6 +37,7 @@ class MenuPage(
         if (maxPageIndex > 0) {
             menuChangeBtn = MenuItem(
                 drawableId = R.drawable.ic_change_menu_page,
+                drawableDescription = "Change menu page",
                 closeOnSelect = false,
                 action = { changePage() }
             )

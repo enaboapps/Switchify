@@ -33,6 +33,7 @@ open class BaseMenu(
             navMenuItems.add(
                 MenuItem(
                     drawableId = R.drawable.ic_previous_menu,
+                    drawableDescription = "Previous menu",
                     isMenuHierarchyManipulator = true,
                     action = { MenuManager.getInstance().menuHierarchy?.popMenu() }
                 )
@@ -41,6 +42,7 @@ open class BaseMenu(
         navMenuItems.add(
             MenuItem(
                 drawableId = R.drawable.ic_close_menu,
+                drawableDescription = "Close menu",
                 isMenuHierarchyManipulator = true,
                 action = { MenuManager.getInstance().menuHierarchy?.removeAllMenus() }
             )
