@@ -63,11 +63,13 @@ class MenuView(
             val end = ((i + 1) * numOfItemsPerPage).coerceAtMost(menuItems.size)
             val pageItems = menuItems.subList(start, end)
             val navRowItems = menu.buildNavMenuItems()
+            val systemNavItems = menu.buildSystemNavItems()
+            val rows: List<List<MenuItem>> = listOf(systemNavItems, navRowItems)
             menuPages.add(
                 MenuPage(
                     context,
                     pageItems,
-                    navRowItems,
+                    rows,
                     i,
                     numOfPages - 1,
                     ::onMenuPageChanged
