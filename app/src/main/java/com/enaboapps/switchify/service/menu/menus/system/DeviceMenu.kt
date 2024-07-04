@@ -15,12 +15,6 @@ class DeviceMenu(
         private fun buildDeviceItems(accessibilityService: AccessibilityService): List<MenuItem> {
             val packageManager = accessibilityService.packageManager
             return listOfNotNull(
-                MenuItem("Back") {
-                    accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
-                },
-                MenuItem("Home") {
-                    accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
-                },
                 MenuItem("Recents") {
                     accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS)
                 },

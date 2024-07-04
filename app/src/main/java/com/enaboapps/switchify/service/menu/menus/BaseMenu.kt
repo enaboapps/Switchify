@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.menu.menus
 
+import android.accessibilityservice.AccessibilityService
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.menu.MenuItem
@@ -21,6 +22,25 @@ open class BaseMenu(
      */
     fun getMenuItems(): List<MenuItem> {
         return items
+    }
+
+    /**
+     * Build the system navigation items
+     * @return The system navigation items
+     */
+    fun buildSystemNavItems(): List<MenuItem> {
+        return listOfNotNull(
+            MenuItem(
+                drawableId = R.drawable.ic_sys_back,
+                drawableDescription = "Back",
+                action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK) }
+            ),
+            MenuItem(
+                drawableId = R.drawable.ic_sys_home,
+                drawableDescription = "Home",
+                action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME) }
+            )
+        )
     }
 
     /**
