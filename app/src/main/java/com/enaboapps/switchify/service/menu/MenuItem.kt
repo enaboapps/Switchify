@@ -2,6 +2,7 @@ package com.enaboapps.switchify.service.menu
 
 import android.util.Log
 import android.view.Gravity
+import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -14,6 +15,7 @@ import com.enaboapps.switchify.service.scanning.ScanNodeInterface
  * This class represents a menu item
  * @property text The text of the menu item
  * @property drawableId The drawable resource id of the menu item
+ * @property drawableDescription The description of the drawable
  * @property closeOnSelect Whether the menu should close when the item is selected
  * @property isLinkToMenu Whether the item is a link to another menu
  * @property isMenuHierarchyManipulator Whether the item manipulates the menu hierarchy
@@ -23,6 +25,7 @@ import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 class MenuItem(
     private val text: String = "",
     private val drawableId: Int = 0,
+    private val drawableDescription: String = "",
     val closeOnSelect: Boolean = true,
     var isLinkToMenu: Boolean = false,
     var isMenuHierarchyManipulator: Boolean = false,
@@ -45,6 +48,11 @@ class MenuItem(
     private var imageView: ImageView? = null
 
     /**
+     * The text view for the drawable description
+     */
+    private var drawableDescriptionTextView: TextView? = null
+
+    /**
      * The text view of the menu item
      */
     private var textView: TextView? = null
@@ -56,64 +64,74 @@ class MenuItem(
      */
     fun inflate(linearLayout: LinearLayout, wrapHorizontal: Boolean = false) {
         highlighted = false
-        view = LinearLayout(linearLayout.context)
-        view?.layoutParams = LinearLayout.LayoutParams(
-            if (wrapHorizontal) LinearLayout.LayoutParams.WRAP_CONTENT else LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
-
-        view?.gravity = Gravity.CENTER
+        view = LinearLayout(linearLayout.context).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                if (wrapHorizontal) LinearLayout.LayoutParams.WRAP_CONTENT else LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            background = ResourcesCompat.getDrawable(
+                linearLayout.context.resources,
+                getBackgroundDrawable(),
+                null
+            )
+            setOnClickListener { select() }
+        }
 
         val padding = 20
 
         if (drawableId != 0) {
-            imageView = ImageView(linearLayout.context)
-            // get the drawable in white
-            val wrappedDrawable = DrawableCompat.wrap(
-                ResourcesCompat.getDrawable(
-                    linearLayout.context.resources,
-                    drawableId,
-                    null
-                )!!
-            ).mutate()
-            DrawableCompat.setTint(
-                wrappedDrawable,
-                linearLayout.context.resources.getColor(getForegroundColor(), null)
-            )
-            imageView?.setImageDrawable(wrappedDrawable)
-            imageView?.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            imageView?.setPadding(padding, padding, padding, padding)
-            view?.addView(imageView)
+            imageView = ImageView(linearLayout.context).apply {
+                val wrappedDrawable = DrawableCompat.wrap(
+                    ResourcesCompat.getDrawable(
+                        linearLayout.context.resources,
+                        drawableId,
+                        null
+                    )!!
+                ).mutate()
+                DrawableCompat.setTint(
+                    wrappedDrawable,
+                    linearLayout.context.resources.getColor(getForegroundColor(), null)
+                )
+                setImageDrawable(wrappedDrawable)
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                setPadding(padding, padding, padding, padding)
+                view?.addView(this)
+            }
         }
 
         if (text.isNotEmpty()) {
-            textView = TextView(linearLayout.context)
-            textView?.text = text
-            textView?.setTextColor(
-                linearLayout.context.resources.getColor(
-                    getForegroundColor(),
-                    null
+            textView = TextView(linearLayout.context).apply {
+                text = this@MenuItem.text
+                setTextColor(linearLayout.context.resources.getColor(getForegroundColor(), null))
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
                 )
-            )
-            textView?.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            textView?.setPadding(padding, padding, padding, padding)
-            view?.addView(textView)
+                setPadding(padding, padding, padding, padding)
+                view?.addView(this)
+            }
         }
 
-        view?.background = ResourcesCompat.getDrawable(
-            linearLayout.context.resources,
-            getBackgroundDrawable(),
-            null
-        )
-        view?.setOnClickListener {
-            select()
+        if (drawableDescription.isNotEmpty()) {
+            drawableDescriptionTextView = TextView(linearLayout.context).apply {
+                text = drawableDescription
+                textSize = 10f
+                setTextColor(linearLayout.context.resources.getColor(getForegroundColor(), null))
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                setPadding(padding, 0, padding, padding)
+                visibility = View.GONE // Initially hidden
+                view?.addView(this)
+            }
         }
+
         linearLayout.addView(view)
     }
 
@@ -156,27 +174,36 @@ class MenuItem(
      * Highlight the menu item
      */
     override fun highlight() {
-        try {
-            highlighted = true
-            view?.background = ResourcesCompat.getDrawable(
-                view?.context?.resources!!,
-                getBackgroundDrawable(),
-                null
-            )
-            textView?.setTextColor(
-                textView?.context?.resources?.getColor(
-                    getForegroundColor(),
+        view?.post {
+            try {
+                highlighted = true
+                view?.background = ResourcesCompat.getDrawable(
+                    view?.context?.resources!!,
+                    getBackgroundDrawable(),
                     null
-                )!!
-            )
-            imageView?.setColorFilter(
-                imageView?.context?.resources?.getColor(
-                    getForegroundColor(),
-                    null
-                )!!
-            )
-        } catch (e: Exception) {
-            Log.e("MenuItem", "Error highlighting menu item", e)
+                )
+                textView?.setTextColor(
+                    textView?.context?.resources?.getColor(
+                        getForegroundColor(),
+                        null
+                    )!!
+                )
+                imageView?.setColorFilter(
+                    imageView?.context?.resources?.getColor(
+                        getForegroundColor(),
+                        null
+                    )!!
+                )
+                drawableDescriptionTextView?.setTextColor(
+                    drawableDescriptionTextView?.context?.resources?.getColor(
+                        getForegroundColor(),
+                        null
+                    )!!
+                )
+                drawableDescriptionTextView?.visibility = View.VISIBLE
+            } catch (e: Exception) {
+                Log.e("MenuItem", "Error highlighting menu item", e)
+            }
         }
     }
 
@@ -184,27 +211,30 @@ class MenuItem(
      * Unhighlight the menu item
      */
     override fun unhighlight() {
-        try {
-            highlighted = false
-            view?.background = ResourcesCompat.getDrawable(
-                view?.context?.resources!!,
-                getBackgroundDrawable(),
-                null
-            )
-            textView?.setTextColor(
-                textView?.context?.resources?.getColor(
-                    getForegroundColor(),
+        view?.post {
+            try {
+                highlighted = false
+                view?.background = ResourcesCompat.getDrawable(
+                    view?.context?.resources!!,
+                    getBackgroundDrawable(),
                     null
-                )!!
-            )
-            imageView?.setColorFilter(
-                imageView?.context?.resources?.getColor(
-                    getForegroundColor(),
-                    null
-                )!!
-            )
-        } catch (e: Exception) {
-            Log.e("MenuItem", "Error unhighlighting menu item", e)
+                )
+                textView?.setTextColor(
+                    textView?.context?.resources?.getColor(
+                        getForegroundColor(),
+                        null
+                    )!!
+                )
+                imageView?.setColorFilter(
+                    imageView?.context?.resources?.getColor(
+                        getForegroundColor(),
+                        null
+                    )!!
+                )
+                drawableDescriptionTextView?.visibility = View.GONE
+            } catch (e: Exception) {
+                Log.e("MenuItem", "Error unhighlighting menu item", e)
+            }
         }
     }
 

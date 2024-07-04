@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.menu.menus
 
+import android.accessibilityservice.AccessibilityService
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.menu.MenuItem
@@ -24,6 +25,25 @@ open class BaseMenu(
     }
 
     /**
+     * Build the system navigation items
+     * @return The system navigation items
+     */
+    fun buildSystemNavItems(): List<MenuItem> {
+        return listOfNotNull(
+            MenuItem(
+                drawableId = R.drawable.ic_sys_back,
+                drawableDescription = "Back",
+                action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK) }
+            ),
+            MenuItem(
+                drawableId = R.drawable.ic_sys_home,
+                drawableDescription = "Home",
+                action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME) }
+            )
+        )
+    }
+
+    /**
      * Build the navigation menu items
      * @return The navigation menu items
      */
@@ -33,6 +53,7 @@ open class BaseMenu(
             navMenuItems.add(
                 MenuItem(
                     drawableId = R.drawable.ic_previous_menu,
+                    drawableDescription = "Previous menu",
                     isMenuHierarchyManipulator = true,
                     action = { MenuManager.getInstance().menuHierarchy?.popMenu() }
                 )
@@ -41,6 +62,7 @@ open class BaseMenu(
         navMenuItems.add(
             MenuItem(
                 drawableId = R.drawable.ic_close_menu,
+                drawableDescription = "Close menu",
                 isMenuHierarchyManipulator = true,
                 action = { MenuManager.getInstance().menuHierarchy?.removeAllMenus() }
             )
