@@ -59,16 +59,26 @@ class MenuView(
         numOfPages = (menuItems.size + numOfItemsPerPage - 1) / numOfItemsPerPage
         // Create the menu pages
         for (i in 0 until numOfPages) {
+            // Calculate the start and end of the interval
             val start = i * numOfItemsPerPage
             val end = ((i + 1) * numOfItemsPerPage).coerceAtMost(menuItems.size)
+
+            // Get the items for the page
             val pageItems = menuItems.subList(start, end)
             val navRowItems = menu.buildNavMenuItems()
             val systemNavItems = menu.buildSystemNavItems()
-            val rows: List<List<MenuItem>> = listOf(systemNavItems, navRowItems)
+
+            // Create the rows
+            val rows = mutableListOf(systemNavItems)
+            for (item in pageItems) {
+                rows.add(listOf(item))
+            }
+            rows.add(navRowItems)
+
+            // Add the menu page
             menuPages.add(
                 MenuPage(
                     context,
-                    pageItems,
                     rows,
                     i,
                     numOfPages - 1,
