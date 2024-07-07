@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.utils
 
 import android.content.Context
+import android.content.res.Configuration
 import android.view.WindowMetrics
 
 /**
@@ -50,6 +51,20 @@ class ScreenUtils {
             val windowManager =
                 context.getSystemService(Context.WINDOW_SERVICE) as android.view.WindowManager
             return windowManager.currentWindowMetrics
+        }
+
+        /**
+         * Returns whether or not the device is a tablet.
+         *
+         * @param context The context of the caller.
+         * @return True if the device is a tablet, false otherwise.
+         */
+        fun isTablet(context: Context): Boolean {
+            val configuration = context.resources.configuration
+            val screenLayout = configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK
+            val isTabletSize =
+                screenLayout == Configuration.SCREENLAYOUT_SIZE_LARGE || screenLayout == Configuration.SCREENLAYOUT_SIZE_XLARGE
+            return isTabletSize
         }
     }
 
