@@ -109,7 +109,7 @@ class MenuItem(
                 textSize = 14f
                 setTextColor(linearLayout.context.resources.getColor(getForegroundColor(), null))
                 layoutParams = LinearLayout.LayoutParams(
-                    150,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 )
                 setPadding(padding, padding, padding, padding)
