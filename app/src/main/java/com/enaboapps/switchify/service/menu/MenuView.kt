@@ -69,10 +69,13 @@ class MenuView(
             val systemNavItems = menu.buildSystemNavItems()
 
             // Create the rows
+            // Add the system navigation row to the beginning
             val rows = mutableListOf(systemNavItems)
-            for (item in pageItems) {
-                rows.add(listOf(item))
+            // Split the items into rows of two
+            pageItems.chunked(2).forEach { rowItems ->
+                rows.add(rowItems)
             }
+            // Add the navigation row
             rows.add(navRowItems)
 
             // Add the menu page
