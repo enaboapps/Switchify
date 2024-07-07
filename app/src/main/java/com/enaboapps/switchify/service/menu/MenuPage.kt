@@ -61,7 +61,7 @@ class MenuPage(
             val rowLayout = LinearLayout(context)
             rowLayout.orientation = LinearLayout.HORIZONTAL
             rowItems.forEach { menuItem ->
-                menuItem.inflate(rowLayout, wrapHorizontal = true)
+                menuItem.inflate(rowLayout)
             }
             baseLayout.addView(rowLayout)
         }

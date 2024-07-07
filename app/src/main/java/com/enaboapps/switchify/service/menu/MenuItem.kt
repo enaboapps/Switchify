@@ -60,13 +60,12 @@ class MenuItem(
     /**
      * Inflate the menu item
      * @param linearLayout The linear layout to inflate the menu item into
-     * @param wrapHorizontal Whether to wrap the menu item horizontally
      */
-    fun inflate(linearLayout: LinearLayout, wrapHorizontal: Boolean = false) {
+    fun inflate(linearLayout: LinearLayout) {
         highlighted = false
         view = LinearLayout(linearLayout.context).apply {
             layoutParams = LinearLayout.LayoutParams(
-                if (wrapHorizontal) LinearLayout.LayoutParams.WRAP_CONTENT else LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
             orientation = LinearLayout.VERTICAL
@@ -107,9 +106,10 @@ class MenuItem(
         if (text.isNotEmpty()) {
             textView = TextView(linearLayout.context).apply {
                 text = this@MenuItem.text
+                textSize = 14f
                 setTextColor(linearLayout.context.resources.getColor(getForegroundColor(), null))
                 layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    150,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 )
                 setPadding(padding, padding, padding, padding)
