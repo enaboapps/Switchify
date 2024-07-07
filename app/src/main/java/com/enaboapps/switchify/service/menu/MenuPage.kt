@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.menu
 
 import android.content.Context
+import android.view.Gravity
 import android.widget.LinearLayout
 import com.enaboapps.switchify.R
 
@@ -58,8 +59,14 @@ class MenuPage(
     fun getMenuLayout(): LinearLayout {
         baseLayout.removeAllViews()
         rowsOfMenuItems.forEach { rowItems ->
-            val rowLayout = LinearLayout(context)
-            rowLayout.orientation = LinearLayout.HORIZONTAL
+            val rowLayout = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).also { it.gravity = Gravity.CENTER_HORIZONTAL }
+                gravity = Gravity.CENTER
+            }
             rowItems.forEach { menuItem ->
                 menuItem.inflate(rowLayout)
             }
