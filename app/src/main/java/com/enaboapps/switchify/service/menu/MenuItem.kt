@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.menu
 
+import android.graphics.text.LineBreaker
 import android.util.Log
 import android.view.Gravity
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
+import com.enaboapps.switchify.service.utils.ScreenUtils
 
 /**
  * This class represents a menu item
@@ -62,12 +64,13 @@ class MenuItem(
      * @param linearLayout The linear layout to inflate the menu item into
      */
     fun inflate(linearLayout: LinearLayout) {
+        val width = ScreenUtils.dpToPx(linearLayout.context, 85)
+        val height = ScreenUtils.dpToPx(linearLayout.context, 75)
+
         highlighted = false
+
         view = LinearLayout(linearLayout.context).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
+            layoutParams = LinearLayout.LayoutParams(width, height)
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             background = ResourcesCompat.getDrawable(
@@ -107,6 +110,9 @@ class MenuItem(
             textView = TextView(linearLayout.context).apply {
                 text = this@MenuItem.text
                 textSize = 14f
+                justificationMode = LineBreaker.JUSTIFICATION_MODE_INTER_WORD
+                gravity = Gravity.CENTER
+                setAutoSizeTextTypeUniformWithConfiguration(10, 20, 1, 0)
                 setTextColor(linearLayout.context.resources.getColor(getForegroundColor(), null))
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,

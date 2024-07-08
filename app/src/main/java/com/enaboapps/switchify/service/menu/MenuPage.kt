@@ -30,16 +30,6 @@ class MenuPage(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
-
-        if (maxPageIndex > 0) {
-            menuChangeBtn = MenuItem(
-                drawableId = R.drawable.ic_change_menu_page,
-                drawableDescription = "Change menu page",
-                closeOnSelect = false,
-                action = { changePage() }
-            )
-            menuChangeBtn?.inflate(baseLayout)
-        }
     }
 
 
@@ -48,7 +38,14 @@ class MenuPage(
      * @return The menu items of the page
      */
     fun getMenuItems(): List<MenuItem> {
-        return rowsOfMenuItems.flatten()
+        val menuItems = mutableListOf<MenuItem>()
+        rowsOfMenuItems.forEach { rowItems ->
+            rowItems.forEach { menuItem ->
+                menuItems.add(menuItem)
+            }
+        }
+        menuChangeBtn?.let { menuItems.add(it) }
+        return menuItems
     }
 
 
@@ -58,21 +55,44 @@ class MenuPage(
      */
     fun getMenuLayout(): LinearLayout {
         baseLayout.removeAllViews()
+
         rowsOfMenuItems.forEach { rowItems ->
-            val rowLayout = LinearLayout(context).apply {
-                orientation = LinearLayout.HORIZONTAL
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).also { it.gravity = Gravity.CENTER_HORIZONTAL }
-                gravity = Gravity.CENTER
-            }
+            val rowLayout = createRowLayout()
             rowItems.forEach { menuItem ->
                 menuItem.inflate(rowLayout)
             }
             baseLayout.addView(rowLayout)
         }
+
+        if (maxPageIndex > 0) {
+            menuChangeBtn = MenuItem(
+                drawableId = R.drawable.ic_change_menu_page,
+                drawableDescription = "Change menu page",
+                closeOnSelect = false,
+                action = { changePage() }
+            )
+            val rowLayout = createRowLayout()
+            menuChangeBtn?.inflate(rowLayout)
+            baseLayout.addView(rowLayout)
+        }
+
         return baseLayout
+    }
+
+
+    /**
+     * Create a row layout
+     * @return The row layout
+     */
+    private fun createRowLayout(): LinearLayout {
+        return LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).also { it.gravity = Gravity.CENTER_HORIZONTAL }
+            gravity = Gravity.CENTER
+        }
     }
 
 
