@@ -77,7 +77,7 @@ class GestureManager {
             val distance = sqrt(
                 (point.x - centerX).toDouble().pow(2.0) + (point.y - centerY).toDouble().pow(2.0)
             )
-            return distance <= 500
+            return distance <= ScreenUtils.dpToPx(it, 350)
         }
         return false
     }

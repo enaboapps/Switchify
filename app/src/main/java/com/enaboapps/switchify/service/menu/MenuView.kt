@@ -10,7 +10,6 @@ import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.scanning.tree.ScanTree
-import com.enaboapps.switchify.service.utils.ScreenUtils
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 interface MenuViewListener {
@@ -51,10 +50,7 @@ class MenuView(
     // This function creates the menu pages
     private fun createMenuPages(menuItems: List<MenuItem>) {
         // Number of items per page
-        val numOfItemsPerPage: Int
-        val ballparkHeight = 150
-        val screenHeight = ScreenUtils.getHeight(context)
-        numOfItemsPerPage = (screenHeight / ballparkHeight).coerceAtLeast(1)
+        val numOfItemsPerPage = 4
         // Calculate the number of pages
         numOfPages = (menuItems.size + numOfItemsPerPage - 1) / numOfItemsPerPage
         // Create the menu pages
