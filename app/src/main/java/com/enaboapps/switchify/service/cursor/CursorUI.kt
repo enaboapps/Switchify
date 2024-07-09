@@ -16,7 +16,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
 
     // Constants for cursor and quadrant appearance
     companion object {
-        private const val CURSOR_LINE_THICKNESS = 10
+        const val CURSOR_LINE_THICKNESS = 10
         private const val CURSOR_LINE_COLOR = Color.RED
         private const val QUADRANT_ALPHA = 0.5f
         private const val QUADRANT_COLOR = Color.BLUE
