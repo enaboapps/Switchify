@@ -162,6 +162,14 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * This function updates the y cursor line to the current y position
      */
     private fun updateYCursorLine() {
+        // Account for the cursor line thickness
+        val y = GesturePoint.y
+        if (y < quadrantInfo?.start!!) {
+            GesturePoint.y = quadrantInfo?.start!!
+        } else if (y >= quadrantInfo?.end!!) {
+            GesturePoint.y = quadrantInfo?.end!! - CursorUI.CURSOR_LINE_THICKNESS
+        }
+
         cursorUI.updateYCursorLine(GesturePoint.y)
     }
 
@@ -178,6 +186,14 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * This function updates the x cursor line to the current x position
      */
     private fun updateXCursorLine() {
+        // Account for the cursor line thickness
+        val x = GesturePoint.x
+        if (x < quadrantInfo?.start!!) {
+            GesturePoint.x = quadrantInfo?.start!!
+        } else if (x >= quadrantInfo?.end!!) {
+            GesturePoint.x = quadrantInfo?.end!! - CursorUI.CURSOR_LINE_THICKNESS
+        }
+        
         cursorUI.updateXCursorLine(GesturePoint.x)
     }
 
@@ -380,7 +396,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         if (quadrantInfo != null) {
             when (direction) {
                 ScanDirection.LEFT ->
-                    if (GesturePoint.x > quadrantInfo?.start!!) {
+                    if (GesturePoint.x > (quadrantInfo?.start!! + CursorUI.CURSOR_LINE_THICKNESS)) {
                         GesturePoint.x -= cursorLineMovement
                         updateXCursorLine()
                     } else {
@@ -389,7 +405,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
                     }
 
                 ScanDirection.RIGHT ->
-                    if (GesturePoint.x < quadrantInfo?.end!!) {
+                    if (GesturePoint.x < (quadrantInfo?.end!! - CursorUI.CURSOR_LINE_THICKNESS)) {
                         GesturePoint.x += cursorLineMovement
                         updateXCursorLine()
                     } else {
@@ -398,7 +414,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
                     }
 
                 ScanDirection.UP ->
-                    if (GesturePoint.y > quadrantInfo?.start!!) {
+                    if (GesturePoint.y > (quadrantInfo?.start!! + CursorUI.CURSOR_LINE_THICKNESS)) {
                         GesturePoint.y -= cursorLineMovement
                         updateYCursorLine()
                     } else {
@@ -407,7 +423,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
                     }
 
                 ScanDirection.DOWN ->
-                    if (GesturePoint.y < quadrantInfo?.end!!) {
+                    if (GesturePoint.y < (quadrantInfo?.end!! - CursorUI.CURSOR_LINE_THICKNESS)) {
                         GesturePoint.y += cursorLineMovement
                         updateYCursorLine()
                     } else {
