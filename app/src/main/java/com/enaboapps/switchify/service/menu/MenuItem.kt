@@ -64,8 +64,8 @@ class MenuItem(
      * @param linearLayout The linear layout to inflate the menu item into
      */
     fun inflate(linearLayout: LinearLayout) {
-        val width = ScreenUtils.dpToPx(linearLayout.context, 85)
-        val height = ScreenUtils.dpToPx(linearLayout.context, 75)
+        val width = ScreenUtils.dpToPx(linearLayout.context, 95)
+        val height = ScreenUtils.dpToPx(linearLayout.context, 85)
 
         highlighted = false
 
@@ -112,7 +112,6 @@ class MenuItem(
                 textSize = 14f
                 justificationMode = LineBreaker.JUSTIFICATION_MODE_INTER_WORD
                 gravity = Gravity.CENTER
-                setAutoSizeTextTypeUniformWithConfiguration(10, 20, 1, 0)
                 setTextColor(linearLayout.context.resources.getColor(getForegroundColor(), null))
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -132,6 +131,7 @@ class MenuItem(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 )
+                gravity = Gravity.CENTER
                 setPadding(padding, 0, padding, padding)
                 visibility = View.GONE // Initially hidden
                 view?.addView(this)
