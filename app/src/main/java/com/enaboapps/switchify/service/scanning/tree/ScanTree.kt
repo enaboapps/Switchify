@@ -496,9 +496,10 @@ class ScanTree(
     }
 
     /**
-     * This function clears the scanning tree
+     * This function clears the scanning tree and resets the state
      */
     fun clearTree() {
+        reset()
         tree.clear()
     }
 }
