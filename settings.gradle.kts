@@ -4,10 +4,11 @@ pluginManagement {
         google()
         mavenCentral()
         maven {
-            url = "https://maven.fleksy.com/maven"
+            url = uri("https://maven.fleksy.com/maven")
         }
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -18,5 +19,6 @@ dependencyResolutionManagement {
         }
     }
 }
+
 rootProject.name = "Switchify"
-include ':app'
+include(":app")
