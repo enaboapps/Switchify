@@ -193,7 +193,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         } else if (x >= quadrantInfo?.end!!) {
             GesturePoint.x = quadrantInfo?.end!! - CursorUI.CURSOR_LINE_THICKNESS
         }
-        
+
         cursorUI.updateXCursorLine(GesturePoint.x)
     }
 

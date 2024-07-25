@@ -51,7 +51,11 @@ fun AddNewSwitchScreen(navController: NavController) {
     LaunchedEffect(isServiceEnabled) {
         // If the service is enabled, show a warning and pop back to the previous screen
         if (isServiceEnabled) {
-            Toast.makeText(context, "Please disable the Switchify service before adding a new switch", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                context,
+                "Please disable the Switchify service before adding a new switch",
+                Toast.LENGTH_LONG
+            ).show()
             navController.popBackStack()
         }
     }

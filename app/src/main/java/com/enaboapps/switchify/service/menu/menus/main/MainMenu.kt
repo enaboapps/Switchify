@@ -8,7 +8,6 @@ import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
 import com.enaboapps.switchify.service.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
-import com.enaboapps.switchify.service.utils.KeyboardBridge
 
 class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
     BaseMenu(accessibilityService, buildMainMenuItems(accessibilityService)) {

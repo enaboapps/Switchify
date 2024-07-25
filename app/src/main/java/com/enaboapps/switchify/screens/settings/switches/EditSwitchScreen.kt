@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,7 +23,10 @@ fun EditSwitchScreen(
     val verticalScrollState = rememberScrollState()
     Scaffold(
         topBar = {
-            NavBar(title = "Edit ${editSwitchScreenModel.name.value}", navController = navController)
+            NavBar(
+                title = "Edit ${editSwitchScreenModel.name.value}",
+                navController = navController
+            )
         }
     ) {
         Column(
@@ -34,7 +35,10 @@ fun EditSwitchScreen(
                 .padding(it)
         ) {
             SwitchActionPicker(title = "Press Action", action = editSwitchScreenModel.pressAction)
-            SwitchActionPicker(title = "Long Press Action", action = editSwitchScreenModel.longPressAction)
+            SwitchActionPicker(
+                title = "Long Press Action",
+                action = editSwitchScreenModel.longPressAction
+            )
             FullWidthButton(text = "Save", onClick = {
                 editSwitchScreenModel.save {
                     navController.popBackStack()

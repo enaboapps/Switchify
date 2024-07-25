@@ -43,7 +43,11 @@ fun PreferenceSwitch(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = title, style = MaterialTheme.typography.h6, fontWeight = FontWeight.Medium)
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.h6,
+                    fontWeight = FontWeight.Medium
+                )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = summary, style = MaterialTheme.typography.caption)
             }

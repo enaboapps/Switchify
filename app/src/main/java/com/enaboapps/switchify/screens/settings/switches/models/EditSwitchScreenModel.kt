@@ -9,7 +9,7 @@ import com.enaboapps.switchify.switches.SwitchEventStore
 class EditSwitchScreenModel(
     private val code: String,
     private val store: SwitchEventStore
-): ViewModel() {
+) : ViewModel() {
 
     val name = MutableLiveData("")
     val pressAction = MutableLiveData(SwitchAction(SwitchAction.Actions.ACTION_SELECT))

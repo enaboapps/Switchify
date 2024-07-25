@@ -9,7 +9,6 @@ import android.os.Looper
 import android.view.Gravity
 import android.view.WindowManager
 import android.widget.ImageView
-import kotlin.math.abs
 
 class GestureDrawing(private val context: Context) {
 
@@ -77,7 +76,8 @@ class GestureDrawing(private val context: Context) {
         layoutParams.format = PixelFormat.TRANSPARENT
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-        layoutParams.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        layoutParams.layoutInDisplayCutoutMode =
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         windowManager.addView(gestureIndicatorView, layoutParams)
 
         // Remove the line after the specified time

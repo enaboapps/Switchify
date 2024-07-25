@@ -11,7 +11,8 @@ import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
 
-class AddNewSwitchScreenModel(private val context: Context, private val store: SwitchEventStore): ViewModel() {
+class AddNewSwitchScreenModel(private val context: Context, private val store: SwitchEventStore) :
+    ViewModel() {
 
     private val TAG = "AddNewSwitchScreenModel"
 
@@ -45,7 +46,12 @@ class AddNewSwitchScreenModel(private val context: Context, private val store: S
 
     fun save() {
         if (shouldSave.value == true) {
-            val event = SwitchEvent(name = name.value!!, code = code.toString(), pressAction = pressAction.value!!, longPressAction = longPressAction.value!!)
+            val event = SwitchEvent(
+                name = name.value!!,
+                code = code.toString(),
+                pressAction = pressAction.value!!,
+                longPressAction = longPressAction.value!!
+            )
             if (store.find(event.code) == null) {
                 store.add(event)
             } else {
