@@ -2,10 +2,15 @@ import java.io.ByteArrayOutputStream
 import java.util.Properties
 
 plugins {
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
+}
+
+composeCompiler {
+    enableStrongSkippingMode = true
 }
 
 android {

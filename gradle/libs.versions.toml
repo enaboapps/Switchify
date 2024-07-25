@@ -1,6 +1,6 @@
 [versions]
 compose = "1.6.8"
-kotlin = "1.9.20"
+kotlin = "2.0.0"
 agp = "8.5.1"
 core-ktx = "1.13.1"
 lifecycle-runtime-ktx = "2.8.4"
@@ -40,6 +40,7 @@ compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", versi
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose-runtime-livedata" }
 
 [plugins]
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
