@@ -31,6 +31,8 @@ class PredictionManager(private val context: Context, private val listener: Pred
     fun initialize() {
         val apiKey = BuildConfig.FLEKSY_API_KEY
         val secret = BuildConfig.FLEKSY_API_SECRET
+        println("API Key: $apiKey")
+        println("Secret: $secret")
         val licence = LibraryConfiguration.LicenseConfiguration(apiKey, secret)
         val languageFile = predictionLanguageManager.getFleksyLanguage()
         val config = LibraryConfiguration(licence)
