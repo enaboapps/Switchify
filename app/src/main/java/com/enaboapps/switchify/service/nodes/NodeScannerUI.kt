@@ -1,7 +1,7 @@
 package com.enaboapps.switchify.service.nodes
 
 import android.widget.RelativeLayout
-import com.enaboapps.switchify.R
+import com.enaboapps.switchify.service.scanning.ScanBorder
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 class NodeScannerUI {
@@ -19,8 +19,8 @@ class NodeScannerUI {
     fun showItemBounds(x: Int, y: Int, width: Int, height: Int) {
         handler.post {
             itemBoundsLayout = RelativeLayout(window.getContext())
-            itemBoundsLayout?.background =
-                window.getContext()?.getDrawable(R.drawable.scan_item_border)
+            val border = ScanBorder("#FF0000")
+            itemBoundsLayout?.background = border
             itemBoundsLayout?.let {
                 window.addView(it, x, y, width, height)
             }
@@ -30,8 +30,8 @@ class NodeScannerUI {
     fun showRowBounds(x: Int, y: Int, width: Int, height: Int) {
         handler.post {
             rowBoundsLayout = RelativeLayout(window.getContext())
-            rowBoundsLayout?.background =
-                window.getContext()?.getDrawable(R.drawable.scan_row_border)
+            val border = ScanBorder("#00FF00")
+            rowBoundsLayout?.background = border
             rowBoundsLayout?.let {
                 window.addView(it, x, y, width, height)
             }
