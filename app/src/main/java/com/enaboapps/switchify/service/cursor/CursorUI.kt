@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Handler
 import android.widget.RelativeLayout
+import com.enaboapps.switchify.service.scanning.ScanColorManager
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 class CursorUI(private val context: Context, private val handler: Handler) {
@@ -17,9 +18,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
     // Constants for cursor and quadrant appearance
     companion object {
         const val CURSOR_LINE_THICKNESS = 10
-        private const val CURSOR_LINE_COLOR = Color.RED
         private const val QUADRANT_ALPHA = 0.5f
-        private const val QUADRANT_COLOR = Color.BLUE
 
         /**
          * This function determines the number of quadrants
@@ -70,7 +69,8 @@ class CursorUI(private val context: Context, private val handler: Handler) {
         val yPosition = CursorBounds.Y_MIN
         val height = CursorBounds.height(context)
         xCursorLine = RelativeLayout(context).apply {
-            setBackgroundColor(CURSOR_LINE_COLOR)
+            val color = ScanColorManager.getScanColorSetFromPreferences(context).secondaryColor
+            setBackgroundColor(Color.parseColor(color))
         }
         handler.post {
             xCursorLine?.let {
@@ -87,7 +87,8 @@ class CursorUI(private val context: Context, private val handler: Handler) {
         val yPosition = CursorBounds.Y_MIN + (quadrantNumber * getQuadrantHeight())
         val width = CursorBounds.width(context)
         yCursorLine = RelativeLayout(context).apply {
-            setBackgroundColor(CURSOR_LINE_COLOR)
+            val color = ScanColorManager.getScanColorSetFromPreferences(context).secondaryColor
+            setBackgroundColor(Color.parseColor(color))
         }
         handler.post {
             yCursorLine?.let {
@@ -104,7 +105,13 @@ class CursorUI(private val context: Context, private val handler: Handler) {
         val height = CursorBounds.height(context)
         val xPosition = quadrantNumber * getQuadrantWidth()
         xQuadrant = RelativeLayout(context).apply {
-            setBackgroundColor(QUADRANT_COLOR)
+            setBackgroundColor(
+                Color.parseColor(
+                    ScanColorManager.getScanColorSetFromPreferences(
+                        context
+                    ).primaryColor
+                )
+            )
             alpha = QUADRANT_ALPHA
         }
         handler.post {
@@ -122,7 +129,13 @@ class CursorUI(private val context: Context, private val handler: Handler) {
         val width = CursorBounds.width(context)
         val yPosition = CursorBounds.Y_MIN + (quadrantNumber * getQuadrantHeight())
         yQuadrant = RelativeLayout(context).apply {
-            setBackgroundColor(QUADRANT_COLOR)
+            setBackgroundColor(
+                Color.parseColor(
+                    ScanColorManager.getScanColorSetFromPreferences(
+                        context
+                    ).primaryColor
+                )
+            )
             alpha = QUADRANT_ALPHA
         }
         handler.post {
