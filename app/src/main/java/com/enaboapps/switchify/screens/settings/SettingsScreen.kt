@@ -58,6 +58,13 @@ fun SettingsScreen(navController: NavController) {
                     navController = navController,
                     route = NavigationRoute.ScanMethod.name
                 )
+                Spacer(modifier = Modifier.padding(top = 16.dp))
+                PreferenceLink(
+                    title = "Scan Color",
+                    summary = "Configure the scan color",
+                    navController = navController,
+                    route = NavigationRoute.ScanColor.name
+                )
             }
             CursorSection(navController)
             if (mode.id == ScanMode.Modes.MODE_AUTO) {

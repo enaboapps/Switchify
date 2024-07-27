@@ -1,6 +1,12 @@
 package com.enaboapps.switchify.service.scanning
 
-class ScanConstants {
+import android.content.Context
+import com.enaboapps.switchify.preferences.PreferenceManager
+
+/**
+ * This class manages the scan colors
+ */
+class ScanColorManager {
     /**
      * This object represents a scan color set
      * @param name The name of the color set
@@ -35,6 +41,29 @@ class ScanConstants {
                 }
             }
             return SCAN_COLOR_SETS[0]
+        }
+
+        /**
+         * Get scan color set from preferences
+         */
+        fun getScanColorSetFromPreferences(context: Context): ScanColorSet {
+            val preferenceManager = PreferenceManager(context)
+            val scanColorSetName =
+                preferenceManager.getStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_COLOR_SET)
+            return getScanColorSetByName(scanColorSetName)
+        }
+
+        /**
+         * Set scan color set to preferences
+         * @param context The context of the caller
+         * @param scanColorSetName The name of the color set
+         */
+        fun setScanColorSetToPreferences(context: Context, scanColorSetName: String) {
+            val preferenceManager = PreferenceManager(context)
+            preferenceManager.setStringValue(
+                PreferenceManager.Keys.PREFERENCE_KEY_SCAN_COLOR_SET,
+                scanColorSetName
+            )
         }
     }
 }

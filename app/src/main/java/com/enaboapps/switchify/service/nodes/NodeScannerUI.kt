@@ -2,7 +2,7 @@ package com.enaboapps.switchify.service.nodes
 
 import android.widget.RelativeLayout
 import com.enaboapps.switchify.service.scanning.ScanBorder
-import com.enaboapps.switchify.service.scanning.ScanConstants
+import com.enaboapps.switchify.service.scanning.ScanColorManager
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 class NodeScannerUI {
@@ -19,24 +19,28 @@ class NodeScannerUI {
 
     fun showItemBounds(x: Int, y: Int, width: Int, height: Int) {
         handler.post {
-            itemBoundsLayout = RelativeLayout(window.getContext())
-            val border =
-                ScanBorder(ScanConstants.getScanColorSetByName("Blue and Red").secondaryColor)
-            itemBoundsLayout?.background = border
-            itemBoundsLayout?.let {
-                window.addView(it, x, y, width, height)
+            window.getContext()?.let {
+                itemBoundsLayout = RelativeLayout(it)
+                val border =
+                    ScanBorder(ScanColorManager.getScanColorSetFromPreferences(it).secondaryColor)
+                itemBoundsLayout?.background = border
+                itemBoundsLayout?.let { layout ->
+                    window.addView(layout, x, y, width, height)
+                }
             }
         }
     }
 
     fun showRowBounds(x: Int, y: Int, width: Int, height: Int) {
         handler.post {
-            rowBoundsLayout = RelativeLayout(window.getContext())
-            val border =
-                ScanBorder(ScanConstants.getScanColorSetByName("Blue and Red").primaryColor)
-            rowBoundsLayout?.background = border
-            rowBoundsLayout?.let {
-                window.addView(it, x, y, width, height)
+            window.getContext()?.let {
+                rowBoundsLayout = RelativeLayout(it)
+                val border =
+                    ScanBorder(ScanColorManager.getScanColorSetFromPreferences(it).primaryColor)
+                rowBoundsLayout?.background = border
+                rowBoundsLayout?.let { layout ->
+                    window.addView(layout, x, y, width, height)
+                }
             }
         }
     }
