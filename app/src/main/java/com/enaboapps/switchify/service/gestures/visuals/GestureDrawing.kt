@@ -9,6 +9,7 @@ import android.os.Looper
 import android.view.Gravity
 import android.view.WindowManager
 import android.widget.ImageView
+import com.enaboapps.switchify.service.scanning.ScanColorManager
 
 class GestureDrawing(private val context: Context) {
 
@@ -26,7 +27,13 @@ class GestureDrawing(private val context: Context) {
 
         val gradientDrawable = GradientDrawable()
         gradientDrawable.shape = GradientDrawable.OVAL
-        gradientDrawable.setColor(Color.RED)
+        gradientDrawable.setColor(
+            Color.parseColor(
+                ScanColorManager.getScanColorSetFromPreferences(
+                    context
+                ).secondaryColor
+            )
+        )
         gradientDrawable.setSize(circleSize, circleSize)
 
         val circle = ImageView(context)
