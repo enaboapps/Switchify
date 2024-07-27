@@ -2,16 +2,19 @@ package com.enaboapps.switchify.service.gestures.visuals
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.view.View
+import com.enaboapps.switchify.service.scanning.ScanColorManager
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
 class GestureIndicatorView(context: Context) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFFFF0000.toInt() // Red color for the gesture indicator
+        color =
+            Color.parseColor(ScanColorManager.getScanColorSetFromPreferences(context).secondaryColor)
         strokeWidth = 8f
         style = Paint.Style.STROKE
     }
