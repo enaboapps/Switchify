@@ -1,8 +1,8 @@
 package com.enaboapps.switchify.service.nodes
 
 import android.widget.RelativeLayout
-import com.enaboapps.switchify.service.scanning.ScanBorder
 import com.enaboapps.switchify.service.scanning.ScanColorManager
+import com.enaboapps.switchify.service.scanning.ScanHighlightDrawable
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
 class NodeScannerUI {
@@ -22,7 +22,7 @@ class NodeScannerUI {
             window.getContext()?.let {
                 itemBoundsLayout = RelativeLayout(it)
                 val border =
-                    ScanBorder(ScanColorManager.getScanColorSetFromPreferences(it).secondaryColor)
+                    ScanHighlightDrawable(ScanColorManager.getScanColorSetFromPreferences(it).secondaryColor)
                 itemBoundsLayout?.background = border
                 itemBoundsLayout?.let { layout ->
                     window.addView(layout, x, y, width, height)
@@ -36,7 +36,7 @@ class NodeScannerUI {
             window.getContext()?.let {
                 rowBoundsLayout = RelativeLayout(it)
                 val border =
-                    ScanBorder(ScanColorManager.getScanColorSetFromPreferences(it).primaryColor)
+                    ScanHighlightDrawable(ScanColorManager.getScanColorSetFromPreferences(it).primaryColor)
                 rowBoundsLayout?.background = border
                 rowBoundsLayout?.let { layout ->
                     window.addView(layout, x, y, width, height)
