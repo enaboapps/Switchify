@@ -113,7 +113,7 @@ class MenuView(
         // This way the user can see the content behind the menu
         val transparency = GestureManager.getInstance().isPointCloseToCenter()
         baseLayout = LinearLayout(context)
-        baseLayout.alpha = if (transparency) 0.6f else 1f
+        baseLayout.alpha = if (transparency) 0.8f else 1f
         baseLayout.orientation = LinearLayout.VERTICAL
         baseLayout.setPadding(20, 20, 20, 20)
         baseLayout.background = ResourcesCompat.getDrawable(
