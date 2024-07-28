@@ -63,15 +63,17 @@ class MenuItem(
      * Inflate the menu item
      * @param linearLayout The linear layout to inflate the menu item into
      * @param margins The margins of the menu item
+     * @param width The width of the menu item
+     * @param height The height of the menu item
      */
-    fun inflate(linearLayout: LinearLayout, margins: Int) {
-        val width = ScreenUtils.dpToPx(linearLayout.context, 95)
-        val height = ScreenUtils.dpToPx(linearLayout.context, 85)
+    fun inflate(linearLayout: LinearLayout, margins: Int, width: Int = 95, height: Int = 85) {
+        val widthPx = ScreenUtils.dpToPx(linearLayout.context, width)
+        val heightPx = ScreenUtils.dpToPx(linearLayout.context, height)
 
         highlighted = false
 
         view = LinearLayout(linearLayout.context).apply {
-            layoutParams = LinearLayout.LayoutParams(width, height).apply {
+            layoutParams = LinearLayout.LayoutParams(widthPx, heightPx).apply {
                 // Add margins to create gaps
                 topMargin = margins
                 bottomMargin = margins
