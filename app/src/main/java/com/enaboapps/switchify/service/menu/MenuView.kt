@@ -71,14 +71,13 @@ class MenuView(
             pageItems.chunked(2).forEach { rowItems ->
                 rows.add(rowItems)
             }
-            // Add the navigation row
-            rows.add(navRowItems)
 
             // Add the menu page
             menuPages.add(
                 MenuPage(
                     context,
                     rows,
+                    navRowItems,
                     i,
                     numOfPages - 1,
                     ::onMenuPageChanged
