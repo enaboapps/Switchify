@@ -72,17 +72,17 @@ class MenuPage(
 
         val navButtonView = createNavButtonView()
         navRowItems.forEach { menuItem ->
-            menuItem.inflate(navButtonView, margin)
+            menuItem.inflate(navButtonView, margin, 75, 65)
         }
 
         if (maxPageIndex > 0) {
             menuChangeBtn = MenuItem(
                 drawableId = R.drawable.ic_change_menu_page,
-                drawableDescription = "Change menu page",
+                drawableDescription = "Change page",
                 closeOnSelect = false,
                 action = { changePage() }
             )
-            menuChangeBtn?.inflate(navButtonView, margin)
+            menuChangeBtn?.inflate(navButtonView, margin, 75, 65)
         }
 
         baseLayout.addView(navButtonView)
