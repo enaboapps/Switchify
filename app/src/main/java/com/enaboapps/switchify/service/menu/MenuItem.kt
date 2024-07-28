@@ -62,15 +62,22 @@ class MenuItem(
     /**
      * Inflate the menu item
      * @param linearLayout The linear layout to inflate the menu item into
+     * @param margins The margins of the menu item
      */
-    fun inflate(linearLayout: LinearLayout) {
+    fun inflate(linearLayout: LinearLayout, margins: Int) {
         val width = ScreenUtils.dpToPx(linearLayout.context, 95)
         val height = ScreenUtils.dpToPx(linearLayout.context, 85)
 
         highlighted = false
 
         view = LinearLayout(linearLayout.context).apply {
-            layoutParams = LinearLayout.LayoutParams(width, height)
+            layoutParams = LinearLayout.LayoutParams(width, height).apply {
+                // Add margins to create gaps
+                topMargin = margins
+                bottomMargin = margins
+                leftMargin = margins
+                rightMargin = margins
+            }
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             background = ResourcesCompat.getDrawable(
@@ -159,9 +166,9 @@ class MenuItem(
      */
     private fun getForegroundColor(): Int {
         return if (highlighted) {
-            android.R.color.black
+            android.R.color.holo_orange_dark
         } else {
-            android.R.color.white
+            android.R.color.holo_red_light
         }
     }
 
