@@ -60,17 +60,19 @@ class MenuPage(
     fun getMenuLayout(): LinearLayout {
         baseLayout.removeAllViews()
 
+        val margin = 8
+
         rowsOfMenuItems.forEach { rowItems ->
             val rowLayout = createRowLayout()
             rowItems.forEach { menuItem ->
-                menuItem.inflate(rowLayout)
+                menuItem.inflate(rowLayout, margin)
             }
             baseLayout.addView(rowLayout)
         }
 
         val navButtonView = createNavButtonView()
         navRowItems.forEach { menuItem ->
-            menuItem.inflate(navButtonView)
+            menuItem.inflate(navButtonView, margin)
         }
 
         if (maxPageIndex > 0) {
@@ -80,7 +82,7 @@ class MenuPage(
                 closeOnSelect = false,
                 action = { changePage() }
             )
-            menuChangeBtn?.inflate(navButtonView)
+            menuChangeBtn?.inflate(navButtonView, margin)
         }
 
         baseLayout.addView(navButtonView)
