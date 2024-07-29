@@ -96,12 +96,15 @@ class MenuPage(
      * @return The navigation items of the page
      */
     private fun createNavButtonView(): LinearLayout {
-        val navButtonView = LinearLayout(context).apply {
+        return LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
-            ).also { it.gravity = Gravity.CENTER_HORIZONTAL }
+            ).also {
+                it.gravity = Gravity.CENTER_HORIZONTAL
+                it.topMargin = 24
+            }
             // Purple background
             background = ResourcesCompat.getDrawable(
                 context.resources,
@@ -110,7 +113,6 @@ class MenuPage(
             )
             setPadding(20, 20, 20, 20)
         }
-        return navButtonView
     }
 
 
