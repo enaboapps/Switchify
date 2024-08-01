@@ -59,7 +59,7 @@ sealed class KeyType {
 }
 
 enum class KeyboardLayoutType {
-    AlphabeticLower, AlphabeticUpper, SymbolsPageOne, SymbolsPageTwo
+    AlphabeticLower, AlphabeticUpper, SymbolsPageOne, SymbolsPageTwo, NumPad
 }
 
 enum class KeyboardLayoutState {
@@ -218,11 +218,37 @@ object KeyboardLayoutManager {
         )
     )
 
+    private val numPad = listOf(
+        listOf(
+            KeyType.Character("1"),
+            KeyType.Character("2"),
+            KeyType.Character("3")
+        ),
+        listOf(
+            KeyType.Character("4"),
+            KeyType.Character("5"),
+            KeyType.Character("6")
+        ),
+        listOf(
+            KeyType.Character("7"),
+            KeyType.Character("8"),
+            KeyType.Character("9")
+        ),
+        listOf(
+            KeyType.Character("."),
+            KeyType.Character("0"),
+            KeyType.Backspace,
+            KeyType.Return,
+            KeyType.HideKeyboard
+        )
+    )
+
     private val layouts = mapOf(
         KeyboardLayoutType.AlphabeticLower to alphabeticLowerLayout,
         KeyboardLayoutType.AlphabeticUpper to alphabeticUpperLayout,
         KeyboardLayoutType.SymbolsPageOne to symbolsOneLayout,
-        KeyboardLayoutType.SymbolsPageTwo to symbolsTwoLayout
+        KeyboardLayoutType.SymbolsPageTwo to symbolsTwoLayout,
+        KeyboardLayoutType.NumPad to numPad
     )
 
     val currentLayout: List<List<KeyType>>
@@ -249,5 +275,9 @@ object KeyboardLayoutManager {
             switchLayout(if (currentLayoutState == KeyboardLayoutState.Lower) KeyboardLayoutType.AlphabeticLower else KeyboardLayoutType.AlphabeticUpper)
         }
         listener?.onLayoutChanged(currentLayoutType)
+    }
+
+    fun isAlphabeticLayout(): Boolean {
+        return currentLayoutType == KeyboardLayoutType.AlphabeticLower || currentLayoutType == KeyboardLayoutType.AlphabeticUpper
     }
 }
