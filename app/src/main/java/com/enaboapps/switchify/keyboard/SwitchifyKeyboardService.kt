@@ -136,6 +136,15 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
      */
     private fun resetKeyboardLayout() {
         KeyboardLayoutManager.setLayoutState(KeyboardLayoutState.Lower)
+
+        // If the input field requires a number pad, switch to the number pad layout
+        if (currentInputEditorInfo?.inputType == EditorInfo.TYPE_CLASS_NUMBER ||
+            currentInputEditorInfo?.inputType == EditorInfo.TYPE_CLASS_PHONE
+        ) {
+            KeyboardLayoutManager.switchLayout(KeyboardLayoutType.NumPad)
+        } else {
+            KeyboardLayoutManager.switchLayout(KeyboardLayoutType.AlphabeticLower)
+        }
     }
 
     /**
@@ -188,8 +197,13 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
      * and a new key button for each key type in the row.
      */
     private fun initializeKeyboardLayout(keyboardLayout: LinearLayout) {
-        // Set up the predictions view
-        keyboardLayout.addView(predictionView)
+        // Clear the keyboard layout
+        keyboardLayout.removeAllViews()
+
+        // Set up the predictions view if we need it for the current layout
+        if (KeyboardLayoutManager.isAlphabeticLayout()) {
+            keyboardLayout.addView(predictionView)
+        }
 
         KeyboardLayoutManager.currentLayout.forEach { row ->
             val rowLayout = LinearLayout(this).apply {
@@ -268,7 +282,7 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
      * This method updates the shift state of the keyboard based on the current text.
      */
     private fun updateShiftState() {
-        if (KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Caps) {
+        if (KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Caps && KeyboardLayoutManager.isAlphabeticLayout()) {
             return
         }
 
