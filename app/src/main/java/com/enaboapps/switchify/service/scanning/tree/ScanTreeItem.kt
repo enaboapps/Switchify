@@ -7,21 +7,18 @@ import com.enaboapps.switchify.service.scanning.ScanNodeInterface
  * This class represents an item in the scan tree
  * @property children The children of the item
  * @property y The y coordinate of the item
- * @property individualHighlighting If the children should be highlighted individually
  */
 class ScanTreeItem(
     val children: List<ScanNodeInterface>,
-    val y: Int,
-    private val individualHighlighting: Boolean
+    val y: Int
 ) {
     /**
      * This function highlights the item
      */
     fun highlight() {
-        if (individualHighlighting || children.size == 1) {
+        if (children.size == 1) {
             children.forEach { it.highlight() }
         } else {
-            unhighlight()
             NodeScannerUI.instance.showRowBounds(getX(), y, getWidth(), getHeight())
         }
     }
@@ -30,7 +27,7 @@ class ScanTreeItem(
      * This function unhighlights the item
      */
     fun unhighlight() {
-        if (individualHighlighting || children.size == 1) {
+        if (children.size == 1) {
             children.forEach { it.unhighlight() }
         } else {
             NodeScannerUI.instance.hideRowBounds()

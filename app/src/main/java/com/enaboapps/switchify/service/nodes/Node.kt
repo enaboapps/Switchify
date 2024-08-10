@@ -5,13 +5,16 @@ import android.view.accessibility.AccessibilityNodeInfo
 import com.enaboapps.switchify.keyboard.KeyInfo
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
+import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 
 /**
  * This class represents a node
  */
-class Node : ScanNodeInterface {
+class Node(
+    private var select: (() -> Unit?)? = null
+) : ScanNodeInterface {
     private var nodeInfo: AccessibilityNodeInfo? = null
     private var x: Int = 0
     private var y: Int = 0
@@ -55,6 +58,22 @@ class Node : ScanNodeInterface {
             node.centerY = keyInfo.y + keyInfo.height / 2
             node.width = keyInfo.width
             node.height = keyInfo.height
+            return node
+        }
+
+        /**
+         * This function creates a node from a MenuItem object
+         * @param menuItem The MenuItem object
+         * @return The node
+         */
+        fun fromMenuItem(menuItem: MenuItem): Node {
+            val node = Node { menuItem.select() }
+            node.x = menuItem.x
+            node.y = menuItem.y
+            node.centerX = menuItem.x + menuItem.width / 2
+            node.centerY = menuItem.y + menuItem.height / 2
+            node.width = menuItem.width
+            node.height = menuItem.height
             return node
         }
     }
@@ -117,13 +136,17 @@ class Node : ScanNodeInterface {
     override fun select() {
         unhighlight()
 
-        GesturePoint.x = centerX
-        GesturePoint.y = centerY
+        if (select == null) {
+            GesturePoint.x = centerX
+            GesturePoint.y = centerY
 
-        AutoSelectionHandler.setSelectAction {
-            GestureManager.getInstance().performTap()
+            AutoSelectionHandler.setSelectAction {
+                GestureManager.getInstance().performTap()
+            }
+            AutoSelectionHandler.performSelectionAction()
+        } else {
+            select?.invoke()
         }
-        AutoSelectionHandler.performSelectionAction()
     }
 
 

@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.widget.LinearLayout
 import androidx.core.content.res.ResourcesCompat
 import com.enaboapps.switchify.R
+import com.enaboapps.switchify.service.nodes.Node
 
 /**
  * This class represents a page of the menu
@@ -50,6 +51,21 @@ class MenuPage(
         menuItems.addAll(navRowItems)
         menuChangeBtn?.let { menuItems.add(it) }
         return menuItems
+    }
+
+
+    /**
+     * Translate the menu items to nodes
+     * @return The nodes of the menu items
+     */
+    fun translateMenuItemsToNodes(): List<Node> {
+        val nodes = mutableListOf<Node>()
+        getMenuItems().forEach { menuItem ->
+            nodes.add(
+                Node.fromMenuItem(menuItem)
+            )
+        }
+        return nodes
     }
 
 

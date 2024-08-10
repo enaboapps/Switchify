@@ -14,13 +14,11 @@ import kotlin.math.abs
  * This class represents the scanning tree
  * @param context The context
  * @param stopScanningOnSelect Whether to stop scanning on select
- * @param individualHighlightingItemsInTreeItem Whether to highlight items individually in an item
  */
 
 class ScanTree(
     private val context: Context,
-    private var stopScanningOnSelect: Boolean = false,
-    private var individualHighlightingItemsInTreeItem: Boolean = true
+    private var stopScanningOnSelect: Boolean = false
 ) : ScanStateInterface {
     /**
      * This property represents the scanning tree
@@ -144,12 +142,12 @@ class ScanTree(
             val sorted = children.sortedBy { it.getLeft() }
             if (scanSettings.isRowColumnScanEnabled()) {
                 val item =
-                    ScanTreeItem(sorted, sorted[0].getTop(), individualHighlightingItemsInTreeItem)
+                    ScanTreeItem(sorted, sorted[0].getTop())
                 tree.add(item)
             } else {
                 sorted.forEach {
                     val item =
-                        ScanTreeItem(listOf(it), it.getTop(), individualHighlightingItemsInTreeItem)
+                        ScanTreeItem(listOf(it), it.getTop())
                     tree.add(item)
                 }
             }
