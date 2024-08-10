@@ -98,8 +98,7 @@ class NodeScanner : NodeUpdateDelegate {
         startTimeoutToRevertToCursor()
         scanTree = ScanTree(
             context = context,
-            stopScanningOnSelect = true,
-            individualHighlightingItemsInTreeItem = false
+            stopScanningOnSelect = true
         )
     }
 

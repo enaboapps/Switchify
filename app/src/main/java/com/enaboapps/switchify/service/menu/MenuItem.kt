@@ -1,7 +1,6 @@
 package com.enaboapps.switchify.service.menu
 
 import android.graphics.text.LineBreaker
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.ImageView
@@ -9,8 +8,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
-import com.enaboapps.switchify.R
-import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.utils.ScreenUtils
 
 /**
@@ -33,12 +30,7 @@ class MenuItem(
     var isMenuHierarchyManipulator: Boolean = false,
     var page: Int = 0,
     private val action: () -> Unit
-) : ScanNodeInterface {
-    /**
-     * The highlighted state of the menu item
-     */
-    private var highlighted = false
-
+) {
     /**
      * The view of the menu item
      */
@@ -69,8 +61,6 @@ class MenuItem(
     fun inflate(linearLayout: LinearLayout, margins: Int, width: Int = 95, height: Int = 85) {
         val widthPx = ScreenUtils.dpToPx(linearLayout.context, width)
         val heightPx = ScreenUtils.dpToPx(linearLayout.context, height)
-
-        highlighted = false
 
         view = LinearLayout(linearLayout.context).apply {
             layoutParams = LinearLayout.LayoutParams(widthPx, heightPx).apply {
@@ -151,34 +141,9 @@ class MenuItem(
     }
 
     /**
-     * Get the correct background drawable for the menu item
-     * @return The background drawable
-     */
-    private fun getBackgroundDrawable(): Int {
-        return if (highlighted) {
-            R.drawable.menu_item_background_highlighted
-        } else {
-            R.drawable.menu_item_background
-        }
-    }
-
-    /**
-     * Get the correct foreground color for the menu item
-     * @return The foreground color
-     */
-    private fun getForegroundColor(): Int {
-        return if (highlighted) {
-            android.R.color.holo_orange_dark
-        } else {
-            android.R.color.holo_red_light
-        }
-    }
-
-    /**
      * Select the menu item
      */
-    override fun select() {
-        Log.d("MenuItem", "Selected menu item: $text")
+    fun select() {
         if (!isLinkToMenu && !isMenuHierarchyManipulator && closeOnSelect) {
             MenuManager.getInstance().closeMenuHierarchy()
         }
@@ -186,102 +151,56 @@ class MenuItem(
     }
 
     /**
-     * Highlight the menu item
+     * Get the background drawable
+     * @return The background drawable
      */
-    override fun highlight() {
-        view?.post {
-            try {
-                highlighted = true
-                view?.background = ResourcesCompat.getDrawable(
-                    view?.context?.resources!!,
-                    getBackgroundDrawable(),
-                    null
-                )
-                textView?.setTextColor(
-                    textView?.context?.resources?.getColor(
-                        getForegroundColor(),
-                        null
-                    )!!
-                )
-                imageView?.setColorFilter(
-                    imageView?.context?.resources?.getColor(
-                        getForegroundColor(),
-                        null
-                    )!!
-                )
-                drawableDescriptionTextView?.setTextColor(
-                    drawableDescriptionTextView?.context?.resources?.getColor(
-                        getForegroundColor(),
-                        null
-                    )!!
-                )
-                drawableDescriptionTextView?.visibility = View.VISIBLE
-            } catch (e: Exception) {
-                Log.e("MenuItem", "Error highlighting menu item", e)
-            }
-        }
+    private fun getBackgroundDrawable(): Int {
+        return android.R.color.transparent
     }
 
     /**
-     * Unhighlight the menu item
+     * Get the foreground color
+     * @return The foreground color
      */
-    override fun unhighlight() {
-        view?.post {
-            try {
-                highlighted = false
-                view?.background = ResourcesCompat.getDrawable(
-                    view?.context?.resources!!,
-                    getBackgroundDrawable(),
-                    null
-                )
-                textView?.setTextColor(
-                    textView?.context?.resources?.getColor(
-                        getForegroundColor(),
-                        null
-                    )!!
-                )
-                imageView?.setColorFilter(
-                    imageView?.context?.resources?.getColor(
-                        getForegroundColor(),
-                        null
-                    )!!
-                )
-                drawableDescriptionTextView?.visibility = View.GONE
-            } catch (e: Exception) {
-                Log.e("MenuItem", "Error unhighlighting menu item", e)
-            }
-        }
+    private fun getForegroundColor(): Int {
+        return android.R.color.white
     }
 
-    override fun getMidX(): Int {
+    /**
+     * Get the location of the menu item on the screen
+     * @return The location of the menu item on the screen
+     */
+    private fun getLocationOnScreen(): IntArray {
         val location = IntArray(2)
         view?.getLocationOnScreen(location)
-        return location[0] + (view?.width ?: 0) / 2
+        return location
     }
 
-    override fun getMidY(): Int {
-        val location = IntArray(2)
-        view?.getLocationOnScreen(location)
-        return location[1] + (view?.height ?: 0) / 2
-    }
+    /**
+     * Get the x coordinate of the menu item
+     * @return The x coordinate of the menu item
+     */
+    val x: Int
+        get() = getLocationOnScreen()[0]
 
-    override fun getLeft(): Int {
-        val location = IntArray(2)
-        view?.getLocationOnScreen(location)
-        return location[0]
-    }
+    /**
+     * Get the y coordinate of the menu item
+     * @return The y coordinate of the menu item
+     */
+    val y: Int
+        get() = getLocationOnScreen()[1]
 
-    override fun getTop(): Int {
-        val location = IntArray(2)
-        view?.getLocationOnScreen(location)
-        return location[1]
-    }
+    /**
+     * Get the width of the menu item
+     * @return The width of the menu item
+     */
+    val width: Int
+        get() = view?.width ?: 0
 
-    override fun getWidth(): Int {
-        return view?.width ?: 0
-    }
-
-    override fun getHeight(): Int {
-        return view?.height ?: 0
-    }
+    /**
+     * Get the height of the menu item
+     * @return The height of the menu item
+     */
+    val height: Int
+        get() = view?.height ?: 0
 }
