@@ -1,7 +1,7 @@
 [versions]
 compose = "1.6.8"
 kotlin = "2.0.0"
-agp = "8.5.1"
+agp = "8.5.2"
 core-ktx = "1.13.1"
 lifecycle-runtime-ktx = "2.8.4"
 activity-compose = "1.9.1"
