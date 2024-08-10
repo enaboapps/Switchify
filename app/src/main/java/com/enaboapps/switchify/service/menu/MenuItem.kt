@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.utils.ScreenUtils
 
 /**
@@ -155,7 +156,7 @@ class MenuItem(
      * @return The background drawable
      */
     private fun getBackgroundDrawable(): Int {
-        return android.R.color.transparent
+        return R.drawable.menu_item_background
     }
 
     /**
@@ -163,7 +164,7 @@ class MenuItem(
      * @return The foreground color
      */
     private fun getForegroundColor(): Int {
-        return android.R.color.white
+        return android.R.color.black
     }
 
     /**
