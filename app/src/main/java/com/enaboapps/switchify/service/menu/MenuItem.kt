@@ -2,7 +2,6 @@ package com.enaboapps.switchify.service.menu
 
 import android.graphics.text.LineBreaker
 import android.view.Gravity
-import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -133,7 +132,6 @@ class MenuItem(
                 )
                 gravity = Gravity.CENTER
                 setPadding(padding, 0, padding, padding)
-                visibility = View.GONE // Initially hidden
                 view?.addView(this)
             }
         }
