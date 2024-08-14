@@ -44,6 +44,12 @@ fun SettingsScreen(navController: NavController) {
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.Top
         ) {
+            PreferenceLink(
+                title = "Switches",
+                summary = "Configure your switches",
+                navController = navController,
+                route = NavigationRoute.Switches.name
+            )
             PreferenceSection(title = "Scanning") {
                 PreferenceLink(
                     title = "Scan Mode",
@@ -79,12 +85,6 @@ fun SettingsScreen(navController: NavController) {
             SelectionSection(settingsScreenModel)
             ItemScanSection(settingsScreenModel)
             KeyboardSection(navController)
-            PreferenceLink(
-                title = "Switches",
-                summary = "Configure your switches",
-                navController = navController,
-                route = NavigationRoute.Switches.name
-            )
             Spacer(modifier = Modifier.padding(top = 16.dp))
             PreferenceLink(
                 title = "About",
