@@ -94,6 +94,14 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
             }
 
             item {
+                UICard(
+                    title = "How To Use",
+                    description = "Learn how to use Switchify.",
+                    onClick = { navController.navigate(NavigationRoute.HowToUse.name) }
+                )
+            }
+
+            item {
                 AccountCard(navController)
             }
         }
