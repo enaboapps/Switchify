@@ -266,6 +266,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         if (keyType is KeyType.HideKeyboard) {
             return ResourcesCompat.getDrawable(resources, R.drawable.ic_hide, null)
         }
+        if (keyType is KeyType.SwitchToNextInput) {
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_globe, null)
+        }
         if (keyType is KeyType.ShiftCaps) {
             return if (KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Lower ||
                 KeyboardLayoutManager.currentLayoutState == KeyboardLayoutState.Shift
@@ -339,6 +342,12 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
             KeyType.HideKeyboard -> {
                 requestHideSelf(0)
+            }
+
+            KeyType.SwitchToNextInput -> {
+                if (!switchToNextInputMethod(false)) {
+                    switchToPreviousInputMethod()
+                }
             }
 
             KeyType.SwitchToAlphabetic -> {
