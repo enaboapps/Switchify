@@ -37,6 +37,10 @@ sealed class KeyType {
         override fun toString() = "⌨"
     }
 
+    object SwitchToNextInput : KeyType() {
+        override fun toString() = "⇥"
+    }
+
     data class Special(val symbol: String) : KeyType() {
         override fun toString() = symbol
     }
@@ -116,9 +120,12 @@ object KeyboardLayoutManager {
         listOf(
             KeyType.SwitchToSymbols,
             KeyType.Space,
-            KeyType.Special("."),
+            KeyType.Special(".")
+        ),
+        listOf(
             KeyType.Clear,
             KeyType.Return,
+            KeyType.SwitchToNextInput,
             KeyType.HideKeyboard
         )
     )
@@ -170,7 +177,10 @@ object KeyboardLayoutManager {
         listOf(
             KeyType.SwitchToAlphabetic,
             KeyType.Space,
-            KeyType.Return,
+            KeyType.Return
+        ),
+        listOf(
+            KeyType.SwitchToNextInput,
             KeyType.HideKeyboard
         )
     )
@@ -213,7 +223,10 @@ object KeyboardLayoutManager {
         listOf(
             KeyType.SwitchToAlphabetic,
             KeyType.Space,
-            KeyType.Return,
+            KeyType.Return
+        ),
+        listOf(
+            KeyType.SwitchToNextInput,
             KeyType.HideKeyboard
         )
     )
@@ -237,7 +250,9 @@ object KeyboardLayoutManager {
         listOf(
             KeyType.Character("."),
             KeyType.Character("0"),
-            KeyType.Backspace,
+            KeyType.Backspace
+        ),
+        listOf(
             KeyType.Return,
             KeyType.HideKeyboard
         )
