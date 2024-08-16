@@ -14,6 +14,8 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
 
     companion object {
         private fun buildMainMenuItems(accessibilityService: SwitchifyAccessibilityService): List<MenuItem> {
+            val point = GesturePoint.getPoint()
+
             val menuItems = mutableListOf<MenuItem>()
 
             menuItems.add(MenuItem("Tap") {
@@ -23,6 +25,12 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
             menuItems.add(MenuItem("Gestures", isLinkToMenu = true) {
                 MenuManager.getInstance().openGesturesMenu()
             })
+
+            if (NodeExaminer.canPerformScrollActions(point)) {
+                menuItems.add(MenuItem("Scroll", isLinkToMenu = true) {
+                    MenuManager.getInstance().openScrollMenu()
+                })
+            }
 
             // Only add "Refine Selection" if the current scan method is not item scan
             if (ScanMethod.getType() != ScanMethod.MethodType.ITEM_SCAN) {

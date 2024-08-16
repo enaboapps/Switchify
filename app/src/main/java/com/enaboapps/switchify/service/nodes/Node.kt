@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.nodes
 
+import android.graphics.PointF
 import android.graphics.Rect
 import android.view.accessibility.AccessibilityNodeInfo
 import com.enaboapps.switchify.keyboard.KeyInfo
@@ -79,7 +80,13 @@ class Node(
     }
 
     enum class ActionType {
-        CUT, COPY, PASTE
+        CUT,
+        COPY,
+        PASTE,
+        SCROLL_UP,
+        SCROLL_DOWN,
+        SCROLL_LEFT,
+        SCROLL_RIGHT
     }
 
     fun isActionable(actionType: ActionType): Boolean {
@@ -92,11 +99,38 @@ class Node(
 
             ActionType.PASTE -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_PASTE)
                 ?: false
+
+            ActionType.SCROLL_UP -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_UP)
+                ?: false
+
+            ActionType.SCROLL_DOWN -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN)
+                ?: false
+
+            ActionType.SCROLL_LEFT -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_LEFT)
+                ?: false
+
+            ActionType.SCROLL_RIGHT -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_RIGHT)
+                ?: false
         }
     }
 
+    /**
+     * This function performs an action on the node
+     *
+     * @param action The action to perform
+     */
     fun performAction(action: Int) {
         nodeInfo?.performAction(action)
+    }
+
+    /**
+     * This function returns whether the node contains a point
+     *
+     * @param point The point to check
+     * @return True if the node contains the point, false otherwise
+     */
+    fun containsPoint(point: PointF): Boolean {
+        return point.x >= x && point.x <= x + width && point.y >= y && point.y <= y + height
     }
 
     override fun getMidX(): Int {
