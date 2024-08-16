@@ -12,8 +12,11 @@ Switchify is more than just a tool; it's a gateway to technology for those who m
 ## Get the app
 You can download the app from the [Google Play Store](https://play.google.com/store/apps/details?id=com.enaboapps.switchify)
 
+## Quick start
+To quickly get started with Switchify, read [this guide](https://remarkable-seahorse-584.notion.site/Switchify-Quick-Start-6c2cd04d12074fd6a5c07b69da3f14a6?v=0cdb6aa3368442c8bd6a7fff32225a39)
+
 ## Supported Android versions
-- Android 11 (API level 30) and above
+- Android 12 (API level 31) and above
 
 ## Features
 - [x] Full control of the device using a single switch or multiple switches
