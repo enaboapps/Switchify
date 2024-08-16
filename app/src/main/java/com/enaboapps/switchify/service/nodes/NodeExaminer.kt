@@ -28,8 +28,11 @@ object NodeExaminer {
     // Delegate to notify about node updates.
     var nodeUpdateDelegate: NodeUpdateDelegate? = null
 
-    // Holds the current list of nodes.
-    private var currentNodes: List<Node> = emptyList()
+    // Holds the list of all nodes.
+    private var allNodes: List<Node> = emptyList()
+
+    // Holds the list of actionable nodes.
+    private var actionableNodes: List<Node> = emptyList()
 
     // Scope for launching coroutines.
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
@@ -50,25 +53,32 @@ object NodeExaminer {
         examineJob?.cancel()
         examineJob = coroutineScope.launch {
             // Flatten the accessibility tree to get all nodes.
-            val allNodes = flattenTree(rootNode)
-            // Map each AccessibilityNodeInfo to a custom Node instance.
-            val newNodes = allNodes.map { Node.fromAccessibilityNodeInfo(it) }
+            val newNodeInfos = flattenTree(rootNode)
+
+            // Store all nodes for future reference.
+            allNodes = newNodeInfos.map { Node.fromAccessibilityNodeInfo(it) }
+
+            // Create a list of actionable nodes from the new nodes.
+            val newActionableNodes = newNodeInfos.filter { it.isClickable || it.isLongClickable }
+                .map { Node.fromAccessibilityNodeInfo(it) }
+
             // Get screen dimensions.
             val width = ScreenUtils.getWidth(context)
             val height = ScreenUtils.getHeight(context)
+
             // Filter nodes to those that are on-screen and have non-zero width and height.
-            val filteredNewNodes =
-                newNodes.filter {
+            val filteredNewActionableNodes =
+                newActionableNodes.filter {
                     it.getLeft() >= 0 && it.getTop() >= 0 &&
                             it.getLeft() <= width && it.getTop() <= height &&
                             it.getWidth() > 0 && it.getHeight() > 0
                 }
 
             // Compare the current nodes with the new ones using sets.
-            if (currentNodes.toSet() != filteredNewNodes.toSet()) {
-                currentNodes = filteredNewNodes
+            if (actionableNodes.toSet() != filteredNewActionableNodes.toSet()) {
+                actionableNodes = filteredNewActionableNodes
                 // Notify the delegate if there's an update.
-                nodeUpdateDelegate?.onNodesUpdated(currentNodes)
+                nodeUpdateDelegate?.onNodesUpdated(actionableNodes)
             }
         }
     }
@@ -82,24 +92,21 @@ object NodeExaminer {
      */
     private suspend fun flattenTree(rootNode: AccessibilityNodeInfo): List<AccessibilityNodeInfo> =
         withContext(Dispatchers.IO) {
-            val allNodes: MutableList<AccessibilityNodeInfo> = ArrayList()
+            val nodes: MutableList<AccessibilityNodeInfo> = ArrayList()
             val q: Queue<AccessibilityNodeInfo> = LinkedList()
             q.add(rootNode)
 
             while (q.isNotEmpty()) {
                 val node = q.poll()
-                node?.let {
-                    // Add actionable nodes to the list.
-                    if (node.isClickable) {
-                        allNodes.add(node)
-                    }
+                node?.let { accessibilityNodeInfo ->
+                    nodes.add(accessibilityNodeInfo)
                     // Add all child nodes to the queue for further examination.
                     for (i in 0 until node.childCount) {
                         node.getChild(i)?.let { q.add(it) }
                     }
                 }
             }
-            allNodes
+            nodes
         }
 
     /**
@@ -110,19 +117,27 @@ object NodeExaminer {
      * @return The node that can perform the given action at the given point.
      */
     fun findNodeForAction(point: PointF, actionType: Node.ActionType): Node? {
-        for (node in currentNodes) {
-            val width = node.getWidth()
-            val height = node.getHeight()
-            val left = node.getLeft()
-            val top = node.getTop()
-            if (point.x >= left && point.x <= left + width &&
-                point.y >= top && point.y <= top + height &&
-                node.isActionable(actionType)
-            ) {
+        allNodes.forEach { node ->
+            if (node.containsPoint(point) && node.isActionable(actionType)) {
                 return node
             }
         }
         return null
+    }
+
+    /**
+     * Checks if a node can perform any scroll actions at the given point.
+     * This method checks if any node can perform scroll up, down, left, or right actions.
+     *
+     * @param point The point to check for scroll actions.
+     * @return True if a node can perform any scroll actions at the given point, false otherwise.
+     */
+    fun canPerformScrollActions(point: PointF): Boolean {
+        val scrollUpNode = findNodeForAction(point, Node.ActionType.SCROLL_UP)
+        val scrollDownNode = findNodeForAction(point, Node.ActionType.SCROLL_DOWN)
+        val scrollLeftNode = findNodeForAction(point, Node.ActionType.SCROLL_LEFT)
+        val scrollRightNode = findNodeForAction(point, Node.ActionType.SCROLL_RIGHT)
+        return scrollUpNode != null || scrollDownNode != null || scrollLeftNode != null || scrollRightNode != null
     }
 
     /**
@@ -150,7 +165,7 @@ object NodeExaminer {
 
         val maxDistance = 200
 
-        for (node in currentNodes) {
+        for (node in actionableNodes) {
             val nodeCenter = PointF(node.getMidX().toFloat(), node.getMidY().toFloat())
             val distance = distanceBetweenPoints(point, nodeCenter)
             if (distance < maxDistance && distance < closestDistance) {
