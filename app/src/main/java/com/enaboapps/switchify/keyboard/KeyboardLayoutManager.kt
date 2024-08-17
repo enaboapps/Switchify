@@ -60,10 +60,18 @@ sealed class KeyType {
     object SwitchToAlphabetic : KeyType() {
         override fun toString() = "ABC"
     }
+
+    object SwitchToMenu : KeyType() {
+        override fun toString() = "⋮"
+    }
+
+    object CloseMenu : KeyType() {
+        override fun toString() = "⨉"
+    }
 }
 
 enum class KeyboardLayoutType {
-    AlphabeticLower, AlphabeticUpper, SymbolsPageOne, SymbolsPageTwo, NumPad
+    AlphabeticLower, AlphabeticUpper, SymbolsPageOne, SymbolsPageTwo, NumPad, Menu
 }
 
 enum class KeyboardLayoutState {
@@ -78,6 +86,7 @@ object KeyboardLayoutManager {
     var listener: KeyboardLayoutListener? = null
 
     private var currentLayoutType: KeyboardLayoutType = KeyboardLayoutType.AlphabeticLower
+    private var previousLayoutType: KeyboardLayoutType = KeyboardLayoutType.AlphabeticLower
 
     var currentLayoutState: KeyboardLayoutState = KeyboardLayoutState.Lower
 
@@ -120,12 +129,9 @@ object KeyboardLayoutManager {
         listOf(
             KeyType.SwitchToSymbols,
             KeyType.Space,
-            KeyType.Special(".")
-        ),
-        listOf(
+            KeyType.Special("."),
             KeyType.Clear,
-            KeyType.Return,
-            KeyType.SwitchToNextInput,
+            KeyType.SwitchToMenu,
             KeyType.HideKeyboard
         )
     )
@@ -177,10 +183,8 @@ object KeyboardLayoutManager {
         listOf(
             KeyType.SwitchToAlphabetic,
             KeyType.Space,
-            KeyType.Return
-        ),
-        listOf(
-            KeyType.SwitchToNextInput,
+            KeyType.Return,
+            KeyType.SwitchToMenu,
             KeyType.HideKeyboard
         )
     )
@@ -223,10 +227,8 @@ object KeyboardLayoutManager {
         listOf(
             KeyType.SwitchToAlphabetic,
             KeyType.Space,
-            KeyType.Return
-        ),
-        listOf(
-            KeyType.SwitchToNextInput,
+            KeyType.Return,
+            KeyType.SwitchToMenu,
             KeyType.HideKeyboard
         )
     )
@@ -250,7 +252,21 @@ object KeyboardLayoutManager {
         listOf(
             KeyType.Character("."),
             KeyType.Character("0"),
-            KeyType.Backspace
+            KeyType.Backspace,
+            KeyType.HideKeyboard
+        )
+    )
+
+    private val menuLayout = listOf(
+        listOf(
+            KeyType.CloseMenu,
+            KeyType.SwitchToNextInput
+        ),
+        listOf(
+            KeyType.SwitchToAlphabetic,
+            KeyType.SwitchToSymbols,
+            KeyType.SwitchToSymbolsOne,
+            KeyType.SwitchToSymbolsTwo
         ),
         listOf(
             KeyType.Return,
@@ -263,15 +279,21 @@ object KeyboardLayoutManager {
         KeyboardLayoutType.AlphabeticUpper to alphabeticUpperLayout,
         KeyboardLayoutType.SymbolsPageOne to symbolsOneLayout,
         KeyboardLayoutType.SymbolsPageTwo to symbolsTwoLayout,
-        KeyboardLayoutType.NumPad to numPad
+        KeyboardLayoutType.NumPad to numPad,
+        KeyboardLayoutType.Menu to menuLayout
     )
 
     val currentLayout: List<List<KeyType>>
         get() = layouts[currentLayoutType] ?: listOf()
 
     fun switchLayout(layoutType: KeyboardLayoutType) {
+        previousLayoutType = currentLayoutType
         currentLayoutType = layoutType
         listener?.onLayoutChanged(layoutType)
+    }
+
+    fun switchToPreviousLayout() {
+        switchLayout(previousLayoutType)
     }
 
     fun toggleState() {
