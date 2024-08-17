@@ -278,6 +278,12 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                 ResourcesCompat.getDrawable(resources, R.drawable.ic_caps, null)
             }
         }
+        if (keyType is KeyType.SwitchToMenu) {
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_keyboard_menu, null)
+        }
+        if (keyType is KeyType.CloseMenu) {
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_keyboard_menu_close, null)
+        }
         return null
     }
 
@@ -392,6 +398,14 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
             KeyType.SwitchToSymbolsTwo -> {
                 KeyboardLayoutManager.switchLayout(KeyboardLayoutType.SymbolsPageTwo)
+            }
+
+            KeyType.SwitchToMenu -> {
+                KeyboardLayoutManager.switchLayout(KeyboardLayoutType.Menu)
+            }
+
+            KeyType.CloseMenu -> {
+                KeyboardLayoutManager.switchToPreviousLayout()
             }
         }
     }
