@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PreferenceSection(
+fun Section(
     title: String,
     content: @Composable () -> Unit
 ) {

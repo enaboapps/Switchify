@@ -25,8 +25,8 @@ import com.enaboapps.switchify.screens.settings.switches.models.SwitchesScreenMo
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.widgets.NavBar
-import com.enaboapps.switchify.widgets.PreferenceLink
-import com.enaboapps.switchify.widgets.PreferenceSection
+import com.enaboapps.switchify.widgets.NavRouteLink
+import com.enaboapps.switchify.widgets.Section
 
 @Composable
 fun SwitchesScreen(navController: NavController) {
@@ -66,7 +66,7 @@ fun SwitchesScreen(navController: NavController) {
                     )
                 }
             } else {
-                PreferenceSection(title = "Switches") {
+                Section(title = "Switches") {
                     for (event in events) {
                         SwitchEventItem(
                             navController = navController,
@@ -87,7 +87,7 @@ private fun SwitchEventItem(
     Column(
         modifier = Modifier.padding(8.dp)
     ) {
-        PreferenceLink(
+        NavRouteLink(
             title = switchEvent.name,
             summary = "Edit this switch",
             navController = navController,

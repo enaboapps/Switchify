@@ -24,7 +24,7 @@ import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.utils.ServiceUtils
 import com.enaboapps.switchify.switches.SwitchConfigInvalidBanner
 import com.enaboapps.switchify.widgets.NavBar
-import com.enaboapps.switchify.widgets.UICard
+import com.enaboapps.switchify.widgets.NavRouteLink
 
 @Composable
 fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = ServiceUtils()) {
@@ -62,10 +62,11 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
             }
 
             item {
-                UICard(
+                NavRouteLink(
                     title = "Settings",
-                    description = "Tap here to adjust your settings.",
-                    onClick = { navController.navigate(NavigationRoute.Settings.name) }
+                    summary = "Tap here to adjust your settings.",
+                    navController = navController,
+                    route = NavigationRoute.Settings.name
                 )
             }
 
@@ -75,29 +76,32 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
 
             if (!isAccessibilityServiceEnabled) {
                 item {
-                    UICard(
+                    NavRouteLink(
                         title = "Accessibility Service",
-                        description = "Tap here to enable the accessibility service.",
-                        onClick = { navController.navigate(NavigationRoute.EnableAccessibilityService.name) }
+                        summary = "Tap here to enable the accessibility service.",
+                        navController = navController,
+                        route = NavigationRoute.EnableAccessibilityService.name
                     )
                 }
             }
 
             if (!isSwitchifyKeyboardEnabled) {
                 item {
-                    UICard(
+                    NavRouteLink(
                         title = "Switchify Keyboard",
-                        description = "Tap here to enable the Switchify keyboard.",
-                        onClick = { navController.navigate(NavigationRoute.EnableSwitchifyKeyboard.name) }
+                        summary = "Tap here to enable the Switchify keyboard.",
+                        navController = navController,
+                        route = NavigationRoute.EnableSwitchifyKeyboard.name
                     )
                 }
             }
 
             item {
-                UICard(
+                NavRouteLink(
                     title = "How To Use",
-                    description = "Learn how to use Switchify.",
-                    onClick = { navController.navigate(NavigationRoute.HowToUse.name) }
+                    summary = "Learn how to use Switchify.",
+                    navController = navController,
+                    route = NavigationRoute.HowToUse.name
                 )
             }
 
@@ -125,15 +129,10 @@ fun AccountCard(navController: NavController) {
     val description =
         if (isUserSignedIn) currentUser?.email ?: "" else "Sign in to access your settings."
 
-    UICard(
+    NavRouteLink(
         title = title,
-        description = description,
-        onClick = {
-            if (isUserSignedIn) {
-                navController.navigate(NavigationRoute.Account.name)
-            } else {
-                navController.navigate(NavigationRoute.SignIn.name)
-            }
-        }
+        summary = description,
+        navController = navController,
+        route = if (isUserSignedIn) NavigationRoute.Account.name else NavigationRoute.SignIn.name
     )
 }
