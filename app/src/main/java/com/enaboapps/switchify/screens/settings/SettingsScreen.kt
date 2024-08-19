@@ -19,10 +19,10 @@ import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.screens.settings.models.SettingsScreenModel
 import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.widgets.NavBar
-import com.enaboapps.switchify.widgets.PreferenceLink
-import com.enaboapps.switchify.widgets.PreferenceSection
+import com.enaboapps.switchify.widgets.NavRouteLink
 import com.enaboapps.switchify.widgets.PreferenceSwitch
 import com.enaboapps.switchify.widgets.PreferenceTimeStepper
+import com.enaboapps.switchify.widgets.Section
 
 @Composable
 fun SettingsScreen(navController: NavController) {
@@ -44,28 +44,28 @@ fun SettingsScreen(navController: NavController) {
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            PreferenceLink(
+            NavRouteLink(
                 title = "Switches",
                 summary = "Configure your switches",
                 navController = navController,
                 route = NavigationRoute.Switches.name
             )
-            PreferenceSection(title = "Scanning") {
-                PreferenceLink(
+            Section(title = "Scanning") {
+                NavRouteLink(
                     title = "Scan Mode",
                     summary = "Configure the scan mode",
                     navController = navController,
                     route = NavigationRoute.ScanMode.name
                 )
                 Spacer(modifier = Modifier.padding(top = 16.dp))
-                PreferenceLink(
+                NavRouteLink(
                     title = "Scan Method",
                     summary = "Configure the scan method",
                     navController = navController,
                     route = NavigationRoute.ScanMethod.name
                 )
                 Spacer(modifier = Modifier.padding(top = 16.dp))
-                PreferenceLink(
+                NavRouteLink(
                     title = "Scan Color",
                     summary = "Configure the scan color",
                     navController = navController,
@@ -76,7 +76,7 @@ fun SettingsScreen(navController: NavController) {
             if (mode.id == ScanMode.Modes.MODE_AUTO) {
                 TimingSection(settingsScreenModel)
             }
-            PreferenceLink(
+            NavRouteLink(
                 title = "Switch Stability",
                 summary = "Configure switch stability settings",
                 navController = navController,
@@ -86,7 +86,7 @@ fun SettingsScreen(navController: NavController) {
             ItemScanSection(settingsScreenModel)
             KeyboardSection(navController)
             Spacer(modifier = Modifier.padding(top = 16.dp))
-            PreferenceLink(
+            NavRouteLink(
                 title = "About",
                 summary = "About the app",
                 navController = navController,
@@ -99,7 +99,7 @@ fun SettingsScreen(navController: NavController) {
 
 @Composable
 private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
-    PreferenceSection(title = "Timing") {
+    Section(title = "Timing") {
         PreferenceTimeStepper(
             value = settingsScreenModel.scanRate.value ?: 0,
             title = "Scan rate",
@@ -141,8 +141,8 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
 
 @Composable
 private fun KeyboardSection(navController: NavController) {
-    PreferenceSection(title = "Keyboard") {
-        PreferenceLink(
+    Section(title = "Keyboard") {
+        NavRouteLink(
             title = "Choose Prediction Language",
             summary = "Choose the prediction language",
             navController = navController,
@@ -153,8 +153,8 @@ private fun KeyboardSection(navController: NavController) {
 
 @Composable
 private fun CursorSection(navController: NavController) {
-    PreferenceSection(title = "Cursor") {
-        PreferenceLink(
+    Section(title = "Cursor") {
+        NavRouteLink(
             title = "Cursor Mode",
             summary = "Configure the cursor mode",
             navController = navController,
@@ -165,7 +165,7 @@ private fun CursorSection(navController: NavController) {
 
 @Composable
 private fun SelectionSection(screenModel: SettingsScreenModel) {
-    PreferenceSection(title = "Selection") {
+    Section(title = "Selection") {
         PreferenceSwitch(
             title = "Auto select",
             summary = "Automatically select the item after a delay",
@@ -196,7 +196,7 @@ private fun SelectionSection(screenModel: SettingsScreenModel) {
 
 @Composable
 private fun ItemScanSection(screenModel: SettingsScreenModel) {
-    PreferenceSection(title = "Item Scan") {
+    Section(title = "Item Scan") {
         PreferenceSwitch(
             title = "Row column scan",
             summary = "Scan items in a row column pattern",
