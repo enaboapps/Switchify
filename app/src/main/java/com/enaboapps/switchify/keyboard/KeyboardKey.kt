@@ -89,6 +89,7 @@ class KeyboardKey @JvmOverloads constructor(
                 LayoutParams.MATCH_PARENT,
                 getHeightInDp()
             )
+            isAllCaps = false
             setTextColor(Color.BLACK)
             textSize = 20f
             background =
