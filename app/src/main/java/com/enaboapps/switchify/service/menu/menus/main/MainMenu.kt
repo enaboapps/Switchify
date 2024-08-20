@@ -43,6 +43,10 @@ class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
                 MenuManager.getInstance().openDeviceMenu()
             })
 
+            menuItems.add(MenuItem("Media Control", isLinkToMenu = true) {
+                MenuManager.getInstance().openMediaControlMenu()
+            })
+
             val canEdit = NodeExaminer.canPerformEditActions(GesturePoint.getPoint())
             if (canEdit) {
                 menuItems.add(MenuItem("Edit", isLinkToMenu = true) {

@@ -11,14 +11,13 @@ import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.widgets.InfoCard
 import com.enaboapps.switchify.widgets.NavBar
-import com.enaboapps.switchify.widgets.PreferenceLink
-import com.enaboapps.switchify.widgets.PreferenceSection
+import com.enaboapps.switchify.widgets.NavRouteLink
+import com.enaboapps.switchify.widgets.Section
 
 @Composable
 fun HowToUseScreen(navController: NavController) {
@@ -36,8 +35,8 @@ fun HowToUseScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            PreferenceSection(title = "Step 1") {
-                PreferenceLink(
+            Section(title = "Step 1") {
+                NavRouteLink(
                     title = "Add Switches",
                     summary = "Add your switches to the app",
                     navController = navController,
@@ -49,8 +48,8 @@ fun HowToUseScreen(navController: NavController) {
                     description = "Switches are physical buttons that are connected to your device. You can add them to the app and use them to control your device."
                 )
             }
-            PreferenceSection(title = "Step 2") {
-                PreferenceLink(
+            Section(title = "Step 2") {
+                NavRouteLink(
                     title = "Enable Accessibility Service",
                     summary = "Enable the Switchify Accessibility Service",
                     navController = navController,
@@ -62,8 +61,8 @@ fun HowToUseScreen(navController: NavController) {
                     description = "The Accessibility Service is a system service that allows Switchify to detect when you press a switch."
                 )
             }
-            PreferenceSection(title = "Step 3") {
-                PreferenceLink(
+            Section(title = "Step 3") {
+                NavRouteLink(
                     title = "Enable Keyboard",
                     summary = "Enable the Switchify Keyboard",
                     navController = navController,
