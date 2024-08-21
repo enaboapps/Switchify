@@ -107,12 +107,12 @@ class MenuView(
             baseLayout.addView(menuPages[currentPage].getMenuLayout())
         }
 
-        // Build the scan tree after half a second if the page exists, otherwise, close the menu
+        // Build the scan tree after half a second if the page exists, otherwise, close the menu hierarchy
         Handler(Looper.getMainLooper()).postDelayed({
             if (pageExists) {
                 scanTree.buildTree(menuPages[currentPage].translateMenuItemsToNodes(), 0)
             } else {
-                close()
+                MenuManager.getInstance().closeMenuHierarchy()
             }
         }, 500)
     }
