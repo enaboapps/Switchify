@@ -100,11 +100,20 @@ class MenuView(
         scanTree.clearTree()
         // Remove all views from the LinearLayout
         baseLayout.removeAllViews()
-        // Add the menu items to the LinearLayout
-        baseLayout.addView(menuPages[currentPage].getMenuLayout())
-        // Build the scan tree after half a second
+
+        val pageExists = currentPage < menuPages.size
+        // If the page exists, add the menu items to the LinearLayout
+        if (pageExists) {
+            baseLayout.addView(menuPages[currentPage].getMenuLayout())
+        }
+
+        // Build the scan tree after half a second if the page exists, otherwise, close the menu
         Handler(Looper.getMainLooper()).postDelayed({
-            scanTree.buildTree(menuPages[currentPage].translateMenuItemsToNodes(), 0)
+            if (pageExists) {
+                scanTree.buildTree(menuPages[currentPage].translateMenuItemsToNodes(), 0)
+            } else {
+                close()
+            }
         }, 500)
     }
 
