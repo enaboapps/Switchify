@@ -118,7 +118,7 @@ class MenuView(
     }
 
     private fun createLinearLayout() {
-        // If the point is close to the center, set the transparency to 0.6
+        // If the point is close to the center, set the transparency to 0.8
         // This way the user can see the content behind the menu
         val transparency = GestureManager.getInstance().isPointCloseToCenter()
         baseLayout = LinearLayout(context)
