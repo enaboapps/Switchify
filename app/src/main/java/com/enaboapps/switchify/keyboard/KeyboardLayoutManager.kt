@@ -33,6 +33,22 @@ sealed class KeyType {
         override fun toString() = "⇧"
     }
 
+    object LeftArrow : KeyType() {
+        override fun toString() = "←"
+    }
+
+    object RightArrow : KeyType() {
+        override fun toString() = "→"
+    }
+
+    object UpArrow : KeyType() {
+        override fun toString() = "↑"
+    }
+
+    object DownArrow : KeyType() {
+        override fun toString() = "↓"
+    }
+
     object HideKeyboard : KeyType() {
         override fun toString() = "⌨"
     }
@@ -65,13 +81,17 @@ sealed class KeyType {
         override fun toString() = "⋮"
     }
 
+    object SwitchToEdit : KeyType() {
+        override fun toString() = "Edit"
+    }
+
     object CloseMenu : KeyType() {
         override fun toString() = "⨉"
     }
 }
 
 enum class KeyboardLayoutType {
-    AlphabeticLower, AlphabeticUpper, SymbolsPageOne, SymbolsPageTwo, NumPad, Menu
+    AlphabeticLower, AlphabeticUpper, SymbolsPageOne, SymbolsPageTwo, NumPad, Menu, Edit
 }
 
 enum class KeyboardLayoutState {
@@ -260,7 +280,27 @@ object KeyboardLayoutManager {
     private val menuLayout = listOf(
         listOf(
             KeyType.CloseMenu,
-            KeyType.SwitchToNextInput
+            KeyType.SwitchToNextInput,
+            KeyType.SwitchToEdit
+        ),
+        listOf(
+            KeyType.SwitchToAlphabetic,
+            KeyType.SwitchToSymbols,
+            KeyType.SwitchToSymbolsOne,
+            KeyType.SwitchToSymbolsTwo
+        ),
+        listOf(
+            KeyType.Return,
+            KeyType.HideKeyboard
+        )
+    )
+
+    private val editLayout = listOf(
+        listOf(
+            KeyType.LeftArrow,
+            KeyType.RightArrow,
+            KeyType.UpArrow,
+            KeyType.DownArrow
         ),
         listOf(
             KeyType.SwitchToAlphabetic,
@@ -280,7 +320,8 @@ object KeyboardLayoutManager {
         KeyboardLayoutType.SymbolsPageOne to symbolsOneLayout,
         KeyboardLayoutType.SymbolsPageTwo to symbolsTwoLayout,
         KeyboardLayoutType.NumPad to numPad,
-        KeyboardLayoutType.Menu to menuLayout
+        KeyboardLayoutType.Menu to menuLayout,
+        KeyboardLayoutType.Edit to editLayout
     )
 
     val currentLayout: List<List<KeyType>>
