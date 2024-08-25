@@ -1,7 +1,5 @@
 package com.enaboapps.switchify.keyboard
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.inputmethodservice.InputMethodService
@@ -463,37 +461,15 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             }
 
             KeyType.Cut -> {
-                val text = currentInputConnection.getSelectedText(0)
-                if (text != null) {
-                    val clip = ClipData.newPlainText("text", text)
-                    val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboardManager.setPrimaryClip(clip)
-                    currentInputConnection.deleteSurroundingText(0, 0)
-                }
+                currentInputConnection.performContextMenuAction(android.R.id.cut)
             }
 
             KeyType.Copy -> {
-                val text = currentInputConnection.getSelectedText(0)
-                if (text != null) {
-                    val clip = ClipData.newPlainText("text", text)
-                    val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboardManager.setPrimaryClip(clip)
-                }
+                currentInputConnection.performContextMenuAction(android.R.id.copy)
             }
 
             KeyType.Paste -> {
-                val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-
-                if (clipboardManager.hasPrimaryClip() && currentInputConnection != null) {
-                    val clipData = clipboardManager.primaryClip
-                    val item = clipData?.getItemAt(0)
-                    val pasteData = item?.text
-
-                    if (pasteData != null) {
-                        // Paste the text at the current cursor position
-                        currentInputConnection.commitText(pasteData, 1)
-                    }
-                }
+                currentInputConnection.performContextMenuAction(android.R.id.paste)
             }
 
             KeyType.SelectAll -> {
