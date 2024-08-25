@@ -462,11 +462,21 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                 )
             }
 
-            KeyType.Copy -> {
-                val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            KeyType.Cut -> {
                 val text = currentInputConnection.getSelectedText(0)
                 if (text != null) {
                     val clip = ClipData.newPlainText("text", text)
+                    val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboardManager.setPrimaryClip(clip)
+                    currentInputConnection.deleteSurroundingText(0, 0)
+                }
+            }
+
+            KeyType.Copy -> {
+                val text = currentInputConnection.getSelectedText(0)
+                if (text != null) {
+                    val clip = ClipData.newPlainText("text", text)
+                    val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                     clipboardManager.setPrimaryClip(clip)
                 }
             }
