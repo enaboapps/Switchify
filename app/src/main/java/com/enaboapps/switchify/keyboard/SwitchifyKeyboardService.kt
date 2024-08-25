@@ -496,6 +496,10 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                 }
             }
 
+            KeyType.SelectAll -> {
+                currentInputConnection.performContextMenuAction(android.R.id.selectAll)
+            }
+
             KeyType.SwitchToSymbols -> {
                 KeyboardLayoutManager.switchLayout(KeyboardLayoutType.SymbolsPageOne)
             }
