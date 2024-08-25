@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.keyboard
 
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
 import android.graphics.drawable.Drawable
@@ -459,6 +460,15 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                         KeyEvent.KEYCODE_DPAD_DOWN
                     )
                 )
+            }
+
+            KeyType.Copy -> {
+                val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                val text = currentInputConnection.getSelectedText(0)
+                if (text != null) {
+                    val clip = ClipData.newPlainText("text", text)
+                    clipboardManager.setPrimaryClip(clip)
+                }
             }
 
             KeyType.Paste -> {
