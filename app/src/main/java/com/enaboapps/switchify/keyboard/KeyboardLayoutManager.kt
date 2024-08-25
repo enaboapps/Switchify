@@ -49,6 +49,10 @@ sealed class KeyType {
         override fun toString() = "↓"
     }
 
+    object Paste : KeyType() {
+        override fun toString() = "Paste"
+    }
+
     object HideKeyboard : KeyType() {
         override fun toString() = "⌨"
     }
@@ -301,6 +305,9 @@ object KeyboardLayoutManager {
             KeyType.RightArrow,
             KeyType.UpArrow,
             KeyType.DownArrow
+        ),
+        listOf(
+            KeyType.Paste
         ),
         listOf(
             KeyType.SwitchToAlphabetic,
