@@ -263,6 +263,18 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         if (keyType is KeyType.Return) {
             return ResourcesCompat.getDrawable(resources, R.drawable.ic_return, null)
         }
+        if (keyType is KeyType.LeftArrow) {
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_keyboard_cursor_left, null)
+        }
+        if (keyType is KeyType.RightArrow) {
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_keyboard_cursor_right, null)
+        }
+        if (keyType is KeyType.UpArrow) {
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_keyboard_cursor_up, null)
+        }
+        if (keyType is KeyType.DownArrow) {
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_keyboard_cursor_down, null)
+        }
         if (keyType is KeyType.HideKeyboard) {
             return ResourcesCompat.getDrawable(resources, R.drawable.ic_hide, null)
         }
@@ -388,6 +400,82 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                 currentInputConnection.deleteSurroundingText(allCount, 0)
             }
 
+            KeyType.LeftArrow -> {
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_DOWN,
+                        KeyEvent.KEYCODE_DPAD_LEFT
+                    )
+                )
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_UP,
+                        KeyEvent.KEYCODE_DPAD_LEFT
+                    )
+                )
+            }
+
+            KeyType.RightArrow -> {
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_DOWN,
+                        KeyEvent.KEYCODE_DPAD_RIGHT
+                    )
+                )
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_UP,
+                        KeyEvent.KEYCODE_DPAD_RIGHT
+                    )
+                )
+            }
+
+            KeyType.UpArrow -> {
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_DOWN,
+                        KeyEvent.KEYCODE_DPAD_UP
+                    )
+                )
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_UP,
+                        KeyEvent.KEYCODE_DPAD_UP
+                    )
+                )
+            }
+
+            KeyType.DownArrow -> {
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_DOWN,
+                        KeyEvent.KEYCODE_DPAD_DOWN
+                    )
+                )
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_UP,
+                        KeyEvent.KEYCODE_DPAD_DOWN
+                    )
+                )
+            }
+
+            KeyType.Cut -> {
+                currentInputConnection.performContextMenuAction(android.R.id.cut)
+            }
+
+            KeyType.Copy -> {
+                currentInputConnection.performContextMenuAction(android.R.id.copy)
+            }
+
+            KeyType.Paste -> {
+                currentInputConnection.performContextMenuAction(android.R.id.paste)
+            }
+
+            KeyType.SelectAll -> {
+                currentInputConnection.performContextMenuAction(android.R.id.selectAll)
+            }
+
             KeyType.SwitchToSymbols -> {
                 KeyboardLayoutManager.switchLayout(KeyboardLayoutType.SymbolsPageOne)
             }
@@ -398,6 +486,10 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
             KeyType.SwitchToSymbolsTwo -> {
                 KeyboardLayoutManager.switchLayout(KeyboardLayoutType.SymbolsPageTwo)
+            }
+
+            KeyType.SwitchToEdit -> {
+                KeyboardLayoutManager.switchLayout(KeyboardLayoutType.Edit)
             }
 
             KeyType.SwitchToMenu -> {
