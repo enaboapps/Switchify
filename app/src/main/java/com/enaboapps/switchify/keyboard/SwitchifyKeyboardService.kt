@@ -1,6 +1,5 @@
 package com.enaboapps.switchify.keyboard
 
-import android.content.ClipboardManager
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.inputmethodservice.InputMethodService
@@ -461,19 +460,20 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                 )
             }
 
+            KeyType.Cut -> {
+                currentInputConnection.performContextMenuAction(android.R.id.cut)
+            }
+
+            KeyType.Copy -> {
+                currentInputConnection.performContextMenuAction(android.R.id.copy)
+            }
+
             KeyType.Paste -> {
-                val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                currentInputConnection.performContextMenuAction(android.R.id.paste)
+            }
 
-                if (clipboardManager.hasPrimaryClip() && currentInputConnection != null) {
-                    val clipData = clipboardManager.primaryClip
-                    val item = clipData?.getItemAt(0)
-                    val pasteData = item?.text
-
-                    if (pasteData != null) {
-                        // Paste the text at the current cursor position
-                        currentInputConnection.commitText(pasteData, 1)
-                    }
-                }
+            KeyType.SelectAll -> {
+                currentInputConnection.performContextMenuAction(android.R.id.selectAll)
             }
 
             KeyType.SwitchToSymbols -> {

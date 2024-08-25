@@ -49,8 +49,14 @@ sealed class KeyType {
         override fun toString() = "↓"
     }
 
-    object Paste : KeyType() {
-        override fun toString() = "Paste"
+    data object Cut : KeyType()
+
+    data object Copy : KeyType()
+
+    data object Paste : KeyType()
+
+    object SelectAll : KeyType() {
+        override fun toString() = "Select All"
     }
 
     object HideKeyboard : KeyType() {
@@ -307,7 +313,10 @@ object KeyboardLayoutManager {
             KeyType.DownArrow
         ),
         listOf(
-            KeyType.Paste
+            KeyType.Cut,
+            KeyType.Copy,
+            KeyType.Paste,
+            KeyType.SelectAll
         ),
         listOf(
             KeyType.SwitchToAlphabetic,
