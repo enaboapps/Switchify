@@ -29,8 +29,10 @@ class ScanTreeHighlighter(
 
         if (!isInTreeItem) {
             highlightTreeItem(currentItem)
-        } else {
+        } else if (scanSettings.isGroupScanEnabled() && currentItem.isGrouped()) {
             highlightGroup(currentItem, groupIndex)
+        } else {
+            highlightTreeItem(currentItem)
         }
     }
 
@@ -50,8 +52,10 @@ class ScanTreeHighlighter(
 
         if (!isInTreeItem) {
             unhighlightTreeItem(currentItem)
-        } else {
+        } else if (scanSettings.isGroupScanEnabled() && currentItem.isGrouped()) {
             unhighlightGroup(currentItem, groupIndex)
+        } else {
+            unhighlightTreeItem(currentItem)
         }
     }
 
@@ -62,21 +66,23 @@ class ScanTreeHighlighter(
      * @param groupIndex The index of the current group within the tree item.
      * @param nodeIndex The index of the current node within the group.
      * @param isInTreeItem Whether the scanning is currently within a tree item.
+     * @param isScanningGroups Whether the scanning is currently at the group level.
      */
     fun highlightCurrent(
         treeItemIndex: Int,
         groupIndex: Int,
         nodeIndex: Int,
-        isInTreeItem: Boolean
+        isInTreeItem: Boolean,
+        isScanningGroups: Boolean
     ) {
         val currentItem = tree.getOrNull(treeItemIndex) ?: return
 
         when {
             !isInTreeItem -> highlightTreeItem(currentItem)
-            !scanSettings.isGroupScanEnabled() || !currentItem.isGrouped() ->
-                highlightNode(currentItem, groupIndex, nodeIndex)
+            scanSettings.isGroupScanEnabled() && currentItem.isGrouped() && isScanningGroups ->
+                highlightGroup(currentItem, groupIndex)
 
-            else -> highlightGroup(currentItem, groupIndex)
+            else -> highlightNode(currentItem, groupIndex, nodeIndex)
         }
     }
 
@@ -87,21 +93,23 @@ class ScanTreeHighlighter(
      * @param groupIndex The index of the current group within the tree item.
      * @param nodeIndex The index of the current node within the group.
      * @param isInTreeItem Whether the scanning is currently within a tree item.
+     * @param isScanningGroups Whether the scanning is currently at the group level.
      */
     fun unhighlightCurrent(
         treeItemIndex: Int,
         groupIndex: Int,
         nodeIndex: Int,
-        isInTreeItem: Boolean
+        isInTreeItem: Boolean,
+        isScanningGroups: Boolean
     ) {
         val currentItem = tree.getOrNull(treeItemIndex) ?: return
 
         when {
             !isInTreeItem -> unhighlightTreeItem(currentItem)
-            !scanSettings.isGroupScanEnabled() || !currentItem.isGrouped() ->
-                unhighlightNode(currentItem, groupIndex, nodeIndex)
+            scanSettings.isGroupScanEnabled() && currentItem.isGrouped() && isScanningGroups ->
+                unhighlightGroup(currentItem, groupIndex)
 
-            else -> unhighlightGroup(currentItem, groupIndex)
+            else -> unhighlightNode(currentItem, groupIndex, nodeIndex)
         }
     }
 

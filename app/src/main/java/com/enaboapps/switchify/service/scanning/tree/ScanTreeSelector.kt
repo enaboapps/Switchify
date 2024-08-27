@@ -56,6 +56,8 @@ class ScanTreeSelector(
      */
     private fun selectCurrentGroup(): Boolean {
         navigator.currentColumn = 0
+        navigator.scanDirection = ScanDirection.RIGHT
+        navigator.isScanningGroups = false
         return false
     }
 

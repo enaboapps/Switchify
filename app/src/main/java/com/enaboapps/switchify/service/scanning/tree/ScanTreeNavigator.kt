@@ -26,11 +26,28 @@ class ScanTreeNavigator(
     /** Indicates whether the scanning is currently within a tree item. */
     var isInTreeItem = false
 
+    /** Indicates whether we're scanning groups or items within a group. */
+    var isScanningGroups = true
+
     /** The current direction of scanning. */
     var scanDirection = ScanDirection.DOWN
 
     /** Indicates whether the current item should be escaped. */
-    var shouldEscapeItem = false
+    private var shouldEscapeItem = false
+
+    /** Indicates whether the current group should be escaped. */
+    private var shouldEscapeGroup = false
+
+    /**
+     * Moves the selection to the next or previous element based on the current state and settings.
+     * @return True if the movement was successful, false if an escape condition was met.
+     */
+    fun moveSelectionToNextOrPrevious(): Boolean {
+        return when (scanDirection) {
+            ScanDirection.DOWN, ScanDirection.RIGHT -> moveSelectionToNext()
+            ScanDirection.UP, ScanDirection.LEFT -> moveSelectionToPrevious()
+        }
+    }
 
     /**
      * Moves the selection to the next element based on the current state and settings.
@@ -39,8 +56,9 @@ class ScanTreeNavigator(
     fun moveSelectionToNext(): Boolean {
         return when {
             !isInTreeItem -> moveSelectionToNextTreeItem()
-            scanDirection == ScanDirection.RIGHT -> moveSelectionToNextWithinItem()
-            else -> false // This should not happen in normal operation
+            isCurrentItemSingleGroup() -> moveSelectionToNextWithinGroup()
+            scanSettings.isGroupScanEnabled() && isScanningGroups -> moveSelectionToNextGroup()
+            else -> moveSelectionToNextWithinGroup()
         }
     }
 
@@ -51,16 +69,17 @@ class ScanTreeNavigator(
     fun moveSelectionToPrevious(): Boolean {
         return when {
             !isInTreeItem -> moveSelectionToPreviousTreeItem()
-            scanDirection == ScanDirection.LEFT -> moveSelectionToPreviousWithinItem()
-            else -> false // This should not happen in normal operation
+            isCurrentItemSingleGroup() -> moveSelectionToPreviousWithinGroup()
+            scanSettings.isGroupScanEnabled() && isScanningGroups -> moveSelectionToPreviousGroup()
+            else -> moveSelectionToPreviousWithinGroup()
         }
     }
 
     /**
-     * Moves the selection to the next element within the current item.
+     * Moves the selection to the next element within the current group.
      * @return True if the movement was successful, false if an escape condition was met.
      */
-    private fun moveSelectionToNextWithinItem(): Boolean {
+    private fun moveSelectionToNextWithinGroup(): Boolean {
         val currentItem = getCurrentItem()
         return when {
             currentColumn < currentItem.getNodeCount(currentGroup) - 1 -> {
@@ -68,9 +87,60 @@ class ScanTreeNavigator(
                 true
             }
 
+            isCurrentItemSingleGroup() -> {
+                shouldEscapeItem = true
+                false
+            }
+
+            scanSettings.isGroupScanEnabled() -> {
+                shouldEscapeGroup = true
+                false
+            }
+
+            else -> {
+                shouldEscapeItem = true
+                false
+            }
+        }
+    }
+
+    /**
+     * Moves the selection to the previous element within the current group.
+     * @return True if the movement was successful, false if an escape condition was met.
+     */
+    private fun moveSelectionToPreviousWithinGroup(): Boolean {
+        return when {
+            currentColumn > 0 -> {
+                currentColumn--
+                true
+            }
+
+            isCurrentItemSingleGroup() -> {
+                shouldEscapeItem = true
+                false
+            }
+
+            scanSettings.isGroupScanEnabled() -> {
+                shouldEscapeGroup = true
+                false
+            }
+
+            else -> {
+                shouldEscapeItem = true
+                false
+            }
+        }
+    }
+
+    /**
+     * Moves the selection to the next group within the current tree item.
+     * @return True if the movement was successful, false if an escape condition was met.
+     */
+    private fun moveSelectionToNextGroup(): Boolean {
+        val currentItem = getCurrentItem()
+        return when {
             currentGroup < currentItem.getGroupCount() - 1 -> {
                 currentGroup++
-                currentColumn = 0
                 true
             }
 
@@ -82,19 +152,13 @@ class ScanTreeNavigator(
     }
 
     /**
-     * Moves the selection to the previous element within the current item.
+     * Moves the selection to the previous group within the current tree item.
      * @return True if the movement was successful, false if an escape condition was met.
      */
-    private fun moveSelectionToPreviousWithinItem(): Boolean {
+    private fun moveSelectionToPreviousGroup(): Boolean {
         return when {
-            currentColumn > 0 -> {
-                currentColumn--
-                true
-            }
-
             currentGroup > 0 -> {
                 currentGroup--
-                currentColumn = getCurrentItem().getNodeCount(currentGroup) - 1
                 true
             }
 
@@ -126,56 +190,81 @@ class ScanTreeNavigator(
     }
 
     /**
+     * Finds out if the current item has only one group.
+     * @return True if the current item has only one group, false otherwise.
+     */
+    private fun isCurrentItemSingleGroup(): Boolean = getCurrentItem().getGroupCount() == 1
+
+    /**
      * Resets the group and column indices to their initial values.
      */
     private fun resetGroupAndColumn() {
         currentGroup = 0
         currentColumn = 0
+        isScanningGroups = scanSettings.isGroupScanEnabled()
     }
 
     /**
-     * Handles the escape logic for items.
+     * Handles the escape logic for items and groups.
      * @return True if an escape was handled, false otherwise.
      */
-    fun handleEscape(): Boolean = shouldEscapeItem
+    fun handleEscape(): Boolean = shouldEscapeItem || shouldEscapeGroup
 
     /**
      * Confirms the escape action and updates the navigation state accordingly.
+     * @return True if the escape was confirmed, false otherwise.
      */
-    fun confirmEscape() {
+    fun confirmEscape(): Boolean {
         if (shouldEscapeItem) {
-            isInTreeItem = false
-            if (scanDirection == ScanDirection.DOWN) {
-                moveSelectionToNextTreeItem()
-            } else {
-                moveSelectionToPreviousTreeItem()
-            }
             shouldEscapeItem = false
+            isInTreeItem = false
+            scanDirection = ScanDirection.DOWN
+            return true
         }
+
+        if (shouldEscapeGroup) {
+            shouldEscapeGroup = false
+            isScanningGroups = true
+            return true
+        }
+
+        return false
     }
 
     /**
-     * Denies the escape action and resets the escape flag.
+     * Denies the escape action and resets the escape flags.
      */
-    fun denyEscape() {
+    fun denyEscape(): Boolean {
         if (shouldEscapeItem) {
-            // Move to the appropriate edge of the current item based on scan direction
-            if (scanDirection == ScanDirection.RIGHT) {
-                currentGroup = 0
-                currentColumn = 0
-            } else {
-                currentGroup = getCurrentItem().getGroupCount() - 1
-                currentColumn = getCurrentItem().getNodeCount(currentGroup) - 1
-            }
             shouldEscapeItem = false
+            currentColumn = if (scanDirection == ScanDirection.RIGHT) {
+                0
+            } else {
+                getCurrentItem().getNodeCount(currentGroup) - 1
+            }
+
+            return true
         }
+
+        if (shouldEscapeGroup) {
+            shouldEscapeGroup = false
+            currentGroup = if (scanDirection == ScanDirection.RIGHT) {
+                getCurrentItem().getGroupCount() - 1
+            } else {
+                0
+            }
+
+            return true
+        }
+
+        return false
     }
 
     /**
      * Gets the current ScanTreeItem.
      * @return The current ScanTreeItem.
      */
-    fun getCurrentItem(): ScanTreeItem = tree[currentTreeItem]
+    private fun getCurrentItem(): ScanTreeItem = tree[currentTreeItem]
 
     /**
      * Swaps the scanning direction between vertical and horizontal.
@@ -190,6 +279,16 @@ class ScanTreeNavigator(
     }
 
     /**
+     * Selects the current group and switches to scanning items within the group.
+     */
+    fun selectGroup() {
+        if (scanSettings.isGroupScanEnabled()) {
+            isScanningGroups = false
+            currentColumn = 0
+        }
+    }
+
+    /**
      * Resets the navigator to its initial state.
      */
     fun reset() {
@@ -197,7 +296,9 @@ class ScanTreeNavigator(
         currentGroup = 0
         currentColumn = 0
         isInTreeItem = false
+        isScanningGroups = scanSettings.isGroupScanEnabled()
         shouldEscapeItem = false
+        shouldEscapeGroup = false
         scanDirection = ScanDirection.DOWN
     }
 }

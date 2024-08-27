@@ -2,7 +2,6 @@ package com.enaboapps.switchify.service.scanning.tree
 
 import android.content.Context
 import android.util.Log
-import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
@@ -81,21 +80,19 @@ class ScanTree(
 
             unhighlightCurrent()
 
-            if (navigator.shouldEscapeItem) {
-                handleEscape()
-                highlightCurrent()
+            if (handleEscape(true)) {
                 return
             }
 
             val selectionMade = selector.performSelection()
-
-            highlightCurrent()
 
             if (selectionMade && stopScanningOnSelect) {
                 stopScanning()
             } else {
                 pauseScanning()
                 resumeScanning()
+
+                highlightCurrent() // Ensure we highlight after selection
             }
         } catch (e: Exception) {
             Log.e("ScanTree", "Error performing selection: ${e.message}")
@@ -103,18 +100,45 @@ class ScanTree(
     }
 
     /**
-     * Handles the escape logic for items.
-     * This method is called when an escape condition is met during scanning.
+     * Checks if the escape should be highlighted.
+     * @param highlight Whether to highlight the escape.
+     * @return True if the escape should be highlighted, false otherwise.
      */
-    private fun handleEscape() {
+    private fun highlightEscape(highlight: Boolean = true): Boolean {
+        if (highlight) {
+            highlighter.highlightEscape(
+                navigator.currentTreeItem,
+                navigator.currentGroup,
+                navigator.isInTreeItem
+            )
+        }
+        return highlight
+    }
+
+    /**
+     * Handles the escape logic for items and groups.
+     * This method is called when an escape condition is met during scanning.
+     * @param confirm Whether to confirm the escape action.
+     * @return True if the escape was confirmed, false otherwise.
+     */
+    private fun handleEscape(confirm: Boolean = false): Boolean {
+        var actionWasTaken = false
         if (navigator.handleEscape()) {
             highlighter.unhighlightEscape(
                 navigator.currentTreeItem,
                 navigator.currentGroup,
                 navigator.isInTreeItem
             )
-            navigator.confirmEscape()
+            actionWasTaken = if (confirm) {
+                navigator.confirmEscape()
+            } else {
+                navigator.denyEscape()
+            }
         }
+        if (actionWasTaken) {
+            highlightCurrent()
+        }
+        return actionWasTaken
     }
 
     /**
@@ -124,13 +148,7 @@ class ScanTree(
     fun stepForward() {
         unhighlightCurrent()
         val movementSuccessful = navigator.moveSelectionToNext()
-        if (!movementSuccessful) {
-            highlighter.highlightEscape(
-                navigator.currentTreeItem,
-                navigator.currentGroup,
-                navigator.isInTreeItem
-            )
-            Log.d("ScanTree", "highlightEscape")
+        if (highlightEscape(!movementSuccessful)) {
             return
         }
         highlightCurrent()
@@ -143,13 +161,7 @@ class ScanTree(
     fun stepBackward() {
         unhighlightCurrent()
         val movementSuccessful = navigator.moveSelectionToPrevious()
-        if (!movementSuccessful) {
-            highlighter.highlightEscape(
-                navigator.currentTreeItem,
-                navigator.currentGroup,
-                navigator.isInTreeItem
-            )
-            Log.d("ScanTree", "highlightEscape")
+        if (highlightEscape(!movementSuccessful)) {
             return
         }
         highlightCurrent()
@@ -186,27 +198,13 @@ class ScanTree(
     private fun stepAutoScanning() {
         unhighlightCurrent()
 
-        val movementSuccessful = if (navigator.isInTreeItem) {
-            if (navigator.scanDirection == ScanDirection.RIGHT) {
-                navigator.moveSelectionToNext()
-            } else {
-                navigator.moveSelectionToPrevious()
-            }
-        } else {
-            if (navigator.scanDirection == ScanDirection.DOWN) {
-                navigator.moveSelectionToNext()
-            } else {
-                navigator.moveSelectionToPrevious()
-            }
+        if (handleEscape()) {
+            return
         }
 
-        if (!movementSuccessful) {
-            highlighter.highlightEscape(
-                navigator.currentTreeItem,
-                navigator.currentGroup,
-                navigator.isInTreeItem
-            )
-            Log.d("ScanTree", "highlightEscape")
+        val movementSuccessful = navigator.moveSelectionToNextOrPrevious()
+
+        if (highlightEscape(!movementSuccessful)) {
             return
         }
 
@@ -217,11 +215,16 @@ class ScanTree(
      * Highlights the current item, group, or node based on the current state.
      */
     private fun highlightCurrent() {
+        Log.d(
+            "ScanTree",
+            "Highlighting current: treeItem=${navigator.currentTreeItem}, group=${navigator.currentGroup}, column=${navigator.currentColumn}, isInTreeItem=${navigator.isInTreeItem}, isScanningGroups=${navigator.isScanningGroups}"
+        )
         highlighter.highlightCurrent(
             navigator.currentTreeItem,
             navigator.currentGroup,
             navigator.currentColumn,
-            navigator.isInTreeItem
+            navigator.isInTreeItem,
+            navigator.isScanningGroups
         )
     }
 
@@ -233,18 +236,9 @@ class ScanTree(
             navigator.currentTreeItem,
             navigator.currentGroup,
             navigator.currentColumn,
-            navigator.isInTreeItem
+            navigator.isInTreeItem,
+            navigator.isScanningGroups
         )
-
-        if (navigator.shouldEscapeItem) {
-            highlighter.unhighlightEscape(
-                navigator.currentTreeItem,
-                navigator.currentGroup,
-                navigator.isInTreeItem
-            )
-
-            navigator.denyEscape()
-        }
     }
 
     /**
@@ -253,7 +247,7 @@ class ScanTree(
     private fun startScanning() {
         if (tree.isNotEmpty()) {
             reset()
-            highlightCurrent()
+            highlightCurrent() // Highlight the first item
             if (scanSettings.isAutoScanMode()) {
                 Log.d("ScanTree", "startScanning")
                 scanningScheduler?.startScanning()
@@ -286,15 +280,16 @@ class ScanTree(
      * Resets the scanning tree to its initial state.
      */
     fun reset() {
+        stopScanning()
         highlighter.unhighlightAll()
         navigator.reset()
-        stopScanning()
     }
 
     /**
      * Shuts down the scanning scheduler.
      */
     fun shutdown() {
+        reset()
         scanningScheduler?.shutdown()
         scanningScheduler = null
     }
