@@ -21,6 +21,5 @@ class MainActivity : ComponentActivity() {
         val preferenceManager = PreferenceManager(this)
         preferenceManager.preferenceSync.retrieveSettingsFromFirestore()
         preferenceManager.preferenceSync.listenForSettingsChangesOnRemote()
-        preferenceManager.preferenceSync.listenForSettingsChangesOnLocal()
     }
 }

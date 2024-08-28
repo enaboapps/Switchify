@@ -89,4 +89,12 @@ class ScanSettings(context: Context) {
     fun isRowColumnScanEnabled(): Boolean {
         return preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_ROW_COLUMN_SCAN)
     }
+
+    /**
+     * Check if group scan is enabled
+     * @return true if group scan is enabled, false otherwise
+     */
+    fun isGroupScanEnabled(): Boolean {
+        return preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_GROUP_SCAN)
+    }
 }

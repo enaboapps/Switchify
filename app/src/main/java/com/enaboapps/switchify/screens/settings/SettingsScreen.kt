@@ -205,5 +205,13 @@ private fun ItemScanSection(screenModel: SettingsScreenModel) {
                 screenModel.setRowColumnScan(it)
             }
         )
+        PreferenceSwitch(
+            title = "Group scan (requires row column scan)",
+            summary = "Scan items in a group pattern",
+            checked = screenModel.groupScan.value ?: false,
+            onCheckedChange = {
+                screenModel.setGroupScan(it)
+            }
+        )
     }
 }

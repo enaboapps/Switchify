@@ -2,171 +2,191 @@ package com.enaboapps.switchify.service.scanning.tree
 
 import android.content.Context
 import android.util.Log
-import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
-import com.enaboapps.switchify.service.utils.ScreenUtils
-import kotlin.math.abs
 
 /**
- * This class represents the scanning tree
- * @param context The context
- * @param stopScanningOnSelect Whether to stop scanning on select
+ * This class represents the main scanning tree for switch access functionality.
+ * It orchestrates the interactions between various components to manage the scanning process.
+ *
+ * @property context The application context.
+ * @property stopScanningOnSelect Whether to stop scanning after a selection is made.
  */
-
 class ScanTree(
     private val context: Context,
     private var stopScanningOnSelect: Boolean = false
 ) : ScanStateInterface {
-    /**
-     * This property represents the scanning tree
-     */
-    private var tree: MutableList<ScanTreeItem> = mutableListOf()
 
-    /**
-     * This property indicates the current item of the scanning tree
-     */
-    private var currentTreeItem = 0
-
-    /**
-     * This property indicates the current column of the scanning tree
-     */
-    private var currentColumn = 0
-
-    /**
-     * This property indicates whether the scanning tree is in an item
-     */
-    private var isInTreeItem = false
-
-    /**
-     * This property indicates whether the current item should be escaped
-     */
-    private var shouldEscapeTreeItem = false
-
-    /**
-     * This property indicates the scanning direction
-     * TreeItems can scan up or down
-     * Columns can scan left or right
-     */
-    private var scanDirection = ScanDirection.DOWN
-
-    /**
-     * Scanning scheduler: This is for automatic scanning
-     */
-    private var scanningScheduler: ScanningScheduler? = null
-
-    /**
-     * Scan settings
-     */
+    /** The settings for scanning behavior. */
     private val scanSettings = ScanSettings(context)
 
+    /** The list of ScanTreeItems that make up the scanning tree. */
+    private val tree: MutableList<ScanTreeItem> = mutableListOf()
+
+    /** The builder responsible for constructing the scanning tree. */
+    private val builder = ScanTreeBuilder(context, scanSettings)
+
+    /** The navigator responsible for traversing the scanning tree. */
+    private lateinit var navigator: ScanTreeNavigator
+
+    /** The selector responsible for handling selection actions. */
+    private lateinit var selector: ScanTreeSelector
+
+    /** The highlighter responsible for visual feedback during scanning. */
+    private lateinit var highlighter: ScanTreeHighlighter
+
+    /** The scheduler for automatic scanning. */
+    private var scanningScheduler: ScanningScheduler? = null
+
+    init {
+        initializeComponents()
+    }
 
     /**
-     * This function builds the scanning tree
-     * by examining the mid y coordinates of the nodes
-     * and organizing them into a tree of items and columns
-     * @param nodes The nodes to build the tree from
-     * @param itemThreshold The threshold for determining if a node is in an item
+     * Initializes the navigator, selector, and highlighter components.
+     */
+    private fun initializeComponents() {
+        navigator = ScanTreeNavigator(tree, scanSettings)
+        selector = ScanTreeSelector(tree, navigator, scanSettings, stopScanningOnSelect)
+        highlighter = ScanTreeHighlighter(tree, scanSettings)
+    }
+
+    /**
+     * Builds the scanning tree from a list of scan nodes.
+     *
+     * @param nodes The list of ScanNodeInterface objects to build the tree from.
+     * @param itemThreshold The threshold for determining if a node is in the same item (in dp).
      */
     fun buildTree(nodes: List<ScanNodeInterface>, itemThreshold: Int = 40) {
-        reset()
-        clearTree()
-        if (nodes.isNotEmpty()) {
-            // Initial sort of nodes by their Y position to process from top to bottom.
-            val sortedNodes = nodes.sortedBy { it.getMidY() }
-
-            // Initialize the list for the first item with the first node.
-            var currentTreeItem = mutableListOf<ScanNodeInterface>(sortedNodes.first())
-            // Set the Y position baseline for the first item.
-            var currentYBaseline = sortedNodes.first().getMidY()
-
-            // Get screen dimensions.
-            val screenWidth = ScreenUtils.getWidth(context)
-            val screenHeight = ScreenUtils.getHeight(context)
-
-            // Function to add the node to the current item.
-            val addNodeToTreeItem: (ScanNodeInterface) -> Unit = { node ->
-                // If node is under 80% of the screen dimensions
-                // And larger than 0, add it to the current item
-                val width = node.getWidth()
-                val height = node.getHeight()
-                val isCloseToFullScreen = width > 0.8 * screenWidth && height > 0.8 * screenHeight
-                val isBiggerThanZero = width > 0 && height > 0
-                if (!isCloseToFullScreen && isBiggerThanZero) {
-                    currentTreeItem.add(node)
-                }
-            }
-
-            // Start iterating from the second node since the first is already included.
-            for (node in sortedNodes.drop(1)) {
-                // Determine if the current node's mid Y position is within the threshold of the current item's baseline.
-                if (abs(node.getMidY() - currentYBaseline) <= ScreenUtils.dpToPx(
-                        context,
-                        itemThreshold
-                    )
-                ) {
-                    // Node is close enough to be considered part of the current item.
-                    addNodeToTreeItem(node)
-                } else {
-                    // Node is too far from the current item's baseline, indicating a new item.
-                    // Process the current item before starting a new one.
-                    if (currentTreeItem.isNotEmpty()) {
-                        // Remove duplicates from the item.
-                        currentTreeItem = currentTreeItem.distinct().toMutableList()
-                        // Add the current item to the scanning tree.
-                        addItem(currentTreeItem)
-                        // Clear the current item for the next iteration.
-                        currentTreeItem = mutableListOf()
-                    }
-                    // Add the current node to the new item and update the baseline Y position.
-                    addNodeToTreeItem(node)
-                    currentYBaseline = node.getMidY()
-                }
-            }
-
-            // Ensure the last item is added after processing all nodes.
-            if (currentTreeItem.isNotEmpty()) {
-                addItem(currentTreeItem)
-            }
-        }
+        tree.clear()
+        tree.addAll(builder.buildTree(nodes, itemThreshold))
+        initializeComponents() // Reinitialize components with the new tree
     }
 
     /**
-     * This function adds an item to the scanning tree sorted ascending by the x coordinate
-     * @param children The children to add
+     * Performs the selection action based on the current scanning state.
+     * This method handles the main logic flow of the scanning process.
      */
-    private fun addItem(children: List<ScanNodeInterface>) {
-        if (children.isNotEmpty()) {
-            val sorted = children.sortedBy { it.getLeft() }
-            if (scanSettings.isRowColumnScanEnabled()) {
-                val item =
-                    ScanTreeItem(sorted, sorted[0].getTop())
-                tree.add(item)
+    fun performSelection() {
+        try {
+            setup()
+            if (scanningScheduler?.isScanning() == false) {
+                startScanning()
+                Log.d("ScanTree", "Scanning started")
+                return
+            }
+
+            unhighlightCurrent()
+
+            if (handleEscape(true)) {
+                return
+            }
+
+            val selectionMade = selector.performSelection()
+
+            if (selectionMade && stopScanningOnSelect) {
+                stopScanning()
             } else {
-                sorted.forEach {
-                    val item =
-                        ScanTreeItem(listOf(it), it.getTop())
-                    tree.add(item)
-                }
+                pauseScanning()
+                resumeScanning()
             }
+            if (!selectionMade) {
+                highlightCurrent() // Ensure we highlight after selecting an item or group
+            }
+        } catch (e: Exception) {
+            Log.e("ScanTree", "Error performing selection: ${e.message}")
         }
     }
 
     /**
-     * This function shuts down the scanning scheduler
+     * Checks if the escape should be highlighted.
+     * @param highlight Whether to highlight the escape.
+     * @return True if the escape should be highlighted, false otherwise.
      */
-    fun shutdown() {
-        scanningScheduler?.shutdown()
-        scanningScheduler = null
+    private fun highlightEscape(highlight: Boolean = true): Boolean {
+        if (highlight) {
+            highlighter.highlightEscape(
+                navigator.currentTreeItem,
+                navigator.currentGroup,
+                navigator.isInTreeItem,
+                !navigator.isScanningGroups
+            )
+        }
+        return highlight
     }
 
     /**
-     * This function sets the scanning scheduler
+     * Handles the escape logic for items and groups.
+     * This method is called when an escape condition is met during scanning.
+     * @param confirm Whether to confirm the escape action.
+     * @return True if the escape was confirmed, false otherwise.
+     */
+    private fun handleEscape(confirm: Boolean = false): Boolean {
+        var actionWasTaken = false
+        if (navigator.handleEscape()) {
+            highlighter.unhighlightEscape(
+                navigator.currentTreeItem,
+                navigator.currentGroup,
+                navigator.isInTreeItem,
+                !navigator.isScanningGroups
+            )
+            actionWasTaken = if (confirm) {
+                navigator.confirmEscape()
+            } else {
+                navigator.denyEscape()
+            }
+        }
+        if (actionWasTaken) {
+            highlightCurrent()
+        }
+        return actionWasTaken
+    }
+
+    /**
+     * Manually steps forward in the scanning tree.
+     * This method is used for manual navigation through the tree.
+     */
+    fun stepForward() {
+        unhighlightCurrent()
+        val movementSuccessful = navigator.moveSelectionToNext()
+        if (highlightEscape(!movementSuccessful)) {
+            return
+        }
+        highlightCurrent()
+    }
+
+    /**
+     * Manually steps backward in the scanning tree.
+     * This method is used for manual navigation through the tree.
+     */
+    fun stepBackward() {
+        unhighlightCurrent()
+        val movementSuccessful = navigator.moveSelectionToPrevious()
+        if (highlightEscape(!movementSuccessful)) {
+            return
+        }
+        highlightCurrent()
+    }
+
+    /**
+     * Swaps the scanning direction between vertical and horizontal.
+     * This method is called when the user wants to change the scanning direction.
+     */
+    fun swapScanDirection() {
+        navigator.swapScanDirection()
+        if (scanSettings.isAutoScanMode()) {
+            resumeScanning()
+        }
+    }
+
+    /**
+     * Sets up the scanning scheduler if required.
+     * This method initializes the scanning scheduler if it hasn't been set up yet.
      */
     private fun setup() {
-        if (isSetupRequired()) {
+        if (scanningScheduler == null) {
             reset()
             scanningScheduler = ScanningScheduler(context) {
                 stepAutoScanning()
@@ -175,284 +195,62 @@ class ScanTree(
     }
 
     /**
-     * This function checks if setup is required
-     * @return Whether setup is required
-     */
-    private fun isSetupRequired(): Boolean {
-        return scanningScheduler == null
-    }
-
-    /**
-     * This function moves the selection to the next node
-     */
-    private fun moveSelectionToNextNode() {
-        unhighlightCurrentNode()
-        if (shouldEscapeCurrentTreeItem()) {
-            return
-        }
-        if (currentColumn < tree[currentTreeItem].children.size - 1) {
-            currentColumn++
-        } else {
-            currentColumn = 0
-        }
-        highlightCurrentNode()
-    }
-
-    /**
-     * This function moves the selection to the previous node
-     */
-    private fun moveSelectionToPreviousNode() {
-        unhighlightCurrentNode()
-        if (shouldEscapeCurrentTreeItem()) {
-            return
-        }
-        if (currentColumn > 0) {
-            currentColumn--
-        } else {
-            currentColumn = tree[currentTreeItem].children.size - 1
-        }
-        highlightCurrentNode()
-    }
-
-    /**
-     * This function checks if the current item should be escaped
-     * @return Whether the current item should be escaped
-     */
-    private fun shouldEscapeCurrentTreeItem(): Boolean {
-        // If at the last node, activate the escape item
-        if (currentColumn == tree[currentTreeItem].children.size - 1 && !shouldEscapeTreeItem && scanDirection == ScanDirection.RIGHT) {
-            shouldEscapeTreeItem = true
-            highlightCurrentTreeItem()
-
-            return true
-        } else if (currentColumn == 0 && !shouldEscapeTreeItem && scanDirection == ScanDirection.LEFT) {
-            shouldEscapeTreeItem = true
-            highlightCurrentTreeItem()
-
-            return true
-        } else if (shouldEscapeTreeItem) {
-            shouldEscapeTreeItem = false
-            unhighlightCurrentTreeItem()
-
-            // Ensure that the index is correct
-            currentColumn = if (scanDirection == ScanDirection.RIGHT) {
-                0
-            } else {
-                tree[currentTreeItem].children.size - 1
-            }
-            highlightCurrentNode()
-
-            return true
-        }
-        return false
-    }
-
-    /**
-     * This function moves the selection to the next item
-     */
-    private fun moveSelectionToNextTreeItem() {
-        unhighlightCurrentTreeItem()
-        if (currentTreeItem < tree.size - 1) {
-            currentTreeItem++
-        } else {
-            currentTreeItem = 0
-        }
-        highlightCurrentTreeItem()
-    }
-
-    /**
-     * This function moves the selection to the previous item
-     */
-    private fun moveSelectionToPreviousTreeItem() {
-        unhighlightCurrentTreeItem()
-        if (currentTreeItem > 0) {
-            currentTreeItem--
-        } else {
-            currentTreeItem = tree.size - 1
-        }
-        highlightCurrentTreeItem()
-    }
-
-    /**
-     * This function highlights the current item
-     */
-    private fun highlightCurrentTreeItem() {
-        if (tree.size > currentTreeItem) {
-            tree[currentTreeItem].highlight()
-        }
-    }
-
-    /**
-     * This function unhighlights the current item
-     */
-    private fun unhighlightCurrentTreeItem() {
-        if (tree.size > currentTreeItem) {
-            tree[currentTreeItem].unhighlight()
-        }
-    }
-
-    /**
-     * This function highlights the current node
-     */
-    private fun highlightCurrentNode() {
-        if (tree.size > currentTreeItem) {
-            if (tree[currentTreeItem].children.size > currentColumn) {
-                tree[currentTreeItem].children[currentColumn].highlight()
-            }
-        }
-    }
-
-    /**
-     * This function unhighlights the current node
-     */
-    private fun unhighlightCurrentNode() {
-        if (tree.size > currentTreeItem) {
-            if (tree[currentTreeItem].children.size > currentColumn) {
-                tree[currentTreeItem].children[currentColumn].unhighlight()
-            }
-        }
-    }
-
-    /**
-     * This function swaps the scanning direction
-     */
-    fun swapScanDirection() {
-        scanDirection = when (scanDirection) {
-            ScanDirection.DOWN -> ScanDirection.UP
-            ScanDirection.UP -> ScanDirection.DOWN
-            ScanDirection.RIGHT -> ScanDirection.LEFT
-            ScanDirection.LEFT -> ScanDirection.RIGHT
-        }
-
-        if (scanSettings.isAutoScanMode()) {
-            resumeScanning()
-        }
-    }
-
-    /**
-     * This function selects the current item
-     * If the current item has only one node, it selects the node and returns
-     * It sets the scanning tree to be in an item
-     * It sets the current column to 0
-     * It unhighlights the current item
-     * It highlights the current node
-     * It pauses scanning
-     * It resumes scanning
-     */
-    private fun selectCurrentTreeItem() {
-        if (tree.size > currentTreeItem) {
-            if (tree[currentTreeItem].children.size == 1) {
-                tree[currentTreeItem].children[0].select()
-                if (stopScanningOnSelect) {
-                    reset()
-                }
-                return
-            }
-        }
-        isInTreeItem = true
-        currentColumn = 0
-        scanDirection = ScanDirection.RIGHT
-        unhighlightCurrentTreeItem()
-        highlightCurrentNode()
-        pauseScanning()
-        resumeScanning()
-    }
-
-    /**
-     * This function selects the current column
-     */
-    private fun selectCurrentColumn() {
-        // Check if the item exists
-        if (tree.size > currentTreeItem) {
-            // Check if the column exists
-            if (tree[currentTreeItem].children.size > currentColumn) {
-                tree[currentTreeItem].children[currentColumn].select()
-                if (stopScanningOnSelect) {
-                    reset()
-                }
-            }
-        }
-    }
-
-    /**
-     * This function performs the selection
-     * It starts scanning if it is not already scanning
-     * It escapes the item if the item should be escaped
-     * If the scanning tree is in an item, it selects the current node
-     * If the scanning tree is not in an item, it selects the current item
-     */
-    fun performSelection() {
-        try {
-            setup()
-            if (scanningScheduler?.isScanning() == false) {
-                startScanning()
-                println("Scanning started")
-                return
-            }
-            if (shouldEscapeTreeItem) {
-                shouldEscapeTreeItem = false
-                scanDirection = ScanDirection.DOWN
-                isInTreeItem = false
-                return
-            }
-            if (isInTreeItem) {
-                selectCurrentColumn()
-            } else {
-                selectCurrentTreeItem()
-            }
-        } catch (e: Exception) {
-            println("Error performing selection: ${e.message}")
-        }
-    }
-
-    /**
-     * This function steps through the scanning tree
+     * Steps through the scanning tree automatically.
+     * This method is called by the scanning scheduler during automatic scanning.
      */
     private fun stepAutoScanning() {
-        if (isInTreeItem) {
-            if (scanDirection == ScanDirection.RIGHT) {
-                moveSelectionToNextNode()
-            } else {
-                moveSelectionToPreviousNode()
-            }
-        } else {
-            if (scanDirection == ScanDirection.DOWN) {
-                moveSelectionToNextTreeItem()
-            } else {
-                moveSelectionToPreviousTreeItem()
-            }
+        unhighlightCurrent()
+
+        if (handleEscape()) {
+            return
         }
+
+        val movementSuccessful = navigator.moveSelectionToNextOrPrevious()
+
+        if (highlightEscape(!movementSuccessful)) {
+            return
+        }
+
+        highlightCurrent()
     }
 
     /**
-     * This function is for manually scanning forward in the scanning tree
+     * Highlights the current item, group, or node based on the current state.
      */
-    fun stepForward() {
-        if (isInTreeItem) {
-            moveSelectionToNextNode()
-        } else {
-            moveSelectionToNextTreeItem()
-        }
+    private fun highlightCurrent() {
+        Log.d(
+            "ScanTree",
+            "Highlighting current: treeItem=${navigator.currentTreeItem}, group=${navigator.currentGroup}, column=${navigator.currentColumn}, isInTreeItem=${navigator.isInTreeItem}, isScanningGroups=${navigator.isScanningGroups}"
+        )
+        highlighter.highlightCurrent(
+            navigator.currentTreeItem,
+            navigator.currentGroup,
+            navigator.currentColumn,
+            navigator.isInTreeItem,
+            navigator.isScanningGroups
+        )
     }
 
     /**
-     * This function is for manually scanning backward in the scanning tree
+     * Unhighlights the current item, group, or node.
      */
-    fun stepBackward() {
-        if (isInTreeItem) {
-            moveSelectionToPreviousNode()
-        } else {
-            moveSelectionToPreviousTreeItem()
-        }
+    private fun unhighlightCurrent() {
+        highlighter.unhighlightCurrent(
+            navigator.currentTreeItem,
+            navigator.currentGroup,
+            navigator.currentColumn,
+            navigator.isInTreeItem,
+            navigator.isScanningGroups
+        )
     }
 
     /**
-     * This function starts scanning
+     * Starts the scanning process.
      */
     private fun startScanning() {
         if (tree.isNotEmpty()) {
             reset()
-            highlightCurrentTreeItem() // Highlight the first item
+            highlightCurrent() // Highlight the first item
             if (scanSettings.isAutoScanMode()) {
                 Log.d("ScanTree", "startScanning")
                 scanningScheduler?.startScanning()
@@ -460,41 +258,47 @@ class ScanTree(
         }
     }
 
+    /**
+     * Pauses the scanning process.
+     */
     override fun pauseScanning() {
         scanningScheduler?.pauseScanning()
     }
 
+    /**
+     * Resumes the scanning process.
+     */
     override fun resumeScanning() {
         scanningScheduler?.resumeScanning()
     }
 
+    /**
+     * Stops the scanning process.
+     */
     override fun stopScanning() {
         scanningScheduler?.stopScanning()
     }
 
     /**
-     * This function resets the scanning tree
+     * Resets the scanning tree to its initial state.
      */
     fun reset() {
-        try {
-            for (item in tree) {
-                item.unhighlight()
-                for (node in item.children) {
-                    node.unhighlight()
-                }
-            }
-        } catch (e: Exception) {
-            println("Error resetting scanning tree: ${e.message}")
-        }
-        currentTreeItem = 0
-        currentColumn = 0
-        isInTreeItem = false
-        scanDirection = ScanDirection.DOWN
         stopScanning()
+        highlighter.unhighlightAll()
+        navigator.reset()
     }
 
     /**
-     * This function clears the scanning tree and resets the state
+     * Shuts down the scanning scheduler.
+     */
+    fun shutdown() {
+        reset()
+        scanningScheduler?.shutdown()
+        scanningScheduler = null
+    }
+
+    /**
+     * Clears the scanning tree and resets its state.
      */
     fun clearTree() {
         reset()
