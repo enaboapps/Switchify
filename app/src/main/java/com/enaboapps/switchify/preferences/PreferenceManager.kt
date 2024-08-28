@@ -46,6 +46,7 @@ class PreferenceManager(context: Context) {
         with(sharedPreferences.edit()) {
             putInt(key, value)
             apply()
+            preferenceSync.uploadSettingsToFirestore()
         }
     }
 
@@ -53,6 +54,7 @@ class PreferenceManager(context: Context) {
         with(sharedPreferences.edit()) {
             putFloat(key, value)
             apply()
+            preferenceSync.uploadSettingsToFirestore()
         }
     }
 
@@ -60,6 +62,7 @@ class PreferenceManager(context: Context) {
         with(sharedPreferences.edit()) {
             putBoolean(key, value)
             apply()
+            preferenceSync.uploadSettingsToFirestore()
         }
     }
 
@@ -67,6 +70,7 @@ class PreferenceManager(context: Context) {
         with(sharedPreferences.edit()) {
             putLong(key, value)
             apply()
+            preferenceSync.uploadSettingsToFirestore()
         }
     }
 
@@ -74,6 +78,7 @@ class PreferenceManager(context: Context) {
         with(sharedPreferences.edit()) {
             putString(key, value)
             apply()
+            preferenceSync.uploadSettingsToFirestore()
         }
     }
 
