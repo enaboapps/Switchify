@@ -58,6 +58,11 @@ class SettingsScreenModel(context: Context) : ViewModel() {
     }
     val rowColumnScan: LiveData<Boolean> = _rowColumnScan
 
+    private val _groupScan = MutableLiveData<Boolean>().apply {
+        value = preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_GROUP_SCAN)
+    }
+    val groupScan: LiveData<Boolean> = _groupScan
+
 
     private val pauseScanOnSwitchHoldThreshold: Long = 400
 
@@ -151,6 +156,16 @@ class SettingsScreenModel(context: Context) : ViewModel() {
                 rowColumnScan
             )
             _rowColumnScan.postValue(rowColumnScan)
+        }
+    }
+
+    fun setGroupScan(groupScan: Boolean) {
+        viewModelScope.launch {
+            preferenceManager.setBooleanValue(
+                PreferenceManager.Keys.PREFERENCE_KEY_GROUP_SCAN,
+                groupScan
+            )
+            _groupScan.postValue(groupScan)
         }
     }
 }
