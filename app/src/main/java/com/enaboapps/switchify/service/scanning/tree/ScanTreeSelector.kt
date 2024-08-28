@@ -25,7 +25,7 @@ class ScanTreeSelector(
     fun performSelection(): Boolean {
         return when {
             !navigator.isInTreeItem -> selectCurrentTreeItem()
-            scanSettings.isGroupScanEnabled() && getCurrentItem().isGrouped() && navigator.currentColumn == 0 -> selectCurrentGroup()
+            scanSettings.isGroupScanEnabled() && getCurrentItem().isGrouped() && navigator.isScanningGroups -> selectCurrentGroup()
             else -> selectCurrentNode()
         }
     }

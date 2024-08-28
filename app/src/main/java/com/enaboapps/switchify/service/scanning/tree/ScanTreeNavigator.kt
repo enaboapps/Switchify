@@ -225,6 +225,9 @@ class ScanTreeNavigator(
         if (shouldEscapeGroup) {
             shouldEscapeGroup = false
             isScanningGroups = true
+            scanDirection = ScanDirection.RIGHT
+            currentColumn = 0
+            currentGroup = 0
             return true
         }
 
@@ -235,25 +238,28 @@ class ScanTreeNavigator(
      * Denies the escape action and resets the escape flags.
      */
     fun denyEscape(): Boolean {
-        if (shouldEscapeItem) {
-            shouldEscapeItem = false
+        val setColumn: () -> Unit = {
             currentColumn = if (scanDirection == ScanDirection.RIGHT) {
                 0
             } else {
                 getCurrentItem().getNodeCount(currentGroup) - 1
             }
+        }
 
+        if (shouldEscapeItem) {
+            shouldEscapeItem = false
+            setColumn()
+            currentGroup = if (scanDirection == ScanDirection.RIGHT) {
+                0
+            } else {
+                getCurrentItem().getGroupCount() - 1
+            }
             return true
         }
 
         if (shouldEscapeGroup) {
             shouldEscapeGroup = false
-            currentGroup = if (scanDirection == ScanDirection.RIGHT) {
-                getCurrentItem().getGroupCount() - 1
-            } else {
-                0
-            }
-
+            setColumn()
             return true
         }
 

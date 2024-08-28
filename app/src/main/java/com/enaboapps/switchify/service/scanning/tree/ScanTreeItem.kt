@@ -58,8 +58,7 @@ class ScanTreeItem(
             groupIndex != null && nodeIndex != null -> groups.getOrNull(groupIndex)
                 ?.getOrNull(nodeIndex)?.unhighlight()
 
-            groupIndex != null && nodeIndex == null -> groups.getOrNull(groupIndex)
-                ?.forEach { it.unhighlight() }
+            groupIndex != null && nodeIndex == null -> NodeScannerUI.instance.hideAll()
 
             else -> throw IllegalArgumentException("Invalid unhighlight parameters")
         }

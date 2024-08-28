@@ -110,7 +110,8 @@ class ScanTree(
             highlighter.highlightEscape(
                 navigator.currentTreeItem,
                 navigator.currentGroup,
-                navigator.isInTreeItem
+                navigator.isInTreeItem,
+                !navigator.isScanningGroups
             )
         }
         return highlight
@@ -128,7 +129,8 @@ class ScanTree(
             highlighter.unhighlightEscape(
                 navigator.currentTreeItem,
                 navigator.currentGroup,
-                navigator.isInTreeItem
+                navigator.isInTreeItem,
+                !navigator.isScanningGroups
             )
             actionWasTaken = if (confirm) {
                 navigator.confirmEscape()

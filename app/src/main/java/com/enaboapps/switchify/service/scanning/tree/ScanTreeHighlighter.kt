@@ -19,17 +19,19 @@ class ScanTreeHighlighter(
      * @param treeItemIndex The index of the current tree item.
      * @param groupIndex The index of the current group within the tree item.
      * @param isInTreeItem Whether the scanning is currently within a tree item.
+     * @param isInGroup Whether the scanning is currently within a group.
      */
     fun highlightEscape(
         treeItemIndex: Int,
         groupIndex: Int,
-        isInTreeItem: Boolean
+        isInTreeItem: Boolean,
+        isInGroup: Boolean
     ) {
         val currentItem = tree.getOrNull(treeItemIndex) ?: return
 
         if (!isInTreeItem) {
             highlightTreeItem(currentItem)
-        } else if (scanSettings.isGroupScanEnabled() && currentItem.isGrouped()) {
+        } else if (scanSettings.isGroupScanEnabled() && currentItem.isGrouped() && isInGroup) {
             highlightGroup(currentItem, groupIndex)
         } else {
             highlightTreeItem(currentItem)
@@ -42,17 +44,19 @@ class ScanTreeHighlighter(
      * @param treeItemIndex The index of the current tree item.
      * @param groupIndex The index of the current group within the tree item.
      * @param isInTreeItem Whether the scanning is currently within a tree item.
+     * @param isInGroup Whether the scanning is currently within a group.
      */
     fun unhighlightEscape(
         treeItemIndex: Int,
         groupIndex: Int,
-        isInTreeItem: Boolean
+        isInTreeItem: Boolean,
+        isInGroup: Boolean
     ) {
         val currentItem = tree.getOrNull(treeItemIndex) ?: return
 
         if (!isInTreeItem) {
             unhighlightTreeItem(currentItem)
-        } else if (scanSettings.isGroupScanEnabled() && currentItem.isGrouped()) {
+        } else if (scanSettings.isGroupScanEnabled() && currentItem.isGrouped() && isInGroup) {
             unhighlightGroup(currentItem, groupIndex)
         } else {
             unhighlightTreeItem(currentItem)
