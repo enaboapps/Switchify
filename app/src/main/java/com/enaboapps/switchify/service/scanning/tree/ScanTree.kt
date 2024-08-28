@@ -91,8 +91,9 @@ class ScanTree(
             } else {
                 pauseScanning()
                 resumeScanning()
-
-                highlightCurrent() // Ensure we highlight after selection
+            }
+            if (!selectionMade) {
+                highlightCurrent() // Ensure we highlight after selecting an item or group
             }
         } catch (e: Exception) {
             Log.e("ScanTree", "Error performing selection: ${e.message}")
