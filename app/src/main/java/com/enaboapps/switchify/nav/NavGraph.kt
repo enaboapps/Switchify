@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.nav
 
+import TestSwitchesScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -82,6 +83,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(NavigationRoute.AddNewSwitch.name) {
             AddNewSwitchScreen(navController)
+        }
+        composable(NavigationRoute.TestSwitches.name) {
+            TestSwitchesScreen(navController)
         }
         composable("${NavigationRoute.EditSwitch.name}/{code}") {
             it.arguments?.getString("code")?.let { code ->

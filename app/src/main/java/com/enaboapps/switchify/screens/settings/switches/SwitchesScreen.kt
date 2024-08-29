@@ -25,6 +25,7 @@ import com.enaboapps.switchify.screens.settings.switches.models.SwitchesScreenMo
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.widgets.NavBarAction
 import com.enaboapps.switchify.widgets.NavRouteLink
 import com.enaboapps.switchify.widgets.Section
 
@@ -38,7 +39,14 @@ fun SwitchesScreen(navController: NavController) {
     val verticalScrollState = rememberScrollState()
     Scaffold(
         topBar = {
-            NavBar(title = "Switches", navController = navController)
+            NavBar(title = "Switches", navController = navController, actions = List(1) {
+                NavBarAction(
+                    text = "Test Switches",
+                    onClick = {
+                        navController.navigate(NavigationRoute.TestSwitches.name)
+                    }
+                )
+            })
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
