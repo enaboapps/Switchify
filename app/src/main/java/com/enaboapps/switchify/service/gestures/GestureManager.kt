@@ -5,6 +5,11 @@ import android.accessibilityservice.GestureDescription
 import android.graphics.PointF
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
+import com.enaboapps.switchify.service.gestures.GestureData.Companion.DOUBLE_TAP_INTERVAL
+import com.enaboapps.switchify.service.gestures.GestureData.Companion.DRAG_DURATION
+import com.enaboapps.switchify.service.gestures.GestureData.Companion.SWIPE_DURATION
+import com.enaboapps.switchify.service.gestures.GestureData.Companion.TAP_AND_HOLD_DURATION
+import com.enaboapps.switchify.service.gestures.GestureData.Companion.TAP_DURATION
 import com.enaboapps.switchify.service.gestures.utils.GestureUtils.getInBoundsCoordinate
 import com.enaboapps.switchify.service.gestures.visuals.GestureDrawing
 import com.enaboapps.switchify.service.nodes.NodeExaminer
@@ -24,21 +29,6 @@ class GestureManager {
             }
             return instance!!
         }
-
-        // This is the duration of the tap
-        const val TAP_DURATION = 100L
-
-        // This is the interval between the two taps
-        const val DOUBLE_TAP_INTERVAL = 250L
-
-        // This is the tap and hold duration
-        const val TAP_AND_HOLD_DURATION = 1000L
-
-        // This is the duration of the swipe
-        const val SWIPE_DURATION = 80L
-
-        // This is the duration of the drag
-        const val DRAG_DURATION = 1500L
     }
 
 
@@ -47,8 +37,8 @@ class GestureManager {
     private var isDragging = false
 
 
-    // swipe lock manager
-    private var swipeLockManager: SwipeLockManager? = null
+    // gesture lock manager
+    private var gestureLockManager: GestureLockManager? = null
 
 
     // accessibility service
@@ -61,7 +51,7 @@ class GestureManager {
 
     fun setup(accessibilityService: SwitchifyAccessibilityService) {
         this.accessibilityService = accessibilityService
-        swipeLockManager = SwipeLockManager()
+        gestureLockManager = GestureLockManager()
         preferenceManager = PreferenceManager(accessibilityService)
     }
 
@@ -106,6 +96,12 @@ class GestureManager {
                     TAP_DURATION
                 )
                 path.moveTo(point.x, point.y)
+                gestureLockManager?.setLockedGestureData(
+                    GestureData(
+                        GestureData.GestureType.TAP,
+                        point
+                    )
+                )
                 val gestureDescription = GestureDescription.Builder()
                     .addStroke(GestureDescription.StrokeDescription(path, 0, TAP_DURATION)).build()
                 it.dispatchGesture(
@@ -136,6 +132,12 @@ class GestureManager {
                     TAP_DURATION
                 )
                 path.moveTo(point.x, point.y)
+                gestureLockManager?.setLockedGestureData(
+                    GestureData(
+                        GestureData.GestureType.DOUBLE_TAP,
+                        point
+                    )
+                )
                 val tap1 = GestureDescription.StrokeDescription(path, 0, TAP_DURATION)
                 val tap2 =
                     GestureDescription.StrokeDescription(path, DOUBLE_TAP_INTERVAL, TAP_DURATION)
@@ -172,6 +174,12 @@ class GestureManager {
                     TAP_AND_HOLD_DURATION
                 )
                 path.moveTo(point.x, point.y)
+                gestureLockManager?.setLockedGestureData(
+                    GestureData(
+                        GestureData.GestureType.TAP_AND_HOLD,
+                        point
+                    )
+                )
                 val gestureDescription = GestureDescription.Builder()
                     .addStroke(GestureDescription.StrokeDescription(path, 0, TAP_AND_HOLD_DURATION))
                     .build()
@@ -191,40 +199,46 @@ class GestureManager {
         }
     }
 
-    // Swipe direction
-    enum class SwipeDirection {
-        UP, DOWN, LEFT, RIGHT
-    }
 
-    // Function to lock/unlock the swipe lock
-    fun toggleSwipeLock() {
-        swipeLockManager?.toggleSwipeLock()
-    }
-
-    // Function to check if the swipe lock enabled
-    fun isSwipeLockEnabled(): Boolean {
-        return swipeLockManager?.isSwipeLockEnabled() ?: false
-    }
-
-    // Function to perform the swipe lock, if it's locked
-    // Returns true if the swipe lock is locked, false otherwise
-    fun performSwipeLock(): Boolean {
-        if (isSwipeLockEnabled()) {
-            performSwipe(swipeLockManager?.swipeLockDirection ?: SwipeDirection.UP)
-            return true
+    // Function to perform the gesture lock action if the gesture lock is enabled
+    // Returns true if the gesture lock action was performed
+    fun performGestureLockAction(): Boolean {
+        if (gestureLockManager?.isGestureLockEnabled() == true) {
+            gestureLockManager?.getLockedGestureData()?.let { gestureData ->
+                if (gestureLockManager?.canLockGesture(gestureData.gestureType) == true) {
+                    return gestureData.performLockAction(this)
+                }
+            }
         }
         return false
     }
 
+
+    // Function to toggle the gesture lock
+    fun toggleGestureLock() {
+        gestureLockManager?.toggleGestureLock()
+    }
+
+
+    // Function to check if the gesture lock is enabled
+    fun isGestureLockEnabled(): Boolean {
+        return gestureLockManager?.isGestureLockEnabled() == true
+    }
+
+
     // Function to perform a swipe
     fun performSwipe(direction: SwipeDirection) {
         try {
-            if (swipeLockManager?.isLocked == true) {
-                swipeLockManager?.swipeLockDirection = direction
-            }
             val path = android.graphics.Path()
             val point = GesturePoint.getPoint()
             path.moveTo(point.x, point.y)
+            gestureLockManager?.setLockedGestureData(
+                GestureData(
+                    GestureData.GestureType.SWIPE,
+                    point,
+                    swipeDirection = direction
+                )
+            )
             accessibilityService?.let { accessibilityService ->
                 val gestureDrawing = GestureDrawing(accessibilityService)
                 when (direction) {
@@ -371,6 +385,13 @@ class GestureManager {
 
     // Function to perform a zoom
     fun performZoomAction(zoomAction: ZoomGesturePerformer.ZoomAction) {
+        gestureLockManager?.setLockedGestureData(
+            GestureData(
+                GestureData.GestureType.ZOOM,
+                GesturePoint.getPoint(),
+                zoomAction = zoomAction
+            )
+        )
         accessibilityService?.let {
             ZoomGesturePerformer.performZoomAction(zoomAction, it)
         }

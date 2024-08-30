@@ -105,8 +105,8 @@ class ScanningManager(
      * @param action the action to be performed.
      */
     fun performAction(action: SwitchAction) {
-        // If swipe lock is enabled, swipe and return
-        if (GestureManager.getInstance().performSwipeLock()) {
+        // If the gesture lock is enabled, perform the gesture lock action
+        if (GestureManager.getInstance().performGestureLockAction()) {
             return
         }
 
