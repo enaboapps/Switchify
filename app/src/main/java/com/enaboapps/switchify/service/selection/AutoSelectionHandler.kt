@@ -2,6 +2,8 @@ package com.enaboapps.switchify.service.selection
 
 import android.content.Context
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.gestures.GesturePoint
+import com.enaboapps.switchify.service.gestures.visuals.AutoTapVisual
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +19,7 @@ object AutoSelectionHandler {
     private var autoSelectInProgress = false
     private var bypassAutoSelect = false
     private var preferenceManager: PreferenceManager? = null
+    private var autoTapVisual: AutoTapVisual? = null
 
     /**
      * Initializes the auto-selection handler.
@@ -28,6 +31,7 @@ object AutoSelectionHandler {
     fun init(appContext: Context) {
         // Use application context to avoid leaking activity or other contexts
         preferenceManager = PreferenceManager(appContext.applicationContext)
+        autoTapVisual = AutoTapVisual(appContext.applicationContext)
     }
 
     /**
@@ -63,6 +67,7 @@ object AutoSelectionHandler {
         // If auto-select is in progress, cancel it and open the main menu
         if (autoSelectInProgress) {
             MenuManager.getInstance().openMainMenu()
+            autoTapVisual?.stop()
             autoSelectInProgress = false
             return
         }
@@ -80,6 +85,8 @@ object AutoSelectionHandler {
                     CoroutineScope(Dispatchers.Main).launch {
                         val delayTime =
                             prefs.getLongValue(PreferenceManager.PREFERENCE_KEY_AUTO_SELECT_DELAY)
+                        val point = GesturePoint.getPoint()
+                        autoTapVisual?.start(point.x, point.y, delayTime)
                         delay(delayTime)
                         if (autoSelectInProgress) {
                             selectAction?.invoke()
