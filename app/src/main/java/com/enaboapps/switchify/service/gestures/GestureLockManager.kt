@@ -19,8 +19,11 @@ class GestureLockManager {
                 "Gesture lock disabled. Your switches will now perform their default actions.",
                 ServiceMessageHUD.MessageType.DISAPPEARING
             )
-            setLockedGestureData(null)
         }
+
+        // Reset the locked gesture data (it will be set when the user selects a gesture to lock)
+        // It has to be null to allow the user to select a new gesture to lock
+        setLockedGestureData(null)
     }
 
     // Function to check if the gesture lock is enabled and if gesture data is not null
