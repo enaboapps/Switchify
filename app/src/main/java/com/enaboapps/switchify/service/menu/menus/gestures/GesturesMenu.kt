@@ -23,6 +23,9 @@ class GesturesMenu(accessibilityService: SwitchifyAccessibilityService) :
                 },
                 MenuItem("Zoom Gestures", isLinkToMenu = true) {
                     MenuManager.getInstance().openZoomGesturesMenu()
+                },
+                MenuItem("Toggle Gesture Lock", closeOnSelect = false) {
+                    GestureManager.getInstance().toggleGestureLock()
                 }
             )
         }

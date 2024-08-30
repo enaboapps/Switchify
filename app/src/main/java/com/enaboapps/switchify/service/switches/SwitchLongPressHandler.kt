@@ -31,9 +31,9 @@ object SwitchLongPressHandler {
         longPressJob = CoroutineScope(Dispatchers.Main).launch {
             delay(holdTime)
 
-            // Toggle swipe lock if enabled 
-            if (GestureManager.getInstance().isSwipeLockEnabled()) {
-                GestureManager.getInstance().toggleSwipeLock()
+            // Toggle gesture lock if enabled
+            if (GestureManager.getInstance().isGestureLockEnabled()) {
+                GestureManager.getInstance().toggleGestureLock()
                 return@launch
             }
 
