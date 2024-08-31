@@ -39,7 +39,7 @@ class SwitchListener(
         Log.d("SwitchListener", "onSwitchPressed: $keyCode")
         return switchEvent?.let {
             if (shouldIgnoreSwitchRepeat(keyCode)) {
-                return false // Absorb the event, but don't perform any action
+                return true // Absorb the event, but don't perform any action
             }
 
             latestAction = AbsorbedSwitchAction(it, System.currentTimeMillis())
@@ -49,7 +49,7 @@ class SwitchListener(
                 // Check selection handling
                 if (AutoSelectionHandler.isAutoSelectInProgress()) {
                     AutoSelectionHandler.performSelectionAction() // Interrupt auto-select process
-                    return false // Absorb the event, but don't perform any action
+                    return true // Absorb the event, but don't perform any action
                 }
                 scanningManager.performAction(it.pressAction)
             } else {
@@ -59,8 +59,8 @@ class SwitchListener(
                     scanningManager.pauseScanning()
                 }
             }
-            false
-        } ?: true
+            true
+        } ?: false
     }
 
     /**
@@ -77,7 +77,7 @@ class SwitchListener(
 
                 // Check ignore repeat setting
                 if (shouldIgnoreSwitchRepeat(keyCode)) {
-                    return false // Absorb the event, but don't perform any action
+                    return true // Absorb the event, but don't perform any action
                 }
 
                 val timeElapsed = System.currentTimeMillis() - it.time
@@ -87,7 +87,7 @@ class SwitchListener(
                 // Check selection handling
                 if (AutoSelectionHandler.isAutoSelectInProgress()) {
                     AutoSelectionHandler.performSelectionAction() // Interrupt auto-select process
-                    return false // Absorb the event, but don't perform any action
+                    return true // Absorb the event, but don't perform any action
                 }
 
                 // Resume scanning if the setting is enabled
@@ -102,8 +102,8 @@ class SwitchListener(
                     }
                 }
             }
-            false
-        } ?: true
+            true
+        } ?: false
     }
 
     /**

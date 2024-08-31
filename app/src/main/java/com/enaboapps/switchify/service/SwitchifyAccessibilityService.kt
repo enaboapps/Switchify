@@ -84,7 +84,7 @@ class SwitchifyAccessibilityService : AccessibilityService() {
         return when (event?.action) {
             KeyEvent.ACTION_DOWN -> switchListener.onSwitchPressed(event.keyCode)
             KeyEvent.ACTION_UP -> switchListener.onSwitchReleased(event.keyCode)
-            else -> true
+            else -> false
         }
     }
 }
