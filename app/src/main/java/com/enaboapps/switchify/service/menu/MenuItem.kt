@@ -12,6 +12,7 @@ import com.enaboapps.switchify.service.utils.ScreenUtils
 
 /**
  * This class represents a menu item
+ * @property id The id of the menu item
  * @property text The text of the menu item
  * @property drawableId The drawable resource id of the menu item
  * @property drawableDescription The description of the drawable
@@ -22,13 +23,14 @@ import com.enaboapps.switchify.service.utils.ScreenUtils
  * @property action The action to perform when the item is selected
  */
 class MenuItem(
+    val id: String,
     private val text: String = "",
     private val drawableId: Int = 0,
     private val drawableDescription: String = "",
     val closeOnSelect: Boolean = true,
     var isLinkToMenu: Boolean = false,
     var isMenuHierarchyManipulator: Boolean = false,
-    var page: Int = 0,
+    private var page: Int = 0,
     private val action: () -> Unit
 ) {
     /**
