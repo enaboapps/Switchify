@@ -1,11 +1,9 @@
 package com.enaboapps.switchify.service.menu.menus
 
-import android.accessibilityservice.AccessibilityService
-import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.menu.MenuItem
-import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.menu.MenuView
+import com.enaboapps.switchify.service.menu.store.MenuItemStore
 
 /**
  * This class represents a base menu
@@ -29,18 +27,7 @@ open class BaseMenu(
      * @return The system navigation items
      */
     fun buildSystemNavItems(): List<MenuItem> {
-        return listOfNotNull(
-            MenuItem(
-                drawableId = R.drawable.ic_sys_back,
-                drawableDescription = "Back",
-                action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK) }
-            ),
-            MenuItem(
-                drawableId = R.drawable.ic_sys_home,
-                drawableDescription = "Home",
-                action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME) }
-            )
-        )
+        return MenuItemStore(accessibilityService).systemNavItems
     }
 
     /**
@@ -48,26 +35,7 @@ open class BaseMenu(
      * @return The navigation menu items
      */
     fun buildNavMenuItems(): List<MenuItem> {
-        val navMenuItems = mutableListOf<MenuItem>()
-        if (MenuManager.getInstance().menuHierarchy?.getTopMenu() != null) {
-            navMenuItems.add(
-                MenuItem(
-                    drawableId = R.drawable.ic_previous_menu,
-                    drawableDescription = "Previous menu",
-                    isMenuHierarchyManipulator = true,
-                    action = { MenuManager.getInstance().menuHierarchy?.popMenu() }
-                )
-            )
-        }
-        navMenuItems.add(
-            MenuItem(
-                drawableId = R.drawable.ic_close_menu,
-                drawableDescription = "Close menu",
-                isMenuHierarchyManipulator = true,
-                action = { MenuManager.getInstance().menuHierarchy?.removeAllMenus() }
-            )
-        )
-        return navMenuItems
+        return MenuItemStore(accessibilityService).menuManipulatorItems
     }
 
     /**
