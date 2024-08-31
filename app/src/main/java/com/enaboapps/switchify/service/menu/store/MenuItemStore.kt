@@ -30,6 +30,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
     private val toggleGestureLockMenuItem = MenuItem(
         id = "toggle_gesture_lock",
         text = "Toggle Gesture Lock",
+        closeOnSelect = false,
         action = { GestureManager.getInstance().toggleGestureLock() }
     )
 
