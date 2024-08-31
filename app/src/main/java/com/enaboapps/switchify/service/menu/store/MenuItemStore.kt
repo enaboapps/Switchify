@@ -187,7 +187,8 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 id = "swipe_right",
                 text = "Swipe Right",
                 action = { GestureManager.getInstance().performSwipe(SwipeDirection.RIGHT) }
-            )
+            ),
+            toggleGestureLockMenuItem
         )
     )
 
@@ -207,7 +208,8 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 id = "tap_and_hold",
                 text = "Tap and Hold",
                 action = { GestureManager.getInstance().performTapAndHold() }
-            )
+            ),
+            toggleGestureLockMenuItem
         )
     )
 
@@ -232,7 +234,8 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                     GestureManager.getInstance()
                         .performZoomAction(ZoomGesturePerformer.ZoomAction.ZOOM_OUT)
                 }
-            )
+            ),
+            toggleGestureLockMenuItem
         )
     )
 
