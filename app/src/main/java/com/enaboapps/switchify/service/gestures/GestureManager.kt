@@ -2,27 +2,33 @@ package com.enaboapps.switchify.service.gestures
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
+import android.graphics.Path
 import android.graphics.PointF
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.gestures.GestureData.Companion.DOUBLE_TAP_INTERVAL
-import com.enaboapps.switchify.service.gestures.GestureData.Companion.DRAG_DURATION
-import com.enaboapps.switchify.service.gestures.GestureData.Companion.SWIPE_DURATION
 import com.enaboapps.switchify.service.gestures.GestureData.Companion.TAP_AND_HOLD_DURATION
 import com.enaboapps.switchify.service.gestures.GestureData.Companion.TAP_DURATION
-import com.enaboapps.switchify.service.gestures.utils.GestureUtils.getInBoundsCoordinate
 import com.enaboapps.switchify.service.gestures.visuals.GestureDrawing
 import com.enaboapps.switchify.service.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.utils.ScreenUtils
-import com.enaboapps.switchify.service.window.ServiceMessageHUD
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class GestureManager {
-    // singleton
+/**
+ * The GestureManager class is responsible for managing and performing various gesture actions
+ * in the Switchify accessibility service. It handles taps, swipes, drags, and custom gestures.
+ */
+class GestureManager private constructor() {
     companion object {
         private var instance: GestureManager? = null
+
+        /**
+         * Gets the singleton instance of the GestureManager.
+         *
+         * @return The GestureManager instance.
+         */
         fun getInstance(): GestureManager {
             if (instance == null) {
                 instance = GestureManager()
@@ -31,32 +37,28 @@ class GestureManager {
         }
     }
 
-
-    // Drag variables
-    private var dragStartPoint: PointF? = null
-    private var isDragging = false
-
-
-    // gesture lock manager
-    private var gestureLockManager: GestureLockManager? = null
-
-
-    // accessibility service
     private var accessibilityService: SwitchifyAccessibilityService? = null
-
-
-    // preference manager
+    private var gestureLockManager: GestureLockManager? = null
     private var preferenceManager: PreferenceManager? = null
+    private lateinit var multiPointGesturePerformer: MultiPointGesturePerformer
 
-
+    /**
+     * Sets up the GestureManager with the necessary components.
+     *
+     * @param accessibilityService The SwitchifyAccessibilityService instance.
+     */
     fun setup(accessibilityService: SwitchifyAccessibilityService) {
         this.accessibilityService = accessibilityService
         gestureLockManager = GestureLockManager()
         preferenceManager = PreferenceManager(accessibilityService)
+        multiPointGesturePerformer = MultiPointGesturePerformer(accessibilityService)
     }
 
-
-    // Function to check if point is close to the center of the screen (within 400 pixels)
+    /**
+     * Checks if the current gesture point is close to the center of the screen.
+     *
+     * @return True if the point is within 350dp of the screen center, false otherwise.
+     */
     fun isPointCloseToCenter(): Boolean {
         val point = GesturePoint.getPoint()
         accessibilityService?.let {
@@ -72,8 +74,11 @@ class GestureManager {
         return false
     }
 
-
-    // Function to get current point
+    /**
+     * Gets the current gesture point, applying assisted selection if enabled.
+     *
+     * @return The PointF representing the current gesture point.
+     */
     private fun getAssistedCurrentPoint(): PointF {
         return if (preferenceManager?.getBooleanValue(PreferenceManager.PREFERENCE_KEY_ASSISTED_SELECTION) == true) {
             NodeExaminer.getClosestNodeToPoint(GesturePoint.getPoint())
@@ -82,14 +87,15 @@ class GestureManager {
         }
     }
 
-
-    // Function to perform a tap
+    /**
+     * Performs a tap gesture at the current point.
+     */
     fun performTap() {
         try {
-            accessibilityService.let {
-                val path = android.graphics.Path()
+            accessibilityService?.let {
+                val path = Path()
                 val point = getAssistedCurrentPoint()
-                val gestureDrawing = GestureDrawing(it!!)
+                val gestureDrawing = GestureDrawing(it)
                 gestureDrawing.drawCircleAndRemove(
                     point.x.toInt(),
                     point.y.toInt(),
@@ -119,13 +125,15 @@ class GestureManager {
         }
     }
 
-    // Function to perform a double tap
+    /**
+     * Performs a double tap gesture at the current point.
+     */
     fun performDoubleTap() {
         try {
-            accessibilityService.let {
-                val path = android.graphics.Path()
+            accessibilityService?.let {
+                val path = Path()
                 val point = getAssistedCurrentPoint()
-                val gestureDrawing = GestureDrawing(it!!)
+                val gestureDrawing = GestureDrawing(it)
                 gestureDrawing.drawCircleAndRemove(
                     point.x.toInt(),
                     point.y.toInt(),
@@ -150,7 +158,6 @@ class GestureManager {
                     object : AccessibilityService.GestureResultCallback() {
                         override fun onCompleted(gestureDescription: GestureDescription?) {
                             super.onCompleted(gestureDescription)
-                            // Log.d(TAG, "onCompleted")
                         }
                     },
                     null
@@ -161,13 +168,15 @@ class GestureManager {
         }
     }
 
-    // Function to perform a tap and hold
+    /**
+     * Performs a tap and hold gesture at the current point.
+     */
     fun performTapAndHold() {
         try {
-            accessibilityService.let {
-                val path = android.graphics.Path()
+            accessibilityService?.let {
+                val path = Path()
                 val point = getAssistedCurrentPoint()
-                val gestureDrawing = GestureDrawing(it!!)
+                val gestureDrawing = GestureDrawing(it)
                 gestureDrawing.drawCircleAndRemove(
                     point.x.toInt(),
                     point.y.toInt(),
@@ -188,7 +197,6 @@ class GestureManager {
                     object : AccessibilityService.GestureResultCallback() {
                         override fun onCompleted(gestureDescription: GestureDescription?) {
                             super.onCompleted(gestureDescription)
-                            // Log.d(TAG, "onCompleted")
                         }
                     },
                     null
@@ -199,9 +207,11 @@ class GestureManager {
         }
     }
 
-
-    // Function to perform the gesture lock action if the gesture lock is enabled
-    // Returns true if the gesture lock action was performed
+    /**
+     * Performs the gesture lock action if the gesture lock is enabled.
+     *
+     * @return True if a locked gesture action was performed, false otherwise.
+     */
     fun performGestureLockAction(): Boolean {
         if (gestureLockManager?.isGestureLockEnabled() == true) {
             gestureLockManager?.getLockedGestureData()?.let { gestureData ->
@@ -213,177 +223,75 @@ class GestureManager {
         return false
     }
 
-
-    // Function to toggle the gesture lock
+    /**
+     * Toggles the gesture lock on or off.
+     */
     fun toggleGestureLock() {
         gestureLockManager?.toggleGestureLock()
     }
 
-
-    // Function to check if the gesture lock is enabled
+    /**
+     * Checks if the gesture lock is currently enabled.
+     *
+     * @return True if the gesture lock is enabled, false otherwise.
+     */
     fun isGestureLockEnabled(): Boolean {
         return gestureLockManager?.isGestureLockEnabled() == true
     }
 
-
-    // Function to perform a swipe
+    /**
+     * Performs a swipe gesture in the specified direction.
+     *
+     * @param direction The SwipeDirection to perform the swipe in.
+     */
     fun performSwipe(direction: SwipeDirection) {
-        try {
-            val path = android.graphics.Path()
-            val point = GesturePoint.getPoint()
-            path.moveTo(point.x, point.y)
-            gestureLockManager?.setLockedGestureData(
-                GestureData(
-                    GestureData.GestureType.SWIPE,
-                    point,
-                    swipeDirection = direction
-                )
-            )
-            accessibilityService?.let { accessibilityService ->
-                val gestureDrawing = GestureDrawing(accessibilityService)
-                when (direction) {
-                    SwipeDirection.UP -> {
-                        val fifthOfScreen = ScreenUtils.getHeight(accessibilityService) / 5
-                        val travel = getInBoundsCoordinate(
-                            ScreenUtils.getHeight(accessibilityService),
-                            point.y - fifthOfScreen
-                        )
-                        path.lineTo(point.x, travel)
-                        gestureDrawing.drawLineAndArrowAndRemove(
-                            point.x.toInt(),
-                            point.y.toInt(),
-                            point.x.toInt(),
-                            travel.toInt(),
-                            500
-                        )
-                    }
-
-                    SwipeDirection.DOWN -> {
-                        val fifthOfScreen = ScreenUtils.getHeight(accessibilityService) / 5
-                        val travel = getInBoundsCoordinate(
-                            ScreenUtils.getHeight(accessibilityService),
-                            point.y + fifthOfScreen
-                        )
-                        path.lineTo(point.x, travel)
-                        gestureDrawing.drawLineAndArrowAndRemove(
-                            point.x.toInt(),
-                            point.y.toInt(),
-                            point.x.toInt(),
-                            travel.toInt(),
-                            500
-                        )
-                    }
-
-                    SwipeDirection.LEFT -> {
-                        val quarterOfScreen = ScreenUtils.getWidth(accessibilityService) / 4
-                        val travel = getInBoundsCoordinate(
-                            ScreenUtils.getWidth(accessibilityService),
-                            point.x - quarterOfScreen
-                        )
-                        path.lineTo(travel, point.y)
-                        gestureDrawing.drawLineAndArrowAndRemove(
-                            point.x.toInt(),
-                            point.y.toInt(),
-                            travel.toInt(),
-                            point.y.toInt(),
-                            500
-                        )
-                    }
-
-                    SwipeDirection.RIGHT -> {
-                        val quarterOfScreen = ScreenUtils.getWidth(accessibilityService) / 4
-                        val travel = getInBoundsCoordinate(
-                            ScreenUtils.getWidth(accessibilityService),
-                            point.x + quarterOfScreen
-                        )
-                        path.lineTo(travel, point.y)
-                        gestureDrawing.drawLineAndArrowAndRemove(
-                            point.x.toInt(),
-                            point.y.toInt(),
-                            travel.toInt(),
-                            point.y.toInt(),
-                            500
-                        )
-                    }
-                }
-                val gestureDescription = GestureDescription.Builder()
-                    .addStroke(GestureDescription.StrokeDescription(path, 0, SWIPE_DURATION))
-                    .build()
-                accessibilityService.dispatchGesture(
-                    gestureDescription,
-                    object : AccessibilityService.GestureResultCallback() {
-                        override fun onCompleted(gestureDescription: GestureDescription?) {
-                            super.onCompleted(gestureDescription)
-                            // Log.d(TAG, "onCompleted")
-                        }
-                    },
-                    null
-                )
-            }
-        } catch (e: Exception) {
-            // Log.e(TAG, "onSwipe: ", e)
+        val gestureType = when (direction) {
+            SwipeDirection.UP -> MultiPointGesturePerformer.GestureType.SWIPE_UP
+            SwipeDirection.DOWN -> MultiPointGesturePerformer.GestureType.SWIPE_DOWN
+            SwipeDirection.LEFT -> MultiPointGesturePerformer.GestureType.SWIPE_LEFT
+            SwipeDirection.RIGHT -> MultiPointGesturePerformer.GestureType.SWIPE_RIGHT
         }
+        multiPointGesturePerformer.startGesture(gestureType)
+        multiPointGesturePerformer.endGesture()
     }
 
-    // Function to start dragging
+    /**
+     * Starts a drag gesture.
+     */
     fun startDragGesture() {
-        dragStartPoint = GesturePoint.getPoint()
-        isDragging = true
-
+        multiPointGesturePerformer.startGesture(MultiPointGesturePerformer.GestureType.DRAG)
         ScanMethod.setType(ScanMethod.MethodType.CURSOR)
-
-        ServiceMessageHUD.instance.showMessage(
-            "Select where to drag to",
-            ServiceMessageHUD.MessageType.DISAPPEARING
-        )
     }
 
-    // Function to stop dragging
-    fun selectEndOfDrag() {
-        isDragging = false
-
-        // If the drag start point is null, return
-        if (dragStartPoint == null) {
-            return
-        }
-
-        // Dispatch the drag gesture
-        val path = android.graphics.Path()
-        val point = GesturePoint.getPoint()
-        path.moveTo(dragStartPoint!!.x, dragStartPoint!!.y)
-        path.lineTo(point.x, point.y)
-        accessibilityService?.let { accessibilityService ->
-            val gestureDrawing = GestureDrawing(accessibilityService)
-            gestureDrawing.drawLineAndArrowAndRemove(
-                dragStartPoint!!.x.toInt(),
-                dragStartPoint!!.y.toInt(),
-                point.x.toInt(),
-                point.y.toInt(),
-                500
-            )
-            val gestureDescription = GestureDescription.Builder()
-                .addStroke(GestureDescription.StrokeDescription(path, 0, DRAG_DURATION)).build()
-            accessibilityService.dispatchGesture(
-                gestureDescription,
-                object : AccessibilityService.GestureResultCallback() {
-                    override fun onCompleted(gestureDescription: GestureDescription?) {
-                        super.onCompleted(gestureDescription)
-                        // Log.d(TAG, "onCompleted")
-                    }
-                },
-                null
-            )
-        }
-
-        // Reset the drag start point
-        dragStartPoint = null
+    /**
+     * Starts a custom swipe gesture.
+     */
+    fun startCustomSwipe() {
+        multiPointGesturePerformer.startGesture(MultiPointGesturePerformer.GestureType.CUSTOM_SWIPE)
+        ScanMethod.setType(ScanMethod.MethodType.CURSOR)
     }
 
-    fun isDragging(): Boolean {
-        return isDragging
+    /**
+     * Ends the current multi-point gesture (drag or custom swipe).
+     */
+    fun endMultiPointGesture() {
+        multiPointGesturePerformer.endGesture()
     }
 
-    // Function to perform a zoom
+    /**
+     * Checks if a multi-point gesture is currently being performed.
+     *
+     * @return True if a multi-point gesture is in progress, false otherwise.
+     */
+    fun isPerformingMultiPointGesture(): Boolean {
+        return multiPointGesturePerformer.isPerformingGesture()
+    }
+
+    /**
+     * Performs a zoom action.
+     *
+     * @param zoomAction The ZoomAction to perform.
+     */
     fun performZoomAction(zoomAction: ZoomGesturePerformer.ZoomAction) {
         gestureLockManager?.setLockedGestureData(
             GestureData(
@@ -396,5 +304,4 @@ class GestureManager {
             ZoomGesturePerformer.performZoomAction(zoomAction, it)
         }
     }
-
 }

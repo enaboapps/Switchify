@@ -607,9 +607,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * This function performs the final action
      */
     private fun performFinalAction() {
-        // check if drag is enabled, if so, select the end point
-        if (GestureManager.getInstance().isDragging()) {
-            GestureManager.getInstance().selectEndOfDrag()
+        // check if we are performing a multi-point gesture
+        if (GestureManager.getInstance().isPerformingMultiPointGesture()) {
+            GestureManager.getInstance().endMultiPointGesture()
             internalReset()
             return
         }
