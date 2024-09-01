@@ -34,6 +34,13 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
         action = { GestureManager.getInstance().toggleGestureLock() }
     )
 
+    private val openVolumeControlMenu = MenuItem(
+        id = "volume_control",
+        text = "Volume Control",
+        isLinkToMenu = true,
+        action = { MenuManager.getInstance().openVolumeControlMenu() }
+    )
+
     /**
      * The system navigation items
      */
@@ -288,12 +295,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                     text = "Power Dialog",
                     action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG) }
                 ),
-                MenuItem(
-                    id = "volume_control",
-                    text = "Volume Control",
-                    isLinkToMenu = true,
-                    action = { MenuManager.getInstance().openVolumeControlMenu() }
-                )
+                openVolumeControlMenu
             )
         )
     }
@@ -345,7 +347,8 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 id = "play_pause",
                 text = "Play/Pause",
                 action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_KEYCODE_HEADSETHOOK) }
-            )
+            ),
+            openVolumeControlMenu
         )
     )
 
