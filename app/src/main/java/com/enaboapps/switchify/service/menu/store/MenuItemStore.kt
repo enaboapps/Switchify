@@ -310,6 +310,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 MenuItem(
                     id = "volume_up",
                     text = "Volume Up",
+                    closeOnSelect = false,
                     action = {
                         val audioManager =
                             accessibilityService.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -323,6 +324,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 MenuItem(
                     id = "volume_down",
                     text = "Volume Down",
+                    closeOnSelect = false,
                     action = {
                         val audioManager =
                             accessibilityService.getSystemService(Context.AUDIO_SERVICE) as AudioManager
