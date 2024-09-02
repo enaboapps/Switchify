@@ -11,6 +11,7 @@ import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.service.switches.SwitchListener
 import com.enaboapps.switchify.service.utils.KeyboardBridge
+import com.enaboapps.switchify.service.utils.ScreenWatcher
 
 /**
  * This is the main service class for the Switchify application.
@@ -23,6 +24,9 @@ class SwitchifyAccessibilityService : AccessibilityService() {
 
     // SwitchListener instance for listening to switch events
     private lateinit var switchListener: SwitchListener
+
+    // ScreenWatcher instance for watching screen changes
+    private lateinit var screenWatcher: ScreenWatcher
 
     /**
      * This function is called when the service is destroyed.
@@ -54,7 +58,7 @@ class SwitchifyAccessibilityService : AccessibilityService() {
 
     /**
      * This method is called when the service is connected.
-     * It sets up the scanning manager, switch listener, gesture manager, and auto selection handler.
+     * It sets up the scanning manager, switch listener, screen watcher, gesture manager, and auto selection handler.
      * It also finds nodes in the active window and updates the keyboard state.
      */
     override fun onServiceConnected() {
@@ -64,6 +68,11 @@ class SwitchifyAccessibilityService : AccessibilityService() {
 
         scanningManager = ScanningManager(this, this)
         scanningManager.setup()
+
+        screenWatcher = ScreenWatcher(
+            onScreenSleep = { scanningManager.reset() }
+        )
+        screenWatcher.register(this)
 
         switchListener = SwitchListener(this, scanningManager)
 
