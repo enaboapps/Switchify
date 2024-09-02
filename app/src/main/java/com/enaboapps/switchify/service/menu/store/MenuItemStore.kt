@@ -196,6 +196,11 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 text = "Swipe Right",
                 action = { GestureManager.getInstance().performSwipe(SwipeDirection.RIGHT) }
             ),
+            MenuItem(
+                id = "custom_swipe",
+                text = "Custom Swipe",
+                action = { GestureManager.getInstance().startCustomSwipe() }
+            ),
             toggleGestureLockMenuItem
         )
     )

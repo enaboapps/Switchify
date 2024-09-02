@@ -274,6 +274,23 @@ class ScanningManager(
     }
 
     /**
+     * This function resets the scanning manager.
+     * It stops the scanning and cleans up the resources.
+     * It also closes the menu.
+     */
+    fun reset() {
+        // Stop scanning
+        pauseScanning()
+
+        // Clean up resources
+        cursorManager.cleanup()
+        nodeScanner.cleanup()
+
+        // Close the menu
+        MenuManager.getInstance().closeMenuHierarchy()
+    }
+
+    /**
      * This function shuts down the scanning manager.
      * It stops the scanning and cleans up the resources.
      */
