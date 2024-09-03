@@ -15,17 +15,21 @@ import com.enaboapps.switchify.service.window.ServiceMessageHUD
  * Performs multi-point gestures such as drags and swipes.
  *
  * @property accessibilityService The accessibility service to use for performing gestures.
+ * @property gestureLockManager The gesture lock manager to use for locking gestures.
  */
-class MultiPointGesturePerformer(private val accessibilityService: SwitchifyAccessibilityService) {
+class MultiPointGesturePerformer(
+    private val accessibilityService: SwitchifyAccessibilityService,
+    private val gestureLockManager: GestureLockManager
+) {
 
     private var startPoint: PointF? = null
     private var isPerformingGesture = false
-    private var currentGestureType: GestureType? = null
+    private var currentMultiPointGestureType: MultiPointGestureType? = null
 
     /**
      * Represents the types of gestures that can be performed.
      */
-    enum class GestureType {
+    enum class MultiPointGestureType {
         DRAG,
         CUSTOM_SWIPE,
         SWIPE_UP,
@@ -39,20 +43,20 @@ class MultiPointGesturePerformer(private val accessibilityService: SwitchifyAcce
      *
      * @param type The type of gesture to start.
      */
-    fun startGesture(type: GestureType) {
+    fun startGesture(type: MultiPointGestureType) {
         startPoint = GesturePoint.getPoint()
         isPerformingGesture = true
-        currentGestureType = type
+        currentMultiPointGestureType = type
 
         when (type) {
-            GestureType.DRAG -> {
+            MultiPointGestureType.DRAG -> {
                 ServiceMessageHUD.instance.showMessage(
                     "Select where to drag to",
                     ServiceMessageHUD.MessageType.DISAPPEARING
                 )
             }
 
-            GestureType.CUSTOM_SWIPE -> {
+            MultiPointGestureType.CUSTOM_SWIPE -> {
                 ServiceMessageHUD.instance.showMessage(
                     "Select where to swipe to",
                     ServiceMessageHUD.MessageType.DISAPPEARING
@@ -70,35 +74,43 @@ class MultiPointGesturePerformer(private val accessibilityService: SwitchifyAcce
         isPerformingGesture = false
 
         val startPoint = this.startPoint
-        val gestureType = this.currentGestureType
+        val gestureType = this.currentMultiPointGestureType
         if (startPoint == null || gestureType == null) {
             return
         }
 
         val endPoint = when (gestureType) {
-            GestureType.DRAG, GestureType.CUSTOM_SWIPE -> GesturePoint.getPoint()
+            MultiPointGestureType.DRAG, MultiPointGestureType.CUSTOM_SWIPE -> GesturePoint.getPoint()
             else -> calculateSwipeEndPoint(gestureType, startPoint)
         }
 
         performGesture(gestureType, startPoint, endPoint)
 
+        gestureLockManager.setLockedGestureData(
+            GestureData.fromMultiPointGestureType(
+                gestureType,
+                startPoint,
+                endPoint
+            )
+        )
+
         this.startPoint = null
-        this.currentGestureType = null
+        this.currentMultiPointGestureType = null
     }
 
-    private fun calculateSwipeEndPoint(type: GestureType, start: PointF): PointF {
+    private fun calculateSwipeEndPoint(type: MultiPointGestureType, start: PointF): PointF {
         val screenWidth = ScreenUtils.getWidth(accessibilityService)
         val screenHeight = ScreenUtils.getHeight(accessibilityService)
         return when (type) {
-            GestureType.SWIPE_UP -> PointF(start.x, start.y - screenHeight / 5f)
-            GestureType.SWIPE_DOWN -> PointF(start.x, start.y + screenHeight / 5f)
-            GestureType.SWIPE_LEFT -> PointF(start.x - screenWidth / 4f, start.y)
-            GestureType.SWIPE_RIGHT -> PointF(start.x + screenWidth / 4f, start.y)
+            MultiPointGestureType.SWIPE_UP -> PointF(start.x, start.y - screenHeight / 5f)
+            MultiPointGestureType.SWIPE_DOWN -> PointF(start.x, start.y + screenHeight / 5f)
+            MultiPointGestureType.SWIPE_LEFT -> PointF(start.x - screenWidth / 4f, start.y)
+            MultiPointGestureType.SWIPE_RIGHT -> PointF(start.x + screenWidth / 4f, start.y)
             else -> start // This shouldn't happen, but we need to handle all cases
         }
     }
 
-    private fun performGesture(type: GestureType, start: PointF, end: PointF) {
+    private fun performGesture(type: MultiPointGestureType, start: PointF, end: PointF) {
         val path = Path()
         path.moveTo(start.x, start.y)
         path.lineTo(end.x, end.y)
@@ -113,7 +125,7 @@ class MultiPointGesturePerformer(private val accessibilityService: SwitchifyAcce
         )
 
         val duration = when (type) {
-            GestureType.DRAG -> DRAG_DURATION
+            MultiPointGestureType.DRAG -> DRAG_DURATION
             else -> SWIPE_DURATION
         }
 
