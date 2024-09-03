@@ -41,18 +41,6 @@ class GestureLockManager {
         lockedGestureData = gestureData
     }
 
-    // Helper function to get a user-friendly name for the gesture type
-    private fun getGestureName(gestureType: GestureData.GestureType): String {
-        return when (gestureType) {
-            GestureData.GestureType.TAP -> "tap"
-            GestureData.GestureType.DOUBLE_TAP -> "double tap"
-            GestureData.GestureType.TAP_AND_HOLD -> "tap and hold"
-            GestureData.GestureType.SWIPE -> "swipe"
-            GestureData.GestureType.ZOOM -> "zoom"
-            GestureData.GestureType.DRAG -> "drag" // Note: This shouldn't be used as per your requirements
-        }
-    }
-
     // Function to check if a gesture type can be locked
     fun canLockGesture(gestureType: GestureData.GestureType): Boolean {
         return gestureType != GestureData.GestureType.DRAG

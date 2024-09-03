@@ -51,7 +51,8 @@ class GestureManager private constructor() {
         this.accessibilityService = accessibilityService
         gestureLockManager = GestureLockManager()
         preferenceManager = PreferenceManager(accessibilityService)
-        multiPointGesturePerformer = MultiPointGesturePerformer(accessibilityService)
+        multiPointGesturePerformer =
+            MultiPointGesturePerformer(accessibilityService, gestureLockManager!!)
     }
 
     /**
@@ -245,13 +246,13 @@ class GestureManager private constructor() {
      * @param direction The SwipeDirection to perform the swipe in.
      */
     fun performSwipe(direction: SwipeDirection) {
-        val gestureType = when (direction) {
-            SwipeDirection.UP -> MultiPointGesturePerformer.GestureType.SWIPE_UP
-            SwipeDirection.DOWN -> MultiPointGesturePerformer.GestureType.SWIPE_DOWN
-            SwipeDirection.LEFT -> MultiPointGesturePerformer.GestureType.SWIPE_LEFT
-            SwipeDirection.RIGHT -> MultiPointGesturePerformer.GestureType.SWIPE_RIGHT
+        val multiPointGestureType = when (direction) {
+            SwipeDirection.UP -> MultiPointGesturePerformer.MultiPointGestureType.SWIPE_UP
+            SwipeDirection.DOWN -> MultiPointGesturePerformer.MultiPointGestureType.SWIPE_DOWN
+            SwipeDirection.LEFT -> MultiPointGesturePerformer.MultiPointGestureType.SWIPE_LEFT
+            SwipeDirection.RIGHT -> MultiPointGesturePerformer.MultiPointGestureType.SWIPE_RIGHT
         }
-        multiPointGesturePerformer.startGesture(gestureType)
+        multiPointGesturePerformer.startGesture(multiPointGestureType)
         multiPointGesturePerformer.endGesture()
     }
 
@@ -259,7 +260,7 @@ class GestureManager private constructor() {
      * Starts a drag gesture.
      */
     fun startDragGesture() {
-        multiPointGesturePerformer.startGesture(MultiPointGesturePerformer.GestureType.DRAG)
+        multiPointGesturePerformer.startGesture(MultiPointGesturePerformer.MultiPointGestureType.DRAG)
         ScanMethod.setType(ScanMethod.MethodType.CURSOR)
     }
 
@@ -267,7 +268,7 @@ class GestureManager private constructor() {
      * Starts a custom swipe gesture.
      */
     fun startCustomSwipe() {
-        multiPointGesturePerformer.startGesture(MultiPointGesturePerformer.GestureType.CUSTOM_SWIPE)
+        multiPointGesturePerformer.startGesture(MultiPointGesturePerformer.MultiPointGestureType.CUSTOM_SWIPE)
         ScanMethod.setType(ScanMethod.MethodType.CURSOR)
     }
 
