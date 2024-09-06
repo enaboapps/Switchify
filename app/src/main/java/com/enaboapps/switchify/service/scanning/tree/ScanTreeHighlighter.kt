@@ -1,10 +1,12 @@
 package com.enaboapps.switchify.service.scanning.tree
 
+import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.scanning.ScanSettings
 
 /**
  * This class is responsible for managing the visual highlighting of elements in the ScanTree structure.
  * It provides methods to highlight and unhighlight tree items, groups, and individual nodes.
+ * It supports both row-column scanning and sequential (non-row-column) scanning modes.
  *
  * @property tree The list of ScanTreeItems that make up the scanning tree.
  * @property scanSettings The settings for scanning behavior.
@@ -13,62 +15,19 @@ class ScanTreeHighlighter(
     private val tree: List<ScanTreeItem>,
     private val scanSettings: ScanSettings
 ) {
-    /**
-     * Highlights the current item or group to indicate an escape step.
-     *
-     * @param treeItemIndex The index of the current tree item.
-     * @param groupIndex The index of the current group within the tree item.
-     * @param isInTreeItem Whether the scanning is currently within a tree item.
-     * @param isInGroup Whether the scanning is currently within a group.
-     */
-    fun highlightEscape(
-        treeItemIndex: Int,
-        groupIndex: Int,
-        isInTreeItem: Boolean,
-        isInGroup: Boolean
-    ) {
-        val currentItem = tree.getOrNull(treeItemIndex) ?: return
+    private val isRowColumnScanEnabled: Boolean
+        get() = scanSettings.isRowColumnScanEnabled()
 
-        if (!isInTreeItem) {
-            highlightTreeItem(currentItem)
-        } else if (scanSettings.isGroupScanEnabled() && currentItem.isGrouped() && isInGroup) {
-            highlightGroup(currentItem, groupIndex)
-        } else {
-            highlightTreeItem(currentItem)
-        }
+    private val flattenedNodes: List<ScanNodeInterface> by lazy {
+        tree.flatMap { it.children }
     }
 
     /**
-     * Unhighlights the current item or group to indicate an escape step.
+     * Highlights the current item, group, or node based on the current scanning state.
      *
      * @param treeItemIndex The index of the current tree item.
      * @param groupIndex The index of the current group within the tree item.
-     * @param isInTreeItem Whether the scanning is currently within a tree item.
-     * @param isInGroup Whether the scanning is currently within a group.
-     */
-    fun unhighlightEscape(
-        treeItemIndex: Int,
-        groupIndex: Int,
-        isInTreeItem: Boolean,
-        isInGroup: Boolean
-    ) {
-        val currentItem = tree.getOrNull(treeItemIndex) ?: return
-
-        if (!isInTreeItem) {
-            unhighlightTreeItem(currentItem)
-        } else if (scanSettings.isGroupScanEnabled() && currentItem.isGrouped() && isInGroup) {
-            unhighlightGroup(currentItem, groupIndex)
-        } else {
-            unhighlightTreeItem(currentItem)
-        }
-    }
-
-    /**
-     * Highlights the current element based on the given indices and scanning state.
-     *
-     * @param treeItemIndex The index of the current tree item.
-     * @param groupIndex The index of the current group within the tree item.
-     * @param nodeIndex The index of the current node within the group.
+     * @param nodeIndex The index of the current node within the group or in the flattened list.
      * @param isInTreeItem Whether the scanning is currently within a tree item.
      * @param isScanningGroups Whether the scanning is currently at the group level.
      */
@@ -79,6 +38,11 @@ class ScanTreeHighlighter(
         isInTreeItem: Boolean,
         isScanningGroups: Boolean
     ) {
+        if (!isRowColumnScanEnabled) {
+            highlightFlattenedNode(nodeIndex)
+            return
+        }
+
         val currentItem = tree.getOrNull(treeItemIndex) ?: return
 
         when {
@@ -91,11 +55,11 @@ class ScanTreeHighlighter(
     }
 
     /**
-     * Unhighlights the current element based on the given indices and scanning state.
+     * Unhighlights the current item, group, or node based on the current scanning state.
      *
      * @param treeItemIndex The index of the current tree item.
      * @param groupIndex The index of the current group within the tree item.
-     * @param nodeIndex The index of the current node within the group.
+     * @param nodeIndex The index of the current node within the group or in the flattened list.
      * @param isInTreeItem Whether the scanning is currently within a tree item.
      * @param isScanningGroups Whether the scanning is currently at the group level.
      */
@@ -106,6 +70,11 @@ class ScanTreeHighlighter(
         isInTreeItem: Boolean,
         isScanningGroups: Boolean
     ) {
+        if (!isRowColumnScanEnabled) {
+            unhighlightFlattenedNode(nodeIndex)
+            return
+        }
+
         val currentItem = tree.getOrNull(treeItemIndex) ?: return
 
         when {
@@ -114,6 +83,70 @@ class ScanTreeHighlighter(
                 unhighlightGroup(currentItem, groupIndex)
 
             else -> unhighlightNode(currentItem, groupIndex, nodeIndex)
+        }
+    }
+
+    /**
+     * Highlights the current item or group to indicate an escape step.
+     *
+     * @param treeItemIndex The index of the current tree item.
+     * @param groupIndex The index of the current group within the tree item.
+     * @param nodeIndex The index of the current node in the flattened list (for non-row-column mode).
+     * @param isInTreeItem Whether the scanning is currently within a tree item.
+     * @param isInGroup Whether the scanning is currently within a group.
+     */
+    fun highlightEscape(
+        treeItemIndex: Int,
+        groupIndex: Int,
+        nodeIndex: Int,
+        isInTreeItem: Boolean,
+        isInGroup: Boolean
+    ) {
+        if (!isRowColumnScanEnabled) {
+            highlightFlattenedNode(nodeIndex)
+            return
+        }
+
+        val currentItem = tree.getOrNull(treeItemIndex) ?: return
+
+        when {
+            !isInTreeItem -> highlightTreeItem(currentItem)
+            scanSettings.isGroupScanEnabled() && currentItem.isGrouped() && isInGroup ->
+                highlightGroup(currentItem, groupIndex)
+
+            else -> highlightTreeItem(currentItem)
+        }
+    }
+
+    /**
+     * Unhighlights the current item or group to indicate an escape step.
+     *
+     * @param treeItemIndex The index of the current tree item.
+     * @param groupIndex The index of the current group within the tree item.
+     * @param nodeIndex The index of the current node in the flattened list (for non-row-column mode).
+     * @param isInTreeItem Whether the scanning is currently within a tree item.
+     * @param isInGroup Whether the scanning is currently within a group.
+     */
+    fun unhighlightEscape(
+        treeItemIndex: Int,
+        groupIndex: Int,
+        nodeIndex: Int,
+        isInTreeItem: Boolean,
+        isInGroup: Boolean
+    ) {
+        if (!isRowColumnScanEnabled) {
+            unhighlightFlattenedNode(nodeIndex)
+            return
+        }
+
+        val currentItem = tree.getOrNull(treeItemIndex) ?: return
+
+        when {
+            !isInTreeItem -> unhighlightTreeItem(currentItem)
+            scanSettings.isGroupScanEnabled() && currentItem.isGrouped() && isInGroup ->
+                unhighlightGroup(currentItem, groupIndex)
+
+            else -> unhighlightTreeItem(currentItem)
         }
     }
 
@@ -216,9 +249,31 @@ class ScanTreeHighlighter(
     }
 
     /**
+     * Highlights a node in the flattened list (for non-row-column mode).
+     *
+     * @param nodeIndex The index of the node in the flattened list to highlight.
+     */
+    private fun highlightFlattenedNode(nodeIndex: Int) {
+        flattenedNodes.getOrNull(nodeIndex)?.highlight()
+    }
+
+    /**
+     * Unhighlights a node in the flattened list (for non-row-column mode).
+     *
+     * @param nodeIndex The index of the node in the flattened list to unhighlight.
+     */
+    private fun unhighlightFlattenedNode(nodeIndex: Int) {
+        flattenedNodes.getOrNull(nodeIndex)?.unhighlight()
+    }
+
+    /**
      * Unhighlights all elements in the tree.
      */
     fun unhighlightAll() {
-        tree.forEach { it.unhighlight() }
+        if (isRowColumnScanEnabled) {
+            tree.forEach { it.unhighlight() }
+        } else {
+            flattenedNodes.forEach { it.unhighlight() }
+        }
     }
 }

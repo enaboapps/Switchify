@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.gestures
 
+import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.window.ServiceMessageHUD
 
 class GestureLockManager {
@@ -20,15 +21,11 @@ class GestureLockManager {
                 ServiceMessageHUD.MessageType.DISAPPEARING
             )
         }
-
-        // Reset the locked gesture data (it will be set when the user selects a gesture to lock)
-        // It has to be null to allow the user to select a new gesture to lock
-        setLockedGestureData(null)
     }
 
-    // Function to check if the gesture lock is enabled and if gesture data is not null
+    // Function to check if the gesture lock is enabled and the user is not in the menu
     fun isGestureLockEnabled(): Boolean {
-        return isLocked && lockedGestureData != null
+        return isLocked && !ScanMethod.isInMenu
     }
 
     // Function to get the locked gesture data
@@ -38,11 +35,25 @@ class GestureLockManager {
 
     // Function to set the locked gesture data
     fun setLockedGestureData(gestureData: GestureData?) {
-        lockedGestureData = gestureData
+        lockedGestureData = if (gestureData != null && canLockGesture(gestureData.gestureType)) {
+            gestureData
+        } else {
+            null
+        }
     }
 
     // Function to check if a gesture type can be locked
     fun canLockGesture(gestureType: GestureData.GestureType): Boolean {
-        return gestureType != GestureData.GestureType.DRAG
+        val isDragOrCustomSwipe =
+            gestureType == GestureData.GestureType.DRAG || gestureType == GestureData.GestureType.CUSTOM_SWIPE
+        if (isLocked && isDragOrCustomSwipe) {
+            ServiceMessageHUD.instance.showMessage(
+                "You can only lock tap, double tap, tap and hold, swipe, and zoom gestures.",
+                ServiceMessageHUD.MessageType.DISAPPEARING
+            )
+            isLocked = false // Disable the gesture lock
+            return false
+        }
+        return true
     }
 }
