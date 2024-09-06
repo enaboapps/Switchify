@@ -110,6 +110,7 @@ class ScanTree(
             highlighter.highlightEscape(
                 navigator.currentTreeItem,
                 navigator.currentGroup,
+                navigator.currentColumn,
                 navigator.isInTreeItem,
                 !navigator.isScanningGroups
             )
@@ -129,6 +130,7 @@ class ScanTree(
             highlighter.unhighlightEscape(
                 navigator.currentTreeItem,
                 navigator.currentGroup,
+                navigator.currentColumn,
                 navigator.isInTreeItem,
                 !navigator.isScanningGroups
             )
