@@ -1,11 +1,13 @@
 package com.enaboapps.switchify.service.scanning.tree
 
 import com.enaboapps.switchify.service.scanning.ScanDirection
+import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.scanning.ScanSettings
 
 /**
  * This class is responsible for navigating through the ScanTree structure.
  * It manages the current position and provides methods for moving between items, groups, and nodes.
+ * The class supports both row-column scanning and sequential (non-row-column) scanning modes.
  *
  * @property tree The list of ScanTreeItems that make up the scanning tree.
  * @property scanSettings The settings for scanning behavior.
@@ -20,7 +22,7 @@ class ScanTreeNavigator(
     /** The index of the current group within the current tree item. */
     var currentGroup = 0
 
-    /** The index of the current column within the current group. */
+    /** The index of the current column within the current group or the current node in non-row-column mode. */
     var currentColumn = 0
 
     /** Indicates whether the scanning is currently within a tree item. */
@@ -38,6 +40,18 @@ class ScanTreeNavigator(
     /** Indicates whether the current group should be escaped. */
     private var shouldEscapeGroup = false
 
+    /** Indicates whether row-column scanning is enabled based on scan settings. */
+    private val isRowColumnScanEnabled: Boolean
+        get() = scanSettings.isRowColumnScanEnabled()
+
+    /**
+     * A flattened list of all nodes in the tree, used when row-column scanning is disabled.
+     * Computed lazily to avoid unnecessary processing when row-column scanning is enabled.
+     */
+    private val flattenedNodes: List<ScanNodeInterface> by lazy {
+        tree.flatMap { it.children }
+    }
+
     /**
      * Moves the selection to the next or previous element based on the current state and settings.
      * @return True if the movement was successful, false if an escape condition was met.
@@ -51,9 +65,20 @@ class ScanTreeNavigator(
 
     /**
      * Moves the selection to the next element based on the current state and settings.
+     * In non-row-column mode, it moves to the next node in the flattened list.
+     * In row-column mode, it navigates through the tree structure.
      * @return True if the movement was successful, false if an escape condition was met.
      */
     fun moveSelectionToNext(): Boolean {
+        if (!isRowColumnScanEnabled) {
+            if (currentColumn < flattenedNodes.size - 1) {
+                currentColumn++
+            } else {
+                currentColumn = 0
+            }
+            return true
+        }
+
         return when {
             !isInTreeItem -> moveSelectionToNextTreeItem()
             isCurrentItemSingleGroup() -> moveSelectionToNextWithinGroup()
@@ -64,9 +89,20 @@ class ScanTreeNavigator(
 
     /**
      * Moves the selection to the previous element based on the current state and settings.
+     * In non-row-column mode, it moves to the previous node in the flattened list.
+     * In row-column mode, it navigates through the tree structure.
      * @return True if the movement was successful, false if an escape condition was met.
      */
     fun moveSelectionToPrevious(): Boolean {
+        if (!isRowColumnScanEnabled) {
+            if (currentColumn > 0) {
+                currentColumn--
+            } else {
+                currentColumn = flattenedNodes.size - 1
+            }
+            return true
+        }
+
         return when {
             !isInTreeItem -> moveSelectionToPreviousTreeItem()
             isCurrentItemSingleGroup() -> moveSelectionToPreviousWithinGroup()
@@ -197,10 +233,11 @@ class ScanTreeNavigator(
 
     /**
      * Resets the group and column indices to their initial values.
+     * In non-row-column mode, it only resets the group index.
      */
     private fun resetGroupAndColumn() {
         currentGroup = 0
-        currentColumn = 0
+        currentColumn = if (isRowColumnScanEnabled) 0 else currentColumn
         isScanningGroups = scanSettings.isGroupScanEnabled()
     }
 
@@ -219,6 +256,9 @@ class ScanTreeNavigator(
             shouldEscapeItem = false
             isInTreeItem = false
             scanDirection = ScanDirection.DOWN
+            if (!isRowColumnScanEnabled) {
+                currentColumn = 0
+            }
             return true
         }
 
@@ -236,23 +276,27 @@ class ScanTreeNavigator(
 
     /**
      * Denies the escape action and resets the escape flags.
+     * @return True if an escape was denied, false otherwise.
      */
     fun denyEscape(): Boolean {
         val setColumn: () -> Unit = {
             currentColumn = if (scanDirection == ScanDirection.RIGHT) {
                 0
             } else {
-                getCurrentItem().getNodeCount(currentGroup) - 1
+                if (isRowColumnScanEnabled) getCurrentItem().getNodeCount(currentGroup) - 1
+                else flattenedNodes.size - 1
             }
         }
 
         if (shouldEscapeItem) {
             shouldEscapeItem = false
             setColumn()
-            currentGroup = if (scanDirection == ScanDirection.RIGHT) {
-                0
-            } else {
-                getCurrentItem().getGroupCount() - 1
+            if (isRowColumnScanEnabled) {
+                currentGroup = if (scanDirection == ScanDirection.RIGHT) {
+                    0
+                } else {
+                    getCurrentItem().getGroupCount() - 1
+                }
             }
             return true
         }
@@ -286,9 +330,10 @@ class ScanTreeNavigator(
 
     /**
      * Selects the current group and switches to scanning items within the group.
+     * Only applicable in row-column scanning mode.
      */
     fun selectGroup() {
-        if (scanSettings.isGroupScanEnabled()) {
+        if (isRowColumnScanEnabled && scanSettings.isGroupScanEnabled()) {
             isScanningGroups = false
             currentColumn = 0
         }
@@ -306,5 +351,17 @@ class ScanTreeNavigator(
         shouldEscapeItem = false
         shouldEscapeGroup = false
         scanDirection = ScanDirection.DOWN
+    }
+
+    /**
+     * Gets the current ScanNodeInterface based on the scanning mode.
+     * @return The current ScanNodeInterface, or null if not available.
+     */
+    fun getCurrentNode(): ScanNodeInterface? {
+        return if (isRowColumnScanEnabled) {
+            getCurrentItem().children.getOrNull(currentColumn)
+        } else {
+            flattenedNodes.getOrNull(currentColumn)
+        }
     }
 }

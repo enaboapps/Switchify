@@ -10,7 +10,7 @@ import com.enaboapps.switchify.service.scanning.ScanNodeInterface
  * @property isGroupScanEnabled Whether group scanning is enabled (used for splitting logic)
  */
 class ScanTreeItem(
-    private val children: List<ScanNodeInterface>,
+    val children: List<ScanNodeInterface>,
     val y: Int,
     private val isGroupScanEnabled: Boolean
 ) {
