@@ -283,7 +283,7 @@ class ScanningManager(
         pauseScanning()
 
         // Clean up resources
-        cursorManager.cleanup()
+        cursorManager.externalReset()
         nodeScanner.cleanup()
 
         // Close the menu

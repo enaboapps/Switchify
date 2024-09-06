@@ -457,7 +457,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
 
         direction = ScanDirection.RIGHT
 
-        cursorUI.reset()
+        uiHandler.post {
+            cursorUI.reset()
+        }
     }
 
     /**
