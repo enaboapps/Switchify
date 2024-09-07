@@ -65,6 +65,8 @@ class MultiPointGesturePerformer(
 
             else -> {} // No message needed for regular swipes
         }
+
+        gestureLockManager.informCannotLockGesture(GestureData.typeFromMultiPointGestureType(type))
     }
 
     /**

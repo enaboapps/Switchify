@@ -31,30 +31,23 @@ data class GestureData(
             startPoint: PointF,
             endPoint: PointF? = null
         ): GestureData {
+            return GestureData(
+                gestureType = typeFromMultiPointGestureType(multiPointGestureType),
+                startPoint = startPoint,
+                endPoint = endPoint
+            )
+        }
+
+        fun typeFromMultiPointGestureType(
+            multiPointGestureType: MultiPointGesturePerformer.MultiPointGestureType
+        ): GestureType {
             return when (multiPointGestureType) {
-                MultiPointGesturePerformer.MultiPointGestureType.DRAG -> {
-                    GestureData(GestureType.DRAG, startPoint, endPoint)
-                }
-
-                MultiPointGesturePerformer.MultiPointGestureType.CUSTOM_SWIPE -> {
-                    GestureData(GestureType.CUSTOM_SWIPE, startPoint, endPoint)
-                }
-
-                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_UP -> {
-                    GestureData(GestureType.SWIPE, startPoint, endPoint, SwipeDirection.UP)
-                }
-
-                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_DOWN -> {
-                    GestureData(GestureType.SWIPE, startPoint, endPoint, SwipeDirection.DOWN)
-                }
-
-                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_LEFT -> {
-                    GestureData(GestureType.SWIPE, startPoint, endPoint, SwipeDirection.LEFT)
-                }
-
-                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_RIGHT -> {
-                    GestureData(GestureType.SWIPE, startPoint, endPoint, SwipeDirection.RIGHT)
-                }
+                MultiPointGesturePerformer.MultiPointGestureType.DRAG -> GestureType.DRAG
+                MultiPointGesturePerformer.MultiPointGestureType.CUSTOM_SWIPE -> GestureType.CUSTOM_SWIPE
+                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_UP -> GestureType.SWIPE
+                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_DOWN -> GestureType.SWIPE
+                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_LEFT -> GestureType.SWIPE
+                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_RIGHT -> GestureType.SWIPE
             }
         }
     }
@@ -99,7 +92,7 @@ data class GestureData(
         return false
     }
 
-    private fun isLockAvailable(): Boolean {
+    fun isLockAvailable(): Boolean {
         return gestureType != GestureType.DRAG && gestureType != GestureType.CUSTOM_SWIPE
     }
 }
