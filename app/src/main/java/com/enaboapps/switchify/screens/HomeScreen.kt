@@ -1,5 +1,7 @@
 package com.enaboapps.switchify.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +26,7 @@ import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.utils.ServiceUtils
 import com.enaboapps.switchify.switches.SwitchConfigInvalidBanner
 import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.widgets.NavBarAction
 import com.enaboapps.switchify.widgets.NavRouteLink
 
 @Composable
@@ -33,6 +36,14 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
     val isSwitchifyKeyboardEnabled = KeyboardUtils.isSwitchifyKeyboardEnabled(context)
     val isSetupComplete = PreferenceManager(context).isSetupComplete()
 
+    val feedbackNavButton = NavBarAction(
+        text = "Feedback",
+        onClick = {
+            val url = "https://switchify.featurebase.app/"
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        }
+    )
+
     LaunchedEffect(isSetupComplete) {
         if (!isSetupComplete) {
             navController.navigate(NavigationRoute.Setup.name)
@@ -41,7 +52,11 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
 
     Scaffold(
         topBar = {
-            NavBar(title = "Switchify", navController = navController)
+            NavBar(
+                title = "Switchify",
+                navController = navController,
+                actions = listOf(feedbackNavButton)
+            )
         }
     ) { paddingValues ->
         LazyColumn(
