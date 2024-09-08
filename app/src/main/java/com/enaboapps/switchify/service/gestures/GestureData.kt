@@ -31,10 +31,32 @@ data class GestureData(
             startPoint: PointF,
             endPoint: PointF? = null
         ): GestureData {
+            var swipeDirection: SwipeDirection? = null
+            when (multiPointGestureType) {
+                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_UP -> {
+                    swipeDirection = SwipeDirection.UP
+                }
+
+                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_DOWN -> {
+                    swipeDirection = SwipeDirection.DOWN
+                }
+
+                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_LEFT -> {
+                    swipeDirection = SwipeDirection.LEFT
+                }
+
+                MultiPointGesturePerformer.MultiPointGestureType.SWIPE_RIGHT -> {
+                    swipeDirection = SwipeDirection.RIGHT
+                }
+
+                else -> {
+                }
+            }
             return GestureData(
                 gestureType = typeFromMultiPointGestureType(multiPointGestureType),
                 startPoint = startPoint,
-                endPoint = endPoint
+                endPoint = endPoint,
+                swipeDirection = swipeDirection
             )
         }
 
@@ -92,7 +114,7 @@ data class GestureData(
         return false
     }
 
-    fun isLockAvailable(): Boolean {
+    private fun isLockAvailable(): Boolean {
         return gestureType != GestureType.DRAG && gestureType != GestureType.CUSTOM_SWIPE
     }
 }
