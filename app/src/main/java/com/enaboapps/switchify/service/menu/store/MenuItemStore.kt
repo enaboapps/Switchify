@@ -9,8 +9,7 @@ import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
-import com.enaboapps.switchify.service.gestures.SwipeDirection
-import com.enaboapps.switchify.service.gestures.ZoomGesturePerformer
+import com.enaboapps.switchify.service.gestures.data.GestureType
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.nodes.Node
@@ -179,22 +178,22 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
             MenuItem(
                 id = "swipe_up",
                 text = "Swipe Up",
-                action = { GestureManager.getInstance().performSwipe(SwipeDirection.UP) }
+                action = { GestureManager.getInstance().performSwipe(GestureType.SWIPE_UP) }
             ),
             MenuItem(
                 id = "swipe_down",
                 text = "Swipe Down",
-                action = { GestureManager.getInstance().performSwipe(SwipeDirection.DOWN) }
+                action = { GestureManager.getInstance().performSwipe(GestureType.SWIPE_DOWN) }
             ),
             MenuItem(
                 id = "swipe_left",
                 text = "Swipe Left",
-                action = { GestureManager.getInstance().performSwipe(SwipeDirection.LEFT) }
+                action = { GestureManager.getInstance().performSwipe(GestureType.SWIPE_LEFT) }
             ),
             MenuItem(
                 id = "swipe_right",
                 text = "Swipe Right",
-                action = { GestureManager.getInstance().performSwipe(SwipeDirection.RIGHT) }
+                action = { GestureManager.getInstance().performSwipe(GestureType.SWIPE_RIGHT) }
             ),
             MenuItem(
                 id = "custom_swipe",
@@ -237,7 +236,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 text = "Zoom In",
                 action = {
                     GestureManager.getInstance()
-                        .performZoomAction(ZoomGesturePerformer.ZoomAction.ZOOM_IN)
+                        .performZoom(GestureType.ZOOM_IN)
                 }
             ),
             MenuItem(
@@ -245,7 +244,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 text = "Zoom Out",
                 action = {
                     GestureManager.getInstance()
-                        .performZoomAction(ZoomGesturePerformer.ZoomAction.ZOOM_OUT)
+                        .performZoom(GestureType.ZOOM_OUT)
                 }
             ),
             toggleGestureLockMenuItem

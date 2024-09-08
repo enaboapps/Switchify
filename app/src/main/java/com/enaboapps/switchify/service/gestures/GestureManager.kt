@@ -6,9 +6,11 @@ import android.graphics.Path
 import android.graphics.PointF
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
-import com.enaboapps.switchify.service.gestures.GestureData.Companion.DOUBLE_TAP_INTERVAL
-import com.enaboapps.switchify.service.gestures.GestureData.Companion.TAP_AND_HOLD_DURATION
-import com.enaboapps.switchify.service.gestures.GestureData.Companion.TAP_DURATION
+import com.enaboapps.switchify.service.gestures.data.GestureData
+import com.enaboapps.switchify.service.gestures.data.GestureData.Companion.DOUBLE_TAP_INTERVAL
+import com.enaboapps.switchify.service.gestures.data.GestureData.Companion.TAP_AND_HOLD_DURATION
+import com.enaboapps.switchify.service.gestures.data.GestureData.Companion.TAP_DURATION
+import com.enaboapps.switchify.service.gestures.data.GestureType
 import com.enaboapps.switchify.service.gestures.visuals.GestureDrawing
 import com.enaboapps.switchify.service.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
@@ -40,7 +42,7 @@ class GestureManager private constructor() {
     private var accessibilityService: SwitchifyAccessibilityService? = null
     private var gestureLockManager: GestureLockManager? = null
     private var preferenceManager: PreferenceManager? = null
-    private lateinit var multiPointGesturePerformer: MultiPointGesturePerformer
+    private lateinit var linearGesturePerformer: LinearGesturePerformer
 
     /**
      * Sets up the GestureManager with the necessary components.
@@ -51,8 +53,8 @@ class GestureManager private constructor() {
         this.accessibilityService = accessibilityService
         gestureLockManager = GestureLockManager()
         preferenceManager = PreferenceManager(accessibilityService)
-        multiPointGesturePerformer =
-            MultiPointGesturePerformer(accessibilityService, gestureLockManager!!)
+        linearGesturePerformer =
+            LinearGesturePerformer(accessibilityService, gestureLockManager!!)
     }
 
     /**
@@ -105,7 +107,7 @@ class GestureManager private constructor() {
                 path.moveTo(point.x, point.y)
                 gestureLockManager?.setLockedGestureData(
                     GestureData(
-                        GestureData.GestureType.TAP,
+                        GestureType.TAP,
                         point
                     )
                 )
@@ -143,7 +145,7 @@ class GestureManager private constructor() {
                 path.moveTo(point.x, point.y)
                 gestureLockManager?.setLockedGestureData(
                     GestureData(
-                        GestureData.GestureType.DOUBLE_TAP,
+                        GestureType.DOUBLE_TAP,
                         point
                     )
                 )
@@ -186,7 +188,7 @@ class GestureManager private constructor() {
                 path.moveTo(point.x, point.y)
                 gestureLockManager?.setLockedGestureData(
                     GestureData(
-                        GestureData.GestureType.TAP_AND_HOLD,
+                        GestureType.TAP_AND_HOLD,
                         point
                     )
                 )
@@ -243,24 +245,18 @@ class GestureManager private constructor() {
     /**
      * Performs a swipe gesture in the specified direction.
      *
-     * @param direction The SwipeDirection to perform the swipe in.
+     * @param type The GestureType of the swipe.
      */
-    fun performSwipe(direction: SwipeDirection) {
-        val multiPointGestureType = when (direction) {
-            SwipeDirection.UP -> MultiPointGesturePerformer.MultiPointGestureType.SWIPE_UP
-            SwipeDirection.DOWN -> MultiPointGesturePerformer.MultiPointGestureType.SWIPE_DOWN
-            SwipeDirection.LEFT -> MultiPointGesturePerformer.MultiPointGestureType.SWIPE_LEFT
-            SwipeDirection.RIGHT -> MultiPointGesturePerformer.MultiPointGestureType.SWIPE_RIGHT
-        }
-        multiPointGesturePerformer.startGesture(multiPointGestureType)
-        multiPointGesturePerformer.endGesture()
+    fun performSwipe(type: GestureType) {
+        linearGesturePerformer.startGesture(type)
+        linearGesturePerformer.endGesture()
     }
 
     /**
      * Starts a drag gesture.
      */
     fun startDragGesture() {
-        multiPointGesturePerformer.startGesture(MultiPointGesturePerformer.MultiPointGestureType.DRAG)
+        linearGesturePerformer.startGesture(GestureType.DRAG)
         ScanMethod.setType(ScanMethod.MethodType.CURSOR)
     }
 
@@ -268,41 +264,40 @@ class GestureManager private constructor() {
      * Starts a custom swipe gesture.
      */
     fun startCustomSwipe() {
-        multiPointGesturePerformer.startGesture(MultiPointGesturePerformer.MultiPointGestureType.CUSTOM_SWIPE)
+        linearGesturePerformer.startGesture(GestureType.CUSTOM_SWIPE)
         ScanMethod.setType(ScanMethod.MethodType.CURSOR)
     }
 
     /**
-     * Ends the current multi-point gesture (drag or custom swipe).
+     * Ends a linear gesture.
      */
-    fun endMultiPointGesture() {
-        multiPointGesturePerformer.endGesture()
+    fun endLinearGesture() {
+        linearGesturePerformer.endGesture()
     }
 
     /**
-     * Checks if a multi-point gesture is currently being performed.
+     * Checks if a linear gesture is currently being performed.
      *
-     * @return True if a multi-point gesture is in progress, false otherwise.
+     * @return True if a linear gesture is being performed, false otherwise.
      */
-    fun isPerformingMultiPointGesture(): Boolean {
-        return multiPointGesturePerformer.isPerformingGesture()
+    fun isPerformingLinearGesture(): Boolean {
+        return linearGesturePerformer.isPerformingGesture()
     }
 
     /**
      * Performs a zoom action.
      *
-     * @param zoomAction The ZoomAction to perform.
+     * @param type The type of zoom action to perform.
      */
-    fun performZoomAction(zoomAction: ZoomGesturePerformer.ZoomAction) {
+    fun performZoom(type: GestureType) {
         gestureLockManager?.setLockedGestureData(
             GestureData(
-                GestureData.GestureType.ZOOM,
-                GesturePoint.getPoint(),
-                zoomAction = zoomAction
+                type,
+                GesturePoint.getPoint()
             )
         )
         accessibilityService?.let {
-            ZoomGesturePerformer.performZoomAction(zoomAction, it)
+            ZoomGesturePerformer.performZoomAction(type, it)
         }
     }
 }
