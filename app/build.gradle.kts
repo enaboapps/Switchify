@@ -10,7 +10,6 @@ plugins {
 }
 
 composeCompiler {
-    enableStrongSkippingMode = true
 }
 
 android {
