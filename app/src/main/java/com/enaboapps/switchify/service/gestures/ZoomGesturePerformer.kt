@@ -2,6 +2,7 @@ package com.enaboapps.switchify.service.gestures
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
+import com.enaboapps.switchify.service.gestures.data.GestureType
 import com.enaboapps.switchify.service.gestures.utils.GestureUtils.getInBoundsCoordinate
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import kotlin.math.abs
@@ -12,26 +13,11 @@ object ZoomGesturePerformer {
     private const val ZOOM_AMOUNT = 500
 
     /**
-     * Zoom action
-     */
-    enum class ZoomAction {
-        /**
-         * Zoom in zoom action
-         */
-        ZOOM_IN,
-
-        /**
-         * Zoom out zoom action
-         */
-        ZOOM_OUT
-    }
-
-    /**
      * Perform a zoom action
-     * @param zoomAction The zoom action to perform
+     * @param type The type of zoom action
      * @param accessibilityService The accessibility service
      */
-    fun performZoomAction(zoomAction: ZoomAction, accessibilityService: AccessibilityService) {
+    fun performZoomAction(type: GestureType, accessibilityService: AccessibilityService) {
         val centerPoint = GesturePoint.getPoint()
 
         // Initialize paths for the two fingers
@@ -60,8 +46,8 @@ object ZoomGesturePerformer {
             }
         }
 
-        when (zoomAction) {
-            ZoomAction.ZOOM_IN -> {
+        when (type) {
+            GestureType.ZOOM_IN -> {
                 // Setup paths for zooming in (fingers moving apart)
                 path1.moveTo(centerPoint.x, centerPoint.y)
                 path1.lineTo(leftZoomPoint, centerPoint.y)
@@ -70,13 +56,18 @@ object ZoomGesturePerformer {
                 path2.lineTo(rightZoomPoint, centerPoint.y)
             }
 
-            ZoomAction.ZOOM_OUT -> {
+            GestureType.ZOOM_OUT -> {
                 // Setup paths for zooming out (fingers moving together)
                 path1.moveTo(leftZoomPoint, centerPoint.y)
                 path1.lineTo(centerPoint.x, centerPoint.y)
 
                 path2.moveTo(rightZoomPoint, centerPoint.y)
                 path2.lineTo(centerPoint.x, centerPoint.y)
+            }
+
+            else -> {
+                // Log.e(TAG, "performZoomAction: Invalid zoom type")
+                return
             }
         }
 

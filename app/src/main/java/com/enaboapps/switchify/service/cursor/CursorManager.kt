@@ -609,9 +609,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * This function performs the final action
      */
     private fun performFinalAction() {
-        // check if we are performing a multi-point gesture
-        if (GestureManager.getInstance().isPerformingMultiPointGesture()) {
-            GestureManager.getInstance().endMultiPointGesture()
+        // check if we are performing a linear gesture
+        if (GestureManager.getInstance().isPerformingLinearGesture()) {
+            GestureManager.getInstance().endLinearGesture()
             internalReset()
             return
         }

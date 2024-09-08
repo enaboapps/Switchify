@@ -1,0 +1,52 @@
+package com.enaboapps.switchify.service.gestures.data
+
+import android.graphics.PointF
+import com.enaboapps.switchify.service.gestures.GestureManager
+
+data class GestureData(
+    val gestureType: GestureType,
+    val startPoint: PointF,
+    val endPoint: PointF? = null
+) {
+
+    companion object {
+        const val TAP_DURATION = 100L
+        const val DOUBLE_TAP_INTERVAL = 250L
+        const val TAP_AND_HOLD_DURATION = 1000L
+        const val SWIPE_DURATION = 80L
+        const val DRAG_DURATION = 1500L
+    }
+
+    fun performLockAction(gestureManager: GestureManager): Boolean {
+        when (gestureType) {
+            GestureType.TAP -> {
+                gestureManager.performTap()
+                return true
+            }
+
+            GestureType.DOUBLE_TAP -> {
+                gestureManager.performDoubleTap()
+                return true
+            }
+
+            GestureType.TAP_AND_HOLD -> {
+                gestureManager.performTapAndHold()
+                return true
+            }
+
+            GestureType.SWIPE_UP, GestureType.SWIPE_DOWN, GestureType.SWIPE_LEFT, GestureType.SWIPE_RIGHT -> {
+                gestureManager.performSwipe(gestureType)
+                return true
+            }
+
+            GestureType.ZOOM_IN, GestureType.ZOOM_OUT -> {
+                gestureManager.performZoom(gestureType)
+                return true
+            }
+
+            else -> {
+                return false
+            }
+        }
+    }
+}

@@ -1,5 +1,7 @@
 package com.enaboapps.switchify.service.gestures
 
+import com.enaboapps.switchify.service.gestures.data.GestureData
+import com.enaboapps.switchify.service.gestures.data.GestureType
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.window.ServiceMessageHUD
 
@@ -44,8 +46,8 @@ class GestureLockManager {
     }
 
     // Function to check if a gesture type can be locked
-    fun canLockGesture(gestureType: GestureData.GestureType): Boolean {
-        if (isLocked && gestureType == GestureData.GestureType.DRAG || gestureType == GestureData.GestureType.CUSTOM_SWIPE) {
+    fun canLockGesture(gestureType: GestureType): Boolean {
+        if (isLocked && gestureType == GestureType.DRAG || gestureType == GestureType.CUSTOM_SWIPE) {
             isLocked = false // Disable the gesture lock
             setLockedGestureData(null) // Clear the locked gesture data
             return false
@@ -54,7 +56,7 @@ class GestureLockManager {
     }
 
     // Function to inform the user that the type of gesture cannot be locked
-    fun informCannotLockGesture(type: GestureData.GestureType) {
+    fun informCannotLockGesture(type: GestureType) {
         if (!canLockGesture(type)) {
             ServiceMessageHUD.instance.showMessage(
                 "Cannot lock drag or custom swipe gestures. Gesture lock disabled.",
