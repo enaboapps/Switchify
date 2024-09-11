@@ -19,7 +19,7 @@ android {
     defaultConfig {
         applicationId = "com.enaboapps.switchify"
         minSdk = 31
-        targetSdk = 34
+        targetSdk = 35
         versionCode = gitVersionCode()
         versionName = "1.26.1"
 
@@ -107,6 +107,7 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.gson)
     implementation(libs.fleksylib)
+    implementation(libs.androidx.material3.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)

@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,17 +44,17 @@ fun AboutScreen(navController: NavController) {
             ) {
                 Text(
                     text = context.getString(R.string.app_name),
-                    style = MaterialTheme.typography.h4
+                    style = MaterialTheme.typography.displayLarge
                 )
                 Spacer(modifier = Modifier.padding(4.dp))
                 Text(
                     text = "Version $version",
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(modifier = Modifier.padding(16.dp))
                 Text(
                     text = context.getString(R.string.app_description),
-                    style = MaterialTheme.typography.body2
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }

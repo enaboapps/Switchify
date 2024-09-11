@@ -6,11 +6,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Card
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,16 +33,18 @@ fun SwitchActionPicker(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 8.dp)
-            .clickable(onClick = { expanded = true }),
-        elevation = 8.dp,
-        backgroundColor = MaterialTheme.colors.surface
+            .clickable(onClick = { expanded = true })
     ) {
         Column(
             modifier = Modifier
                 .padding(20.dp)
                 .fillMaxWidth()
         ) {
-            Text(text = title, style = MaterialTheme.typography.h6, fontWeight = FontWeight.Medium)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium
+            )
             if (action.value != null) {
                 Text(text = action.value!!.getActionName())
                 Text(text = action.value!!.getActionDescription())
@@ -56,12 +58,12 @@ fun SwitchActionPicker(
                 }, // 2. Dismiss the dropdown when focus changes
             ) {
                 SwitchAction.actions.forEach { act ->
-                    DropdownMenuItem(onClick = {
+                    DropdownMenuItem(text = {
+                        Text(text = act.getActionName())
+                    }, onClick = {
                         action.value = act
                         expanded = false
-                    }) {
-                        Text(text = act.getActionName())
-                    }
+                    })
                 }
             }
         }
