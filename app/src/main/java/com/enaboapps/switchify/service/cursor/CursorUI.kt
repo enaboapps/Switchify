@@ -23,16 +23,11 @@ class CursorUI(private val context: Context, private val handler: Handler) {
         /**
          * This function determines the number of quadrants
          * It uses the size of the cursor bounds to determine the number of quadrants
-         * @param size The size of the cursor bounds
          * @return The number of quadrants
          */
-        fun getNumberOfQuadrants(size: Int): Int {
-            val minThreshold = 500
-            val quarterBounds = size / 4
+        fun getNumberOfQuadrants(): Int {
             return if (CursorMode.isSingleMode()) {
                 1
-            } else if (quarterBounds < minThreshold) {
-                2
             } else {
                 4
             }
@@ -44,7 +39,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      */
     fun getQuadrantWidth(): Int {
         return if (CursorMode.isBlockMode()) {
-            CursorBounds.width(context) / getNumberOfQuadrants(CursorBounds.width(context))
+            CursorBounds.width(context) / getNumberOfQuadrants()
         } else {
             CursorBounds.width(context)
         }
@@ -55,7 +50,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      */
     fun getQuadrantHeight(): Int {
         return if (CursorMode.isBlockMode()) {
-            CursorBounds.height(context) / getNumberOfQuadrants(CursorBounds.height(context))
+            CursorBounds.height(context) / getNumberOfQuadrants()
         } else {
             CursorBounds.height(context)
         }

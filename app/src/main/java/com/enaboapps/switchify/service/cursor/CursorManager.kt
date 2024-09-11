@@ -215,21 +215,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
 
     /**
      * This function determines the max quadrant index
-     * It uses the direction to determine the max quadrant index
-     * The smaller the width or height of the screen, the smaller the max quadrant index
      * @return The max quadrant index
      */
-    private fun getMaxQuadrantIndex(): Int {
-        return when (direction) {
-            ScanDirection.LEFT, ScanDirection.RIGHT -> {
-                CursorUI.getNumberOfQuadrants(CursorBounds.width(context)) - 1
-            }
-
-            ScanDirection.UP, ScanDirection.DOWN -> {
-                CursorUI.getNumberOfQuadrants(CursorBounds.height(context)) - 1
-            }
-        }
-    }
+    private fun getMaxQuadrantIndex(): Int = CursorUI.getNumberOfQuadrants() - 1
 
 
     /**
