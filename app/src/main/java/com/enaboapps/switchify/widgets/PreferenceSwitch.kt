@@ -56,7 +56,10 @@ fun PreferenceSwitch(
                     isChecked = it
                     onCheckedChange(it)
                 },
-                colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary)
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                )
             )
         }
     }
