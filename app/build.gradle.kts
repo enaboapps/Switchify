@@ -14,7 +14,7 @@ composeCompiler {
 
 android {
     namespace = "com.enaboapps.switchify"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.enaboapps.switchify"
