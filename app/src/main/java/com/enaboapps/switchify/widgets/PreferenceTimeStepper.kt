@@ -7,12 +7,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material.Button
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -37,9 +36,7 @@ fun PreferenceTimeStepper(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        elevation = 8.dp,
-        backgroundColor = MaterialTheme.colors.surface
+            .padding(horizontal = 20.dp, vertical = 8.dp)
     ) {
         Row(
             modifier = Modifier
@@ -48,18 +45,18 @@ fun PreferenceTimeStepper(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = title, style = MaterialTheme.typography.h6)
+                Text(text = title, style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = summary, style = MaterialTheme.typography.caption)
+                Text(text = summary, style = MaterialTheme.typography.bodySmall)
             }
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.weight(1f))
             Column(
                 modifier = Modifier.wrapContentWidth(Alignment.End),
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
                     text = StringUtils.getSecondsString(time),
-                    style = MaterialTheme.typography.caption
+                    style = MaterialTheme.typography.bodySmall
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = {
@@ -68,7 +65,7 @@ fun PreferenceTimeStepper(
                             onValueChanged(time)
                         }
                     }) {
-                        Text(text = "-", style = MaterialTheme.typography.button)
+                        Text(text = "-", style = MaterialTheme.typography.bodyMedium)
                     }
                     Button(onClick = {
                         if (time < max) {
@@ -76,7 +73,7 @@ fun PreferenceTimeStepper(
                             onValueChanged(time)
                         }
                     }) {
-                        Text(text = "+", style = MaterialTheme.typography.button)
+                        Text(text = "+", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }

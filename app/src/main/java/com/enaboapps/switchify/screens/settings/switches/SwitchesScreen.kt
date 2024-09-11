@@ -6,11 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -70,7 +70,7 @@ fun SwitchesScreen(navController: NavController) {
                 Box(modifier = Modifier.padding(16.dp), contentAlignment = Alignment.Center) {
                     Text(
                         text = "No switches found",
-                        style = MaterialTheme.typography.h6
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             } else {

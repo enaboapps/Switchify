@@ -1,38 +1,41 @@
 package com.enaboapps.switchify.activities.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val DarkColorPalette = darkColors(
+private val DarkColorScheme = darkColorScheme(
     primary = Color.Red,
     onPrimary = Color.White,
-    primaryVariant = Color.Red,
     secondary = Color.Red,
-    onSecondary = Color.White
+    onSecondary = Color.White,
+    tertiary = Color.Red
 )
 
-private val LightColorPalette = lightColors(
+private val LightColorScheme = lightColorScheme(
     primary = Color.Red,
     onPrimary = Color.White,
-    primaryVariant = Color.Red,
     secondary = Color.Red,
-    onSecondary = Color.White
+    onSecondary = Color.White,
+    tertiary = Color.Red
 )
 
 @Composable
-fun SwitchifyTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    val colors = if (darkTheme) {
-        DarkColorPalette
+fun SwitchifyTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    val colorScheme = if (darkTheme) {
+        DarkColorScheme
     } else {
-        LightColorPalette
+        LightColorScheme
     }
 
     MaterialTheme(
-        colors = colors,
+        colorScheme = colorScheme,
         typography = Typography,
         shapes = Shapes,
         content = content

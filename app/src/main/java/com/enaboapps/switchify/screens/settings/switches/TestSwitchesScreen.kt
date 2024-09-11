@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -112,7 +112,7 @@ fun TestSwitchesScreen(navController: NavHostController) {
                         "1. Ensure your switch is connected.\n" +
                         "2. Press your switch to see it detected here.\n" +
                         "3. The text above will change based on the state of your switch.",
-                style = MaterialTheme.typography.body1
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
@@ -132,7 +132,7 @@ fun SwitchListener(onKeyEvent: (KeyEvent) -> Boolean) {
     ) {
         Text(
             text = "Use this area to test your switch before assigning it to an action. To begin, press your switch.",
-            style = MaterialTheme.typography.h5,
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.align(Alignment.Center)
         )
     }
@@ -150,7 +150,7 @@ fun SwitchIndicator(switchState: String) {
     ) {
         Text(
             text = switchState,
-            style = MaterialTheme.typography.h5,
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.align(Alignment.Center)
         )
     }

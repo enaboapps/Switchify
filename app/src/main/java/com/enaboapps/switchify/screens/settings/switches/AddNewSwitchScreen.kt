@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -81,7 +81,7 @@ fun AddNewSwitchScreen(navController: NavController) {
                         .fillMaxWidth()
                         .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "Switch captured", style = MaterialTheme.typography.h5)
+                    Text(text = "Switch captured", style = MaterialTheme.typography.labelMedium)
                     SwitchActionSection(
                         viewModel = addNewSwitchScreenModel,
                         modifier = Modifier.padding(16.dp)
@@ -96,7 +96,7 @@ fun AddNewSwitchScreen(navController: NavController) {
                 text = "Is your switch not working? " +
                         "If you are using a USB switch, please make sure that you have it plugged in and that it is turned on. " +
                         "If you are using a Bluetooth switch, please make sure that it is paired with your device.",
-                style = MaterialTheme.typography.body1
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
@@ -115,7 +115,7 @@ fun SwitchListener(onKeyEvent: (KeyEvent) -> Unit) {
         .focusRequester(requester)
         .focusable(),
         horizontalArrangement = Arrangement.Center) {
-        Text(text = "Activate your switch", style = MaterialTheme.typography.h5)
+        Text(text = "Activate your switch", style = MaterialTheme.typography.titleMedium)
     }
     LaunchedEffect(requester) {
         requester.requestFocus()
@@ -130,7 +130,7 @@ fun SwitchName(name: MutableLiveData<String>) {
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.Start
     ) {
-        Text(text = name.value!!, style = MaterialTheme.typography.h5)
+        Text(text = name.value!!, style = MaterialTheme.typography.titleMedium)
     }
 }
 

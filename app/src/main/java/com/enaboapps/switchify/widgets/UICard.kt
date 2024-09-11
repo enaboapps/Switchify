@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,9 +29,7 @@ fun UICard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .clickable(onClick = onClick),
-        elevation = 8.dp,
-        backgroundColor = MaterialTheme.colors.surface
+            .clickable(onClick = onClick)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -44,13 +42,13 @@ fun UICard(
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.h6,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = description,
-                    style = MaterialTheme.typography.body2
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
 
