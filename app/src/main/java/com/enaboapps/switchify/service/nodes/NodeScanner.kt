@@ -75,6 +75,7 @@ class NodeScanner : NodeUpdateDelegate {
         override fun onReceive(context: Context, intent: Intent) {
             isKeyboardVisible = false
             setScreenNodes(screenNodes)
+            setKeyboardNodes(emptyList())
             AutoSelectionHandler.setBypassAutoSelect(false)
             println("Keyboard hidden, updating nodes")
         }
@@ -144,7 +145,7 @@ class NodeScanner : NodeUpdateDelegate {
 
         timeoutScope.launch {
             delay(5000)
-            if (ScanMethod.getType() == ScanMethod.MethodType.ITEM_SCAN && this@NodeScanner.screenNodes.isEmpty()) {
+            if (ScanMethod.getType() == ScanMethod.MethodType.ITEM_SCAN && this@NodeScanner.screenNodes.isEmpty() && this@NodeScanner.keyboardNodes.isEmpty()) {
                 withContext(Dispatchers.Main) {
                     scanTree.reset()
                     ScanMethod.setType(ScanMethod.MethodType.CURSOR)
