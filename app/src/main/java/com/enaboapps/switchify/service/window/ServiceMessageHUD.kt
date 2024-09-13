@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -11,59 +12,88 @@ import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.utils.ScreenUtils
 
 /**
- * ServiceMessageHUD is responsible for displaying a message overlay on top of all other application windows.
- * It supports two types of messages: disappearing and permanent.
+ * ServiceMessageHUD is responsible for displaying overlay messages on top of all other application windows.
+ * It supports two types of messages: disappearing and permanent, with configurable display durations.
+ * This class implements a debounce mechanism to prevent rapid successive message displays.
+ *
+ * This class follows the Singleton pattern to ensure only one instance manages all overlay messages.
  */
-class ServiceMessageHUD {
-    private val TAG = "MessageManager"
+class ServiceMessageHUD private constructor() {
+    private val TAG = "ServiceMessageHUD"
 
     companion object {
-        // Singleton instance to ensure only one instance of ServiceMessageHUD is used throughout the application.
+        /**
+         * Singleton instance of ServiceMessageHUD.
+         */
         val instance: ServiceMessageHUD by lazy {
             ServiceMessageHUD()
         }
     }
 
-    // The application context
     private var context: Context? = null
-
-    // Reference to the accessibility service window manager
     private var switchifyAccessibilityWindow: SwitchifyAccessibilityWindow =
         SwitchifyAccessibilityWindow.instance
-
-    // The message to be displayed
     private var message = ""
-
-    // The type of the currently shown message
     private var shownMessageType: MessageType? = null
-
-    // The LinearLayout that serves as the container for the message view
     private var messageView: LinearLayout? = null
-
-    // Handler to post tasks on the main thread
     private val handler = Handler(Looper.getMainLooper())
 
+    // Debounce mechanism properties
+    private var lastShowTime: Long = 0
+    private val debounceInterval: Long = 250 // 250ms debounce interval
+
     /**
-     * Sets up the message HUD with the necessary context.
+     * Sets up the ServiceMessageHUD with the necessary context.
      *
      * @param context The application context.
      */
     fun setup(context: Context) {
         this.context = context
+        Log.d(TAG, "ServiceMessageHUD setup with context: $context")
     }
 
     /**
-     * Enum to define the types of messages the HUD can show.
+     * Defines the types of messages that can be displayed.
      */
     enum class MessageType {
+        /**
+         * A message that automatically disappears after a specified duration.
+         */
         DISAPPEARING,
+
+        /**
+         * A message that remains visible until explicitly cleared.
+         */
         PERMANENT
+    }
+
+    /**
+     * Defines preset durations for disappearing messages.
+     *
+     * @property milliseconds The duration in milliseconds.
+     */
+    enum class Time(val milliseconds: Long) {
+        /**
+         * A short duration of 1 second.
+         */
+        SHORT(1000),
+
+        /**
+         * A medium duration of 5 seconds.
+         */
+        MEDIUM(5000),
+
+        /**
+         * A long duration of 10 seconds.
+         */
+        LONG(10000)
     }
 
     /**
      * Creates the message view with the specified configurations.
      */
     private fun createMessageView() {
+        Log.d(TAG, "Creating message view")
         context?.let { context ->
             messageView = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
@@ -87,21 +117,30 @@ class ServiceMessageHUD {
             }
 
             messageView?.addView(messageTextView)
-        }
+            Log.d(TAG, "Message view created successfully")
+        } ?: Log.e(TAG, "Context is null, cannot create message view")
     }
 
     /**
-     * Displays the message on the screen.
+     * Displays or updates a message on the screen.
+     * Implements a debounce mechanism to prevent showing multiple messages within a 250ms window.
      *
      * @param message The message text to be displayed.
      * @param messageType The type of the message (DISAPPEARING or PERMANENT).
+     * @param time The duration for which a DISAPPEARING message should be shown. Ignored for PERMANENT messages.
      */
-    fun showMessage(message: String, messageType: MessageType) {
-        if (message == this.message && messageType == this.shownMessageType) {
+    fun showMessage(message: String, messageType: MessageType, time: Time = Time.MEDIUM) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastShowTime < debounceInterval) {
+            Log.d(TAG, "Skipping message due to debounce: $message")
             return
         }
 
-        if (shownMessageType == MessageType.DISAPPEARING) {
+        lastShowTime = currentTime
+        Log.d(TAG, "Showing message: $message, type: $messageType, time: $time")
+
+        if (message == this.message && messageType == this.shownMessageType) {
+            Log.d(TAG, "Message and type unchanged, returning")
             return
         }
 
@@ -109,9 +148,33 @@ class ServiceMessageHUD {
         this.shownMessageType = messageType
 
         if (messageView != null) {
-            hideMessage()
+            updateMessageView()
+        } else {
+            createAndShowMessageView()
         }
 
+        if (messageType == MessageType.DISAPPEARING) {
+            handler.postDelayed({ hideMessage() }, time.milliseconds)
+            Log.d(TAG, "Scheduled message to disappear after ${time.milliseconds}ms")
+        }
+    }
+
+    /**
+     * Updates the text of an existing message view.
+     */
+    private fun updateMessageView() {
+        Log.d(TAG, "Updating message view")
+        handler.post {
+            (messageView?.getChildAt(0) as? TextView)?.text = message
+            Log.d(TAG, "Message view updated successfully")
+        }
+    }
+
+    /**
+     * Creates a new message view and displays it on the screen.
+     */
+    private fun createAndShowMessageView() {
+        Log.d(TAG, "Creating and showing message view")
         createMessageView()
 
         val x = 100
@@ -120,18 +183,19 @@ class ServiceMessageHUD {
 
         handler.post {
             messageView?.let {
-                switchifyAccessibilityWindow.addView(
-                    it,
-                    x,
-                    y,
-                    width,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-            }
-        }
-
-        if (messageType == MessageType.DISAPPEARING) {
-            handler.postDelayed({ hideMessage() }, 5000)
+                try {
+                    switchifyAccessibilityWindow.addView(
+                        it,
+                        x,
+                        y,
+                        width,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    Log.d(TAG, "Message view added to window successfully")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to add view to window", e)
+                }
+            } ?: Log.e(TAG, "MessageView is null, cannot add to window")
         }
     }
 
@@ -139,12 +203,28 @@ class ServiceMessageHUD {
      * Hides and removes the currently displayed message from the screen.
      */
     private fun hideMessage() {
+        Log.d(TAG, "Hiding message")
         messageView?.let { view ->
             handler.post {
-                switchifyAccessibilityWindow.removeView(view)
+                try {
+                    switchifyAccessibilityWindow.removeView(view)
+                    Log.d(TAG, "Message view removed from window successfully")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to remove view from window", e)
+                }
                 messageView = null
                 shownMessageType = null
             }
-        }
+        } ?: Log.d(TAG, "No message view to hide")
+    }
+
+    /**
+     * Clears the current message, hiding it from the screen and resetting internal state.
+     */
+    fun clearMessage() {
+        Log.d(TAG, "Clearing message")
+        hideMessage()
+        message = ""
+        shownMessageType = null
     }
 }

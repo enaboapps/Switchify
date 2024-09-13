@@ -67,7 +67,7 @@ fun SwitchStabilityScreen(navController: NavController) {
             }
             PreferenceTimeStepper(
                 title = "Switch hold time",
-                summary = "The time to hold a switch before a long press is registered",
+                summary = "The time to hold a switch before a long press is registered (this is the same between each long press action)",
                 min = 100,
                 max = 10000,
                 value = switchStabilityScreenModel.switchHoldTime.observeAsState().value ?: 0

@@ -4,10 +4,11 @@ data class SwitchEvent(
     val name: String,
     val code: String,
     val pressAction: SwitchAction,
-    val longPressAction: SwitchAction
+    val holdActions: List<SwitchAction>
 ) {
     override fun toString(): String {
-        return "$name, $code, ${pressAction.id}, ${longPressAction.id}"
+        val holdActionsString = holdActions.joinToString(separator = ";") { it.id.toString() }
+        return "$name, $code, ${pressAction.id}, $holdActionsString"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -18,25 +19,30 @@ data class SwitchEvent(
     }
 
     fun containsAction(action: Int): Boolean {
-        return pressAction.id == action || longPressAction.id == action
+        return pressAction.id == action || holdActions.any { it.id == action }
     }
 
     override fun hashCode(): Int {
         var result = name.hashCode()
         result = 31 * result + code.hashCode()
         result = 31 * result + pressAction.hashCode()
-        result = 31 * result + longPressAction.hashCode()
+        result = 31 * result + holdActions.hashCode()
         return result
     }
 
     companion object {
         fun fromString(string: String): SwitchEvent {
             val parts = string.split(", ")
+            val name = parts[0]
+            val code = parts[1]
+            val pressAction = SwitchAction(parts[2].toInt())
+            val holdActionsString = parts[3]
+            val holdActions = holdActionsString.split(";").map { SwitchAction(it.toInt()) }
             return SwitchEvent(
-                name = parts[0],
-                code = parts[1],
-                pressAction = SwitchAction(parts[2].toInt()),
-                longPressAction = SwitchAction(parts[3].toInt())
+                name = name,
+                code = code,
+                pressAction = pressAction,
+                holdActions = holdActions
             )
         }
     }

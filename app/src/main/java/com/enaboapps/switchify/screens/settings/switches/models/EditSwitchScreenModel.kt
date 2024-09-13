@@ -13,14 +13,14 @@ class EditSwitchScreenModel(
 
     val name = MutableLiveData("")
     val pressAction = MutableLiveData(SwitchAction(SwitchAction.Actions.ACTION_SELECT))
-    val longPressAction = MutableLiveData(SwitchAction(SwitchAction.Actions.ACTION_STOP_SCANNING))
-
+    val longPressActions = MutableLiveData<List<SwitchAction>>(emptyList())
 
     init {
         val event = store.find(code)
         name.value = event?.name
         pressAction.value = event?.pressAction
-        longPressAction.value = event?.longPressAction
+        longPressActions.value =
+            event?.holdActions ?: listOf() // Initialize with multiple long press actions
     }
 
     fun save(completion: () -> Unit) {
@@ -28,10 +28,19 @@ class EditSwitchScreenModel(
             name = name.value!!,
             code = code,
             pressAction = pressAction.value!!,
-            longPressAction = longPressAction.value!!
+            holdActions = longPressActions.value!! // Save the list of long press actions
         )
         store.update(event)
         completion()
+    }
+
+    fun updateLongPressAction(oldAction: SwitchAction, newAction: SwitchAction) {
+        val currentActions = longPressActions.value?.toMutableList() ?: mutableListOf()
+        val index = currentActions.indexOf(oldAction)
+        if (index != -1) {
+            currentActions[index] = newAction
+            longPressActions.value = currentActions
+        }
     }
 
     fun delete(completion: () -> Unit) {
@@ -42,4 +51,15 @@ class EditSwitchScreenModel(
         }
     }
 
+    fun addLongPressAction(action: SwitchAction) {
+        val currentActions = longPressActions.value?.toMutableList() ?: mutableListOf()
+        currentActions.add(action)
+        longPressActions.value = currentActions
+    }
+
+    fun removeLongPressAction(action: SwitchAction) {
+        val currentActions = longPressActions.value?.toMutableList() ?: mutableListOf()
+        currentActions.remove(action)
+        longPressActions.value = currentActions
+    }
 }

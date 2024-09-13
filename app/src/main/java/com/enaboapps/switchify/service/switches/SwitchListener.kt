@@ -5,7 +5,6 @@ import android.util.Log
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
-import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
 
@@ -45,7 +44,7 @@ class SwitchListener(
             latestAction = AbsorbedSwitchAction(it, System.currentTimeMillis())
 
             // Handle immediate press action or start hold timer for long press
-            if (it.longPressAction.id == SwitchAction.Actions.ACTION_NONE) {
+            if (it.holdActions.isEmpty()) {
                 // Check selection handling
                 if (AutoSelectionHandler.isAutoSelectInProgress()) {
                     AutoSelectionHandler.performSelectionAction() // Interrupt auto-select process
@@ -53,7 +52,7 @@ class SwitchListener(
                 }
                 scanningManager.performAction(it.pressAction)
             } else {
-                SwitchLongPressHandler.startLongPress(context, it.longPressAction, scanningManager)
+                SwitchLongPressHandler.startLongPress(context, it.holdActions)
                 // Pause scanning if the setting is enabled
                 if (preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)) {
                     scanningManager.pauseScanning()
@@ -73,7 +72,7 @@ class SwitchListener(
         Log.d("SwitchListener", "onSwitchReleased: $keyCode")
         return switchEvent?.let { event ->
             latestAction?.takeIf { it.switchEvent == event }?.let {
-                SwitchLongPressHandler.stopLongPress()
+                SwitchLongPressHandler.stopLongPress(scanningManager)
 
                 // Check ignore repeat setting
                 if (shouldIgnoreSwitchRepeat(keyCode)) {
@@ -95,7 +94,7 @@ class SwitchListener(
                     scanningManager.resumeScanning()
                 }
 
-                if (event.longPressAction.id != SwitchAction.Actions.ACTION_NONE) {
+                if (event.holdActions.isNotEmpty()) {
                     // Perform press action if time elapsed is less than hold time
                     if (timeElapsed < switchHoldTime) {
                         scanningManager.performAction(event.pressAction)
