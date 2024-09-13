@@ -52,7 +52,7 @@ class SwitchListener(
                 }
                 scanningManager.performAction(it.pressAction)
             } else {
-                SwitchLongPressHandler.startLongPress(context, it.holdActions, scanningManager)
+                SwitchLongPressHandler.startLongPress(context, it.holdActions)
                 // Pause scanning if the setting is enabled
                 if (preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)) {
                     scanningManager.pauseScanning()
@@ -72,7 +72,7 @@ class SwitchListener(
         Log.d("SwitchListener", "onSwitchReleased: $keyCode")
         return switchEvent?.let { event ->
             latestAction?.takeIf { it.switchEvent == event }?.let {
-                SwitchLongPressHandler.stopLongPress()
+                SwitchLongPressHandler.stopLongPress(scanningManager)
 
                 // Check ignore repeat setting
                 if (shouldIgnoreSwitchRepeat(keyCode)) {

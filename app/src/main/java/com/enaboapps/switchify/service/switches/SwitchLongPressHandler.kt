@@ -4,6 +4,7 @@ import android.content.Context
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
+import com.enaboapps.switchify.service.window.ServiceMessageHUD
 import com.enaboapps.switchify.switches.SwitchAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,17 +18,16 @@ import kotlinx.coroutines.launch
 object SwitchLongPressHandler {
     private var longPressJob: Job? = null
     private var holdActions: List<SwitchAction>? = null
+    private var actionToPerform: SwitchAction? = null
 
     /**
      * Initiates the long press action sequence.
      * @param context The context.
      * @param actions The list of actions to perform on long press.
-     * @param scanningManager The manager responsible for scanning actions.
      */
     fun startLongPress(
         context: Context,
-        actions: List<SwitchAction>,
-        scanningManager: ScanningManager
+        actions: List<SwitchAction>
     ) {
         holdActions = actions
         val holdTime = PreferenceManager(context)
@@ -44,7 +44,13 @@ object SwitchLongPressHandler {
 
             holdActions?.let { actionsList ->
                 for (action in actionsList) {
-                    scanningManager.performAction(action)
+                    actionToPerform = action
+                    val name = action.getActionName()
+                    ServiceMessageHUD.instance.showMessage(
+                        "Release to perform $name",
+                        ServiceMessageHUD.MessageType.DISAPPEARING,
+                        ServiceMessageHUD.Time.SHORT
+                    )
                     delay(holdTime) // Use the switch hold time as delay between actions
                 }
             }
@@ -52,9 +58,15 @@ object SwitchLongPressHandler {
     }
 
     /**
-     * Cancels the ongoing long press action sequence.
+     * Stops the long press action sequence.
+     * Performs the action if it is not null.
+     * @param scanningManager The scanning manager.
      */
-    fun stopLongPress() {
+    fun stopLongPress(scanningManager: ScanningManager) {
+        actionToPerform?.let {
+            scanningManager.performAction(it)
+            actionToPerform = null
+        }
         longPressJob?.cancel()
         longPressJob = null
     }
