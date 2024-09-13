@@ -5,6 +5,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -28,8 +29,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
+import com.enaboapps.switchify.screens.settings.switches.actions.SwitchActionPicker
 import com.enaboapps.switchify.screens.settings.switches.models.AddNewSwitchScreenModel
 import com.enaboapps.switchify.service.utils.ServiceUtils
+import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
@@ -39,10 +42,7 @@ fun AddNewSwitchScreen(navController: NavController) {
     val context = LocalContext.current
     val switchEventStore = SwitchEventStore(context)
     val addNewSwitchScreenModel = remember {
-        AddNewSwitchScreenModel(
-            context = context,
-            store = switchEventStore
-        )
+        AddNewSwitchScreenModel(switchEventStore)
     }
     val verticalScrollState = rememberScrollState()
     val shouldSave by addNewSwitchScreenModel.shouldSave.observeAsState()
@@ -73,7 +73,7 @@ fun AddNewSwitchScreen(navController: NavController) {
             SwitchName(name = addNewSwitchScreenModel.name)
             if (!shouldSave!!) {
                 SwitchListener(onKeyEvent = { keyEvent: KeyEvent ->
-                    addNewSwitchScreenModel.processKeyCode(keyEvent.key)
+                    addNewSwitchScreenModel.processKeyCode(keyEvent.key, context)
                 })
             } else {
                 Column(
@@ -82,10 +82,7 @@ fun AddNewSwitchScreen(navController: NavController) {
                         .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(text = "Switch captured", style = MaterialTheme.typography.labelMedium)
-                    SwitchActionSection(
-                        viewModel = addNewSwitchScreenModel,
-                        modifier = Modifier.padding(16.dp)
-                    )
+                    SwitchActionSection(addNewSwitchScreenModel)
                     FullWidthButton(text = "Save", onClick = {
                         addNewSwitchScreenModel.save()
                         navController.popBackStack()
@@ -136,19 +133,42 @@ fun SwitchName(name: MutableLiveData<String>) {
 
 @Composable
 fun SwitchActionSection(
-    viewModel: AddNewSwitchScreenModel,
-    modifier: Modifier = Modifier
+    viewModel: AddNewSwitchScreenModel
 ) {
+    val observeLongPressActions = viewModel.longPressActions.observeAsState()
     Column {
         SwitchActionPicker(
             title = "Press action",
-            action = viewModel.pressAction,
-            modifier = modifier
+            switchAction = viewModel.pressAction.value!!,
+            onChange = {
+                viewModel.pressAction.value = it
+            }
         )
-        SwitchActionPicker(
-            title = "Long press action",
-            action = viewModel.longPressAction,
-            modifier = modifier
+
+        Spacer(modifier = Modifier.padding(16.dp))
+
+        Text(
+            text = "Each switch can have multiple actions for long press. " +
+                    "You can add or remove actions below. " +
+                    "The actions will be executed in the order they are listed based on the duration of the long press.",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(horizontal = 20.dp)
         )
+
+        observeLongPressActions.value?.forEach { action ->
+            SwitchActionPicker(
+                title = "Long press action ${observeLongPressActions.value!!.indexOf(action) + 1}",
+                switchAction = action,
+                onChange = { newAction ->
+                    viewModel.updateLongPressAction(action, newAction)
+                },
+                onDelete = {
+                    viewModel.removeLongPressAction(action)
+                }
+            )
+        }
+        FullWidthButton(text = "Add Long Press Action", onClick = {
+            viewModel.addLongPressAction(SwitchAction(SwitchAction.Actions.ACTION_SELECT))
+        })
     }
 }

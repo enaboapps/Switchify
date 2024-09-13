@@ -12,22 +12,27 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * This object manages the long press action on a switch.
+ * This object manages the long press actions on a switch.
  */
 object SwitchLongPressHandler {
     private var longPressJob: Job? = null
-    private var longPressAction: SwitchAction? = null
+    private var holdActions: List<SwitchAction>? = null
 
     /**
-     * Initiates the long press action.
+     * Initiates the long press action sequence.
      * @param context The context.
-     * @param action The action to perform on long press.
+     * @param actions The list of actions to perform on long press.
      * @param scanningManager The manager responsible for scanning actions.
      */
-    fun startLongPress(context: Context, action: SwitchAction, scanningManager: ScanningManager) {
-        longPressAction = action
-        val holdTime =
-            PreferenceManager(context).getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
+    fun startLongPress(
+        context: Context,
+        actions: List<SwitchAction>,
+        scanningManager: ScanningManager
+    ) {
+        holdActions = actions
+        val holdTime = PreferenceManager(context)
+            .getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
+
         longPressJob = CoroutineScope(Dispatchers.Main).launch {
             delay(holdTime)
 
@@ -37,14 +42,17 @@ object SwitchLongPressHandler {
                 return@launch
             }
 
-            longPressAction?.let {
-                scanningManager.performAction(it)
+            holdActions?.let { actionsList ->
+                for (action in actionsList) {
+                    scanningManager.performAction(action)
+                    delay(holdTime) // Use the switch hold time as delay between actions
+                }
             }
         }
     }
 
     /**
-     * Cancels the ongoing long press action.
+     * Cancels the ongoing long press action sequence.
      */
     fun stopLongPress() {
         longPressJob?.cancel()
