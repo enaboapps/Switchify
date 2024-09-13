@@ -11,6 +11,7 @@ import com.enaboapps.switchify.keyboard.SwitchifyKeyboardService
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.scanning.tree.ScanTree
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
+import com.enaboapps.switchify.service.utils.ScreenWatcher
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,11 +74,7 @@ class NodeScanner : NodeUpdateDelegate {
      */
     private val keyboardHideReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            isKeyboardVisible = false
-            setScreenNodes(screenNodes)
-            setKeyboardNodes(emptyList())
-            AutoSelectionHandler.setBypassAutoSelect(false)
-            println("Keyboard hidden, updating nodes")
+            escapeKeyboardScan()
         }
     }
 
@@ -85,6 +82,13 @@ class NodeScanner : NodeUpdateDelegate {
      * Boolean flag indicating whether the keyboard is visible.
      */
     private var isKeyboardVisible = false
+
+    /**
+     * Screen watcher instance used for watching the screen.
+     */
+    private val screenWatcher = ScreenWatcher(onScreenSleep = {
+        escapeKeyboardScan()
+    })
 
     /**
      * Starts the NodeScanner.
@@ -101,6 +105,7 @@ class NodeScanner : NodeUpdateDelegate {
             context = context,
             stopScanningOnSelect = true
         )
+        screenWatcher.register(context)
     }
 
     /**
@@ -121,6 +126,17 @@ class NodeScanner : NodeUpdateDelegate {
             keyboardHideReceiver,
             IntentFilter(SwitchifyKeyboardService.ACTION_KEYBOARD_HIDE)
         )
+    }
+
+    /**
+     * Escapes the keyboard scan.
+     */
+    private fun escapeKeyboardScan() {
+        isKeyboardVisible = false
+        setScreenNodes(screenNodes)
+        setKeyboardNodes(emptyList())
+        AutoSelectionHandler.setBypassAutoSelect(false)
+        println("Keyboard hidden, updating nodes")
     }
 
     /**
