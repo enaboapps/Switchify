@@ -60,7 +60,7 @@ fun EditSwitchScreen(
 
             observeLongPressActions.value?.forEach { action ->
                 SwitchActionPicker(
-                    title = "Long press action ${observeLongPressActions.value!!.indexOf(action) + 1}",
+                    title = "Long Press Action ${observeLongPressActions.value!!.indexOf(action) + 1}",
                     switchAction = action,
                     onChange = { newAction ->
                         editSwitchScreenModel.updateLongPressAction(action, newAction)

@@ -138,7 +138,7 @@ fun SwitchActionSection(
     val observeLongPressActions = viewModel.longPressActions.observeAsState()
     Column {
         SwitchActionPicker(
-            title = "Press action",
+            title = "Press Action",
             switchAction = viewModel.pressAction.value!!,
             onChange = {
                 viewModel.pressAction.value = it
@@ -157,7 +157,7 @@ fun SwitchActionSection(
 
         observeLongPressActions.value?.forEach { action ->
             SwitchActionPicker(
-                title = "Long press action ${observeLongPressActions.value!!.indexOf(action) + 1}",
+                title = "Long Press Action ${observeLongPressActions.value!!.indexOf(action) + 1}",
                 switchAction = action,
                 onChange = { newAction ->
                     viewModel.updateLongPressAction(action, newAction)
