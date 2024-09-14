@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.scanning
 
+import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME
 import android.content.Context
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
@@ -203,6 +204,11 @@ class ScanningManager(
             SwitchAction.Actions.ACTION_SYS_HOME -> {
                 // Go to the home screen
                 accessibilityService.performGlobalAction(GLOBAL_ACTION_HOME)
+            }
+
+            SwitchAction.Actions.ACTION_SYS_BACK -> {
+                // Go back
+                accessibilityService.performGlobalAction(GLOBAL_ACTION_BACK)
             }
         }
     }
