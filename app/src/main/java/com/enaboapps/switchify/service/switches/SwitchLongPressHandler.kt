@@ -4,6 +4,7 @@ import android.content.Context
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
+import com.enaboapps.switchify.service.window.ServiceMessageHUD
 import com.enaboapps.switchify.switches.SwitchAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,22 +13,26 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * This object manages the long press action on a switch.
+ * This object manages the long press actions on a switch.
  */
 object SwitchLongPressHandler {
     private var longPressJob: Job? = null
-    private var longPressAction: SwitchAction? = null
+    private var holdActions: List<SwitchAction>? = null
+    private var actionToPerform: SwitchAction? = null
 
     /**
-     * Initiates the long press action.
+     * Initiates the long press action sequence.
      * @param context The context.
-     * @param action The action to perform on long press.
-     * @param scanningManager The manager responsible for scanning actions.
+     * @param actions The list of actions to perform on long press.
      */
-    fun startLongPress(context: Context, action: SwitchAction, scanningManager: ScanningManager) {
-        longPressAction = action
-        val holdTime =
-            PreferenceManager(context).getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
+    fun startLongPress(
+        context: Context,
+        actions: List<SwitchAction>
+    ) {
+        holdActions = actions
+        val holdTime = PreferenceManager(context)
+            .getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
+
         longPressJob = CoroutineScope(Dispatchers.Main).launch {
             delay(holdTime)
 
@@ -37,16 +42,31 @@ object SwitchLongPressHandler {
                 return@launch
             }
 
-            longPressAction?.let {
-                scanningManager.performAction(it)
+            holdActions?.let { actionsList ->
+                for (action in actionsList) {
+                    actionToPerform = action
+                    val name = action.getActionName()
+                    ServiceMessageHUD.instance.showMessage(
+                        "Release to perform $name",
+                        ServiceMessageHUD.MessageType.DISAPPEARING,
+                        ServiceMessageHUD.Time.SHORT
+                    )
+                    delay(holdTime) // Use the switch hold time as delay between actions
+                }
             }
         }
     }
 
     /**
-     * Cancels the ongoing long press action.
+     * Stops the long press action sequence.
+     * Performs the action if it is not null.
+     * @param scanningManager The scanning manager.
      */
-    fun stopLongPress() {
+    fun stopLongPress(scanningManager: ScanningManager) {
+        actionToPerform?.let {
+            scanningManager.performAction(it)
+            actionToPerform = null
+        }
         longPressJob?.cancel()
         longPressJob = null
     }
