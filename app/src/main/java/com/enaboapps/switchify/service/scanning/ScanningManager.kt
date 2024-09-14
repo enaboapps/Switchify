@@ -2,6 +2,7 @@ package com.enaboapps.switchify.service.scanning
 
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME
+import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_RECENTS
 import android.content.Context
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.cursor.CursorManager
@@ -209,6 +210,11 @@ class ScanningManager(
             SwitchAction.Actions.ACTION_SYS_BACK -> {
                 // Go back
                 accessibilityService.performGlobalAction(GLOBAL_ACTION_BACK)
+            }
+
+            SwitchAction.Actions.ACTION_SYS_RECENTS -> {
+                // Open the recent apps
+                accessibilityService.performGlobalAction(GLOBAL_ACTION_RECENTS)
             }
         }
     }
