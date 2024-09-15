@@ -2,6 +2,7 @@ package com.enaboapps.switchify.service.scanning
 
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME
+import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_RECENTS
@@ -232,6 +233,11 @@ class ScanningManager(
             SwitchAction.Actions.ACTION_SYS_NOTIFICATIONS -> {
                 // Open the notifications
                 accessibilityService.performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
+            }
+
+            SwitchAction.Actions.ACTION_SYS_LOCK_SCREEN -> {
+                // Lock the screen
+                accessibilityService.performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
             }
         }
     }
