@@ -9,7 +9,7 @@ class ScrollMenu(accessibilityService: SwitchifyAccessibilityService) :
     BaseMenu(accessibilityService, buildScrollMenuItems(accessibilityService)) {
     companion object {
         private fun buildScrollMenuItems(accessibilityService: SwitchifyAccessibilityService): List<MenuItem> {
-            return MenuItemStore(accessibilityService).buildScrollMenuObject().getMenuItems()
+            return MenuItemStore(accessibilityService).scrollMenuObject.getMenuItems()
         }
     }
 }

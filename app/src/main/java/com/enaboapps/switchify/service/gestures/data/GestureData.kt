@@ -15,6 +15,7 @@ data class GestureData(
         const val TAP_AND_HOLD_DURATION = 1000L
         const val SWIPE_DURATION = 80L
         const val DRAG_DURATION = 1500L
+        const val SCROLL_DURATION = 800L
     }
 
     fun performLockAction(gestureManager: GestureManager): Boolean {
@@ -34,8 +35,15 @@ data class GestureData(
                 return true
             }
 
-            GestureType.SWIPE_UP, GestureType.SWIPE_DOWN, GestureType.SWIPE_LEFT, GestureType.SWIPE_RIGHT -> {
-                gestureManager.performSwipe(gestureType)
+            GestureType.SWIPE_UP,
+            GestureType.SWIPE_DOWN,
+            GestureType.SWIPE_LEFT,
+            GestureType.SWIPE_RIGHT,
+            GestureType.SCROLL_UP,
+            GestureType.SCROLL_DOWN,
+            GestureType.SCROLL_LEFT,
+            GestureType.SCROLL_RIGHT -> {
+                gestureManager.performSwipeOrScroll(gestureType)
                 return true
             }
 

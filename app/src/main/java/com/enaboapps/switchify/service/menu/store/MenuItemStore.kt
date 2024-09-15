@@ -93,14 +93,12 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 isLinkToMenu = true,
                 action = { MenuManager.getInstance().openGesturesMenu() }
             ),
-            if (NodeExaminer.canPerformScrollActions(GesturePoint.getPoint())) {
-                MenuItem(
-                    id = "scroll",
-                    text = "Scroll",
-                    isLinkToMenu = true,
-                    action = { MenuManager.getInstance().openScrollMenu() }
-                )
-            } else null,
+            MenuItem(
+                id = "scroll",
+                text = "Scroll",
+                isLinkToMenu = true,
+                action = { MenuManager.getInstance().openScrollMenu() }
+            ),
             if (ScanMethod.getType() != ScanMethod.MethodType.ITEM_SCAN) {
                 MenuItem(
                     id = "refine_selection",
@@ -178,22 +176,28 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
             MenuItem(
                 id = "swipe_up",
                 text = "Swipe Up",
-                action = { GestureManager.getInstance().performSwipe(GestureType.SWIPE_UP) }
+                action = { GestureManager.getInstance().performSwipeOrScroll(GestureType.SWIPE_UP) }
             ),
             MenuItem(
                 id = "swipe_down",
                 text = "Swipe Down",
-                action = { GestureManager.getInstance().performSwipe(GestureType.SWIPE_DOWN) }
+                action = {
+                    GestureManager.getInstance().performSwipeOrScroll(GestureType.SWIPE_DOWN)
+                }
             ),
             MenuItem(
                 id = "swipe_left",
                 text = "Swipe Left",
-                action = { GestureManager.getInstance().performSwipe(GestureType.SWIPE_LEFT) }
+                action = {
+                    GestureManager.getInstance().performSwipeOrScroll(GestureType.SWIPE_LEFT)
+                }
             ),
             MenuItem(
                 id = "swipe_right",
                 text = "Swipe Right",
-                action = { GestureManager.getInstance().performSwipe(GestureType.SWIPE_RIGHT) }
+                action = {
+                    GestureManager.getInstance().performSwipeOrScroll(GestureType.SWIPE_RIGHT)
+                }
             ),
             MenuItem(
                 id = "custom_swipe",
@@ -361,62 +365,40 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
     /**
      * The scroll menu item store object
      */
-    fun buildScrollMenuObject(): MenuItemStoreObject {
-        val currentPoint = GesturePoint.getPoint()
-        val scrollUpNode =
-            NodeExaminer.findNodeForAction(currentPoint, Node.ActionType.SCROLL_UP)
-        val scrollDownNode =
-            NodeExaminer.findNodeForAction(currentPoint, Node.ActionType.SCROLL_DOWN)
-        val scrollLeftNode =
-            NodeExaminer.findNodeForAction(currentPoint, Node.ActionType.SCROLL_LEFT)
-        val scrollRightNode =
-            NodeExaminer.findNodeForAction(currentPoint, Node.ActionType.SCROLL_RIGHT)
-        return MenuItemStoreObject(
-            id = "scroll_menu",
-            items = listOfNotNull(
-                if (scrollUpNode != null) {
-                    MenuItem(
-                        id = "scroll_up",
-                        text = "Scroll Up",
-                        closeOnSelect = false,
-                        action = {
-                            scrollUpNode.performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_UP.id)
-                        }
-                    )
-                } else null,
-                if (scrollDownNode != null) {
-                    MenuItem(
-                        id = "scroll_down",
-                        text = "Scroll Down",
-                        closeOnSelect = false,
-                        action = {
-                            scrollDownNode.performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN.id)
-                        }
-                    )
-                } else null,
-                if (scrollLeftNode != null) {
-                    MenuItem(
-                        id = "scroll_left",
-                        text = "Scroll Left",
-                        closeOnSelect = false,
-                        action = {
-                            scrollLeftNode.performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_LEFT.id)
-                        }
-                    )
-                } else null,
-                if (scrollRightNode != null) {
-                    MenuItem(
-                        id = "scroll_right",
-                        text = "Scroll Right",
-                        closeOnSelect = false,
-                        action = {
-                            scrollRightNode.performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_RIGHT.id)
-                        }
-                    )
-                } else null
-            )
+    val scrollMenuObject = MenuItemStoreObject(
+        id = "scroll_menu",
+        items = listOf(
+            MenuItem(
+                id = "scroll_up",
+                text = "Scroll Up",
+                action = {
+                    GestureManager.getInstance().performSwipeOrScroll(GestureType.SCROLL_UP)
+                }
+            ),
+            MenuItem(
+                id = "scroll_down",
+                text = "Scroll Down",
+                action = {
+                    GestureManager.getInstance().performSwipeOrScroll(GestureType.SCROLL_DOWN)
+                }
+            ),
+            MenuItem(
+                id = "scroll_left",
+                text = "Scroll Left",
+                action = {
+                    GestureManager.getInstance().performSwipeOrScroll(GestureType.SCROLL_LEFT)
+                }
+            ),
+            MenuItem(
+                id = "scroll_right",
+                text = "Scroll Right",
+                action = {
+                    GestureManager.getInstance().performSwipeOrScroll(GestureType.SCROLL_RIGHT)
+                }
+            ),
+            toggleGestureLockMenuItem
         )
-    }
+    )
 
     /**
      * The edit menu item store object
