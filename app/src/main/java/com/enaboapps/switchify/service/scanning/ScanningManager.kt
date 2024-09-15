@@ -204,6 +204,11 @@ class ScanningManager(
                 }
             }
 
+            SwitchAction.Actions.ACTION_TOGGLE_GESTURE_LOCK -> {
+                // Toggle the gesture lock
+                GestureManager.getInstance().toggleGestureLock()
+            }
+
             SwitchAction.Actions.ACTION_SYS_HOME -> {
                 // Go to the home screen
                 accessibilityService.performGlobalAction(GLOBAL_ACTION_HOME)
