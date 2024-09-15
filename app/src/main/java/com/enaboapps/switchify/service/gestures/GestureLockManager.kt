@@ -22,6 +22,9 @@ class GestureLockManager {
                 "Gesture lock disabled. Your switches will now perform their default actions.",
                 ServiceMessageHUD.MessageType.DISAPPEARING
             )
+
+            // Clear the locked gesture data
+            lockedGestureData = null
         }
     }
 
@@ -38,11 +41,12 @@ class GestureLockManager {
 
     // Function to set the locked gesture data
     fun setLockedGestureData(gestureData: GestureData?) {
-        lockedGestureData = if (gestureData != null && canLockGesture(gestureData.gestureType)) {
-            gestureData
-        } else {
-            null
-        }
+        lockedGestureData =
+            if (gestureData != null && canLockGesture(gestureData.gestureType) && isLocked) {
+                gestureData
+            } else {
+                null
+            }
     }
 
     // Function to check if a gesture type can be locked
