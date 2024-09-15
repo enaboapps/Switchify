@@ -7,6 +7,7 @@ import android.graphics.PointF
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.gestures.data.GestureData
 import com.enaboapps.switchify.service.gestures.data.GestureData.Companion.DRAG_DURATION
+import com.enaboapps.switchify.service.gestures.data.GestureData.Companion.SCROLL_DURATION
 import com.enaboapps.switchify.service.gestures.data.GestureData.Companion.SWIPE_DURATION
 import com.enaboapps.switchify.service.gestures.data.GestureType
 import com.enaboapps.switchify.service.gestures.visuals.GestureDrawing
@@ -73,7 +74,7 @@ class LinearGesturePerformer(
 
         val endPoint = when (gestureType) {
             GestureType.DRAG, GestureType.CUSTOM_SWIPE -> GesturePoint.getPoint()
-            else -> calculateSwipeEndPoint(gestureType, startPoint)
+            else -> calculateEndPoint(gestureType, startPoint)
         }
 
         performGesture(gestureType, startPoint, endPoint)
@@ -90,14 +91,30 @@ class LinearGesturePerformer(
         this.currentGestureType = null
     }
 
-    private fun calculateSwipeEndPoint(type: GestureType, start: PointF): PointF {
+    private fun calculateEndPoint(type: GestureType, start: PointF): PointF {
         val screenWidth = ScreenUtils.getWidth(accessibilityService)
         val screenHeight = ScreenUtils.getHeight(accessibilityService)
         return when (type) {
-            GestureType.SWIPE_UP -> PointF(start.x, start.y - screenHeight / 5f)
-            GestureType.SWIPE_DOWN -> PointF(start.x, start.y + screenHeight / 5f)
-            GestureType.SWIPE_LEFT -> PointF(start.x - screenWidth / 4f, start.y)
-            GestureType.SWIPE_RIGHT -> PointF(start.x + screenWidth / 4f, start.y)
+            GestureType.SWIPE_UP, GestureType.SCROLL_UP -> PointF(
+                start.x,
+                start.y - screenHeight / 5f
+            )
+
+            GestureType.SWIPE_DOWN, GestureType.SCROLL_DOWN -> PointF(
+                start.x,
+                start.y + screenHeight / 5f
+            )
+
+            GestureType.SWIPE_LEFT, GestureType.SCROLL_LEFT -> PointF(
+                start.x - screenWidth / 4f,
+                start.y
+            )
+
+            GestureType.SWIPE_RIGHT, GestureType.SCROLL_RIGHT -> PointF(
+                start.x + screenWidth / 4f,
+                start.y
+            )
+
             else -> start // This shouldn't happen, but we need to handle all cases
         }
     }
@@ -118,6 +135,7 @@ class LinearGesturePerformer(
 
         val duration = when (type) {
             GestureType.DRAG -> DRAG_DURATION
+            GestureType.SCROLL_UP, GestureType.SCROLL_DOWN, GestureType.SCROLL_LEFT, GestureType.SCROLL_RIGHT -> SCROLL_DURATION
             else -> SWIPE_DURATION
         }
 

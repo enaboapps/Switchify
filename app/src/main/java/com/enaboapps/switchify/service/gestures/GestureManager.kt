@@ -243,11 +243,11 @@ class GestureManager private constructor() {
     }
 
     /**
-     * Performs a swipe gesture in the specified direction.
+     * Performs a swipe or scroll action.
      *
      * @param type The GestureType of the swipe.
      */
-    fun performSwipe(type: GestureType) {
+    fun performSwipeOrScroll(type: GestureType) {
         linearGesturePerformer.startGesture(type)
         linearGesturePerformer.endGesture()
     }

@@ -82,11 +82,7 @@ class Node(
     enum class ActionType {
         CUT,
         COPY,
-        PASTE,
-        SCROLL_UP,
-        SCROLL_DOWN,
-        SCROLL_LEFT,
-        SCROLL_RIGHT
+        PASTE
     }
 
     fun isActionable(actionType: ActionType): Boolean {
@@ -98,18 +94,6 @@ class Node(
                 ?: false
 
             ActionType.PASTE -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_PASTE)
-                ?: false
-
-            ActionType.SCROLL_UP -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_UP)
-                ?: false
-
-            ActionType.SCROLL_DOWN -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN)
-                ?: false
-
-            ActionType.SCROLL_LEFT -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_LEFT)
-                ?: false
-
-            ActionType.SCROLL_RIGHT -> nodeInfo?.actionList?.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_RIGHT)
                 ?: false
         }
     }
