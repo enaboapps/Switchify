@@ -14,6 +14,7 @@ class SwitchAction(val id: Int) {
         const val ACTION_SYS_RECENTS = 9
         const val ACTION_SYS_QUICK_SETTINGS = 10
         const val ACTION_SYS_NOTIFICATIONS = 11
+        const val ACTION_SYS_LOCK_SCREEN = 12
     }
 
     // static array of actions
@@ -30,7 +31,8 @@ class SwitchAction(val id: Int) {
             SwitchAction(Actions.ACTION_SYS_BACK),
             SwitchAction(Actions.ACTION_SYS_RECENTS),
             SwitchAction(Actions.ACTION_SYS_QUICK_SETTINGS),
-            SwitchAction(Actions.ACTION_SYS_NOTIFICATIONS)
+            SwitchAction(Actions.ACTION_SYS_NOTIFICATIONS),
+            SwitchAction(Actions.ACTION_SYS_LOCK_SCREEN)
         )
     }
 
@@ -48,6 +50,7 @@ class SwitchAction(val id: Int) {
             Actions.ACTION_SYS_RECENTS -> "Recents"
             Actions.ACTION_SYS_QUICK_SETTINGS -> "Quick Settings"
             Actions.ACTION_SYS_NOTIFICATIONS -> "Notifications"
+            Actions.ACTION_SYS_LOCK_SCREEN -> "Lock Screen"
             else -> "Unknown"
         }
     }
@@ -66,6 +69,7 @@ class SwitchAction(val id: Int) {
             Actions.ACTION_SYS_RECENTS -> "Open the recent apps"
             Actions.ACTION_SYS_QUICK_SETTINGS -> "Open the quick settings"
             Actions.ACTION_SYS_NOTIFICATIONS -> "Open the notifications"
+            Actions.ACTION_SYS_LOCK_SCREEN -> "Lock the screen"
             else -> "Unknown"
         }
     }
