@@ -126,21 +126,6 @@ object NodeExaminer {
     }
 
     /**
-     * Checks if a node can perform any scroll actions at the given point.
-     * This method checks if any node can perform scroll up, down, left, or right actions.
-     *
-     * @param point The point to check for scroll actions.
-     * @return True if a node can perform any scroll actions at the given point, false otherwise.
-     */
-    fun canPerformScrollActions(point: PointF): Boolean {
-        val scrollUpNode = findNodeForAction(point, Node.ActionType.SCROLL_UP)
-        val scrollDownNode = findNodeForAction(point, Node.ActionType.SCROLL_DOWN)
-        val scrollLeftNode = findNodeForAction(point, Node.ActionType.SCROLL_LEFT)
-        val scrollRightNode = findNodeForAction(point, Node.ActionType.SCROLL_RIGHT)
-        return scrollUpNode != null || scrollDownNode != null || scrollLeftNode != null || scrollRightNode != null
-    }
-
-    /**
      * Checks if a node can perform any edit actions at the given point.
      *
      * @param point The point to check for edit actions.
