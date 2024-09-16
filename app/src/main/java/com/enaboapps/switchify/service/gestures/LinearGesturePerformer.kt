@@ -95,22 +95,22 @@ class LinearGesturePerformer(
         val screenWidth = ScreenUtils.getWidth(accessibilityService)
         val screenHeight = ScreenUtils.getHeight(accessibilityService)
         return when (type) {
-            GestureType.SWIPE_UP, GestureType.SCROLL_UP -> PointF(
+            GestureType.SWIPE_UP, GestureType.SCROLL_DOWN -> PointF(
                 start.x,
                 start.y - screenHeight / 5f
             )
 
-            GestureType.SWIPE_DOWN, GestureType.SCROLL_DOWN -> PointF(
+            GestureType.SWIPE_DOWN, GestureType.SCROLL_UP -> PointF(
                 start.x,
                 start.y + screenHeight / 5f
             )
 
-            GestureType.SWIPE_LEFT, GestureType.SCROLL_LEFT -> PointF(
+            GestureType.SWIPE_LEFT, GestureType.SCROLL_RIGHT -> PointF(
                 start.x - screenWidth / 4f,
                 start.y
             )
 
-            GestureType.SWIPE_RIGHT, GestureType.SCROLL_RIGHT -> PointF(
+            GestureType.SWIPE_RIGHT, GestureType.SCROLL_LEFT -> PointF(
                 start.x + screenWidth / 4f,
                 start.y
             )
