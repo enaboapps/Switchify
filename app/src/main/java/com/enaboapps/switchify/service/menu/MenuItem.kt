@@ -60,7 +60,7 @@ class MenuItem(
      * @param width The width of the menu item
      * @param height The height of the menu item
      */
-    fun inflate(linearLayout: LinearLayout, margins: Int, width: Int = 95, height: Int = 85) {
+    fun inflate(linearLayout: LinearLayout, margins: Int, width: Int = 80, height: Int = 75) {
         val widthPx = ScreenUtils.dpToPx(linearLayout.context, width)
         val heightPx = ScreenUtils.dpToPx(linearLayout.context, height)
 
