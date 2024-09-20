@@ -51,7 +51,7 @@ class MenuView(
     // This function creates the menu pages
     private fun createMenuPages(menuItems: List<MenuItem>) {
         // Number of items per page
-        val numOfItemsPerPage = 4
+        val numOfItemsPerPage = 6
         // Calculate the number of pages
         numOfPages = (menuItems.size + numOfItemsPerPage - 1) / numOfItemsPerPage
         // Create the menu pages
@@ -68,8 +68,8 @@ class MenuView(
             // Create the rows
             // Add the system navigation row to the beginning
             val rows = mutableListOf(systemNavItems)
-            // Split the items into rows of two
-            pageItems.chunked(2).forEach { rowItems ->
+            // Split the items into rows of 3
+            pageItems.chunked(3).forEach { rowItems ->
                 rows.add(rowItems)
             }
 
