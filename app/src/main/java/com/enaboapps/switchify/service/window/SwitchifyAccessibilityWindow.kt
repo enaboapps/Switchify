@@ -57,6 +57,17 @@ class SwitchifyAccessibilityWindow {
         baseLayout?.addView(view, params)
     }
 
+    // This function adds a view to the window with the given x, y
+    fun addView(view: ViewGroup, x: Int, y: Int) {
+        val params = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.WRAP_CONTENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT
+        )
+        params.leftMargin = x
+        params.topMargin = y
+        baseLayout?.addView(view, params)
+    }
+
     // This function adds a view to the center of the window
     fun addViewToCenter(view: ViewGroup) {
         val params = RelativeLayout.LayoutParams(

@@ -7,6 +7,7 @@ import android.widget.LinearLayout
 import androidx.core.content.res.ResourcesCompat
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.gestures.GestureManager
+import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.scanning.tree.ScanTree
@@ -133,7 +134,31 @@ class MenuView(
     }
 
     private fun addToWindow() {
-        switchifyAccessibilityWindow.addViewToCenter(baseLayout)
+        switchifyAccessibilityWindow.addView(baseLayout, Int.MAX_VALUE, Int.MAX_VALUE)
+
+        // Set the menu viewTreeObserver
+        baseLayout.viewTreeObserver.addOnGlobalLayoutListener {
+            val width = baseLayout.width
+            val height = baseLayout.height
+
+            val screenWidth = context.resources.displayMetrics.widthPixels
+            val screenHeight = context.resources.displayMetrics.heightPixels
+
+            val point = GesturePoint.getPoint()
+
+            // Set the menu position to be above or below the point making sure it fits on the screen
+            val x = if (point.x + width > screenWidth) {
+                screenWidth - width.toFloat()
+            } else {
+                point.x
+            }
+            val y = if (point.y + height > screenHeight) {
+                screenHeight - height.toFloat()
+            } else {
+                point.y
+            }
+            switchifyAccessibilityWindow.updateViewLayout(baseLayout, x.toInt(), y.toInt())
+        }
     }
 
 
