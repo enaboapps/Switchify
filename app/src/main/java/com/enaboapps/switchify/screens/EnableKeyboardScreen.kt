@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -21,6 +23,7 @@ import com.enaboapps.switchify.widgets.NavBar
 @Composable
 fun EnableKeyboardScreen(navController: NavController) {
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
     Scaffold(
         topBar = {
             NavBar(title = "Enable Switchify Keyboard", navController = navController)
@@ -30,7 +33,8 @@ fun EnableKeyboardScreen(navController: NavController) {
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(16.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
