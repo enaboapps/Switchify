@@ -1,10 +1,11 @@
 package com.enaboapps.switchify.service.menu
 
-import android.graphics.text.LineBreaker
+import android.util.TypedValue
 import android.view.Gravity
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.TextView.AUTO_SIZE_TEXT_TYPE_NONE
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import com.enaboapps.switchify.R
@@ -110,8 +111,8 @@ class MenuItem(
         if (text.isNotEmpty()) {
             textView = TextView(linearLayout.context).apply {
                 text = this@MenuItem.text
-                textSize = 14f
-                justificationMode = LineBreaker.JUSTIFICATION_MODE_INTER_WORD
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+                setAutoSizeTextTypeWithDefaults(AUTO_SIZE_TEXT_TYPE_NONE)
                 gravity = Gravity.CENTER
                 setTextColor(linearLayout.context.resources.getColor(getForegroundColor(), null))
                 layoutParams = LinearLayout.LayoutParams(
@@ -126,7 +127,8 @@ class MenuItem(
         if (drawableDescription.isNotEmpty()) {
             drawableDescriptionTextView = TextView(linearLayout.context).apply {
                 text = drawableDescription
-                textSize = 10f
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 8f)
+                setAutoSizeTextTypeWithDefaults(AUTO_SIZE_TEXT_TYPE_NONE)
                 setTextColor(linearLayout.context.resources.getColor(getForegroundColor(), null))
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
