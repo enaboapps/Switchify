@@ -6,11 +6,13 @@ import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View.OnTouchListener
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.TextView.AUTO_SIZE_TEXT_TYPE_NONE
 import androidx.core.content.res.ResourcesCompat
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.utils.ScreenUtils
@@ -91,7 +93,8 @@ class KeyboardKey @JvmOverloads constructor(
             )
             isAllCaps = false
             setTextColor(Color.BLACK)
-            textSize = 20f
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setAutoSizeTextTypeWithDefaults(AUTO_SIZE_TEXT_TYPE_NONE)
             background =
                 ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background, null)
         }

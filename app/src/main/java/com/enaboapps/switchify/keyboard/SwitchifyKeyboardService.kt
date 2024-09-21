@@ -79,6 +79,11 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                 ResourcesCompat.getDrawable(resources, R.drawable.keyboard_background, null)
         }
 
+        // If running on Android 15 or higher, we need to add an inset to the bottom of the keyboard
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            keyboardLayout.setPadding(0, 0, 0, 140)
+        }
+
         // Initialize the prediction view
         predictionView = PredictionView(this) { prediction ->
             handleKeyPress(prediction)
