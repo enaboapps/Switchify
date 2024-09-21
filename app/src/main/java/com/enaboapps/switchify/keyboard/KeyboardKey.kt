@@ -93,7 +93,7 @@ class KeyboardKey @JvmOverloads constructor(
             )
             isAllCaps = false
             setTextColor(Color.BLACK)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             setAutoSizeTextTypeWithDefaults(AUTO_SIZE_TEXT_TYPE_NONE)
             background =
                 ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background, null)
