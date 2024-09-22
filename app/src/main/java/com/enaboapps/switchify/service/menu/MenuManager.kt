@@ -75,26 +75,30 @@ class MenuManager {
     }
 
     /**
-     * This function changes between cursor and item scan based on the current type
+     * This function switches the scan method
      */
-    fun changeBetweenCursorAndItemScan() {
-        if (scanMethodToRevertTo == ScanMethod.MethodType.CURSOR) {
-            scanningManager?.setItemScanType()
-        } else {
-            scanningManager?.setCursorType()
+    fun switchScanMethod() {
+        when (scanMethodToRevertTo) {
+            ScanMethod.MethodType.CURSOR -> {
+                scanningManager?.setCursorType()
+            }
+
+            ScanMethod.MethodType.RADAR -> {
+                scanningManager?.setRadarType()
+            }
+
+            ScanMethod.MethodType.ITEM_SCAN -> {
+                scanningManager?.setItemScanType()
+            }
         }
     }
 
     /**
-     * This function gets the name of the type to switch to (cursor or item scan)
-     * @return The name of the type to switch to
+     * This function gets the scan method to switch to
+     * @return The scan method to switch to
      */
-    fun getTypeToSwitchTo(): String {
-        return if (scanMethodToRevertTo == ScanMethod.MethodType.CURSOR) {
-            "Item Scan"
-        } else {
-            "Cursor"
-        }
+    fun getScanMethodToSwitchTo(): String {
+        return ScanMethod.getName(scanMethodToRevertTo)
     }
 
     /**

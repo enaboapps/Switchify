@@ -13,6 +13,7 @@ import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.nodes.NodeScanner
 import com.enaboapps.switchify.service.nodes.NodeScannerUI
+import com.enaboapps.switchify.service.radar.RadarManager
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.switches.SwitchAction
 
@@ -30,6 +31,9 @@ class ScanningManager(
 
     // cursor manager
     private val cursorManager = CursorManager(context)
+
+    // radar manager
+    private val radarManager = RadarManager(context)
 
     // node scanner
     private val nodeScanner = NodeScanner()
@@ -55,6 +59,16 @@ class ScanningManager(
      */
     fun setCursorType() {
         ScanMethod.setType(ScanMethod.MethodType.CURSOR)
+        ScanMethod.isInMenu = false
+
+        NodeScannerUI.instance.hideAll()
+    }
+
+    /**
+     * This function explicitly sets the type of the scanning manager to radar.
+     */
+    fun setRadarType() {
+        ScanMethod.setType(ScanMethod.MethodType.RADAR)
         ScanMethod.isInMenu = false
 
         NodeScannerUI.instance.hideAll()
@@ -94,6 +108,11 @@ class ScanningManager(
             ScanMethod.MethodType.CURSOR -> {
                 // Perform the cursor action
                 cursorManager.performSelectionAction()
+            }
+
+            ScanMethod.MethodType.RADAR -> {
+                // Perform the radar action
+                radarManager.performSelectionAction()
             }
 
             ScanMethod.MethodType.ITEM_SCAN -> {
@@ -136,6 +155,11 @@ class ScanningManager(
                     ScanMethod.MethodType.CURSOR -> {
                         // reset the cursor
                         cursorManager.externalReset()
+                    }
+
+                    ScanMethod.MethodType.RADAR -> {
+                        // reset the radar
+                        radarManager.resetRadar()
                     }
 
                     ScanMethod.MethodType.ITEM_SCAN -> {

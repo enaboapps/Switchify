@@ -99,7 +99,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 isLinkToMenu = true,
                 action = { MenuManager.getInstance().openScrollMenu() }
             ),
-            if (ScanMethod.getType() != ScanMethod.MethodType.ITEM_SCAN) {
+            if (ScanMethod.getType() != ScanMethod.MethodType.ITEM_SCAN && ScanMethod.getType() != ScanMethod.MethodType.RADAR) {
                 MenuItem(
                     id = "refine_selection",
                     text = "Refine Selection",
@@ -127,9 +127,9 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 )
             } else null,
             MenuItem(
-                id = "switch_cursor_item_scan",
-                text = MenuManager.getInstance().getTypeToSwitchTo(),
-                action = { MenuManager.getInstance().changeBetweenCursorAndItemScan() }
+                id = "switch_scan_method",
+                text = MenuManager.getInstance().getScanMethodToSwitchTo(),
+                action = { MenuManager.getInstance().switchScanMethod() }
             )
         )
     )
