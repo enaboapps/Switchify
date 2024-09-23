@@ -89,6 +89,19 @@ class SwitchifyAccessibilityWindow {
         }
     }
 
+    fun updateViewLayout(view: ViewGroup, x: Int, y: Int, width: Int, height: Int) {
+        try {
+            val params = view.layoutParams as RelativeLayout.LayoutParams
+            params.leftMargin = x
+            params.topMargin = y
+            params.width = width
+            params.height = height
+            baseLayout?.updateViewLayout(view, params)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     fun removeView(view: ViewGroup) {
         try {
             baseLayout?.removeView(view)
