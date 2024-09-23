@@ -182,6 +182,11 @@ class ScanningManager(
                         cursorManager.swapDirection()
                     }
 
+                    ScanMethod.MethodType.RADAR -> {
+                        // Change the radar direction
+                        radarManager.toggleDirection()
+                    }
+
                     ScanMethod.MethodType.ITEM_SCAN -> {
                         // Change the item scan direction
                         nodeScanner.scanTree.swapScanDirection()
@@ -283,6 +288,11 @@ class ScanningManager(
                 cursorManager.pauseScanning()
             }
 
+            ScanMethod.MethodType.RADAR -> {
+                // Pause the radar
+                radarManager.pauseScanning()
+            }
+
             ScanMethod.MethodType.ITEM_SCAN -> {
                 // Pause the item scan
                 nodeScanner.scanTree.pauseScanning()
@@ -307,6 +317,11 @@ class ScanningManager(
                 cursorManager.resumeScanning()
             }
 
+            ScanMethod.MethodType.RADAR -> {
+                // Resume the radar
+                radarManager.resumeScanning()
+            }
+
             ScanMethod.MethodType.ITEM_SCAN -> {
                 // Resume the item scan
                 nodeScanner.scanTree.resumeScanning()
@@ -324,6 +339,10 @@ class ScanningManager(
         when (scanMethod) {
             ScanMethod.MethodType.CURSOR -> {
                 nodeScanner.cleanup()
+            }
+
+            ScanMethod.MethodType.RADAR -> {
+                radarManager.cleanup()
             }
 
             ScanMethod.MethodType.ITEM_SCAN -> {

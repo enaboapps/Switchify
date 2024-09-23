@@ -126,11 +126,33 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                     action = { MenuManager.getInstance().openEditMenu() }
                 )
             } else null,
-            MenuItem(
-                id = "switch_scan_method",
-                text = MenuManager.getInstance().getScanMethodToSwitchTo(),
-                action = { MenuManager.getInstance().switchScanMethod() }
-            )
+            if (ScanMethod.getType() != ScanMethod.MethodType.ITEM_SCAN) {
+                MenuItem(
+                    id = "switch_to_item_scan",
+                    text = ScanMethod.getName(ScanMethod.MethodType.ITEM_SCAN),
+                    action = {
+                        MenuManager.getInstance().switchToItemScan()
+                    }
+                )
+            } else null,
+            if (ScanMethod.getType() != ScanMethod.MethodType.RADAR) {
+                MenuItem(
+                    id = "switch_to_radar",
+                    text = ScanMethod.getName(ScanMethod.MethodType.RADAR),
+                    action = {
+                        MenuManager.getInstance().switchToRadar()
+                    }
+                )
+            } else null,
+            if (ScanMethod.getType() != ScanMethod.MethodType.CURSOR) {
+                MenuItem(
+                    id = "switch_to_cursor",
+                    text = ScanMethod.getName(ScanMethod.MethodType.CURSOR),
+                    action = {
+                        MenuManager.getInstance().switchToCursor()
+                    }
+                )
+            } else null
         )
     )
 
