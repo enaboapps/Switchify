@@ -1,7 +1,7 @@
 package com.enaboapps.switchify.service.gestures
 
 import android.graphics.PointF
-import com.enaboapps.switchify.service.cursor.QuadrantInfo
+import com.enaboapps.switchify.service.methods.cursor.QuadrantInfo
 import com.enaboapps.switchify.service.scanning.ScanMethod
 
 /**

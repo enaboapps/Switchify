@@ -5,7 +5,7 @@ import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
-import com.enaboapps.switchify.service.nodes.NodeExaminer
+import com.enaboapps.switchify.service.methods.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler

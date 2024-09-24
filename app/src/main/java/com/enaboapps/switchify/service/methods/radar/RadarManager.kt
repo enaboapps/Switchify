@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.radar
+package com.enaboapps.switchify.service.methods.radar
 
 import android.content.Context
 import android.os.Handler
@@ -197,7 +197,6 @@ class RadarManager(private val context: Context) : ScanStateInterface {
             RadarStep.ROTATING -> {
                 currentStep = RadarStep.MOVING
                 currentDistanceRatio = if (circleMovement == CircleMovement.OUTWARD) 0f else 1f
-                radarUI.removeRadarLine()  // Remove the line when angle is selected
                 updateRadarCircle()  // Show the circle at the start of the line
                 startAutoScanIfEnabled()
             }
