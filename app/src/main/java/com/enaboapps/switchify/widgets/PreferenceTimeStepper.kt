@@ -29,6 +29,7 @@ fun PreferenceTimeStepper(
     summary: String,
     min: Long,
     max: Long,
+    step: Long = 100, // Default step is 100
     onValueChanged: (Long) -> Unit
 ) {
     var time by remember { mutableLongStateOf(value) }
@@ -61,7 +62,7 @@ fun PreferenceTimeStepper(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = {
                         if (time > min) {
-                            time -= 100
+                            time -= step
                             onValueChanged(time)
                         }
                     }) {
@@ -69,7 +70,7 @@ fun PreferenceTimeStepper(
                     }
                     Button(onClick = {
                         if (time < max) {
-                            time += 100
+                            time += step
                             onValueChanged(time)
                         }
                     }) {

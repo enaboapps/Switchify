@@ -118,6 +118,16 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
         ) {
             settingsScreenModel.setRefineScanRate(it)
         }
+        PreferenceTimeStepper(
+            value = settingsScreenModel.radarScanRate.value ?: 0,
+            title = "Radar scan rate",
+            summary = "The interval at which the radar will move",
+            min = 20,
+            max = 100000,
+            step = 20
+        ) {
+            settingsScreenModel.setRadarScanRate(it)
+        }
         PreferenceSwitch(
             title = "Pause on first item",
             summary = "Pause scanning when the first item is highlighted",
