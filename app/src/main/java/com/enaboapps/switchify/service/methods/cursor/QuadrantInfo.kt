@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.cursor
+package com.enaboapps.switchify.service.methods.cursor
 
 /**
  * This data class represents the quadrant information

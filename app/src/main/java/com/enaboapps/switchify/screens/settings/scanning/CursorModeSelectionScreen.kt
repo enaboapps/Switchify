@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import com.enaboapps.switchify.preferences.PreferenceManager
-import com.enaboapps.switchify.service.cursor.CursorMode
+import com.enaboapps.switchify.service.methods.cursor.CursorMode
 import com.enaboapps.switchify.widgets.NavBar
 
 @Composable

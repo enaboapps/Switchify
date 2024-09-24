@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.cursor
+package com.enaboapps.switchify.service.methods.cursor
 
 import android.content.Context
 import com.enaboapps.switchify.service.utils.ScreenUtils

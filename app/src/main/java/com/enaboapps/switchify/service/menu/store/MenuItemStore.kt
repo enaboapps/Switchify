@@ -12,8 +12,8 @@ import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.data.GestureType
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuManager
-import com.enaboapps.switchify.service.nodes.Node
-import com.enaboapps.switchify.service.nodes.NodeExaminer
+import com.enaboapps.switchify.service.methods.nodes.Node
+import com.enaboapps.switchify.service.methods.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.utils.ScreenUtils
 

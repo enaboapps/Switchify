@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.nodes
+package com.enaboapps.switchify.service.methods.nodes
 
 import android.content.BroadcastReceiver
 import android.content.Context

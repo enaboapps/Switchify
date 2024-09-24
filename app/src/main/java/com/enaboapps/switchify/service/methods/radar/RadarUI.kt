@@ -1,13 +1,15 @@
-package com.enaboapps.switchify.service.radar
+package com.enaboapps.switchify.service.methods.radar
 
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.RelativeLayout
+import com.enaboapps.switchify.service.methods.shared.ScanMethodUIConstants
 import com.enaboapps.switchify.service.scanning.ScanColorManager
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
@@ -23,8 +25,7 @@ class RadarUI(private val context: Context, private val handler: Handler) {
     private val window = SwitchifyAccessibilityWindow.instance
 
     companion object {
-        const val RADAR_LINE_THICKNESS = 5f
-        const val RADAR_CIRCLE_SIZE = 20
+        const val RADAR_CIRCLE_SIZE = 50
         private const val RADAR_ALPHA = 0.7f
     }
 
@@ -51,7 +52,7 @@ class RadarUI(private val context: Context, private val handler: Handler) {
 
     private fun createRadarLine() {
         radarLine = RadarLineView(context).apply {
-            val color = ScanColorManager.getScanColorSetFromPreferences(context).secondaryColor
+            val color = ScanColorManager.getScanColorSetFromPreferences(context).primaryColor
             setColor(Color.parseColor(color))
         }
         radarLineContainer = FrameLayout(context).apply {
@@ -65,10 +66,13 @@ class RadarUI(private val context: Context, private val handler: Handler) {
     }
 
     private fun createRadarCircle(x: Int, y: Int) {
+        val drawable = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(Color.parseColor(ScanColorManager.getScanColorSetFromPreferences(context).secondaryColor))
+            alpha = (RADAR_ALPHA * 255).toInt()
+        }
         radarCircle = RelativeLayout(context).apply {
-            val color = ScanColorManager.getScanColorSetFromPreferences(context).primaryColor
-            setBackgroundColor(Color.parseColor(color))
-            alpha = RADAR_ALPHA
+            background = drawable
         }
         updateRadarCircle(x, y)
     }
@@ -125,7 +129,7 @@ class RadarUI(private val context: Context, private val handler: Handler) {
 
     private inner class RadarLineView(context: Context) : View(context) {
         private val paint = Paint().apply {
-            strokeWidth = RADAR_LINE_THICKNESS
+            strokeWidth = ScanMethodUIConstants.LINE_THICKNESS.toFloat()
             style = Paint.Style.STROKE
         }
         private var currentAngle = 0f

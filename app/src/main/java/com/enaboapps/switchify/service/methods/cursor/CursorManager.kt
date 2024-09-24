@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.cursor
+package com.enaboapps.switchify.service.methods.cursor
 
 import android.content.Context
 import android.os.Handler
@@ -6,6 +6,7 @@ import android.os.Looper
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.GesturePointListener
+import com.enaboapps.switchify.service.methods.shared.ScanMethodUIConstants
 import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanStateInterface
@@ -167,7 +168,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         if (y < quadrantInfo?.start!!) {
             GesturePoint.y = quadrantInfo?.start!!
         } else if (y >= quadrantInfo?.end!!) {
-            GesturePoint.y = quadrantInfo?.end!! - CursorUI.CURSOR_LINE_THICKNESS
+            GesturePoint.y = quadrantInfo?.end!! - ScanMethodUIConstants.LINE_THICKNESS
         }
 
         cursorUI.updateYCursorLine(GesturePoint.y)
@@ -191,7 +192,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         if (x < quadrantInfo?.start!!) {
             GesturePoint.x = quadrantInfo?.start!!
         } else if (x >= quadrantInfo?.end!!) {
-            GesturePoint.x = quadrantInfo?.end!! - CursorUI.CURSOR_LINE_THICKNESS
+            GesturePoint.x = quadrantInfo?.end!! - ScanMethodUIConstants.LINE_THICKNESS
         }
 
         cursorUI.updateXCursorLine(GesturePoint.x)
@@ -384,7 +385,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         if (quadrantInfo != null) {
             when (direction) {
                 ScanDirection.LEFT ->
-                    if (GesturePoint.x > (quadrantInfo?.start!! + CursorUI.CURSOR_LINE_THICKNESS)) {
+                    if (GesturePoint.x > (quadrantInfo?.start!! + ScanMethodUIConstants.LINE_THICKNESS)) {
                         GesturePoint.x -= cursorLineMovement
                         updateXCursorLine()
                     } else {
@@ -393,7 +394,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
                     }
 
                 ScanDirection.RIGHT ->
-                    if (GesturePoint.x < (quadrantInfo?.end!! - CursorUI.CURSOR_LINE_THICKNESS)) {
+                    if (GesturePoint.x < (quadrantInfo?.end!! - ScanMethodUIConstants.LINE_THICKNESS)) {
                         GesturePoint.x += cursorLineMovement
                         updateXCursorLine()
                     } else {
@@ -402,7 +403,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
                     }
 
                 ScanDirection.UP ->
-                    if (GesturePoint.y > (quadrantInfo?.start!! + CursorUI.CURSOR_LINE_THICKNESS)) {
+                    if (GesturePoint.y > (quadrantInfo?.start!! + ScanMethodUIConstants.LINE_THICKNESS)) {
                         GesturePoint.y -= cursorLineMovement
                         updateYCursorLine()
                     } else {
@@ -411,7 +412,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
                     }
 
                 ScanDirection.DOWN ->
-                    if (GesturePoint.y < (quadrantInfo?.end!! - CursorUI.CURSOR_LINE_THICKNESS)) {
+                    if (GesturePoint.y < (quadrantInfo?.end!! - ScanMethodUIConstants.LINE_THICKNESS)) {
                         GesturePoint.y += cursorLineMovement
                         updateYCursorLine()
                     } else {

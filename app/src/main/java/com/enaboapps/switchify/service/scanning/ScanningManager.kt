@@ -8,12 +8,12 @@ import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_QUICK_SET
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_RECENTS
 import android.content.Context
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
-import com.enaboapps.switchify.service.cursor.CursorManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
-import com.enaboapps.switchify.service.nodes.NodeScanner
-import com.enaboapps.switchify.service.nodes.NodeScannerUI
-import com.enaboapps.switchify.service.radar.RadarManager
+import com.enaboapps.switchify.service.methods.cursor.CursorManager
+import com.enaboapps.switchify.service.methods.nodes.NodeScanner
+import com.enaboapps.switchify.service.methods.nodes.NodeScannerUI
+import com.enaboapps.switchify.service.methods.radar.RadarManager
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.switches.SwitchAction
 
