@@ -19,8 +19,8 @@ class RadarManager(private val context: Context) : ScanStateInterface {
     companion object {
         private const val TAG = "RadarManager"
         private const val FULL_CIRCLE = 360f
-        private const val ROTATION_STEP = 360f / 36  // 10 degrees per step
-        private const val MOVEMENT_STEP = 0.05f  // 5% of max distance per step
+        private const val ROTATION_STEP = 1f  // 1 degree per step
+        private const val MOVEMENT_STEP = 0.01f  // 1% of the max distance per step
     }
 
     enum class RadarStep {
@@ -133,7 +133,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
 
     private fun startAutoScanIfEnabled() {
         if (scanSettings.isAutoScanMode()) {
-            val rate = scanSettings.getScanRate()
+            val rate = scanSettings.getRadarScanRate()
             scanningScheduler?.startScanning(rate, rate)
         }
     }
@@ -235,7 +235,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
     }
 
     fun cleanup() {
-        radarUI.reset()
+        resetRadar()
         scanningScheduler?.shutdown()
         scanningScheduler = null
     }

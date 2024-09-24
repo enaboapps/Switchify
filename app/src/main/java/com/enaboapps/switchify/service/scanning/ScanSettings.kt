@@ -43,6 +43,14 @@ class ScanSettings(context: Context) {
     }
 
     /**
+     * Get the radar scan rate
+     * @return The radar scan rate
+     */
+    fun getRadarScanRate(): Long {
+        return preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_RADAR_SCAN_RATE)
+    }
+
+    /**
      * Check if the pause on first item is enabled
      * @return true if the pause on first item is enabled, false otherwise
      */

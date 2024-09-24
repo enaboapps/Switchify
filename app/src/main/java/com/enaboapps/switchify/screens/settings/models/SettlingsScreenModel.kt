@@ -23,6 +23,12 @@ class SettingsScreenModel(context: Context) : ViewModel() {
     }
     val refineScanRate: LiveData<Long> = _refineScanRate
 
+    private val _radarScanRate = MutableLiveData<Long>().apply {
+        value =
+            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_RADAR_SCAN_RATE)
+    }
+    val radarScanRate: LiveData<Long> = _radarScanRate
+
     private val _pauseOnFirstItem = MutableLiveData<Boolean>().apply {
         value =
             preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_ON_FIRST_ITEM)
@@ -95,6 +101,15 @@ class SettingsScreenModel(context: Context) : ViewModel() {
             preferenceManager.setBooleanValue(
                 PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD,
                 true
+            )
+        }
+    }
+
+    fun setRadarScanRate(rate: Long) {
+        viewModelScope.launch {
+            preferenceManager.setLongValue(
+                PreferenceManager.Keys.PREFERENCE_KEY_RADAR_SCAN_RATE,
+                rate
             )
         }
     }
