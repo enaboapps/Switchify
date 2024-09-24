@@ -27,7 +27,7 @@ import com.enaboapps.switchify.switches.SwitchAction
 class ScanningManager(
     private val accessibilityService: SwitchifyAccessibilityService,
     val context: Context
-) : ScanMethodObserver {
+) {
 
     // cursor manager
     private val cursorManager = CursorManager(context)
@@ -50,8 +50,6 @@ class ScanningManager(
         nodeScanner.registerEventReceivers(context)
 
         MenuManager.getInstance().setup(this, accessibilityService)
-
-        ScanMethod.observer = this
     }
 
     /**
@@ -129,6 +127,8 @@ class ScanningManager(
      * @param action the action to be performed.
      */
     fun performAction(action: SwitchAction) {
+        cleanupInactiveScanningMethods()
+
         // If the gesture lock is enabled, perform the gesture lock action
         if (GestureManager.getInstance().performGestureLockAction()) {
             return
@@ -330,23 +330,27 @@ class ScanningManager(
     }
 
     /**
-     * This function is called when the scanning method is changed.
-     * It cleans up the previous scanning method and sets up the new one.
-     *
-     * @param scanMethod the new scanning method.
+     * This function cleans up the inactive scanning methods.
+     * It checks the current scanning method type and cleans up the other scanning methods.
      */
-    override fun onScanMethodChanged(scanMethod: String) {
-        when (scanMethod) {
+    private fun cleanupInactiveScanningMethods() {
+        when (ScanMethod.getType()) {
             ScanMethod.MethodType.CURSOR -> {
+                // Clean up the radar and item scan
+                radarManager.cleanup()
                 nodeScanner.cleanup()
             }
 
             ScanMethod.MethodType.RADAR -> {
-                radarManager.cleanup()
+                // Clean up the cursor and item scan
+                cursorManager.cleanup()
+                nodeScanner.cleanup()
             }
 
             ScanMethod.MethodType.ITEM_SCAN -> {
+                // Clean up the cursor and radar
                 cursorManager.cleanup()
+                radarManager.cleanup()
             }
         }
     }
@@ -361,8 +365,9 @@ class ScanningManager(
         pauseScanning()
 
         // Clean up resources
-        cursorManager.externalReset()
+        cursorManager.cleanup()
         nodeScanner.cleanup()
+        radarManager.cleanup()
 
         // Close the menu
         MenuManager.getInstance().closeMenuHierarchy()
