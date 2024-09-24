@@ -43,7 +43,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
     private val uiHandler = Handler(Looper.getMainLooper())
     private val radarUI = RadarUI(context, uiHandler)
 
-    private var currentAngle = 0f
+    private var currentAngle = -90f  // Start at 12 o'clock (-90 degrees)
     private var currentDistanceRatio = 0f
     private var scanningScheduler: ScanningScheduler? = null
 
@@ -226,7 +226,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
 
     fun resetRadar() {
         currentStep = RadarStep.IDLE
-        currentAngle = 0f
+        currentAngle = -90f
         currentDistanceRatio = 0f
         rotationDirection = RotationDirection.CLOCKWISE
         circleMovement = CircleMovement.OUTWARD
