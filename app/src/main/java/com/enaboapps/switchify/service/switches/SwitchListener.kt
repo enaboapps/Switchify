@@ -44,8 +44,11 @@ class SwitchListener(
 
             latestAction = AbsorbedSwitchAction(it, System.currentTimeMillis())
 
+            val pauseEnabled =
+                preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)
+
             // Handle immediate press action or start hold timer for long press
-            if (it.holdActions.isEmpty()) {
+            if (it.holdActions.isEmpty() && !pauseEnabled) {
                 // Check selection handling
                 if (AutoSelectionHandler.isAutoSelectInProgress()) {
                     AutoSelectionHandler.performSelectionAction() // Interrupt auto-select process
@@ -55,7 +58,7 @@ class SwitchListener(
             } else {
                 SwitchLongPressHandler.startLongPress(context, it.holdActions)
                 // Pause scanning if the setting is enabled
-                if (preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)) {
+                if (pauseEnabled) {
                     scanningManager.pauseScanning()
                 }
             }
@@ -84,15 +87,23 @@ class SwitchListener(
                 val switchHoldTime =
                     preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
 
+                val pauseEnabled =
+                    preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)
+
                 // Check selection handling
-                if (AutoSelectionHandler.isAutoSelectInProgress()) {
+                if (AutoSelectionHandler.isAutoSelectInProgress() && (event.holdActions.isNotEmpty() || pauseEnabled)) {
                     AutoSelectionHandler.performSelectionAction() // Interrupt auto-select process
                     return true // Absorb the event, but don't perform any action
                 }
 
                 // Resume scanning if the setting is enabled
-                if (preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)) {
+                if (pauseEnabled) {
                     scanningManager.resumeScanning()
+                }
+
+                // Perform press action if no hold actions are defined and pause on switch hold is enabled
+                if (event.holdActions.isEmpty() && pauseEnabled) {
+                    scanningManager.performAction(event.pressAction)
                 }
 
                 if (event.holdActions.isNotEmpty()) {
