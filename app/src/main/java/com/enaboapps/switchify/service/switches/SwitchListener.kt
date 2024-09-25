@@ -37,6 +37,7 @@ class SwitchListener(
         val switchEvent = switchEventStore.find(keyCode.toString())
         Log.d("SwitchListener", "onSwitchPressed: $keyCode")
         return switchEvent?.let {
+            it.log()
             if (shouldIgnoreSwitchRepeat(keyCode)) {
                 return true // Absorb the event, but don't perform any action
             }
