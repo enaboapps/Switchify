@@ -105,4 +105,13 @@ class ScanSettings(context: Context) {
     fun isGroupScanEnabled(): Boolean {
         return preferenceManager.getBooleanValue(PreferenceManager.Keys.PREFERENCE_KEY_GROUP_SCAN)
     }
+
+    /**
+     * Check if the pause scan on switch hold is required
+     * @return true if the rates are under the threshold, false otherwise
+     */
+    fun isPauseScanOnSwitchHoldRequired(): Boolean {
+        val threshold = 400L
+        return getScanRate() < threshold && getRefineScanRate() < threshold
+    }
 }

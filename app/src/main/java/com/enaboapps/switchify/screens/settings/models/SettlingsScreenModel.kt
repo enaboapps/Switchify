@@ -6,10 +6,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.scanning.ScanSettings
 import kotlinx.coroutines.launch
 
 class SettingsScreenModel(context: Context) : ViewModel() {
     private val preferenceManager = PreferenceManager(context)
+    private val scanSettings = ScanSettings(context)
 
     // Initialize MutableLiveData with initial values from PreferenceManager
     private val _scanRate = MutableLiveData<Long>().apply {
@@ -70,17 +72,13 @@ class SettingsScreenModel(context: Context) : ViewModel() {
     val groupScan: LiveData<Boolean> = _groupScan
 
 
-    private val pauseScanOnSwitchHoldThreshold: Long = 400
-
-
     // Update methods now update MutableLiveData which in turn updates the UI
     fun setScanRate(rate: Long) {
         viewModelScope.launch {
             preferenceManager.setLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE, rate)
             _scanRate.postValue(rate)
         }
-        // If rate < pauseScanOnSwitchHoldThreshold, set pauseScanOnSwitchHold to true
-        if (rate < pauseScanOnSwitchHoldThreshold) {
+        if (scanSettings.isPauseScanOnSwitchHoldRequired()) {
             preferenceManager.setBooleanValue(
                 PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD,
                 true
@@ -96,8 +94,7 @@ class SettingsScreenModel(context: Context) : ViewModel() {
             )
             _refineScanRate.postValue(rate)
         }
-        // If rate < pauseScanOnSwitchHoldThreshold, set pauseScanOnSwitchHold to true
-        if (rate < pauseScanOnSwitchHoldThreshold) {
+        if (scanSettings.isPauseScanOnSwitchHoldRequired()) {
             preferenceManager.setBooleanValue(
                 PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD,
                 true
