@@ -207,6 +207,11 @@ class ScanningManager(
                         cursorManager.moveToNextItem()
                     }
 
+                    ScanMethod.MethodType.RADAR -> {
+                        // Move the radar to the next step
+                        radarManager.manualNextStep()
+                    }
+
                     ScanMethod.MethodType.ITEM_SCAN -> {
                         // Move to the next item
                         nodeScanner.scanTree.stepForward()
@@ -225,6 +230,11 @@ class ScanningManager(
                     ScanMethod.MethodType.CURSOR -> {
                         // Move the cursor to the previous item
                         cursorManager.moveToPreviousItem()
+                    }
+
+                    ScanMethod.MethodType.RADAR -> {
+                        // Move the radar to the previous step
+                        radarManager.manualPreviousStep()
                     }
 
                     ScanMethod.MethodType.ITEM_SCAN -> {
