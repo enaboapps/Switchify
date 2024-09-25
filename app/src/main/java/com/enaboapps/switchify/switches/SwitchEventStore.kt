@@ -2,6 +2,7 @@ package com.enaboapps.switchify.switches
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.scanning.ScanMode
 import java.io.File
@@ -70,17 +71,31 @@ class SwitchEventStore(private val context: Context) {
         if (file.exists()) {
             try {
                 file.readLines().forEach { line ->
-                    try {
-                        SwitchEvent.fromString(line).let { switchEvents.add(it) }
-                    } catch (e: Exception) {
-                        Log.e("SwitchEventStore", "Error parsing line: $line", e)
+                    if (line.isNotBlank()) {
+                        switchEvents.add(SwitchEvent.fromString(line))
                     }
                 }
             } catch (e: Exception) {
                 Log.e("SwitchEventStore", "Error reading from file", e)
+
+                // If there is an error reading the file, delete it
+                deleteFile()
+
+                Toast.makeText(
+                    context,
+                    "Error reading from file. Please reconfigure your switches.",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         } else {
             Log.d("SwitchEventStore", "File does not exist")
+        }
+    }
+
+    private fun deleteFile() {
+        val file = File(context.applicationContext.filesDir, fileName)
+        if (file.exists()) {
+            file.delete()
         }
     }
 

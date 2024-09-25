@@ -11,6 +11,10 @@ data class SwitchEvent(
         return "$name, $code, ${pressAction.id}, $holdActionsString"
     }
 
+    fun log() {
+        println("SwitchEvent: $name, $code, ${pressAction.id}, ${holdActions.joinToString(separator = ";") { it.id.toString() }}")
+    }
+
     override fun equals(other: Any?): Boolean {
         if (other is SwitchEvent) {
             return code == other.code
@@ -37,7 +41,11 @@ data class SwitchEvent(
             val code = parts[1]
             val pressAction = SwitchAction(parts[2].toInt())
             val holdActionsString = parts[3]
-            val holdActions = holdActionsString.split(";").map { SwitchAction(it.toInt()) }
+            val holdActions = if (holdActionsString.isNotEmpty()) {
+                holdActionsString.split(";").map { SwitchAction(it.toInt()) }
+            } else {
+                emptyList()
+            }
             return SwitchEvent(
                 name = name,
                 code = code,
