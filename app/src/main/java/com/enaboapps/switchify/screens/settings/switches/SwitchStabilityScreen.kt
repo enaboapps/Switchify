@@ -23,6 +23,7 @@ fun SwitchStabilityScreen(navController: NavController) {
     val verticalScrollState = rememberScrollState()
     val context = LocalContext.current
     val switchStabilityScreenModel = SwitchStabilityScreenModel(context)
+    val pausedScanOnSwitchHold = switchStabilityScreenModel.pauseScanOnSwitchHold.observeAsState()
     val ignoredRepeat = switchStabilityScreenModel.switchIgnoreRepeat.observeAsState()
     Scaffold(
         topBar = {
@@ -41,7 +42,7 @@ fun SwitchStabilityScreen(navController: NavController) {
                 PreferenceSwitch(
                     title = "Pause scan on switch hold",
                     summary = "Pause scanning when a switch is held",
-                    checked = ignoredRepeat.value ?: false
+                    checked = pausedScanOnSwitchHold.value ?: false
                 ) {
                     switchStabilityScreenModel.setPauseScanOnSwitchHold(it)
                 }

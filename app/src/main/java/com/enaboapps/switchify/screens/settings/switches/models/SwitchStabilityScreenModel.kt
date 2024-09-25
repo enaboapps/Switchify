@@ -5,9 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.scanning.ScanSettings
 
 class SwitchStabilityScreenModel(context: Context) : ViewModel() {
     private val preferenceManager = PreferenceManager(context)
+    private val scanSettings = ScanSettings(context)
 
     private val _pauseScanOnSwitchHold = MutableLiveData<Boolean>().apply {
         value =
@@ -68,15 +70,9 @@ class SwitchStabilityScreenModel(context: Context) : ViewModel() {
 
     /**
      * Determines if the "Pause scan on switch hold" setting should be shown
-     * Checks if the scan rate or refine scan rate is greater than a threshold
      * @return true if the setting should be shown, false otherwise
      */
     fun shouldShowPauseScanOnSwitchHold(): Boolean {
-        val scanRate =
-            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
-        val refineScanRate =
-            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
-        val threshold = 400
-        return scanRate > threshold || refineScanRate > threshold
+        return !scanSettings.isPauseScanOnSwitchHoldRequired()
     }
 }
