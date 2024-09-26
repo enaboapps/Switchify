@@ -15,7 +15,8 @@ import java.util.concurrent.atomic.AtomicReference
 
 /**
  * ScanningScheduler is a class that manages the scheduling of scanning tasks.
- * It uses coroutines to run the scanning tasks asynchronously.
+ * It uses coroutines to run the scanning tasks asynchronously and provides methods
+ * to start, stop, pause, and resume scanning operations.
  *
  * @property context The application context.
  * @property onScan A suspend function that gets executed during each scan.
@@ -75,26 +76,20 @@ class ScanningScheduler(
         initialDelay: Long = scanSettings.getScanRate(),
         period: Long = scanSettings.getScanRate()
     ) {
-        // If the scanner is already scanning, print a message and return
         if (scanState.get() == ScanState.SCANNING) {
             println("[$uniqueId] Already scanning")
             return
         }
 
-        // Set the scanner state to SCANNING
         scanState.set(ScanState.SCANNING)
 
-        // Calculate the initial delay plus the pause on the first item
         val initialDelayPlusPause = initialDelay + scanSettings.getPauseOnFirstItemDelay()
 
-        // Set the initial delay and period
         this.initialDelay = initialDelay
         this.period = period
 
-        // Cancel any previous scanning job
         scanningJob?.cancel()
 
-        // Start a new scanning job
         scanningJob = coroutineScope.launch {
             println("[$uniqueId] Starting scanning job")
             delay(initialDelayPlusPause)
@@ -103,7 +98,8 @@ class ScanningScheduler(
                     try {
                         onScan()
                     } catch (e: Exception) {
-                        println("Error during scan: ${e.message}")
+                        println("[$uniqueId] Error during scan: ${e.message}")
+                        e.printStackTrace()
                     } finally {
                         isExecuting.set(false)
                     }
@@ -138,10 +134,15 @@ class ScanningScheduler(
      * Stops the scanning tasks.
      */
     fun stopScanning() {
-        println("Attempting to stop scanning... $scanState")
-        if (scanState.get() == ScanState.SCANNING) {
-            scanState.set(ScanState.STOPPED)
-            scanningJob?.cancel()
+        println("[$uniqueId] Attempting to stop scanning... $scanState")
+        try {
+            if (scanState.get() == ScanState.SCANNING) {
+                scanState.set(ScanState.STOPPED)
+                scanningJob?.cancel()
+            }
+        } catch (e: Exception) {
+            println("[$uniqueId] Error while stopping scanning: ${e.message}")
+            e.printStackTrace()
         }
     }
 
@@ -149,9 +150,14 @@ class ScanningScheduler(
      * Pauses the scanning tasks.
      */
     fun pauseScanning() {
-        println("Attempting to pause scanning... $scanState")
-        if (scanState.compareAndSet(ScanState.SCANNING, ScanState.PAUSED)) {
-            scanningJob?.cancel()
+        println("[$uniqueId] Attempting to pause scanning... $scanState")
+        try {
+            if (scanState.compareAndSet(ScanState.SCANNING, ScanState.PAUSED)) {
+                scanningJob?.cancel()
+            }
+        } catch (e: Exception) {
+            println("[$uniqueId] Error while pausing scanning: ${e.message}")
+            e.printStackTrace()
         }
     }
 
@@ -159,9 +165,14 @@ class ScanningScheduler(
      * Resumes the scanning tasks.
      */
     fun resumeScanning() {
-        println("Attempting to resume scanning... $scanState")
-        if (scanState.get() == ScanState.PAUSED) {
-            startScanning(initialDelay, period)
+        println("[$uniqueId] Attempting to resume scanning... $scanState")
+        try {
+            if (scanState.get() == ScanState.PAUSED) {
+                startScanning(initialDelay, period)
+            }
+        } catch (e: Exception) {
+            println("[$uniqueId] Error while resuming scanning: ${e.message}")
+            e.printStackTrace()
         }
     }
 
@@ -170,6 +181,11 @@ class ScanningScheduler(
      */
     fun shutdown() {
         println("[$uniqueId] Shutting down scope")
-        coroutineScope.cancel() // Cancel all coroutines started by this scope
+        try {
+            coroutineScope.cancel() // Cancel all coroutines started by this scope
+        } catch (e: Exception) {
+            println("[$uniqueId] Error while shutting down: ${e.message}")
+            e.printStackTrace()
+        }
     }
 }
