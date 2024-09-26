@@ -122,9 +122,9 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
             value = settingsScreenModel.radarScanRate.value ?: 0,
             title = "Radar scan rate",
             summary = "The interval at which the radar will move",
-            min = 20,
+            min = 10,
             max = 100000,
-            step = 20
+            step = 10
         ) {
             settingsScreenModel.setRadarScanRate(it)
         }
