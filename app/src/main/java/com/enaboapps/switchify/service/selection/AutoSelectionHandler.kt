@@ -2,6 +2,7 @@ package com.enaboapps.switchify.service.selection
 
 import android.content.Context
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.visuals.AutoTapVisual
 import com.enaboapps.switchify.service.menu.MenuManager
@@ -56,6 +57,12 @@ object AutoSelectionHandler {
      * Performs the selection action based on the current settings and state.
      */
     fun performSelectionAction() {
+        // Check if a linear gesture is in progress
+        if (GestureManager.getInstance().isPerformingLinearGesture()) {
+            GestureManager.getInstance().endLinearGesture()
+            return
+        }
+
         MenuManager.getInstance().scanMethodToRevertTo = ScanMethod.getType()
 
         // If bypass auto-select is enabled, perform the selection action and return
