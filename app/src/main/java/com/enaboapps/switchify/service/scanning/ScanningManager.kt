@@ -8,11 +8,12 @@ import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_QUICK_SET
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_RECENTS
 import android.content.Context
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
-import com.enaboapps.switchify.service.cursor.CursorManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
-import com.enaboapps.switchify.service.nodes.NodeScanner
-import com.enaboapps.switchify.service.nodes.NodeScannerUI
+import com.enaboapps.switchify.service.methods.cursor.CursorManager
+import com.enaboapps.switchify.service.methods.nodes.NodeScanner
+import com.enaboapps.switchify.service.methods.nodes.NodeScannerUI
+import com.enaboapps.switchify.service.methods.radar.RadarManager
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.switches.SwitchAction
 
@@ -26,10 +27,13 @@ import com.enaboapps.switchify.switches.SwitchAction
 class ScanningManager(
     private val accessibilityService: SwitchifyAccessibilityService,
     val context: Context
-) : ScanMethodObserver {
+) {
 
     // cursor manager
     private val cursorManager = CursorManager(context)
+
+    // radar manager
+    private val radarManager = RadarManager(context)
 
     // node scanner
     private val nodeScanner = NodeScanner()
@@ -46,8 +50,6 @@ class ScanningManager(
         nodeScanner.registerEventReceivers(context)
 
         MenuManager.getInstance().setup(this, accessibilityService)
-
-        ScanMethod.observer = this
     }
 
     /**
@@ -55,6 +57,16 @@ class ScanningManager(
      */
     fun setCursorType() {
         ScanMethod.setType(ScanMethod.MethodType.CURSOR)
+        ScanMethod.isInMenu = false
+
+        NodeScannerUI.instance.hideAll()
+    }
+
+    /**
+     * This function explicitly sets the type of the scanning manager to radar.
+     */
+    fun setRadarType() {
+        ScanMethod.setType(ScanMethod.MethodType.RADAR)
         ScanMethod.isInMenu = false
 
         NodeScannerUI.instance.hideAll()
@@ -96,6 +108,11 @@ class ScanningManager(
                 cursorManager.performSelectionAction()
             }
 
+            ScanMethod.MethodType.RADAR -> {
+                // Perform the radar action
+                radarManager.performSelectionAction()
+            }
+
             ScanMethod.MethodType.ITEM_SCAN -> {
                 // Perform the item scan action
                 nodeScanner.scanTree.performSelection()
@@ -110,6 +127,8 @@ class ScanningManager(
      * @param action the action to be performed.
      */
     fun performAction(action: SwitchAction) {
+        cleanupInactiveScanningMethods()
+
         // If the gesture lock is enabled, perform the gesture lock action
         if (GestureManager.getInstance().performGestureLockAction()) {
             return
@@ -138,6 +157,11 @@ class ScanningManager(
                         cursorManager.externalReset()
                     }
 
+                    ScanMethod.MethodType.RADAR -> {
+                        // reset the radar
+                        radarManager.resetRadar()
+                    }
+
                     ScanMethod.MethodType.ITEM_SCAN -> {
                         // Stop item scanning
                         nodeScanner.scanTree.stopScanning()
@@ -156,6 +180,11 @@ class ScanningManager(
                     ScanMethod.MethodType.CURSOR -> {
                         // Change the cursor direction
                         cursorManager.swapDirection()
+                    }
+
+                    ScanMethod.MethodType.RADAR -> {
+                        // Change the radar direction
+                        radarManager.toggleDirection()
                     }
 
                     ScanMethod.MethodType.ITEM_SCAN -> {
@@ -178,6 +207,11 @@ class ScanningManager(
                         cursorManager.moveToNextItem()
                     }
 
+                    ScanMethod.MethodType.RADAR -> {
+                        // Move the radar to the next step
+                        radarManager.manualNextStep()
+                    }
+
                     ScanMethod.MethodType.ITEM_SCAN -> {
                         // Move to the next item
                         nodeScanner.scanTree.stepForward()
@@ -196,6 +230,11 @@ class ScanningManager(
                     ScanMethod.MethodType.CURSOR -> {
                         // Move the cursor to the previous item
                         cursorManager.moveToPreviousItem()
+                    }
+
+                    ScanMethod.MethodType.RADAR -> {
+                        // Move the radar to the previous step
+                        radarManager.manualPreviousStep()
                     }
 
                     ScanMethod.MethodType.ITEM_SCAN -> {
@@ -259,6 +298,11 @@ class ScanningManager(
                 cursorManager.pauseScanning()
             }
 
+            ScanMethod.MethodType.RADAR -> {
+                // Pause the radar
+                radarManager.pauseScanning()
+            }
+
             ScanMethod.MethodType.ITEM_SCAN -> {
                 // Pause the item scan
                 nodeScanner.scanTree.pauseScanning()
@@ -283,6 +327,11 @@ class ScanningManager(
                 cursorManager.resumeScanning()
             }
 
+            ScanMethod.MethodType.RADAR -> {
+                // Resume the radar
+                radarManager.resumeScanning()
+            }
+
             ScanMethod.MethodType.ITEM_SCAN -> {
                 // Resume the item scan
                 nodeScanner.scanTree.resumeScanning()
@@ -291,19 +340,27 @@ class ScanningManager(
     }
 
     /**
-     * This function is called when the scanning method is changed.
-     * It cleans up the previous scanning method and sets up the new one.
-     *
-     * @param scanMethod the new scanning method.
+     * This function cleans up the inactive scanning methods.
+     * It checks the current scanning method type and cleans up the other scanning methods.
      */
-    override fun onScanMethodChanged(scanMethod: String) {
-        when (scanMethod) {
+    private fun cleanupInactiveScanningMethods() {
+        when (ScanMethod.getType()) {
             ScanMethod.MethodType.CURSOR -> {
+                // Clean up the radar and item scan
+                radarManager.cleanup()
+                nodeScanner.cleanup()
+            }
+
+            ScanMethod.MethodType.RADAR -> {
+                // Clean up the cursor and item scan
+                cursorManager.cleanup()
                 nodeScanner.cleanup()
             }
 
             ScanMethod.MethodType.ITEM_SCAN -> {
+                // Clean up the cursor and radar
                 cursorManager.cleanup()
+                radarManager.cleanup()
             }
         }
     }
@@ -318,8 +375,9 @@ class ScanningManager(
         pauseScanning()
 
         // Clean up resources
-        cursorManager.externalReset()
+        cursorManager.cleanup()
         nodeScanner.cleanup()
+        radarManager.cleanup()
 
         // Close the menu
         MenuManager.getInstance().closeMenuHierarchy()

@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.nodes
+package com.enaboapps.switchify.service.methods.nodes
 
 import android.widget.RelativeLayout
 import com.enaboapps.switchify.service.scanning.ScanColorManager

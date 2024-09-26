@@ -1,9 +1,10 @@
-package com.enaboapps.switchify.service.cursor
+package com.enaboapps.switchify.service.methods.cursor
 
 import android.content.Context
 import android.graphics.Color
 import android.os.Handler
 import android.widget.RelativeLayout
+import com.enaboapps.switchify.service.methods.shared.ScanMethodUIConstants
 import com.enaboapps.switchify.service.scanning.ScanColorManager
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
@@ -17,7 +18,6 @@ class CursorUI(private val context: Context, private val handler: Handler) {
 
     // Constants for cursor and quadrant appearance
     companion object {
-        const val CURSOR_LINE_THICKNESS = 10
         private const val QUADRANT_ALPHA = 0.5f
 
         /**
@@ -69,7 +69,13 @@ class CursorUI(private val context: Context, private val handler: Handler) {
         }
         handler.post {
             xCursorLine?.let {
-                window.addView(it, xPosition, yPosition, CURSOR_LINE_THICKNESS, height)
+                window.addView(
+                    it,
+                    xPosition,
+                    yPosition,
+                    ScanMethodUIConstants.LINE_THICKNESS,
+                    height
+                )
             }
         }
     }
@@ -87,7 +93,13 @@ class CursorUI(private val context: Context, private val handler: Handler) {
         }
         handler.post {
             yCursorLine?.let {
-                window.addView(it, xPosition, yPosition, width, CURSOR_LINE_THICKNESS)
+                window.addView(
+                    it,
+                    xPosition,
+                    yPosition,
+                    width,
+                    ScanMethodUIConstants.LINE_THICKNESS
+                )
             }
         }
     }

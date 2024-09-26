@@ -43,6 +43,14 @@ class ScanSettings(context: Context) {
     }
 
     /**
+     * Get the radar scan rate
+     * @return The radar scan rate
+     */
+    fun getRadarScanRate(): Long {
+        return preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_RADAR_SCAN_RATE)
+    }
+
+    /**
      * Check if the pause on first item is enabled
      * @return true if the pause on first item is enabled, false otherwise
      */
@@ -100,10 +108,13 @@ class ScanSettings(context: Context) {
 
     /**
      * Check if the pause scan on switch hold is required
-     * @return true if the rates are under the threshold, false otherwise
+     * @return true if the rates are <= 0.4 seconds, false otherwise
      */
     fun isPauseScanOnSwitchHoldRequired(): Boolean {
-        val threshold = 400L
-        return getScanRate() < threshold && getRefineScanRate() < threshold
+        // 0.4 seconds is the threshold for pausing scan on switch hold
+        val threshold = 400L // in milliseconds
+        val result = getScanRate() <= threshold && getRefineScanRate() <= threshold
+        println("isPauseScanOnSwitchHoldRequired: $result")
+        return result
     }
 }

@@ -21,7 +21,11 @@ import com.enaboapps.switchify.widgets.NavBar
 
 @Composable
 fun ScanMethodSelectionScreen(navController: NavController) {
-    val methods = listOf(ScanMethod.MethodType.CURSOR, ScanMethod.MethodType.ITEM_SCAN)
+    val methods = listOf(
+        ScanMethod.MethodType.CURSOR,
+        ScanMethod.MethodType.RADAR,
+        ScanMethod.MethodType.ITEM_SCAN
+    )
     val preferenceManager = PreferenceManager(LocalContext.current)
     val currentMethod = MutableLiveData<String>()
     currentMethod.value =

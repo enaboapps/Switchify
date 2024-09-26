@@ -12,8 +12,8 @@ import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.data.GestureType
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuManager
-import com.enaboapps.switchify.service.nodes.Node
-import com.enaboapps.switchify.service.nodes.NodeExaminer
+import com.enaboapps.switchify.service.methods.nodes.Node
+import com.enaboapps.switchify.service.methods.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.utils.ScreenUtils
 
@@ -99,7 +99,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 isLinkToMenu = true,
                 action = { MenuManager.getInstance().openScrollMenu() }
             ),
-            if (ScanMethod.getType() != ScanMethod.MethodType.ITEM_SCAN) {
+            if (ScanMethod.getType() != ScanMethod.MethodType.ITEM_SCAN && ScanMethod.getType() != ScanMethod.MethodType.RADAR) {
                 MenuItem(
                     id = "refine_selection",
                     text = "Refine Selection",
@@ -126,11 +126,33 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                     action = { MenuManager.getInstance().openEditMenu() }
                 )
             } else null,
-            MenuItem(
-                id = "switch_cursor_item_scan",
-                text = MenuManager.getInstance().getTypeToSwitchTo(),
-                action = { MenuManager.getInstance().changeBetweenCursorAndItemScan() }
-            )
+            if (ScanMethod.getType() != ScanMethod.MethodType.ITEM_SCAN) {
+                MenuItem(
+                    id = "switch_to_item_scan",
+                    text = ScanMethod.getName(ScanMethod.MethodType.ITEM_SCAN),
+                    action = {
+                        MenuManager.getInstance().switchToItemScan()
+                    }
+                )
+            } else null,
+            if (ScanMethod.getType() != ScanMethod.MethodType.RADAR) {
+                MenuItem(
+                    id = "switch_to_radar",
+                    text = ScanMethod.getName(ScanMethod.MethodType.RADAR),
+                    action = {
+                        MenuManager.getInstance().switchToRadar()
+                    }
+                )
+            } else null,
+            if (ScanMethod.getType() != ScanMethod.MethodType.CURSOR) {
+                MenuItem(
+                    id = "switch_to_cursor",
+                    text = ScanMethod.getName(ScanMethod.MethodType.CURSOR),
+                    action = {
+                        MenuManager.getInstance().switchToCursor()
+                    }
+                )
+            } else null
         )
     )
 

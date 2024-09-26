@@ -1,6 +1,6 @@
 package com.enaboapps.switchify.service.scanning.tree
 
-import com.enaboapps.switchify.service.nodes.NodeScannerUI
+import com.enaboapps.switchify.service.methods.nodes.NodeScannerUI
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 
 /**

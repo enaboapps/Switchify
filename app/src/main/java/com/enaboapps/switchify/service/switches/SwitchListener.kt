@@ -3,124 +3,187 @@ package com.enaboapps.switchify.service.switches
 import android.content.Context
 import android.util.Log
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
 
-// SwitchListener class to handle switch events
+/**
+ * Class to handle switch events.
+ *
+ * @property context Context of the application.
+ * @property scanningManager Manager to handle scanning actions.
+ */
 class SwitchListener(
     private val context: Context,
     private val scanningManager: ScanningManager
 ) {
 
-    // PreferenceManager to access user preferences
     private val preferenceManager = PreferenceManager(context)
-
-    // Store for switch events
     private val switchEventStore = SwitchEventStore(context)
-
-    // Variable to track the latest absorbed switch action
     private var latestAction: AbsorbedSwitchAction? = null
-
-    // Variables for ignoring switch repeat
     private var lastSwitchPressedTime: Long = 0
     private var lastSwitchPressedCode: Int = 0
 
+    /**
+     * Checks if the pause on switch hold feature is enabled.
+     * If the pause on switch hold feature is enabled, it returns true.
+     * If the pause on switch hold feature is not enabled, it returns true if the scan settings require it.
+     *
+     * @return True if pause on switch hold is enabled, false otherwise.
+     */
+    private fun isPauseEnabled(): Boolean {
+        return preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD) ||
+                ScanSettings(context).isPauseScanOnSwitchHoldRequired()
+    }
 
     /**
-     * Called when a switch is pressed
-     * @param keyCode the key code of the switch event
-     * @return true if the event should be absorbed, false otherwise
+     * Called when a switch is pressed.
+     *
+     * @param keyCode The key code of the switch event.
+     * @return True if the event should be absorbed, false otherwise.
      */
     fun onSwitchPressed(keyCode: Int): Boolean {
-        val switchEvent = switchEventStore.find(keyCode.toString())
-        Log.d("SwitchListener", "onSwitchPressed: $keyCode")
-        return switchEvent?.let {
-            it.log()
-            if (shouldIgnoreSwitchRepeat(keyCode)) {
-                return true // Absorb the event, but don't perform any action
-            }
+        val switchEvent = findSwitchEvent(keyCode) ?: return false
+        switchEvent.log()
+        if (handleSwitchPressedRepeat(keyCode)) return true
 
-            latestAction = AbsorbedSwitchAction(it, System.currentTimeMillis())
-
-            val pauseEnabled =
-                preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)
-
-            // Handle immediate press action or start hold timer for long press
-            if (it.holdActions.isEmpty() && !pauseEnabled) {
-                // Check selection handling
-                if (AutoSelectionHandler.isAutoSelectInProgress()) {
-                    AutoSelectionHandler.performSelectionAction() // Interrupt auto-select process
-                    return true // Absorb the event, but don't perform any action
-                }
-                scanningManager.performAction(it.pressAction)
-            } else {
-                SwitchLongPressHandler.startLongPress(context, it.holdActions)
-                // Pause scanning if the setting is enabled
-                if (pauseEnabled) {
-                    scanningManager.pauseScanning()
-                }
-            }
-            true
-        } ?: false
+        return processSwitchPressedActions(switchEvent)
     }
 
     /**
-     * Called when a switch is released
-     * @param keyCode the key code of the switch event
-     * @return true if the event should be absorbed, false otherwise
+     * Called when a switch is released.
+     *
+     * @param keyCode The key code of the switch event.
+     * @return True if the event should be absorbed, false otherwise.
      */
     fun onSwitchReleased(keyCode: Int): Boolean {
-        val switchEvent = switchEventStore.find(keyCode.toString())
-        Log.d("SwitchListener", "onSwitchReleased: $keyCode")
-        return switchEvent?.let { event ->
-            latestAction?.takeIf { it.switchEvent == event }?.let {
-                SwitchLongPressHandler.stopLongPress(scanningManager)
+        val switchEvent = findSwitchEvent(keyCode) ?: return false
+        val absorbedAction = latestAction?.takeIf { it.switchEvent == switchEvent } ?: return true
 
-                // Check ignore repeat setting
-                if (shouldIgnoreSwitchRepeat(keyCode)) {
-                    return true // Absorb the event, but don't perform any action
-                }
-
-                val timeElapsed = System.currentTimeMillis() - it.time
-                val switchHoldTime =
-                    preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
-
-                val pauseEnabled =
-                    preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)
-
-                // Check selection handling
-                if (AutoSelectionHandler.isAutoSelectInProgress() && (event.holdActions.isNotEmpty() || pauseEnabled)) {
-                    AutoSelectionHandler.performSelectionAction() // Interrupt auto-select process
-                    return true // Absorb the event, but don't perform any action
-                }
-
-                // Resume scanning if the setting is enabled
-                if (pauseEnabled) {
-                    scanningManager.resumeScanning()
-                }
-
-                // Perform press action if no hold actions are defined and pause on switch hold is enabled
-                if (event.holdActions.isEmpty() && pauseEnabled) {
-                    scanningManager.performAction(event.pressAction)
-                }
-
-                if (event.holdActions.isNotEmpty()) {
-                    // Perform press action if time elapsed is less than hold time
-                    if (timeElapsed < switchHoldTime) {
-                        scanningManager.performAction(event.pressAction)
-                    }
-                }
-            }
-            true
-        } ?: false
+        processSwitchReleasedActions(switchEvent, absorbedAction)
+        return true
     }
 
     /**
-     * Check if the switch event should be ignored based on the repeat delay setting
-     * @param keyCode the key code of the switch event
-     * @return true if the event should be ignored, false otherwise
+     * Finds the switch event corresponding to the given key code.
+     *
+     * @param keyCode The key code of the switch event.
+     * @return The corresponding SwitchEvent, or null if not found.
+     */
+    private fun findSwitchEvent(keyCode: Int): SwitchEvent? {
+        Log.d("SwitchListener", "Finding switch event for keyCode: $keyCode")
+        return switchEventStore.find(keyCode.toString())
+    }
+
+    /**
+     * Handles repeated switch press actions.
+     *
+     * @param keyCode The key code of the switch event.
+     * @return True if the repeat should be ignored, false otherwise.
+     */
+    private fun handleSwitchPressedRepeat(keyCode: Int): Boolean {
+        return if (shouldIgnoreSwitchRepeat(keyCode)) {
+            Log.d("SwitchListener", "Ignoring switch repeat: $keyCode")
+            true
+        } else {
+            updateSwitchPressTime(keyCode)
+            false
+        }
+    }
+
+    /**
+     * Processes actions for switch press events.
+     *
+     * @param switchEvent The switch event to process.
+     * @return True if the event was successfully processed, false otherwise.
+     */
+    private fun processSwitchPressedActions(switchEvent: SwitchEvent): Boolean {
+        latestAction = AbsorbedSwitchAction(switchEvent, System.currentTimeMillis())
+        val pauseEnabled = isPauseEnabled()
+
+        return when {
+            switchEvent.holdActions.isEmpty() && !pauseEnabled -> {
+                handleImmediatePressAction(switchEvent)
+                true
+            }
+
+            else -> handleLongPressAction(switchEvent, pauseEnabled)
+        }
+    }
+
+    /**
+     * Handles immediate press actions for switch events.
+     *
+     * @param switchEvent The switch event to handle.
+     */
+    private fun handleImmediatePressAction(switchEvent: SwitchEvent) {
+        if (AutoSelectionHandler.isAutoSelectInProgress()) AutoSelectionHandler.performSelectionAction()
+        else scanningManager.performAction(switchEvent.pressAction)
+    }
+
+    /**
+     * Handles long press actions for switch events.
+     *
+     * @param switchEvent The switch event to handle.
+     * @param pauseEnabled Whether pausing is enabled.
+     * @return True if the long press action was handled successfully, false otherwise.
+     */
+    private fun handleLongPressAction(switchEvent: SwitchEvent, pauseEnabled: Boolean): Boolean {
+        SwitchLongPressHandler.startLongPress(context, switchEvent.holdActions)
+        if (pauseEnabled) {
+            scanningManager.pauseScanning()
+        }
+        return true
+    }
+
+    /**
+     * Processes actions for switch release events.
+     *
+     * @param switchEvent The switch event to process.
+     * @param absorbedAction The absorbed switch action.
+     */
+    private fun processSwitchReleasedActions(
+        switchEvent: SwitchEvent,
+        absorbedAction: AbsorbedSwitchAction
+    ) {
+        SwitchLongPressHandler.stopLongPress(scanningManager)
+
+        val timeElapsed = System.currentTimeMillis() - absorbedAction.time
+        handleSwitchReleaseActions(switchEvent, timeElapsed)
+    }
+
+    /**
+     * Handles actions for switch release events based on their state.
+     *
+     * @param switchEvent The switch event to handle.
+     * @param timeElapsed The time elapsed since the switch was pressed.
+     */
+    private fun handleSwitchReleaseActions(switchEvent: SwitchEvent, timeElapsed: Long) {
+        val switchHoldTime =
+            preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
+        val pauseEnabled = isPauseEnabled()
+
+        if (pauseEnabled) scanningManager.resumeScanning()
+
+        when {
+            AutoSelectionHandler.isAutoSelectInProgress() && (switchEvent.holdActions.isNotEmpty() || pauseEnabled) -> AutoSelectionHandler.performSelectionAction()
+            switchEvent.holdActions.isEmpty() && pauseEnabled -> scanningManager.performAction(
+                switchEvent.pressAction
+            )
+
+            switchEvent.holdActions.isNotEmpty() && timeElapsed < switchHoldTime -> scanningManager.performAction(
+                switchEvent.pressAction
+            )
+        }
+    }
+
+    /**
+     * Determines if a switch repeat should be ignored based on the settings.
+     *
+     * @param keyCode The key code of the switch event.
+     * @return True if the repeat should be ignored, false otherwise.
      */
     private fun shouldIgnoreSwitchRepeat(keyCode: Int): Boolean {
         val currentTime = System.currentTimeMillis()
@@ -129,20 +192,24 @@ class SwitchListener(
         val ignoreRepeatDelay =
             preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_IGNORE_REPEAT_DELAY)
 
-        return if (ignoreRepeat && keyCode == lastSwitchPressedCode && currentTime - lastSwitchPressedTime < ignoreRepeatDelay) {
-            Log.d("SwitchListener", "Ignoring switch repeat: $keyCode")
-            true
-        } else {
-            lastSwitchPressedTime = currentTime
-            lastSwitchPressedCode = keyCode
-            false
-        }
+        return ignoreRepeat && keyCode == lastSwitchPressedCode && currentTime - lastSwitchPressedTime < ignoreRepeatDelay
     }
 
     /**
-     * Data class to hold the absorbed switch action and the time it was absorbed
-     * @param switchEvent the absorbed switch event
-     * @param time the time the switch event was absorbed
+     * Updates the time of the last switch press.
+     *
+     * @param keyCode The key code of the switch event.
+     */
+    private fun updateSwitchPressTime(keyCode: Int) {
+        lastSwitchPressedTime = System.currentTimeMillis()
+        lastSwitchPressedCode = keyCode
+    }
+
+    /**
+     * Data class to hold the absorbed switch action and the time it was absorbed.
+     *
+     * @property switchEvent The absorbed switch event.
+     * @property time The time the switch event was absorbed.
      */
     private data class AbsorbedSwitchAction(val switchEvent: SwitchEvent, val time: Long)
 }

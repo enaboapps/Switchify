@@ -3,22 +3,10 @@ package com.enaboapps.switchify.service.scanning
 import com.enaboapps.switchify.preferences.PreferenceManager
 
 /**
- * This interface is used to observe the changes in the scanning method
- */
-interface ScanMethodObserver {
-    fun onScanMethodChanged(scanMethod: String)
-}
-
-/**
  * This object is used to manage the scanning method
  */
 object ScanMethod {
     var preferenceManager: PreferenceManager? = null
-
-    /**
-     * This is the observer of the scanning method
-     */
-    var observer: ScanMethodObserver? = null
 
     /**
      * This variable is used to determine if the scanning is in the menu
@@ -33,6 +21,11 @@ object ScanMethod {
          * This type represents the cursor
          */
         const val CURSOR = "cursor"
+
+        /**
+         * This type represents the radar
+         */
+        const val RADAR = "radar"
 
         /**
          * This type represents the item scan
@@ -50,10 +43,8 @@ object ScanMethod {
                 PreferenceManager.PREFERENCE_KEY_SCAN_METHOD
             )
             println("Stored type: $storedType")
-            return if (storedType == MethodType.CURSOR || storedType == MethodType.ITEM_SCAN) {
-                storedType
-            } else {
-                MethodType.CURSOR
+            if (storedType.isNotEmpty()) {
+                return storedType
             }
         }
         return MethodType.CURSOR
@@ -67,6 +58,7 @@ object ScanMethod {
     fun getName(type: String): String {
         return when (type) {
             MethodType.CURSOR -> "Cursor"
+            MethodType.RADAR -> "Radar"
             MethodType.ITEM_SCAN -> "Item Scan"
             else -> "Unknown"
         }
@@ -80,6 +72,7 @@ object ScanMethod {
     fun getDescription(type: String): String {
         return when (type) {
             MethodType.CURSOR -> "Cursor allows you to select items by moving a set of crosshairs over the screen."
+            MethodType.RADAR -> "Radar allows you to select items by moving a radar around the screen."
             MethodType.ITEM_SCAN -> "Item Scan allows you to select items by scanning through them sequentially."
             else -> "Unknown"
         }
@@ -93,6 +86,5 @@ object ScanMethod {
             PreferenceManager.PREFERENCE_KEY_SCAN_METHOD,
             value
         )
-        observer?.onScanMethodChanged(value)
     }
 }
