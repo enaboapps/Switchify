@@ -3,6 +3,7 @@ package com.enaboapps.switchify.service.switches
 import android.content.Context
 import android.util.Log
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.switches.SwitchEvent
@@ -24,6 +25,18 @@ class SwitchListener(
     private var latestAction: AbsorbedSwitchAction? = null
     private var lastSwitchPressedTime: Long = 0
     private var lastSwitchPressedCode: Int = 0
+
+    /**
+     * Checks if the pause on switch hold feature is enabled.
+     * If the pause on switch hold feature is enabled, it returns true.
+     * If the pause on switch hold feature is not enabled, it returns true if the scan settings require it.
+     *
+     * @return True if pause on switch hold is enabled, false otherwise.
+     */
+    private fun isPauseEnabled(): Boolean {
+        return preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD) ||
+                ScanSettings(context).isPauseScanOnSwitchHoldRequired()
+    }
 
     /**
      * Called when a switch is pressed.
@@ -88,8 +101,7 @@ class SwitchListener(
      */
     private fun processSwitchPressedActions(switchEvent: SwitchEvent): Boolean {
         latestAction = AbsorbedSwitchAction(switchEvent, System.currentTimeMillis())
-        val pauseEnabled =
-            preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)
+        val pauseEnabled = isPauseEnabled()
 
         return when {
             switchEvent.holdActions.isEmpty() && !pauseEnabled -> {
@@ -151,8 +163,7 @@ class SwitchListener(
     private fun handleSwitchReleaseActions(switchEvent: SwitchEvent, timeElapsed: Long) {
         val switchHoldTime =
             preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
-        val pauseEnabled =
-            preferenceManager.getBooleanValue(PreferenceManager.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD)
+        val pauseEnabled = isPauseEnabled()
 
         if (pauseEnabled) scanningManager.resumeScanning()
 

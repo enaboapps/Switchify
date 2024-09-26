@@ -6,12 +6,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.enaboapps.switchify.preferences.PreferenceManager
-import com.enaboapps.switchify.service.scanning.ScanSettings
 import kotlinx.coroutines.launch
 
 class SettingsScreenModel(context: Context) : ViewModel() {
     private val preferenceManager = PreferenceManager(context)
-    private val scanSettings = ScanSettings(context)
 
     // Initialize MutableLiveData with initial values from PreferenceManager
     private val _scanRate = MutableLiveData<Long>().apply {
@@ -78,12 +76,6 @@ class SettingsScreenModel(context: Context) : ViewModel() {
             preferenceManager.setLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE, rate)
             _scanRate.postValue(rate)
         }
-        if (scanSettings.isPauseScanOnSwitchHoldRequired()) {
-            preferenceManager.setBooleanValue(
-                PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD,
-                true
-            )
-        }
     }
 
     fun setRefineScanRate(rate: Long) {
@@ -93,12 +85,6 @@ class SettingsScreenModel(context: Context) : ViewModel() {
                 rate
             )
             _refineScanRate.postValue(rate)
-        }
-        if (scanSettings.isPauseScanOnSwitchHoldRequired()) {
-            preferenceManager.setBooleanValue(
-                PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_SCAN_ON_SWITCH_HOLD,
-                true
-            )
         }
     }
 
