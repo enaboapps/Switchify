@@ -13,7 +13,6 @@ import com.enaboapps.switchify.service.gestures.data.GestureData.Companion.TAP_D
 import com.enaboapps.switchify.service.gestures.data.GestureType
 import com.enaboapps.switchify.service.gestures.visuals.GestureDrawing
 import com.enaboapps.switchify.service.methods.nodes.NodeExaminer
-import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -257,7 +256,6 @@ class GestureManager private constructor() {
      */
     fun startDragGesture() {
         linearGesturePerformer.startGesture(GestureType.DRAG)
-        ScanMethod.setType(ScanMethod.MethodType.CURSOR)
     }
 
     /**
@@ -265,7 +263,6 @@ class GestureManager private constructor() {
      */
     fun startCustomSwipe() {
         linearGesturePerformer.startGesture(GestureType.CUSTOM_SWIPE)
-        ScanMethod.setType(ScanMethod.MethodType.CURSOR)
     }
 
     /**
