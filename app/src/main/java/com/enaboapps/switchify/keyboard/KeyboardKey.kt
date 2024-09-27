@@ -92,7 +92,7 @@ class KeyboardKey @JvmOverloads constructor(
                 getHeightInDp()
             )
             isAllCaps = false
-            setTextColor(Color.BLACK)
+            setTextColor(Color.WHITE)  // Changed from BLACK to WHITE
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             setAutoSizeTextTypeWithDefaults(AUTO_SIZE_TEXT_TYPE_NONE)
             background =
@@ -104,7 +104,7 @@ class KeyboardKey @JvmOverloads constructor(
     private fun addImageView(drawable: Drawable) {
         imageButton = ImageButton(context).apply {
             setImageDrawable(drawable)
-            setColorFilter(Color.BLACK)
+            setColorFilter(Color.WHITE)  // Changed from BLACK to WHITE
             setOnTouchListener(onTouchListener)
             layoutParams = LayoutParams(
                 LayoutParams.MATCH_PARENT,
@@ -129,7 +129,13 @@ class KeyboardKey @JvmOverloads constructor(
         } else {
             ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background, null)
         }
-        button?.background = background
-        imageButton?.background = background
+        button?.apply {
+            this.background = background
+            setTextColor(if (pinned) Color.BLACK else Color.WHITE)
+        }
+        imageButton?.apply {
+            this.background = background
+            setColorFilter(if (pinned) Color.BLACK else Color.WHITE)
+        }
     }
 }
