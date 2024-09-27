@@ -110,15 +110,6 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
             settingsScreenModel.setScanRate(it)
         }
         PreferenceTimeStepper(
-            value = settingsScreenModel.refineScanRate.value ?: 0,
-            title = "Refine scan rate",
-            summary = "The interval at which the scanner will move when refining the selection",
-            min = 200,
-            max = 100000
-        ) {
-            settingsScreenModel.setRefineScanRate(it)
-        }
-        PreferenceTimeStepper(
             value = settingsScreenModel.radarScanRate.value ?: 0,
             title = "Radar scan rate",
             summary = "The interval at which the radar will move",
@@ -165,10 +156,10 @@ private fun KeyboardSection(navController: NavController) {
 private fun CursorSection(navController: NavController) {
     Section(title = "Cursor") {
         NavRouteLink(
-            title = "Cursor Mode",
-            summary = "Configure the cursor mode",
+            title = "Cursor Settings",
+            summary = "Configure the cursor settings",
             navController = navController,
-            route = NavigationRoute.CursorMode.name
+            route = NavigationRoute.CursorSettings.name
         )
     }
 }

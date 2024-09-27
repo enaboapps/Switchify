@@ -17,7 +17,7 @@ import com.enaboapps.switchify.screens.howto.HowToUseScreen
 import com.enaboapps.switchify.screens.settings.AboutScreen
 import com.enaboapps.switchify.screens.settings.SettingsScreen
 import com.enaboapps.switchify.screens.settings.prediction.PredictionLanguageScreen
-import com.enaboapps.switchify.screens.settings.scanning.CursorModeSelectionScreen
+import com.enaboapps.switchify.screens.settings.scanning.CursorSettingsScreen
 import com.enaboapps.switchify.screens.settings.scanning.ScanColorSelectionScreen
 import com.enaboapps.switchify.screens.settings.scanning.ScanMethodSelectionScreen
 import com.enaboapps.switchify.screens.settings.scanning.ScanModeSelectionScreen
@@ -75,8 +75,8 @@ fun NavGraph(navController: NavHostController) {
         composable(NavigationRoute.ScanColor.name) {
             ScanColorSelectionScreen(navController)
         }
-        composable(NavigationRoute.CursorMode.name) {
-            CursorModeSelectionScreen(navController)
+        composable(NavigationRoute.CursorSettings.name) {
+            CursorSettingsScreen(navController)
         }
         composable(NavigationRoute.Switches.name) {
             SwitchesScreen(navController)

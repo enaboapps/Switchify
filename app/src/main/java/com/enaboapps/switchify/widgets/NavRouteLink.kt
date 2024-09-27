@@ -13,7 +13,7 @@ fun NavRouteLink(
     route: String
 ) {
     UICard(
-        title = title,
+        title = title.uppercase(),
         description = summary,
         rightIcon = Icons.AutoMirrored.Filled.ArrowForward
     ) {
