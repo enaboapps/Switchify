@@ -41,7 +41,7 @@ fun UICard(
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = title,
+                    text = title.uppercase(),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )

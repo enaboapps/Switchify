@@ -35,11 +35,19 @@ class ScanSettings(context: Context) {
     }
 
     /**
-     * Get the refine scan rate
-     * @return The refine scan rate
+     * Get the cursor scan rate
+     * @return The cursor scan rate
      */
-    fun getRefineScanRate(): Long {
-        return preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
+    fun getCursorBlockScanRate(): Long {
+        return preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_CURSOR_BLOCK_SCAN_RATE)
+    }
+
+    /**
+     * Get the fine cursor scan rate
+     * @return The fine cursor scan rate
+     */
+    fun getFineCursorScanRate(): Long {
+        return preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_CURSOR_FINE_SCAN_RATE)
     }
 
     /**
@@ -113,7 +121,8 @@ class ScanSettings(context: Context) {
     fun isPauseScanOnSwitchHoldRequired(): Boolean {
         // 0.4 seconds is the threshold for pausing scan on switch hold
         val threshold = 400L // in milliseconds
-        val result = getScanRate() <= threshold && getRefineScanRate() <= threshold
+        val result =
+            getScanRate() <= threshold && getCursorBlockScanRate() <= threshold && getFineCursorScanRate() <= threshold
         println("isPauseScanOnSwitchHoldRequired: $result")
         return result
     }

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -14,39 +13,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.MutableLiveData
-import androidx.navigation.NavController
 import com.enaboapps.switchify.preferences.PreferenceManager
-import com.enaboapps.switchify.service.methods.cursor.CursorMode
-import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.service.scanning.ScanMode
+import com.enaboapps.switchify.widgets.Section
 
 @Composable
-fun CursorModeSelectionScreen(navController: NavController) {
-    CursorMode.init(LocalContext.current)
-    val cursorModes = listOf(
-        CursorMode.Modes.MODE_SINGLE,
-        CursorMode.Modes.MODE_BLOCK
-    )
+fun ScanModeSelectionSection() {
+    val modes = ScanMode.modes
     val preferenceManager = PreferenceManager(LocalContext.current)
-    val currentMode = MutableLiveData<String>()
-    currentMode.value = CursorMode.getMode()
+    val currentMode = MutableLiveData<ScanMode>()
+    currentMode.value =
+        ScanMode.fromId(preferenceManager.getStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
     val currentModeState = currentMode.observeAsState()
-    val setCursorMode = { mode: String ->
-        preferenceManager.setStringValue(PreferenceManager.PREFERENCE_KEY_CURSOR_MODE, mode)
+    val setScanMode = { mode: ScanMode ->
+        preferenceManager.setStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE, mode.id)
         currentMode.value = mode
     }
-    Scaffold(
-        topBar = {
-            NavBar(title = "Cursor Mode", navController = navController)
-        }
-    ) {
+
+    Section(title = "SCAN MODE") {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(it)
-                .padding(all = 16.dp),
+                .padding(horizontal = 16.dp),
         ) {
             // radio buttons for each mode
-            cursorModes.forEach { mode ->
+            modes.forEach { mode ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -55,27 +46,12 @@ fun CursorModeSelectionScreen(navController: NavController) {
                     RadioButton(
                         selected = currentModeState.value == mode,
                         onClick = {
-                            setCursorMode(mode)
+                            setScanMode(mode)
                         }
                     )
-                    Text(text = CursorMode.getModeName(mode))
+                    Text(text = "${mode.getModeName()} - ${mode.getModeDescription()}")
                 }
             }
-
-            // show the current mode info
-            CursorModeInfo(mode = currentModeState.value ?: CursorMode.Modes.MODE_SINGLE)
         }
-    }
-}
-
-@Composable
-fun CursorModeInfo(mode: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(all = 16.dp)
-    ) {
-        Text(text = CursorMode.getModeName(mode))
-        Text(text = CursorMode.getModeDescription(mode))
     }
 }

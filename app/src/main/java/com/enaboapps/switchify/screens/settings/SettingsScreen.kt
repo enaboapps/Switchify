@@ -17,6 +17,8 @@ import androidx.navigation.NavController
 import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.screens.settings.models.SettingsScreenModel
+import com.enaboapps.switchify.screens.settings.scanning.ScanMethodSelectionSection
+import com.enaboapps.switchify.screens.settings.scanning.ScanModeSelectionSection
 import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.NavRouteLink
@@ -50,28 +52,16 @@ fun SettingsScreen(navController: NavController) {
                 navController = navController,
                 route = NavigationRoute.Switches.name
             )
-            Section(title = "Scanning") {
-                NavRouteLink(
-                    title = "Scan Mode",
-                    summary = "Configure the scan mode",
-                    navController = navController,
-                    route = NavigationRoute.ScanMode.name
-                )
-                Spacer(modifier = Modifier.padding(top = 16.dp))
-                NavRouteLink(
-                    title = "Scan Method",
-                    summary = "Configure the scan method",
-                    navController = navController,
-                    route = NavigationRoute.ScanMethod.name
-                )
-                Spacer(modifier = Modifier.padding(top = 16.dp))
-                NavRouteLink(
-                    title = "Scan Color",
-                    summary = "Configure the scan color",
-                    navController = navController,
-                    route = NavigationRoute.ScanColor.name
-                )
-            }
+            Spacer(modifier = Modifier.padding(top = 16.dp))
+            ScanMethodSelectionSection()
+            ScanModeSelectionSection()
+            Spacer(modifier = Modifier.padding(top = 16.dp))
+            NavRouteLink(
+                title = "Scan Color",
+                summary = "Configure the scan color",
+                navController = navController,
+                route = NavigationRoute.ScanColor.name
+            )
             CursorSection(navController)
             if (mode.id == ScanMode.Modes.MODE_AUTO) {
                 TimingSection(settingsScreenModel)
@@ -108,15 +98,6 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
             max = 100000
         ) {
             settingsScreenModel.setScanRate(it)
-        }
-        PreferenceTimeStepper(
-            value = settingsScreenModel.refineScanRate.value ?: 0,
-            title = "Refine scan rate",
-            summary = "The interval at which the scanner will move when refining the selection",
-            min = 200,
-            max = 100000
-        ) {
-            settingsScreenModel.setRefineScanRate(it)
         }
         PreferenceTimeStepper(
             value = settingsScreenModel.radarScanRate.value ?: 0,
@@ -165,10 +146,10 @@ private fun KeyboardSection(navController: NavController) {
 private fun CursorSection(navController: NavController) {
     Section(title = "Cursor") {
         NavRouteLink(
-            title = "Cursor Mode",
-            summary = "Configure the cursor mode",
+            title = "Cursor Settings",
+            summary = "Configure the cursor settings",
             navController = navController,
-            route = NavigationRoute.CursorMode.name
+            route = NavigationRoute.CursorSettings.name
         )
     }
 }
