@@ -52,8 +52,8 @@ class ScanMode(val id: String) {
      */
     fun getModeDescription(): String {
         return when (id) {
-            Modes.MODE_AUTO -> "Automatically scan and use a single switch to select"
-            Modes.MODE_MANUAL -> "Use a switch to move between items and another switch to select"
+            Modes.MODE_AUTO -> "Automatically scan and use a single switch to select."
+            Modes.MODE_MANUAL -> "Use different switches to move between items and another switch to select."
             else -> "Unknown"
         }
     }
