@@ -1,23 +1,22 @@
 package com.enaboapps.switchify.screens.settings.scanning
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.methods.cursor.CursorMode
 import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.widgets.Picker
 import com.enaboapps.switchify.widgets.PreferenceTimeStepper
 import com.enaboapps.switchify.widgets.Section
 
@@ -29,13 +28,11 @@ fun CursorSettingsScreen(navController: NavController) {
         CursorMode.Modes.MODE_BLOCK
     )
     val preferenceManager = PreferenceManager(LocalContext.current)
-    val currentMode = MutableLiveData<String>()
-    currentMode.value = CursorMode.getMode()
-    val currentModeState = currentMode.observeAsState()
+    var currentMode by remember { mutableStateOf(CursorMode.getMode()) }
 
     val setCursorMode = { mode: String ->
         preferenceManager.setStringValue(PreferenceManager.PREFERENCE_KEY_CURSOR_MODE, mode)
-        currentMode.value = mode
+        currentMode = mode
     }
 
     Scaffold(
@@ -50,24 +47,15 @@ fun CursorSettingsScreen(navController: NavController) {
                 .padding(vertical = 16.dp),
         ) {
             Section(title = "Cursor Mode") {
-                cursorModes.forEach { mode ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = currentModeState.value == mode,
-                            onClick = { setCursorMode(mode) }
-                        )
-                        Text(text = CursorMode.getModeName(mode))
-                    }
-                }
+                Picker(
+                    title = "Select Cursor Mode",
+                    selectedItem = currentMode,
+                    items = cursorModes,
+                    onItemSelected = setCursorMode,
+                    itemToString = { CursorMode.getModeName(it) },
+                    itemDescription = { CursorMode.getModeDescription(it) }
+                )
             }
-
-            // show the current mode info
-            CursorModeInfo(mode = currentModeState.value ?: CursorMode.Modes.MODE_SINGLE)
 
             Section(title = "Cursor Scan Rates") {
                 PreferenceTimeStepper(
@@ -107,17 +95,5 @@ fun CursorSettingsScreen(navController: NavController) {
                 )
             }
         }
-    }
-}
-
-@Composable
-fun CursorModeInfo(mode: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(all = 16.dp)
-    ) {
-        Text(text = CursorMode.getModeName(mode))
-        Text(text = CursorMode.getModeDescription(mode))
     }
 }
