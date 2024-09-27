@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -14,13 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.MutableLiveData
-import androidx.navigation.NavController
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.scanning.ScanMethod
-import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.widgets.Section
 
 @Composable
-fun ScanMethodSelectionScreen(navController: NavController) {
+fun ScanMethodSelectionSection() {
     val methods = listOf(
         ScanMethod.MethodType.CURSOR,
         ScanMethod.MethodType.RADAR,
@@ -35,16 +33,12 @@ fun ScanMethodSelectionScreen(navController: NavController) {
         preferenceManager.setStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_METHOD, method)
         currentMethod.value = method
     }
-    Scaffold(
-        topBar = {
-            NavBar(title = "Scan Method", navController = navController)
-        }
-    ) {
+
+    Section(title = "SCAN METHOD") {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(it)
-                .padding(all = 16.dp),
+                .padding(horizontal = 16.dp),
         ) {
             // radio buttons for each method
             methods.forEach { method ->
@@ -59,24 +53,9 @@ fun ScanMethodSelectionScreen(navController: NavController) {
                             setScanMethod(method)
                         }
                     )
-                    Text(text = ScanMethod.getName(method))
+                    Text(text = "${ScanMethod.getName(method)} - ${ScanMethod.getDescription(method)}")
                 }
             }
-
-            // show the current method info
-            ScanMethodInfo(method = currentMethodState.value ?: ScanMethod.MethodType.CURSOR)
         }
-    }
-}
-
-@Composable
-fun ScanMethodInfo(method: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(all = 16.dp)
-    ) {
-        Text(text = ScanMethod.getName(method))
-        Text(text = ScanMethod.getDescription(method))
     }
 }
