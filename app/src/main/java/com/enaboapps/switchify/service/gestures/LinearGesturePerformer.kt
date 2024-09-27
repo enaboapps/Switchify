@@ -27,6 +27,7 @@ class LinearGesturePerformer(
 
     private var startPoint: PointF? = null
     private var isPerformingGesture = false
+    private var isGestureDispatching = false
     private var currentGestureType: GestureType? = null
 
     /**
@@ -35,6 +36,11 @@ class LinearGesturePerformer(
      * @param type The type of gesture to start.
      */
     fun startGesture(type: GestureType) {
+        if (isPerformingGesture || isGestureDispatching) {
+            // A gesture is already in progress or being dispatched, so we'll skip this one
+            return
+        }
+
         startPoint = GesturePoint.getPoint()
         isPerformingGesture = true
         currentGestureType = type
@@ -120,6 +126,11 @@ class LinearGesturePerformer(
     }
 
     private fun performGesture(type: GestureType, start: PointF, end: PointF) {
+        if (isGestureDispatching) {
+            // A gesture is already in progress, so we'll skip this one
+            return
+        }
+
         val path = Path()
         path.moveTo(start.x, start.y)
         path.lineTo(end.x, end.y)
@@ -139,6 +150,8 @@ class LinearGesturePerformer(
             else -> SWIPE_DURATION
         }
 
+        isGestureDispatching = true
+
         val gestureDescription = GestureDescription.Builder()
             .addStroke(GestureDescription.StrokeDescription(path, 0, duration))
             .build()
@@ -148,7 +161,14 @@ class LinearGesturePerformer(
             object : AccessibilityService.GestureResultCallback() {
                 override fun onCompleted(gestureDescription: GestureDescription?) {
                     super.onCompleted(gestureDescription)
+                    isGestureDispatching = false
                     // Log completion if needed
+                }
+
+                override fun onCancelled(gestureDescription: GestureDescription?) {
+                    super.onCancelled(gestureDescription)
+                    isGestureDispatching = false
+                    // Handle cancellation if needed
                 }
             },
             null
