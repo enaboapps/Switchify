@@ -205,9 +205,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     private fun startAutoScanIfEnabled() {
         if (scanSettings.isAutoScanMode()) {
             val rate = if (isInQuadrant || CursorMode.isSingleMode()) {
-                scanSettings.getRefineScanRate()
+                scanSettings.getFineCursorScanRate()
             } else {
-                scanSettings.getScanRate()
+                scanSettings.getCursorBlockScanRate()
             }
             scanningScheduler?.startScanning(rate, rate)
         }

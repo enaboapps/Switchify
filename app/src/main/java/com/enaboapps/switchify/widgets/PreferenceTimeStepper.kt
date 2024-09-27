@@ -46,7 +46,10 @@ fun PreferenceTimeStepper(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = title, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = title.uppercase(),
+                    style = MaterialTheme.typography.titleMedium
+                )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = summary, style = MaterialTheme.typography.bodySmall)
             }

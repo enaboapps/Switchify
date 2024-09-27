@@ -16,13 +16,6 @@ class SettingsScreenModel(context: Context) : ViewModel() {
         value = preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE)
     }
     val scanRate: LiveData<Long> = _scanRate
-
-    private val _refineScanRate = MutableLiveData<Long>().apply {
-        value =
-            preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE)
-    }
-    val refineScanRate: LiveData<Long> = _refineScanRate
-
     private val _radarScanRate = MutableLiveData<Long>().apply {
         value =
             preferenceManager.getLongValue(PreferenceManager.Keys.PREFERENCE_KEY_RADAR_SCAN_RATE)
@@ -75,16 +68,6 @@ class SettingsScreenModel(context: Context) : ViewModel() {
         viewModelScope.launch {
             preferenceManager.setLongValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE, rate)
             _scanRate.postValue(rate)
-        }
-    }
-
-    fun setRefineScanRate(rate: Long) {
-        viewModelScope.launch {
-            preferenceManager.setLongValue(
-                PreferenceManager.Keys.PREFERENCE_KEY_REFINE_SCAN_RATE,
-                rate
-            )
-            _refineScanRate.postValue(rate)
         }
     }
 

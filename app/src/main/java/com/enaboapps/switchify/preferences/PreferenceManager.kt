@@ -10,7 +10,8 @@ class PreferenceManager(context: Context) {
         const val PREFERENCE_KEY_SCAN_MODE = "scan_mode"
         const val PREFERENCE_KEY_SCAN_RATE = "scan_rate"
         const val PREFERENCE_KEY_SCAN_METHOD = "scan_method"
-        const val PREFERENCE_KEY_REFINE_SCAN_RATE = "refine_scan_rate"
+        const val PREFERENCE_KEY_CURSOR_FINE_SCAN_RATE = "cursor_fine_scan_rate"
+        const val PREFERENCE_KEY_CURSOR_BLOCK_SCAN_RATE = "cursor_block_scan_rate"
         const val PREFERENCE_KEY_RADAR_SCAN_RATE = "radar_scan_rate"
         const val PREFERENCE_KEY_SWITCH_HOLD_TIME = "switch_hold_time"
         const val PREFERENCE_KEY_PAUSE_ON_FIRST_ITEM = "pause_on_first_item"
@@ -112,5 +113,4 @@ class PreferenceManager(context: Context) {
             defaultValue
         }
     }
-
 }
