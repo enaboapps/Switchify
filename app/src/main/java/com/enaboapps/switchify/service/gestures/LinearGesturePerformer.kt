@@ -24,11 +24,14 @@ class LinearGesturePerformer(
     private val accessibilityService: SwitchifyAccessibilityService,
     private val gestureLockManager: GestureLockManager
 ) {
+    companion object {
+        private const val GESTURE_DELAY_MS = 500L // 500ms delay between gestures
+    }
 
     private var startPoint: PointF? = null
     private var isPerformingGesture = false
-    private var isGestureDispatching = false
     private var currentGestureType: GestureType? = null
+    private var lastGestureTime: Long = 0
 
     /**
      * Starts a gesture of the specified type.
@@ -36,8 +39,8 @@ class LinearGesturePerformer(
      * @param type The type of gesture to start.
      */
     fun startGesture(type: GestureType) {
-        if (isPerformingGesture || isGestureDispatching) {
-            // A gesture is already in progress or being dispatched, so we'll skip this one
+        if (isPerformingGesture) {
+            // A gesture is already in progress, so we'll skip this one
             return
         }
 
@@ -126,8 +129,9 @@ class LinearGesturePerformer(
     }
 
     private fun performGesture(type: GestureType, start: PointF, end: PointF) {
-        if (isGestureDispatching) {
-            // A gesture is already in progress, so we'll skip this one
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastGestureTime < GESTURE_DELAY_MS) {
+            // Not enough time has passed since the last gesture
             return
         }
 
@@ -150,7 +154,7 @@ class LinearGesturePerformer(
             else -> SWIPE_DURATION
         }
 
-        isGestureDispatching = true
+        lastGestureTime = currentTime
 
         val gestureDescription = GestureDescription.Builder()
             .addStroke(GestureDescription.StrokeDescription(path, 0, duration))
@@ -161,13 +165,11 @@ class LinearGesturePerformer(
             object : AccessibilityService.GestureResultCallback() {
                 override fun onCompleted(gestureDescription: GestureDescription?) {
                     super.onCompleted(gestureDescription)
-                    isGestureDispatching = false
                     // Log completion if needed
                 }
 
                 override fun onCancelled(gestureDescription: GestureDescription?) {
                     super.onCancelled(gestureDescription)
-                    isGestureDispatching = false
                     // Handle cancellation if needed
                 }
             },
