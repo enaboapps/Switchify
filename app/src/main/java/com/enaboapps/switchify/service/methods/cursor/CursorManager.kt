@@ -182,6 +182,8 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * Swaps the scanning direction.
      */
     fun swapDirection() {
+        if (isSetupRequired()) return // Failsafe in case setup was not successful
+
         direction = when (direction) {
             ScanDirection.LEFT -> ScanDirection.RIGHT
             ScanDirection.RIGHT -> ScanDirection.LEFT
