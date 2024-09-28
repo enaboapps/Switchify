@@ -67,10 +67,12 @@ class RadarManager(private val context: Context) : ScanStateInterface {
     }
 
     private fun setup() {
-        if (scanningScheduler == null) {
+        if (isSetupRequired()) {
             scanningScheduler = ScanningScheduler(context) { update() }
         }
     }
+
+    private fun isSetupRequired(): Boolean = scanningScheduler == null
 
     private fun update() {
         when (currentStep) {
@@ -192,6 +194,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
 
     fun performSelectionAction() {
         setup()
+        if (isSetupRequired()) return // Failsafe in case setup was not successful
 
         when (currentStep) {
             RadarStep.ROTATING -> {
