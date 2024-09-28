@@ -14,108 +14,86 @@ import com.enaboapps.switchify.service.scanning.ScanningScheduler
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 
 /**
- * This class manages the cursor
- * @param context The context
+ * CursorManager class manages the cursor movement, quadrants, and scanning for the Switchify accessibility service.
+ *
+ * @param context The application context.
  */
 class CursorManager(private val context: Context) : ScanStateInterface, GesturePointListener {
 
     companion object {
         private const val TAG = "CursorManager"
-
         private const val MIN_QUADRANT_INDEX = 0
     }
 
     private val cursorLineMovement = 40
-
     private val scanSettings = ScanSettings(context)
-
     private val uiHandler = Handler(Looper.getMainLooper())
     private val cursorUI = CursorUI(context, uiHandler)
 
     private var isInQuadrant = false
     private var quadrantInfo: QuadrantInfo? = null
-
     private var direction: ScanDirection = ScanDirection.RIGHT
-
     private var scanningScheduler: ScanningScheduler? = null
 
     /**
-     * This function sets up the cursor
+     * Sets up the cursor manager if not already set up.
      */
     private fun setup() {
         if (isSetupRequired()) {
             GesturePoint.listener = this
             scanningScheduler = ScanningScheduler(context) { move() }
         }
-
         CursorMode.init(context)
     }
 
     /**
-     * This function checks if setup is required
-     * @return True if setup is required, false otherwise
+     * Checks if setup is required.
+     * @return True if setup is required, false otherwise.
      */
-    private fun isSetupRequired(): Boolean {
-        return scanningScheduler == null
-    }
-
+    private fun isSetupRequired(): Boolean = scanningScheduler == null
 
     /**
-     * This function is called when the cursor point is reselected
-     * It sets the quadrant to the last x quadrant
+     * Handles gesture point reselection.
      */
     override fun onGesturePointReselect() {
         GesturePoint.y = 0
-        // find the last quadrant
         quadrantInfo = GesturePoint.lastXQuadrant
-        GesturePoint.x = quadrantInfo?.start!!
+        GesturePoint.x = quadrantInfo?.start ?: 0
         isInQuadrant = true
-        setupXCursorLine()
+        cursorUI.showXCursorLine(GesturePoint.x)
         startAutoScanIfEnabled()
     }
 
-
     /**
-     * This function sets the quadrant info
-     * @param quadrantIndex The quadrant index
-     * @param start The start point of the quadrant
-     * @param end The end point of the quadrant
+     * Sets the quadrant information.
+     * @param quadrantIndex The index of the quadrant.
+     * @param start The start position of the quadrant.
+     * @param end The end position of the quadrant.
      */
     private fun setQuadrantInfo(quadrantIndex: Int, start: Int, end: Int) {
         quadrantInfo = QuadrantInfo(quadrantIndex, start, end)
-
         when (direction) {
-            ScanDirection.LEFT, ScanDirection.RIGHT -> {
-                GesturePoint.lastXQuadrant = quadrantInfo!!
-            }
-
-            ScanDirection.UP, ScanDirection.DOWN -> {
-                GesturePoint.lastYQuadrant = quadrantInfo!!
-            }
+            ScanDirection.LEFT, ScanDirection.RIGHT -> GesturePoint.lastXQuadrant = quadrantInfo!!
+            ScanDirection.UP, ScanDirection.DOWN -> GesturePoint.lastYQuadrant = quadrantInfo!!
         }
     }
 
-
     /**
-     * This function sets up the y quadrant
+     * Sets up the Y quadrant.
      */
     private fun setupYQuadrant() {
         GesturePoint.y = CursorBounds.Y_MIN
-        cursorUI.createYQuadrant(0)
-        setQuadrantInfo(
-            0,
-            GesturePoint.y,
-            GesturePoint.y + cursorUI.getQuadrantHeight()
-        )
+        cursorUI.showYQuadrant(0)
+        setQuadrantInfo(0, GesturePoint.y, GesturePoint.y + cursorUI.getQuadrantHeight())
     }
 
     /**
-     * This function updates the y quadrant to the given quadrant index
+     * Updates the Y quadrant.
+     * @param quadrantIndex The index of the quadrant to update.
      */
     private fun updateYQuadrant(quadrantIndex: Int) {
-        GesturePoint.y =
-            CursorBounds.Y_MIN + (quadrantIndex * cursorUI.getQuadrantHeight())
-        cursorUI.updateYQuadrant(quadrantIndex)
+        GesturePoint.y = CursorBounds.Y_MIN + (quadrantIndex * cursorUI.getQuadrantHeight())
+        cursorUI.showYQuadrant(quadrantIndex)
         setQuadrantInfo(
             quadrantIndex,
             GesturePoint.y,
@@ -124,83 +102,64 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     }
 
     /**
-     * This function sets up the x quadrant
+     * Sets up the X quadrant.
      */
     private fun setupXQuadrant() {
         GesturePoint.x = CursorBounds.X_MIN
-        cursorUI.createXQuadrant(0)
-        setQuadrantInfo(
-            0,
-            GesturePoint.x,
-            GesturePoint.x + cursorUI.getQuadrantWidth()
-        )
+        cursorUI.showXQuadrant(0)
+        setQuadrantInfo(0, GesturePoint.x, GesturePoint.x + cursorUI.getQuadrantWidth())
     }
 
     /**
-     * This function updates the x quadrant to the given quadrant index
+     * Updates the X quadrant.
+     * @param quadrantIndex The index of the quadrant to update.
      */
     private fun updateXQuadrant(quadrantIndex: Int) {
         GesturePoint.x = quadrantIndex * cursorUI.getQuadrantWidth()
-        cursorUI.updateXQuadrant(quadrantIndex)
-        setQuadrantInfo(
-            quadrantIndex,
-            GesturePoint.x,
-            GesturePoint.x + cursorUI.getQuadrantWidth()
-        )
+        cursorUI.showXQuadrant(quadrantIndex)
+        setQuadrantInfo(quadrantIndex, GesturePoint.x, GesturePoint.x + cursorUI.getQuadrantWidth())
     }
 
-
     /**
-     * This function sets up the y cursor line
+     * Sets up the Y cursor line.
      */
     private fun setupYCursorLine() {
-        quadrantInfo?.quadrantIndex?.let {
-            cursorUI.createYCursorLine(it)
-        }
+        cursorUI.showYCursorLine(GesturePoint.y)
     }
 
     /**
-     * This function updates the y cursor line to the current y position
+     * Updates the Y cursor line.
      */
     private fun updateYCursorLine() {
-        // Account for the cursor line thickness
-        val y = GesturePoint.y
-        if (y < quadrantInfo?.start!!) {
-            GesturePoint.y = quadrantInfo?.start!!
-        } else if (y >= quadrantInfo?.end!!) {
-            GesturePoint.y = quadrantInfo?.end!! - ScanMethodUIConstants.LINE_THICKNESS
-        }
-
-        cursorUI.updateYCursorLine(GesturePoint.y)
+        val y = GesturePoint.y.coerceIn(
+            quadrantInfo?.start ?: 0,
+            (quadrantInfo?.end ?: 0) - ScanMethodUIConstants.LINE_THICKNESS
+        )
+        GesturePoint.y = y
+        cursorUI.showYCursorLine(y)
     }
 
     /**
-     * This function sets up the x cursor line
+     * Sets up the X cursor line.
      */
     private fun setupXCursorLine() {
-        quadrantInfo?.quadrantIndex?.let {
-            cursorUI.createXCursorLine(it)
-        }
+        cursorUI.showXCursorLine(GesturePoint.x)
     }
 
     /**
-     * This function updates the x cursor line to the current x position
+     * Updates the X cursor line.
      */
     private fun updateXCursorLine() {
-        // Account for the cursor line thickness
-        val x = GesturePoint.x
-        if (x < quadrantInfo?.start!!) {
-            GesturePoint.x = quadrantInfo?.start!!
-        } else if (x >= quadrantInfo?.end!!) {
-            GesturePoint.x = quadrantInfo?.end!! - ScanMethodUIConstants.LINE_THICKNESS
-        }
-
-        cursorUI.updateXCursorLine(GesturePoint.x)
+        val x = GesturePoint.x.coerceIn(
+            quadrantInfo?.start ?: 0,
+            (quadrantInfo?.end ?: 0) - ScanMethodUIConstants.LINE_THICKNESS
+        )
+        GesturePoint.x = x
+        cursorUI.showXCursorLine(x)
     }
 
-
     /**
-     * This function starts the auto scan if it is enabled
+     * Starts auto-scanning if enabled.
      */
     private fun startAutoScanIfEnabled() {
         if (scanSettings.isAutoScanMode()) {
@@ -213,162 +172,111 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         }
     }
 
-
     /**
-     * This function determines the max quadrant index
-     * @return The max quadrant index
+     * Gets the maximum quadrant index.
+     * @return The maximum quadrant index.
      */
     private fun getMaxQuadrantIndex(): Int = CursorUI.getNumberOfQuadrants() - 1
 
-
     /**
-     * This function swaps the scanning direction
+     * Swaps the scanning direction.
      */
     fun swapDirection() {
-        // Here we swap the direction
-        // If we are at the first quadrant, we swap the direction and go to the last quadrant, and vice versa
-        when (direction) {
-            ScanDirection.LEFT -> {
-                direction = ScanDirection.RIGHT
-                if (!isInQuadrant) {
-                    quadrantInfo?.let {
-                        if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
-                            updateXQuadrant(getMaxQuadrantIndex())
-                        } else if (it.quadrantIndex == getMaxQuadrantIndex()) {
-                            updateXQuadrant(MIN_QUADRANT_INDEX)
-                        }
-                    }
-                }
-            }
+        direction = when (direction) {
+            ScanDirection.LEFT -> ScanDirection.RIGHT
+            ScanDirection.RIGHT -> ScanDirection.LEFT
+            ScanDirection.UP -> ScanDirection.DOWN
+            ScanDirection.DOWN -> ScanDirection.UP
+        }
 
-            ScanDirection.RIGHT -> {
-                direction = ScanDirection.LEFT
-                if (!isInQuadrant) {
-                    quadrantInfo?.let {
-                        if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
-                            updateXQuadrant(getMaxQuadrantIndex())
-                        } else if (it.quadrantIndex == getMaxQuadrantIndex()) {
-                            updateXQuadrant(MIN_QUADRANT_INDEX)
-                        }
+        if (!isInQuadrant) {
+            quadrantInfo?.let {
+                when (direction) {
+                    ScanDirection.LEFT, ScanDirection.RIGHT -> {
+                        if (it.quadrantIndex == MIN_QUADRANT_INDEX) updateXQuadrant(
+                            getMaxQuadrantIndex()
+                        )
+                        else if (it.quadrantIndex == getMaxQuadrantIndex()) updateXQuadrant(
+                            MIN_QUADRANT_INDEX
+                        )
                     }
-                }
-            }
 
-            ScanDirection.UP -> {
-                direction = ScanDirection.DOWN
-                if (!isInQuadrant) {
-                    quadrantInfo?.let {
-                        if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
-                            updateYQuadrant(getMaxQuadrantIndex())
-                        } else if (it.quadrantIndex == getMaxQuadrantIndex()) {
-                            updateYQuadrant(MIN_QUADRANT_INDEX)
-                        }
-                    }
-                }
-            }
-
-            ScanDirection.DOWN -> {
-                direction = ScanDirection.UP
-                if (!isInQuadrant) {
-                    quadrantInfo?.let {
-                        if (it.quadrantIndex == MIN_QUADRANT_INDEX) {
-                            updateYQuadrant(getMaxQuadrantIndex())
-                        } else if (it.quadrantIndex == getMaxQuadrantIndex()) {
-                            updateYQuadrant(MIN_QUADRANT_INDEX)
-                        }
+                    ScanDirection.UP, ScanDirection.DOWN -> {
+                        if (it.quadrantIndex == MIN_QUADRANT_INDEX) updateYQuadrant(
+                            getMaxQuadrantIndex()
+                        )
+                        else if (it.quadrantIndex == getMaxQuadrantIndex()) updateYQuadrant(
+                            MIN_QUADRANT_INDEX
+                        )
                     }
                 }
             }
         }
 
-        // Resume the scanning
         resumeScanning()
     }
 
-
     /**
-     * This function stops the scanning
+     * Stops the scanning process.
      */
     override fun stopScanning() {
         scanningScheduler?.stopScanning()
     }
 
-
     /**
-     * This function pauses the scanning
+     * Pauses the scanning process.
      */
     override fun pauseScanning() {
         scanningScheduler?.pauseScanning()
     }
 
-
     /**
-     * This function resumes the scanning
+     * Resumes the scanning process.
      */
     override fun resumeScanning() {
         scanningScheduler?.resumeScanning()
     }
 
-
     /**
-     * This function moves the cursor
+     * Moves the cursor.
      */
     private fun move() {
-        if (isInQuadrant) {
-            moveCursorLine()
-        } else {
-            moveToNextQuadrant()
-        }
+        if (isInQuadrant) moveCursorLine() else moveToNextQuadrant()
     }
 
-
     /**
-     * This function moves the cursor to the next quadrant
+     * Moves to the next quadrant.
      */
     private fun moveToNextQuadrant() {
-        when (direction) {
-            ScanDirection.LEFT -> {
-                quadrantInfo?.let {
-                    if (it.quadrantIndex > MIN_QUADRANT_INDEX) {
-                        val quadrantIndex = it.quadrantIndex - 1
-                        updateXQuadrant(quadrantIndex)
-                    } else {
+        quadrantInfo?.let {
+            when (direction) {
+                ScanDirection.LEFT -> {
+                    if (it.quadrantIndex > MIN_QUADRANT_INDEX) updateXQuadrant(it.quadrantIndex - 1)
+                    else {
                         direction = ScanDirection.RIGHT
                         moveToNextQuadrant()
                     }
                 }
-            }
 
-            ScanDirection.RIGHT -> {
-                quadrantInfo?.let {
-                    if (it.quadrantIndex < getMaxQuadrantIndex()) {
-                        val quadrantIndex = it.quadrantIndex + 1
-                        updateXQuadrant(quadrantIndex)
-                    } else {
+                ScanDirection.RIGHT -> {
+                    if (it.quadrantIndex < getMaxQuadrantIndex()) updateXQuadrant(it.quadrantIndex + 1)
+                    else {
                         direction = ScanDirection.LEFT
                         moveToNextQuadrant()
                     }
                 }
-            }
 
-            ScanDirection.UP -> {
-                quadrantInfo?.let {
-                    if (it.quadrantIndex > MIN_QUADRANT_INDEX) {
-                        val quadrantIndex = it.quadrantIndex - 1
-                        updateYQuadrant(quadrantIndex)
-                    } else {
+                ScanDirection.UP -> {
+                    if (it.quadrantIndex > MIN_QUADRANT_INDEX) updateYQuadrant(it.quadrantIndex - 1)
+                    else {
                         direction = ScanDirection.DOWN
                         moveToNextQuadrant()
                     }
                 }
-            }
 
-            ScanDirection.DOWN -> {
-                quadrantInfo?.let {
-                    if (it.quadrantIndex < getMaxQuadrantIndex()) {
-                        val quadrantIndex = it.quadrantIndex + 1
-                        updateYQuadrant(quadrantIndex)
-                    } else {
+                ScanDirection.DOWN -> {
+                    if (it.quadrantIndex < getMaxQuadrantIndex()) updateYQuadrant(it.quadrantIndex + 1)
+                    else {
                         direction = ScanDirection.UP
                         moveToNextQuadrant()
                     }
@@ -377,98 +285,91 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         }
     }
 
-
     /**
-     * This function moves the cursor line
+     * Moves the cursor line.
      */
     private fun moveCursorLine() {
-        if (quadrantInfo != null) {
+        quadrantInfo?.let {
             when (direction) {
-                ScanDirection.LEFT ->
-                    if (GesturePoint.x > (quadrantInfo?.start!! + ScanMethodUIConstants.LINE_THICKNESS)) {
+                ScanDirection.LEFT -> {
+                    if (GesturePoint.x > (it.start + ScanMethodUIConstants.LINE_THICKNESS)) {
                         GesturePoint.x -= cursorLineMovement
                         updateXCursorLine()
                     } else {
                         direction = ScanDirection.RIGHT
                         moveCursorLine()
                     }
+                }
 
-                ScanDirection.RIGHT ->
-                    if (GesturePoint.x < (quadrantInfo?.end!! - ScanMethodUIConstants.LINE_THICKNESS)) {
+                ScanDirection.RIGHT -> {
+                    if (GesturePoint.x < (it.end - ScanMethodUIConstants.LINE_THICKNESS)) {
                         GesturePoint.x += cursorLineMovement
                         updateXCursorLine()
                     } else {
                         direction = ScanDirection.LEFT
                         moveCursorLine()
                     }
+                }
 
-                ScanDirection.UP ->
-                    if (GesturePoint.y > (quadrantInfo?.start!! + ScanMethodUIConstants.LINE_THICKNESS)) {
+                ScanDirection.UP -> {
+                    if (GesturePoint.y > (it.start + ScanMethodUIConstants.LINE_THICKNESS)) {
                         GesturePoint.y -= cursorLineMovement
                         updateYCursorLine()
                     } else {
                         direction = ScanDirection.DOWN
                         moveCursorLine()
                     }
+                }
 
-                ScanDirection.DOWN ->
-                    if (GesturePoint.y < (quadrantInfo?.end!! - ScanMethodUIConstants.LINE_THICKNESS)) {
+                ScanDirection.DOWN -> {
+                    if (GesturePoint.y < (it.end - ScanMethodUIConstants.LINE_THICKNESS)) {
                         GesturePoint.y += cursorLineMovement
                         updateYCursorLine()
                     } else {
                         direction = ScanDirection.UP
                         moveCursorLine()
                     }
+                }
             }
         }
     }
 
-
     /**
-     * This function resets the cursor
-     * It is used when the cursor is reset from outside the class
+     * Resets the cursor externally.
      */
     fun externalReset() {
         uiHandler.post {
             internalReset()
-
             isInQuadrant = false
             quadrantInfo = null
         }
     }
 
-
     /**
-     * This function resets the cursor
+     * Resets the cursor internally.
      */
     private fun internalReset() {
         stopScanning()
-
         direction = ScanDirection.RIGHT
-
-        uiHandler.post {
-            cursorUI.reset()
-        }
+        uiHandler.post { cursorUI.reset() }
     }
 
     /**
-     * This function checks if the cursor is reset
+     * Checks if the cursor is reset.
+     * @return True if the cursor is reset, false otherwise.
      */
-    private fun isReset(): Boolean {
-        return cursorUI.isReset()
-    }
+    private fun isReset(): Boolean = cursorUI.isReset()
 
     /**
-     * This function resets the quadrants
+     * Resets the quadrants.
      */
     private fun resetQuadrants() {
         cursorUI.removeXQuadrant()
         cursorUI.removeYQuadrant()
     }
 
-
     /**
-     * This function moves the cursor to the next item
+     * Moves the cursor to the next item.
      */
     fun moveToNextItem() {
         if (isReset()) {
@@ -478,22 +379,15 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         }
 
         direction = when (direction) {
-            // If left or right, set right
-            ScanDirection.LEFT, ScanDirection.RIGHT -> {
-                ScanDirection.RIGHT
-            }
-            // If up or down, set down
-            ScanDirection.UP, ScanDirection.DOWN -> {
-                ScanDirection.DOWN
-            }
+            ScanDirection.LEFT, ScanDirection.RIGHT -> ScanDirection.RIGHT
+            ScanDirection.UP, ScanDirection.DOWN -> ScanDirection.DOWN
         }
 
         move()
     }
 
-
     /**
-     * This function moves the cursor to the previous item
+     * Moves the cursor to the previous item.
      */
     fun moveToPreviousItem() {
         if (isReset()) {
@@ -503,27 +397,21 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         }
 
         direction = when (direction) {
-            // If left or right, set left
-            ScanDirection.LEFT, ScanDirection.RIGHT -> {
-                ScanDirection.LEFT
-            }
-            // If up or down, set up
-            ScanDirection.UP, ScanDirection.DOWN -> {
-                ScanDirection.UP
-            }
+            ScanDirection.LEFT, ScanDirection.RIGHT -> ScanDirection.LEFT
+            ScanDirection.UP, ScanDirection.DOWN -> ScanDirection.UP
         }
 
         move()
     }
 
-
     /**
-     * This function performs the selection action
+     * Performs the selection action.
      */
     fun performSelectionAction() {
         setup()
-
         stopScanning()
+
+        if (isSetupRequired()) return // Failsafe in case setup was not successful
 
         if (isReset()) {
             if (CursorMode.isBlockMode()) {
@@ -538,16 +426,12 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
             return
         }
 
-        // We perform the action based on the direction
         when (direction) {
             ScanDirection.LEFT, ScanDirection.RIGHT -> {
                 if (!isInQuadrant && CursorMode.isBlockMode()) {
                     isInQuadrant = true
-
                     direction = ScanDirection.RIGHT
-
                     resetQuadrants()
-
                     if (!cursorUI.isXCursorLineVisible()) {
                         setupXCursorLine()
                     }
@@ -555,14 +439,12 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
                     direction = ScanDirection.DOWN
                     if (CursorMode.isBlockMode()) {
                         isInQuadrant = false
-
                         if (!cursorUI.isYQuadrantVisible()) {
                             setupYQuadrant()
                         }
                     } else {
                         setQuadrantInfo(0, CursorBounds.Y_MIN, CursorBounds.height(context))
                         GesturePoint.y = CursorBounds.Y_MIN
-
                         if (!cursorUI.isYCursorLineVisible()) {
                             setupYCursorLine()
                         }
@@ -574,46 +456,38 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
             ScanDirection.UP, ScanDirection.DOWN -> {
                 if (!isInQuadrant && CursorMode.isBlockMode()) {
                     isInQuadrant = true
-
                     direction = ScanDirection.DOWN
-
                     resetQuadrants()
-
                     if (!cursorUI.isYCursorLineVisible()) {
                         setupYCursorLine()
                     }
-
                     startAutoScanIfEnabled()
                 } else {
                     isInQuadrant = false
-
                     performFinalAction()
                 }
             }
         }
     }
 
-
     /**
-     * This function performs the final action
+     * Performs the final action.
      */
     private fun performFinalAction() {
         AutoSelectionHandler.setSelectAction { performTapAction() }
         AutoSelectionHandler.performSelectionAction()
-
         internalReset()
     }
 
-
     /**
-     * This function performs the tap action
+     * Performs the tap action.
      */
     private fun performTapAction() {
         GestureManager.getInstance().performTap()
     }
 
     /**
-     * This function cleans up the cursor
+     * Cleans up the cursor manager.
      */
     fun cleanup() {
         cursorUI.reset()
