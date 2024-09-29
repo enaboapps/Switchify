@@ -94,8 +94,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
         when (circleMovement) {
             CircleMovement.OUTWARD -> {
                 currentDistanceRatio += MOVEMENT_STEP
-                if (currentDistanceRatio > 1f) {
-                    currentDistanceRatio = 1f
+                if (currentDistanceRatio > 1f || isCircleAtEdge()) {
                     circleMovement =
                         CircleMovement.INWARD  // Reverse direction when reaching the edge
                 }
@@ -123,6 +122,22 @@ class RadarManager(private val context: Context) : ScanStateInterface {
         val x = screenCenterX + distance * cos(angle).toFloat()
         val y = screenCenterY + distance * sin(angle).toFloat()
         radarUI.showRadarCircle(x.toInt(), y.toInt())
+    }
+
+    private fun isCircleAtEdge(): Boolean {
+        // First, we have to figure out which edge the radar is going to
+        val angle = Math.toRadians(currentAngle.toDouble())
+        val distance = currentDistanceRatio * maxDistance
+        val x = screenCenterX + distance * cos(angle).toFloat()
+        val y = screenCenterY + distance * sin(angle).toFloat()
+
+        val screenWidth = ScreenUtils.getWidth(context)
+        val screenHeight = ScreenUtils.getHeight(context)
+
+        val circleSize = RadarUI.RADAR_CIRCLE_SIZE
+
+        // Now we can check if the circle is at the edge
+        return x < 0 || x > screenWidth - circleSize || y < 0 || y > screenHeight - circleSize
     }
 
     private fun startRadar() {
