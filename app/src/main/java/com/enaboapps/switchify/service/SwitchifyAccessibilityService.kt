@@ -70,7 +70,8 @@ class SwitchifyAccessibilityService : AccessibilityService() {
         scanningManager.setup()
 
         screenWatcher = ScreenWatcher(
-            onScreenSleep = { scanningManager.reset() }
+            onScreenSleep = { scanningManager.reset() },
+            onOrientationChanged = { scanningManager.reset() }
         )
         screenWatcher.register(this)
 

@@ -15,7 +15,6 @@ import android.widget.LinearLayout
 import android.widget.TextView.AUTO_SIZE_TEXT_TYPE_NONE
 import androidx.core.content.res.ResourcesCompat
 import com.enaboapps.switchify.R
-import com.enaboapps.switchify.service.utils.ScreenUtils
 
 class KeyboardKey @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -68,10 +67,11 @@ class KeyboardKey @JvmOverloads constructor(
         false
     }
 
+    // Navy color for the foreground
+    private val foregroundColor = Color.parseColor("#001F3F")
+
     init {
-        orientation = VERTICAL // Or HORIZONTAL, depending on your design
-        val padding = ScreenUtils.dpToPx(context, 2)
-        setPadding(padding, padding, padding, padding)
+        orientation = VERTICAL
     }
 
     fun setKeyContent(text: String? = null, drawable: Drawable? = null) {
@@ -92,7 +92,7 @@ class KeyboardKey @JvmOverloads constructor(
                 getHeightInDp()
             )
             isAllCaps = false
-            setTextColor(Color.WHITE)  // Changed from BLACK to WHITE
+            setTextColor(foregroundColor)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             setAutoSizeTextTypeWithDefaults(AUTO_SIZE_TEXT_TYPE_NONE)
             background =
@@ -104,7 +104,7 @@ class KeyboardKey @JvmOverloads constructor(
     private fun addImageView(drawable: Drawable) {
         imageButton = ImageButton(context).apply {
             setImageDrawable(drawable)
-            setColorFilter(Color.WHITE)  // Changed from BLACK to WHITE
+            setColorFilter(foregroundColor)
             setOnTouchListener(onTouchListener)
             layoutParams = LayoutParams(
                 LayoutParams.MATCH_PARENT,
@@ -131,11 +131,9 @@ class KeyboardKey @JvmOverloads constructor(
         }
         button?.apply {
             this.background = background
-            setTextColor(if (pinned) Color.BLACK else Color.WHITE)
         }
         imageButton?.apply {
             this.background = background
-            setColorFilter(if (pinned) Color.BLACK else Color.WHITE)
         }
     }
 }
