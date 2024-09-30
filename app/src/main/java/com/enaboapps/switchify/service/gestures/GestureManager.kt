@@ -13,9 +13,6 @@ import com.enaboapps.switchify.service.gestures.data.GestureData.Companion.TAP_D
 import com.enaboapps.switchify.service.gestures.data.GestureType
 import com.enaboapps.switchify.service.gestures.visuals.GestureDrawing
 import com.enaboapps.switchify.service.methods.nodes.NodeExaminer
-import com.enaboapps.switchify.service.utils.ScreenUtils
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 /**
  * The GestureManager class is responsible for managing and performing various gesture actions
@@ -54,26 +51,6 @@ class GestureManager private constructor() {
         preferenceManager = PreferenceManager(accessibilityService)
         linearGesturePerformer =
             LinearGesturePerformer(accessibilityService, gestureLockManager!!)
-    }
-
-    /**
-     * Checks if the current gesture point is close to the center of the screen.
-     *
-     * @return True if the point is within 350dp of the screen center, false otherwise.
-     */
-    fun isPointCloseToCenter(): Boolean {
-        val point = GesturePoint.getPoint()
-        accessibilityService?.let {
-            val width = ScreenUtils.getWidth(it)
-            val height = ScreenUtils.getHeight(it)
-            val centerX = width / 2
-            val centerY = height / 2
-            val distance = sqrt(
-                (point.x - centerX).toDouble().pow(2.0) + (point.y - centerY).toDouble().pow(2.0)
-            )
-            return distance <= ScreenUtils.dpToPx(it, 350)
-        }
-        return false
     }
 
     /**

@@ -1,7 +1,6 @@
 package com.enaboapps.switchify.keyboard
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
@@ -68,7 +67,7 @@ class KeyboardKey @JvmOverloads constructor(
     }
 
     // Navy color for the foreground
-    private val foregroundColor = Color.parseColor("#001F3F")
+    private val foregroundColor = context.resources.getColor(R.color.navy, null)
 
     init {
         orientation = VERTICAL
@@ -96,7 +95,7 @@ class KeyboardKey @JvmOverloads constructor(
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             setAutoSizeTextTypeWithDefaults(AUTO_SIZE_TEXT_TYPE_NONE)
             background =
-                ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background, null)
+                ResourcesCompat.getDrawable(resources, R.drawable.service_key_background, null)
         }
         addView(button)
     }
@@ -111,7 +110,7 @@ class KeyboardKey @JvmOverloads constructor(
                 getHeightInDp()
             )
             background =
-                ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background, null)
+                ResourcesCompat.getDrawable(resources, R.drawable.service_key_background, null)
         }
         addView(imageButton)
     }
@@ -125,9 +124,9 @@ class KeyboardKey @JvmOverloads constructor(
 
     fun setPinned(pinned: Boolean) {
         val background = if (pinned) {
-            ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background_pinned, null)
+            ResourcesCompat.getDrawable(resources, R.drawable.service_key_background_pinned, null)
         } else {
-            ResourcesCompat.getDrawable(resources, R.drawable.keyboard_key_background, null)
+            ResourcesCompat.getDrawable(resources, R.drawable.service_key_background, null)
         }
         button?.apply {
             this.background = background
