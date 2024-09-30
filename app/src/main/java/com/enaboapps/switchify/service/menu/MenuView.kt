@@ -4,9 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.widget.LinearLayout
-import androidx.core.content.res.ResourcesCompat
 import com.enaboapps.switchify.R
-import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
 import com.enaboapps.switchify.service.scanning.ScanningManager
@@ -119,18 +117,10 @@ class MenuView(
     }
 
     private fun createLinearLayout() {
-        // If the point is close to the center, set the transparency to 0.8
-        // This way the user can see the content behind the menu
-        val transparency = GestureManager.getInstance().isPointCloseToCenter()
-        baseLayout = LinearLayout(context)
-        baseLayout.alpha = if (transparency) 0.8f else 1f
-        baseLayout.orientation = LinearLayout.VERTICAL
-        baseLayout.setPadding(20, 20, 20, 20)
-        baseLayout.background = ResourcesCompat.getDrawable(
-            context.resources,
-            R.drawable.menu_background,
-            null
-        )
+        baseLayout = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(context.resources.getColor(R.color.navy, null))
+        }
     }
 
     private fun addToWindow() {

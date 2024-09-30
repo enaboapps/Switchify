@@ -10,6 +10,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.utils.ScreenUtils
+import kotlin.properties.Delegates
 
 /**
  * This class represents a menu item
@@ -54,25 +55,24 @@ class MenuItem(
      */
     private var textView: TextView? = null
 
+    // Navy color for the foreground
+    private var foregroundColor by Delegates.notNull<Int>()
+
     /**
      * Inflate the menu item
      * @param linearLayout The linear layout to inflate the menu item into
-     * @param margins The margins of the menu item
      * @param width The width of the menu item
      * @param height The height of the menu item
      */
-    fun inflate(linearLayout: LinearLayout, margins: Int, width: Int = 80, height: Int = 75) {
+    fun inflate(linearLayout: LinearLayout, width: Int = 60, height: Int = 75) {
         val widthPx = ScreenUtils.dpToPx(linearLayout.context, width)
         val heightPx = ScreenUtils.dpToPx(linearLayout.context, height)
 
         view = LinearLayout(linearLayout.context).apply {
-            layoutParams = LinearLayout.LayoutParams(widthPx, heightPx).apply {
-                // Add margins to create gaps
-                topMargin = margins
-                bottomMargin = margins
-                leftMargin = margins
-                rightMargin = margins
+            layoutParams = LinearLayout.LayoutParams(0, heightPx).apply {
+                weight = 1f
             }
+            minimumWidth = widthPx
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             background = ResourcesCompat.getDrawable(
@@ -85,6 +85,8 @@ class MenuItem(
 
         val padding = 20
 
+        foregroundColor = linearLayout.context.resources.getColor(R.color.navy, null)
+
         if (drawableId != 0) {
             imageView = ImageView(linearLayout.context).apply {
                 val wrappedDrawable = DrawableCompat.wrap(
@@ -96,7 +98,7 @@ class MenuItem(
                 ).mutate()
                 DrawableCompat.setTint(
                     wrappedDrawable,
-                    linearLayout.context.resources.getColor(getForegroundColor(), null)
+                    foregroundColor
                 )
                 setImageDrawable(wrappedDrawable)
                 layoutParams = LinearLayout.LayoutParams(
@@ -114,7 +116,7 @@ class MenuItem(
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
                 setAutoSizeTextTypeWithDefaults(AUTO_SIZE_TEXT_TYPE_NONE)
                 gravity = Gravity.CENTER
-                setTextColor(linearLayout.context.resources.getColor(getForegroundColor(), null))
+                setTextColor(foregroundColor)
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
@@ -129,7 +131,7 @@ class MenuItem(
                 text = drawableDescription
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 8f)
                 setAutoSizeTextTypeWithDefaults(AUTO_SIZE_TEXT_TYPE_NONE)
-                setTextColor(linearLayout.context.resources.getColor(getForegroundColor(), null))
+                setTextColor(foregroundColor)
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
@@ -158,15 +160,7 @@ class MenuItem(
      * @return The background drawable
      */
     private fun getBackgroundDrawable(): Int {
-        return R.drawable.menu_item_background
-    }
-
-    /**
-     * Get the foreground color
-     * @return The foreground color
-     */
-    private fun getForegroundColor(): Int {
-        return android.R.color.black
+        return R.drawable.service_key_background
     }
 
     /**

@@ -3,7 +3,6 @@ package com.enaboapps.switchify.service.menu
 import android.content.Context
 import android.view.Gravity
 import android.widget.LinearLayout
-import androidx.core.content.res.ResourcesCompat
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.methods.nodes.Node
 
@@ -76,19 +75,17 @@ class MenuPage(
     fun getMenuLayout(): LinearLayout {
         baseLayout.removeAllViews()
 
-        val margin = 8
-
         rowsOfMenuItems.forEach { rowItems ->
             val rowLayout = createRowLayout()
             rowItems.forEach { menuItem ->
-                menuItem.inflate(rowLayout, margin)
+                menuItem.inflate(rowLayout)
             }
             baseLayout.addView(rowLayout)
         }
 
         val navButtonView = createNavButtonView()
         navRowItems.forEach { menuItem ->
-            menuItem.inflate(navButtonView, margin, 75, 65)
+            menuItem.inflate(navButtonView, 75, 65)
         }
 
         if (maxPageIndex > 0) {
@@ -99,7 +96,7 @@ class MenuPage(
                 closeOnSelect = false,
                 action = { changePage() }
             )
-            menuChangeBtn?.inflate(navButtonView, margin, 75, 65)
+            menuChangeBtn?.inflate(navButtonView, 75, 65)
         }
 
         baseLayout.addView(navButtonView)
@@ -122,13 +119,6 @@ class MenuPage(
                 it.gravity = Gravity.CENTER_HORIZONTAL
                 it.topMargin = 24
             }
-            // Purple background
-            background = ResourcesCompat.getDrawable(
-                context.resources,
-                R.drawable.menu_nav_background,
-                null
-            )
-            setPadding(20, 20, 20, 20)
         }
     }
 
@@ -144,7 +134,6 @@ class MenuPage(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).also { it.gravity = Gravity.CENTER_HORIZONTAL }
-            gravity = Gravity.CENTER
         }
     }
 
