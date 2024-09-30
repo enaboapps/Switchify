@@ -492,7 +492,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * Cleans up the cursor manager.
      */
     fun cleanup() {
-        cursorUI.reset()
+        externalReset()
         scanningScheduler?.shutdown()
         scanningScheduler = null
     }
