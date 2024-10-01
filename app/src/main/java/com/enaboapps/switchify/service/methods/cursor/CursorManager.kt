@@ -1,8 +1,6 @@
 package com.enaboapps.switchify.service.methods.cursor
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.GesturePointListener
@@ -27,8 +25,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
 
     private val cursorLineMovement = 40
     private val scanSettings = ScanSettings(context)
-    private val uiHandler = Handler(Looper.getMainLooper())
-    private val cursorUI = CursorUI(context, uiHandler)
+    private val cursorUI = CursorUI(context)
 
     private var isInQuadrant = false
     private var quadrantInfo: QuadrantInfo? = null
@@ -340,13 +337,11 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * Resets the cursor.
      */
     fun reset() {
-        uiHandler.post {
-            stopScanning()
-            isInQuadrant = false
-            quadrantInfo = null
-            direction = ScanDirection.RIGHT
-            cursorUI.reset()
-        }
+        stopScanning()
+        isInQuadrant = false
+        quadrantInfo = null
+        direction = ScanDirection.RIGHT
+        cursorUI.reset()
     }
 
     /**

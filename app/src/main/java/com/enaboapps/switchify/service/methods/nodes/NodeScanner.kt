@@ -15,40 +15,25 @@ import com.enaboapps.switchify.service.utils.ScreenWatcher
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
  * NodeScanner is a class that handles the scanning of nodes.
- * It implements the NodeUpdateDelegate interface.
- * It uses a ScanTree instance to manage the scanning process.
+ * It manages the scanning process using a ScanTree instance and handles updates from NodeExaminer.
  */
-class NodeScanner : NodeUpdateDelegate {
-    /**
-     * Context in which the NodeScanner is started.
-     */
+class NodeScanner {
     private lateinit var context: Context
-
-    /**
-     * ScanTree instance used for managing the scanning process.
-     */
     lateinit var scanTree: ScanTree
-
-    /**
-     * List of Node instances that are currently being managed on the screen.
-     */
     private var screenNodes: List<Node> = emptyList()
-
-    /**
-     * List of Node instances that are currently being managed on the keyboard.
-     */
     private var keyboardNodes: List<Node> = emptyList()
+    private var isKeyboardVisible = false
+    private val screenWatcher = ScreenWatcher(onScreenSleep = { escapeKeyboardScan() })
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    /**
-     * BroadcastReceiver that listens for keyboard layout updates.
-     */
     private val keyboardLayoutReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val jsonLayoutInfo =
@@ -58,9 +43,6 @@ class NodeScanner : NodeUpdateDelegate {
         }
     }
 
-    /**
-     * BroadcastReceiver that listens for keyboard show events.
-     */
     private val keyboardShowReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             isKeyboardVisible = true
@@ -69,9 +51,6 @@ class NodeScanner : NodeUpdateDelegate {
         }
     }
 
-    /**
-     * BroadcastReceiver that listens for keyboard hide events.
-     */
     private val keyboardHideReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             escapeKeyboardScan()
@@ -79,33 +58,17 @@ class NodeScanner : NodeUpdateDelegate {
     }
 
     /**
-     * Boolean flag indicating whether the keyboard is visible.
-     */
-    private var isKeyboardVisible = false
-
-    /**
-     * Screen watcher instance used for watching the screen.
-     */
-    private val screenWatcher = ScreenWatcher(onScreenSleep = {
-        escapeKeyboardScan()
-    })
-
-    /**
      * Starts the NodeScanner.
-     * Sets the nodeUpdateDelegate of the NodeExaminer to this instance and starts the timeout.
-     * Also initializes the scanTree with the context.
+     * Initializes the scanTree with the context and starts observing node updates.
      *
      * @param context The context in which the NodeScanner is started.
      */
     fun start(context: Context) {
         this.context = context
-        NodeExaminer.nodeUpdateDelegate = this
         startTimeoutToRevertToCursor()
-        scanTree = ScanTree(
-            context = context,
-            stopScanningOnSelect = true
-        )
+        scanTree = ScanTree(context = context, stopScanningOnSelect = true)
         screenWatcher.register(context)
+        registerEventReceivers(context)
     }
 
     /**
@@ -113,16 +76,17 @@ class NodeScanner : NodeUpdateDelegate {
      *
      * @param context The context in which the receivers are registered.
      */
-    fun registerEventReceivers(context: Context) {
-        LocalBroadcastManager.getInstance(context).registerReceiver(
+    private fun registerEventReceivers(context: Context) {
+        val localBroadcastManager = LocalBroadcastManager.getInstance(context)
+        localBroadcastManager.registerReceiver(
             keyboardLayoutReceiver,
             IntentFilter(KeyboardAccessibilityManager.ACTION_KEYBOARD_LAYOUT_INFO)
         )
-        LocalBroadcastManager.getInstance(context).registerReceiver(
+        localBroadcastManager.registerReceiver(
             keyboardShowReceiver,
             IntentFilter(SwitchifyKeyboardService.ACTION_KEYBOARD_SHOW)
         )
-        LocalBroadcastManager.getInstance(context).registerReceiver(
+        localBroadcastManager.registerReceiver(
             keyboardHideReceiver,
             IntentFilter(SwitchifyKeyboardService.ACTION_KEYBOARD_HIDE)
         )
@@ -141,13 +105,11 @@ class NodeScanner : NodeUpdateDelegate {
 
     /**
      * Updates the nodes with the layout info from the keyboard.
-     * It creates a new list of nodes from the layout info and updates the nodes.
      *
      * @param layoutInfo KeyboardLayoutInfo instance.
      */
     private fun updateNodesWithLayoutInfo(layoutInfo: KeyboardLayoutInfo) {
         val newNodes = layoutInfo.keys.map { Node.fromKeyInfo(it) }
-        newNodes.forEach { println(it) }
         setKeyboardNodes(newNodes)
     }
 
@@ -156,19 +118,16 @@ class NodeScanner : NodeUpdateDelegate {
      * if the state is ITEM_SCAN and there are no nodes after 5 seconds.
      */
     fun startTimeoutToRevertToCursor() {
-        val timeoutJob = Job()
-        val timeoutScope = CoroutineScope(Dispatchers.Default + timeoutJob)
-
-        timeoutScope.launch {
+        coroutineScope.launch {
             delay(5000)
-            if (ScanMethod.getType() == ScanMethod.MethodType.ITEM_SCAN && this@NodeScanner.screenNodes.isEmpty() && this@NodeScanner.keyboardNodes.isEmpty()) {
+            if (ScanMethod.getType() == ScanMethod.MethodType.ITEM_SCAN && screenNodes.isEmpty() && keyboardNodes.isEmpty()) {
                 withContext(Dispatchers.Main) {
                     scanTree.reset()
                     ScanMethod.setType(ScanMethod.MethodType.CURSOR)
                     println("ScanMethod changed to cursor")
                 }
             } else {
-                println("ScanMethod not changed, nodes.size: ${this@NodeScanner.screenNodes.size}")
+                println("ScanMethod not changed, nodes.size: ${screenNodes.size}")
             }
         }
     }
@@ -190,7 +149,7 @@ class NodeScanner : NodeUpdateDelegate {
      *
      * @param nodes List of new Node instances.
      */
-    private fun setScreenNodes(nodes: List<Node>) {
+    fun setScreenNodes(nodes: List<Node>) {
         this.screenNodes = nodes
         if (!isKeyboardVisible) {
             updateNodes(nodes)
@@ -211,19 +170,10 @@ class NodeScanner : NodeUpdateDelegate {
     }
 
     /**
-     * Cleans up the NodeScanner by shutting down the scanTree.
+     * Cleans up the NodeScanner by shutting down the scanTree and cancelling all coroutines.
      */
     fun cleanup() {
         scanTree.shutdown()
-    }
-
-    /**
-     * Called when the nodes are updated.
-     * Sets the screen nodes.
-     *
-     * @param nodes List of new Node instances.
-     */
-    override fun onNodesUpdated(nodes: List<Node>) {
-        setScreenNodes(nodes)
+        coroutineScope.cancel()
     }
 }
