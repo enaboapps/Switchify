@@ -54,6 +54,7 @@ class PredictionManager(private val context: Context, private val listener: Pred
         // If the last character is a space, get predictions for the next word
         if (text.isNotEmpty() && text.last() == ' ') {
             getPredictionsForNextWord(text)
+            learn(text)
         } else {
             getCurrentPredictions(text)
         }
@@ -68,7 +69,8 @@ class PredictionManager(private val context: Context, private val listener: Pred
                 val predictions = result.getOrNull()
                 if (predictions != null) {
                     // Prevent duplicate predictions
-                    val uniquePredictions = predictions.distinctBy { it.label }
+                    val uniquePredictions =
+                        predictions.distinctBy { it.label }.sortedByDescending { it.score }
                     println("Unique predictions: ${uniquePredictions.map { it.label }}")
                     listener.onPredictionsAvailable(uniquePredictions.map { it.label })
                 }
@@ -87,13 +89,20 @@ class PredictionManager(private val context: Context, private val listener: Pred
                 val predictions = result.getOrNull()
                 if (predictions != null) {
                     // Prevent duplicate predictions
-                    val uniquePredictions = predictions.distinctBy { it.label }
+                    val uniquePredictions =
+                        predictions.distinctBy { it.label }.sortedByDescending { it.score }
                     println("Unique predictions: ${uniquePredictions.map { it.label }}")
                     listener.onPredictionsAvailable(uniquePredictions.map { it.label })
                 }
             } else {
                 println("Error: ${result.exceptionOrNull()}")
             }
+        }
+    }
+
+    private fun learn(text: String) {
+        launch {
+            fleksyLib.addPhrasesToDictionary(List(1) { text })
         }
     }
 }
