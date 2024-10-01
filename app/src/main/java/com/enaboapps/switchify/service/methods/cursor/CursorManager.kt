@@ -337,23 +337,16 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     }
 
     /**
-     * Resets the cursor externally.
+     * Resets the cursor.
      */
-    fun externalReset() {
+    fun reset() {
         uiHandler.post {
-            internalReset()
+            stopScanning()
             isInQuadrant = false
             quadrantInfo = null
+            direction = ScanDirection.RIGHT
+            cursorUI.reset()
         }
-    }
-
-    /**
-     * Resets the cursor internally.
-     */
-    private fun internalReset() {
-        stopScanning()
-        direction = ScanDirection.RIGHT
-        uiHandler.post { cursorUI.reset() }
     }
 
     /**
@@ -476,9 +469,9 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * Performs the final action.
      */
     private fun performFinalAction() {
+        reset()
         AutoSelectionHandler.setSelectAction { performTapAction() }
         AutoSelectionHandler.performSelectionAction()
-        internalReset()
     }
 
     /**
@@ -492,7 +485,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
      * Cleans up the cursor manager.
      */
     fun cleanup() {
-        externalReset()
+        reset()
         scanningScheduler?.shutdown()
         scanningScheduler = null
     }

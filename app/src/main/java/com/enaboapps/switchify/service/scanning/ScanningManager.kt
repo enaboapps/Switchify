@@ -154,7 +154,7 @@ class ScanningManager(
                 when (ScanMethod.getType()) {
                     ScanMethod.MethodType.CURSOR -> {
                         // reset the cursor
-                        cursorManager.externalReset()
+                        cursorManager.reset()
                     }
 
                     ScanMethod.MethodType.RADAR -> {

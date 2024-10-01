@@ -165,7 +165,7 @@ class SwitchListener(
             preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
         val pauseEnabled = isPauseEnabled()
 
-        if (pauseEnabled) scanningManager.resumeScanning()
+        if (pauseEnabled && !AutoSelectionHandler.isAutoSelectInProgress()) scanningManager.resumeScanning()
 
         when {
             AutoSelectionHandler.isAutoSelectInProgress() && (switchEvent.holdActions.isNotEmpty() || pauseEnabled) -> AutoSelectionHandler.performSelectionAction()
