@@ -12,6 +12,11 @@ import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.service.switches.SwitchListener
 import com.enaboapps.switchify.service.utils.KeyboardBridge
 import com.enaboapps.switchify.service.utils.ScreenWatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 /**
  * This is the main service class for the Switchify application.
@@ -19,31 +24,30 @@ import com.enaboapps.switchify.service.utils.ScreenWatcher
  */
 class SwitchifyAccessibilityService : AccessibilityService() {
 
-    // ScanningManager instance for managing scanning operations
     private lateinit var scanningManager: ScanningManager
-
-    // SwitchListener instance for listening to switch events
     private lateinit var switchListener: SwitchListener
-
-    // ScreenWatcher instance for watching screen changes
     private lateinit var screenWatcher: ScreenWatcher
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     /**
      * This function is called when the service is destroyed.
-     * It shuts down the scanning manager.
+     * It shuts down the scanning manager and cancels all coroutines.
      */
     override fun onDestroy() {
         super.onDestroy()
         scanningManager.shutdown()
+        serviceScope.cancel()
     }
 
     /**
      * This method is called when an AccessibilityEvent is fired.
-     * It updates the keyboard state and finds nodes in the active window.
+     * It updates the nodes in the active window and the keyboard state.
      */
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         rootInActiveWindow?.let { rootNode ->
-            NodeExaminer.findNodes(rootNode, this)
+            serviceScope.launch {
+                NodeExaminer.findNodes(rootNode, this@SwitchifyAccessibilityService, this)
+            }
         }
         KeyboardBridge.updateKeyboardState(windows, this)
     }
@@ -81,9 +85,18 @@ class SwitchifyAccessibilityService : AccessibilityService() {
         AutoSelectionHandler.init(this)
 
         rootInActiveWindow?.let { rootNode ->
-            NodeExaminer.findNodes(rootNode, this)
+            serviceScope.launch {
+                NodeExaminer.findNodes(rootNode, this@SwitchifyAccessibilityService, this)
+            }
         }
         KeyboardBridge.updateKeyboardState(windows, this)
+
+        // Update the NodeScanner with the current layout info
+        serviceScope.launch {
+            NodeExaminer.observeNodes().collect { nodes ->
+                scanningManager.updateNodes(nodes)
+            }
+        }
     }
 
     /**

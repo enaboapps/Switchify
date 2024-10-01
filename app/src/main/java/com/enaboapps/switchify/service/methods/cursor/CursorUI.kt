@@ -2,7 +2,6 @@ package com.enaboapps.switchify.service.methods.cursor
 
 import android.content.Context
 import android.graphics.Color
-import android.os.Handler
 import android.widget.RelativeLayout
 import com.enaboapps.switchify.service.methods.shared.ScanMethodUIConstants
 import com.enaboapps.switchify.service.scanning.ScanColorManager
@@ -13,9 +12,8 @@ import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
  * for the Switchify accessibility service.
  *
  * @property context The application context.
- * @property handler A Handler for posting UI updates to the main thread.
  */
-class CursorUI(private val context: Context, private val handler: Handler) {
+class CursorUI(private val context: Context) {
     private var xCursorLine: RelativeLayout? = null
     private var yCursorLine: RelativeLayout? = null
     private var xQuadrant: RelativeLayout? = null
@@ -28,6 +26,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
 
         /**
          * Determines the number of quadrants based on the cursor mode.
+         *
          * @return The number of quadrants (1 for single mode, 4 for block mode).
          */
         fun getNumberOfQuadrants(): Int {
@@ -37,6 +36,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
 
     /**
      * Calculates the width of a quadrant based on the cursor mode.
+     *
      * @return The width of a quadrant in pixels.
      */
     fun getQuadrantWidth(): Int {
@@ -49,6 +49,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
 
     /**
      * Calculates the height of a quadrant based on the cursor mode.
+     *
      * @return The height of a quadrant in pixels.
      */
     fun getQuadrantHeight(): Int {
@@ -61,6 +62,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
 
     /**
      * Shows or updates the horizontal cursor line.
+     *
      * @param x The x-coordinate for the line.
      */
     fun showXCursorLine(x: Int) {
@@ -72,16 +74,14 @@ class CursorUI(private val context: Context, private val handler: Handler) {
                 val color = ScanColorManager.getScanColorSetFromPreferences(context).secondaryColor
                 setBackgroundColor(Color.parseColor(color))
             }
-            handler.post {
-                xCursorLine?.let {
-                    window.addView(
-                        it,
-                        x,
-                        yPosition,
-                        ScanMethodUIConstants.LINE_THICKNESS,
-                        height
-                    )
-                }
+            xCursorLine?.let {
+                window.addView(
+                    it,
+                    x,
+                    yPosition,
+                    ScanMethodUIConstants.LINE_THICKNESS,
+                    height
+                )
             }
         } else {
             updateXCursorLine(x)
@@ -90,6 +90,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
 
     /**
      * Shows or updates the vertical cursor line.
+     *
      * @param y The y-coordinate for the line.
      */
     fun showYCursorLine(y: Int) {
@@ -101,16 +102,14 @@ class CursorUI(private val context: Context, private val handler: Handler) {
                 val color = ScanColorManager.getScanColorSetFromPreferences(context).secondaryColor
                 setBackgroundColor(Color.parseColor(color))
             }
-            handler.post {
-                yCursorLine?.let {
-                    window.addView(
-                        it,
-                        xPosition,
-                        y,
-                        width,
-                        ScanMethodUIConstants.LINE_THICKNESS
-                    )
-                }
+            yCursorLine?.let {
+                window.addView(
+                    it,
+                    xPosition,
+                    y,
+                    width,
+                    ScanMethodUIConstants.LINE_THICKNESS
+                )
             }
         } else {
             updateYCursorLine(y)
@@ -119,6 +118,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
 
     /**
      * Shows or updates the horizontal quadrant.
+     *
      * @param quadrantNumber The quadrant number to position the quadrant.
      */
     fun showXQuadrant(quadrantNumber: Int) {
@@ -137,10 +137,8 @@ class CursorUI(private val context: Context, private val handler: Handler) {
                 )
                 alpha = QUADRANT_ALPHA
             }
-            handler.post {
-                xQuadrant?.let {
-                    window.addView(it, xPosition, yPosition, getQuadrantWidth(), height)
-                }
+            xQuadrant?.let {
+                window.addView(it, xPosition, yPosition, getQuadrantWidth(), height)
             }
         } else {
             updateXQuadrant(quadrantNumber)
@@ -149,6 +147,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
 
     /**
      * Shows or updates the vertical quadrant.
+     *
      * @param quadrantNumber The quadrant number to position the quadrant.
      */
     fun showYQuadrant(quadrantNumber: Int) {
@@ -167,10 +166,8 @@ class CursorUI(private val context: Context, private val handler: Handler) {
                 )
                 alpha = QUADRANT_ALPHA
             }
-            handler.post {
-                yQuadrant?.let {
-                    window.addView(it, xPosition, yPosition, width, getQuadrantHeight())
-                }
+            yQuadrant?.let {
+                window.addView(it, xPosition, yPosition, width, getQuadrantHeight())
             }
         } else {
             updateYQuadrant(quadrantNumber)
@@ -182,9 +179,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      */
     fun removeXCursorLine() {
         xCursorLine?.let {
-            handler.post {
-                window.removeView(it)
-            }
+            window.removeView(it)
             xCursorLine = null
         }
     }
@@ -194,9 +189,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      */
     fun removeYCursorLine() {
         yCursorLine?.let {
-            handler.post {
-                window.removeView(it)
-            }
+            window.removeView(it)
             yCursorLine = null
         }
     }
@@ -206,9 +199,7 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      */
     fun removeXQuadrant() {
         xQuadrant?.let {
-            handler.post {
-                window.removeView(it)
-            }
+            window.removeView(it)
             xQuadrant = null
         }
     }
@@ -218,67 +209,62 @@ class CursorUI(private val context: Context, private val handler: Handler) {
      */
     fun removeYQuadrant() {
         yQuadrant?.let {
-            handler.post {
-                window.removeView(it)
-            }
+            window.removeView(it)
             yQuadrant = null
         }
     }
 
     /**
      * Updates the position of the horizontal cursor line.
+     *
      * @param x The new x-coordinate for the line.
      */
     private fun updateXCursorLine(x: Int) {
         xCursorLine?.let {
-            handler.post {
-                window.updateViewLayout(it, x, CursorBounds.Y_MIN)
-            }
+            window.updateViewLayout(it, x, CursorBounds.Y_MIN)
         }
     }
 
     /**
      * Updates the position of the vertical cursor line.
+     *
      * @param y The new y-coordinate for the line.
      */
     private fun updateYCursorLine(y: Int) {
         yCursorLine?.let {
-            handler.post {
-                window.updateViewLayout(it, CursorBounds.X_MIN, y)
-            }
+            window.updateViewLayout(it, CursorBounds.X_MIN, y)
         }
     }
 
     /**
      * Updates the position of the horizontal quadrant.
+     *
      * @param quadrantNumber The new quadrant number for positioning.
      */
     private fun updateXQuadrant(quadrantNumber: Int) {
         val quadrantWidth = getQuadrantWidth()
         val xPosition = quadrantNumber * quadrantWidth
         xQuadrant?.let {
-            handler.post {
-                window.updateViewLayout(it, xPosition, CursorBounds.Y_MIN)
-            }
+            window.updateViewLayout(it, xPosition, CursorBounds.Y_MIN)
         }
     }
 
     /**
      * Updates the position of the vertical quadrant.
+     *
      * @param quadrantNumber The new quadrant number for positioning.
      */
     private fun updateYQuadrant(quadrantNumber: Int) {
         val quadrantHeight = getQuadrantHeight()
         val yPosition = CursorBounds.Y_MIN + (quadrantNumber * quadrantHeight)
         yQuadrant?.let {
-            handler.post {
-                window.updateViewLayout(it, CursorBounds.X_MIN, yPosition)
-            }
+            window.updateViewLayout(it, CursorBounds.X_MIN, yPosition)
         }
     }
 
     /**
      * Checks if all cursor UI elements are removed.
+     *
      * @return True if all elements are removed, false otherwise.
      */
     fun isReset(): Boolean {
@@ -297,33 +283,29 @@ class CursorUI(private val context: Context, private val handler: Handler) {
 
     /**
      * Checks if the horizontal cursor line is visible.
+     *
      * @return True if visible, false otherwise.
      */
-    fun isXCursorLineVisible(): Boolean {
-        return xCursorLine != null
-    }
+    fun isXCursorLineVisible(): Boolean = xCursorLine != null
 
     /**
      * Checks if the vertical cursor line is visible.
+     *
      * @return True if visible, false otherwise.
      */
-    fun isYCursorLineVisible(): Boolean {
-        return yCursorLine != null
-    }
+    fun isYCursorLineVisible(): Boolean = yCursorLine != null
 
     /**
      * Checks if the horizontal quadrant is visible.
+     *
      * @return True if visible, false otherwise.
      */
-    fun isXQuadrantVisible(): Boolean {
-        return xQuadrant != null
-    }
+    fun isXQuadrantVisible(): Boolean = xQuadrant != null
 
     /**
      * Checks if the vertical quadrant is visible.
+     *
      * @return True if visible, false otherwise.
      */
-    fun isYQuadrantVisible(): Boolean {
-        return yQuadrant != null
-    }
+    fun isYQuadrantVisible(): Boolean = yQuadrant != null
 }

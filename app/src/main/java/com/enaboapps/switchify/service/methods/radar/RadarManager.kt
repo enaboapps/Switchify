@@ -1,8 +1,6 @@
 package com.enaboapps.switchify.service.methods.radar
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.scanning.ScanSettings
@@ -40,8 +38,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
     }
 
     private val scanSettings = ScanSettings(context)
-    private val uiHandler = Handler(Looper.getMainLooper())
-    private val radarUI = RadarUI(context, uiHandler)
+    private val radarUI = RadarUI(context)
 
     private var currentAngle = -90f  // Start at 12 o'clock (-90 degrees)
     private var currentDistanceRatio = 0f
@@ -125,7 +122,6 @@ class RadarManager(private val context: Context) : ScanStateInterface {
     }
 
     private fun isCircleAtEdge(): Boolean {
-        // First, we have to figure out which edge the radar is going to
         val angle = Math.toRadians(currentAngle.toDouble())
         val distance = currentDistanceRatio * maxDistance
         val x = screenCenterX + distance * cos(angle).toFloat()
@@ -136,7 +132,6 @@ class RadarManager(private val context: Context) : ScanStateInterface {
 
         val circleSize = RadarUI.RADAR_CIRCLE_SIZE
 
-        // Now we can check if the circle is at the edge
         return x < 0 || x > screenWidth - circleSize || y < 0 || y > screenHeight - circleSize
     }
 
@@ -163,14 +158,8 @@ class RadarManager(private val context: Context) : ScanStateInterface {
         }
 
         when (currentStep) {
-            RadarStep.ROTATING -> {
-                rotate()
-            }
-
-            RadarStep.MOVING -> {
-                moveCircle()
-            }
-
+            RadarStep.ROTATING -> rotate()
+            RadarStep.MOVING -> moveCircle()
             RadarStep.IDLE -> {} // Do nothing
         }
     }
@@ -183,14 +172,8 @@ class RadarManager(private val context: Context) : ScanStateInterface {
         }
 
         when (currentStep) {
-            RadarStep.ROTATING -> {
-                rotate()
-            }
-
-            RadarStep.MOVING -> {
-                moveCircle()
-            }
-
+            RadarStep.ROTATING -> rotate()
+            RadarStep.MOVING -> moveCircle()
             RadarStep.IDLE -> {} // Do nothing
         }
     }

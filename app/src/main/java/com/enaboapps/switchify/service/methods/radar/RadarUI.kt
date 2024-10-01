@@ -5,7 +5,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.drawable.GradientDrawable
-import android.os.Handler
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.RelativeLayout
@@ -17,7 +16,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class RadarUI(private val context: Context, private val handler: Handler) {
+class RadarUI(private val context: Context) {
     private var radarLineContainer: FrameLayout? = null
     private var radarLine: RadarLineView? = null
     private var radarCircle: RelativeLayout? = null
@@ -58,10 +57,8 @@ class RadarUI(private val context: Context, private val handler: Handler) {
         radarLineContainer = FrameLayout(context).apply {
             addView(radarLine)
         }
-        handler.post {
-            radarLineContainer?.let {
-                window.addView(it, 0, 0, screenWidth, screenHeight)
-            }
+        radarLineContainer?.let {
+            window.addView(it, 0, 0, screenWidth, screenHeight)
         }
     }
 
@@ -83,31 +80,27 @@ class RadarUI(private val context: Context, private val handler: Handler) {
 
     private fun updateRadarCircle(x: Int, y: Int) {
         radarCircle?.let {
-            handler.post {
-                if (it.parent == null) {
-                    window.addView(
-                        it,
-                        x - RADAR_CIRCLE_SIZE / 2,
-                        y - RADAR_CIRCLE_SIZE / 2,
-                        RADAR_CIRCLE_SIZE,
-                        RADAR_CIRCLE_SIZE
-                    )
-                } else {
-                    window.updateViewLayout(
-                        it,
-                        x - RADAR_CIRCLE_SIZE / 2,
-                        y - RADAR_CIRCLE_SIZE / 2
-                    )
-                }
+            if (it.parent == null) {
+                window.addView(
+                    it,
+                    x - RADAR_CIRCLE_SIZE / 2,
+                    y - RADAR_CIRCLE_SIZE / 2,
+                    RADAR_CIRCLE_SIZE,
+                    RADAR_CIRCLE_SIZE
+                )
+            } else {
+                window.updateViewLayout(
+                    it,
+                    x - RADAR_CIRCLE_SIZE / 2,
+                    y - RADAR_CIRCLE_SIZE / 2
+                )
             }
         }
     }
 
     fun removeRadarLine() {
         radarLineContainer?.let {
-            handler.post {
-                window.removeView(it)
-            }
+            window.removeView(it)
             radarLineContainer = null
             radarLine = null
         }
@@ -115,9 +108,7 @@ class RadarUI(private val context: Context, private val handler: Handler) {
 
     fun removeRadarCircle() {
         radarCircle?.let {
-            handler.post {
-                window.removeView(it)
-            }
+            window.removeView(it)
             radarCircle = null
         }
     }
