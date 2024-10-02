@@ -265,6 +265,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         if (keyType is KeyType.Clear) {
             return ResourcesCompat.getDrawable(resources, R.drawable.ic_bin, null)
         }
+        if (keyType is KeyType.ImeAction) {
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_ime_action, null)
+        }
         if (keyType is KeyType.Return) {
             return ResourcesCompat.getDrawable(resources, R.drawable.ic_return, null)
         }
@@ -387,8 +390,23 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                 currentInputConnection.commitText(" ", 1)
             }
 
+            KeyType.ImeAction -> {
+                handleImeAction()
+            }
+
             KeyType.Return -> {
-                handleEnterKey()
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_DOWN,
+                        KeyEvent.KEYCODE_ENTER
+                    )
+                )
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_UP,
+                        KeyEvent.KEYCODE_ENTER
+                    )
+                )
             }
 
             KeyType.Backspace -> {
@@ -508,10 +526,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
     }
 
     /**
-     * This method handles the enter key press event.
-     * It performs different actions based on the current input type.
+     * This method handles the IME action key press event.
      */
-    private fun handleEnterKey() {
+    private fun handleImeAction() {
         val inputConnection = currentInputConnection
         val currentEditorInfo = currentInputEditorInfo
 
