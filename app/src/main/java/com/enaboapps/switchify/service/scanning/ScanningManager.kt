@@ -11,6 +11,7 @@ import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.methods.cursor.CursorManager
+import com.enaboapps.switchify.service.methods.nodes.Node
 import com.enaboapps.switchify.service.methods.nodes.NodeScanner
 import com.enaboapps.switchify.service.methods.nodes.NodeScannerUI
 import com.enaboapps.switchify.service.methods.radar.RadarManager
@@ -47,9 +48,16 @@ class ScanningManager(
         SwitchifyAccessibilityWindow.instance.show()
 
         nodeScanner.start(context)
-        nodeScanner.registerEventReceivers(context)
 
         MenuManager.getInstance().setup(this, accessibilityService)
+    }
+
+    /**
+     * Updates the NodeScanner with the current layout info.
+     * @param nodes The list of Node instances.
+     */
+    fun updateNodes(nodes: List<Node>) {
+        nodeScanner.setScreenNodes(nodes)
     }
 
     /**
