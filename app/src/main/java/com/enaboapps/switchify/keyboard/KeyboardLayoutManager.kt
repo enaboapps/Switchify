@@ -25,6 +25,10 @@ sealed class KeyType {
         override fun toString() = " "
     }
 
+    object ImeAction : KeyType() {
+        override fun toString() = "Action"
+    }
+
     object Return : KeyType() {
         override fun toString() = "⏎"
     }
@@ -142,7 +146,8 @@ object KeyboardLayoutManager {
             KeyType.Character("h"),
             KeyType.Character("j"),
             KeyType.Character("k"),
-            KeyType.Character("l")
+            KeyType.Character("l"),
+            KeyType.Return
         ),
         listOf(
             KeyType.ShiftCaps,
@@ -213,7 +218,7 @@ object KeyboardLayoutManager {
         listOf(
             KeyType.SwitchToAlphabetic,
             KeyType.Space,
-            KeyType.Return,
+            KeyType.ImeAction,
             KeyType.SwitchToMenu,
             KeyType.HideKeyboard
         )
@@ -257,7 +262,7 @@ object KeyboardLayoutManager {
         listOf(
             KeyType.SwitchToAlphabetic,
             KeyType.Space,
-            KeyType.Return,
+            KeyType.ImeAction,
             KeyType.SwitchToMenu,
             KeyType.HideKeyboard
         )
@@ -300,7 +305,7 @@ object KeyboardLayoutManager {
             KeyType.SwitchToSymbolsTwo
         ),
         listOf(
-            KeyType.Return,
+            KeyType.ImeAction,
             KeyType.HideKeyboard
         )
     )
@@ -325,7 +330,7 @@ object KeyboardLayoutManager {
             KeyType.SwitchToSymbolsTwo
         ),
         listOf(
-            KeyType.Return,
+            KeyType.ImeAction,
             KeyType.HideKeyboard
         )
     )
