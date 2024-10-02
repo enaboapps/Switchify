@@ -33,6 +33,8 @@ sealed class KeyType {
         override fun toString() = "⏎"
     }
 
+    data object Tab : KeyType()
+
     object ShiftCaps : KeyType() {
         override fun toString() = "⇧"
     }
@@ -126,6 +128,7 @@ object KeyboardLayoutManager {
 
     private val alphabeticLowerLayout = listOf(
         listOf(
+            KeyType.Tab,
             KeyType.Character("q"),
             KeyType.Character("w"),
             KeyType.Character("e"),

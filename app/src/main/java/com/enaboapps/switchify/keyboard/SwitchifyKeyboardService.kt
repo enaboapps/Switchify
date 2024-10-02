@@ -18,6 +18,7 @@ import com.enaboapps.switchify.keyboard.prediction.PredictionManager
 import com.enaboapps.switchify.keyboard.prediction.PredictionView
 import com.enaboapps.switchify.keyboard.utils.CapsModeHandler
 import com.enaboapps.switchify.keyboard.utils.TextParser
+import com.enaboapps.switchify.service.utils.ScreenUtils
 
 /**
  * This class is responsible for managing the keyboard service.
@@ -219,7 +220,13 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                 )
             }
 
-            row.forEach { type ->
+            for (type in row) {
+                // Skip the tab key on a non-tablet device
+                if (type is KeyType.Tab && !ScreenUtils.isTablet(this)) {
+                    continue
+                }
+
+                // Create the key button
                 val keyButton = KeyboardKey(this).apply {
                     // Set a higher weight for the space key
                     val weight = if (type is KeyType.Space) 3f else 1f
@@ -270,6 +277,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
         }
         if (keyType is KeyType.Return) {
             return ResourcesCompat.getDrawable(resources, R.drawable.ic_return, null)
+        }
+        if (keyType is KeyType.Tab) {
+            return ResourcesCompat.getDrawable(resources, R.drawable.ic_tab, null)
         }
         if (keyType is KeyType.LeftArrow) {
             return ResourcesCompat.getDrawable(resources, R.drawable.ic_keyboard_cursor_left, null)
@@ -405,6 +415,21 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                     KeyEvent(
                         KeyEvent.ACTION_UP,
                         KeyEvent.KEYCODE_ENTER
+                    )
+                )
+            }
+
+            KeyType.Tab -> {
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_DOWN,
+                        KeyEvent.KEYCODE_TAB
+                    )
+                )
+                currentInputConnection.sendKeyEvent(
+                    KeyEvent(
+                        KeyEvent.ACTION_UP,
+                        KeyEvent.KEYCODE_TAB
                     )
                 )
             }
