@@ -181,9 +181,9 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
      */
     private fun updateTextState() {
         currentInputConnection?.let {
-            val text = it.getTextBeforeCursor(100, 0).toString()
+            val text = it.getTextBeforeCursor(Int.MAX_VALUE, 0).toString()
             textParser.parseText(text)
-            predictionManager?.predict(text, textParser)
+            predictionManager?.predict(textParser)
             updateShiftState()
         }
     }

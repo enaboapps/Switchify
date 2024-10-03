@@ -44,19 +44,24 @@ class PredictionManager(private val context: Context, private val listener: Pred
         fleksyLib.reloadLanguageFile(languageFile)
     }
 
-    fun predict(text: String, textParser: TextParser) {
+    fun predict(textParser: TextParser) {
         // If the latest word has a number, don't get predictions
         if (textParser.latestWordHasNumber()) {
             listener.onPredictionsAvailable(emptyList())
             return
         }
 
+        // Get the current paragraph of the text to predict next words
+        val text = textParser.getLatestParagraph()
+
         // If the last character is a space, get predictions for the next word
         if (text.isNotEmpty() && text.last() == ' ') {
             getPredictionsForNextWord(text)
             learn(text)
-        } else {
+        } else if (text.isNotEmpty()) {
             getCurrentPredictions(text)
+        } else {
+            getCurrentPredictions(" ")
         }
     }
 
