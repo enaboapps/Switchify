@@ -144,15 +144,15 @@ class ScanningManager(
 
         // Perform the action based on the action id
         when (action.id) {
-            SwitchAction.Actions.ACTION_NONE -> {
+            SwitchAction.Companion.Actions.ACTION_NONE -> {
                 // do nothing
             }
 
-            SwitchAction.Actions.ACTION_SELECT -> {
+            SwitchAction.Companion.Actions.ACTION_SELECT -> {
                 select()
             }
 
-            SwitchAction.Actions.ACTION_STOP_SCANNING -> {
+            SwitchAction.Companion.Actions.ACTION_STOP_SCANNING -> {
                 if (ScanMethod.isInMenu) {
                     // Stop the menu scanning
                     MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stopScanning()
@@ -177,7 +177,7 @@ class ScanningManager(
                 }
             }
 
-            SwitchAction.Actions.ACTION_CHANGE_SCANNING_DIRECTION -> {
+            SwitchAction.Companion.Actions.ACTION_CHANGE_SCANNING_DIRECTION -> {
                 if (ScanMethod.isInMenu) {
                     // Change the menu scanning direction
                     MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.swapScanDirection()
@@ -202,7 +202,7 @@ class ScanningManager(
                 }
             }
 
-            SwitchAction.Actions.ACTION_MOVE_TO_NEXT_ITEM -> {
+            SwitchAction.Companion.Actions.ACTION_MOVE_TO_NEXT_ITEM -> {
                 if (ScanMethod.isInMenu) {
                     // Move the menu to the next item
                     MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stepForward()
@@ -227,7 +227,7 @@ class ScanningManager(
                 }
             }
 
-            SwitchAction.Actions.ACTION_MOVE_TO_PREVIOUS_ITEM -> {
+            SwitchAction.Companion.Actions.ACTION_MOVE_TO_PREVIOUS_ITEM -> {
                 if (ScanMethod.isInMenu) {
                     // Move the menu to the previous item
                     MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree?.stepBackward()
@@ -252,37 +252,37 @@ class ScanningManager(
                 }
             }
 
-            SwitchAction.Actions.ACTION_TOGGLE_GESTURE_LOCK -> {
+            SwitchAction.Companion.Actions.ACTION_TOGGLE_GESTURE_LOCK -> {
                 // Toggle the gesture lock
                 GestureManager.getInstance().toggleGestureLock()
             }
 
-            SwitchAction.Actions.ACTION_SYS_HOME -> {
+            SwitchAction.Companion.Actions.ACTION_SYS_HOME -> {
                 // Go to the home screen
                 accessibilityService.performGlobalAction(GLOBAL_ACTION_HOME)
             }
 
-            SwitchAction.Actions.ACTION_SYS_BACK -> {
+            SwitchAction.Companion.Actions.ACTION_SYS_BACK -> {
                 // Go back
                 accessibilityService.performGlobalAction(GLOBAL_ACTION_BACK)
             }
 
-            SwitchAction.Actions.ACTION_SYS_RECENTS -> {
+            SwitchAction.Companion.Actions.ACTION_SYS_RECENTS -> {
                 // Open the recent apps
                 accessibilityService.performGlobalAction(GLOBAL_ACTION_RECENTS)
             }
 
-            SwitchAction.Actions.ACTION_SYS_QUICK_SETTINGS -> {
+            SwitchAction.Companion.Actions.ACTION_SYS_QUICK_SETTINGS -> {
                 // Open the quick settings
                 accessibilityService.performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
             }
 
-            SwitchAction.Actions.ACTION_SYS_NOTIFICATIONS -> {
+            SwitchAction.Companion.Actions.ACTION_SYS_NOTIFICATIONS -> {
                 // Open the notifications
                 accessibilityService.performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
             }
 
-            SwitchAction.Actions.ACTION_SYS_LOCK_SCREEN -> {
+            SwitchAction.Companion.Actions.ACTION_SYS_LOCK_SCREEN -> {
                 // Lock the screen
                 accessibilityService.performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
             }

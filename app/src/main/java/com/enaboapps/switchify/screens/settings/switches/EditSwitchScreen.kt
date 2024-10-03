@@ -71,7 +71,7 @@ fun EditSwitchScreen(
                 )
             }
             FullWidthButton(text = "Add Long Press Action", onClick = {
-                editSwitchScreenModel.addLongPressAction(SwitchAction(SwitchAction.Actions.ACTION_SELECT))
+                editSwitchScreenModel.addLongPressAction(SwitchAction(SwitchAction.Companion.Actions.ACTION_SELECT))
             })
             FullWidthButton(text = "Save", onClick = {
                 editSwitchScreenModel.save {

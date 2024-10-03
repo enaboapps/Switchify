@@ -168,7 +168,7 @@ fun SwitchActionSection(
             )
         }
         FullWidthButton(text = "Add Long Press Action", onClick = {
-            viewModel.addLongPressAction(SwitchAction(SwitchAction.Actions.ACTION_SELECT))
+            viewModel.addLongPressAction(SwitchAction(SwitchAction.Companion.Actions.ACTION_SELECT))
         })
     }
 }
