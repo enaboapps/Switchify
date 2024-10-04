@@ -17,7 +17,7 @@ class AppLauncher(private val context: Context) {
      *
      * @return List of AppInfo objects containing display names and package names of installed apps.
      */
-    private fun getInstalledApps(): List<AppInfo> {
+    fun getInstalledApps(): List<AppInfo> {
         val packageManager = context.packageManager
         val intent = Intent(Intent.ACTION_MAIN, null)
         intent.addCategory(Intent.CATEGORY_LAUNCHER)
