@@ -5,12 +5,16 @@ import android.util.Log
 import android.widget.Toast
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.scanning.ScanMode
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.io.File
 
 class SwitchEventStore(private val context: Context) {
-
     private val switchEvents = mutableSetOf<SwitchEvent>()
-    private val fileName = "switch_events.txt"
+    private val fileName = "switch_events.json"
+    private val file: File
+        get() = File(context.applicationContext.filesDir, fileName)
+    private val gson = Gson()
 
     init {
         readFile()
@@ -23,24 +27,10 @@ class SwitchEventStore(private val context: Context) {
     }
 
     fun update(switchEvent: SwitchEvent) {
-        val file = File(context.applicationContext.filesDir, fileName)
-        if (file.exists()) {
-            try {
-                val lines = file.readLines()
-                val newLines = lines.map { line ->
-                    val parts = line.split(", ")
-                    if (parts[1] == switchEvent.code) {
-                        switchEvent.toString()
-                    } else {
-                        line
-                    }
-                }
-                file.writeText(newLines.joinToString("\n"))
-            } catch (e: Exception) {
-                Log.e("SwitchEventStore", "Error reading from file", e)
-            }
-        } else {
-            Log.d("SwitchEventStore", "File does not exist")
+        switchEvents.find { it.code == switchEvent.code }?.let {
+            switchEvents.remove(it)
+            switchEvents.add(switchEvent)
+            saveToFile()
         }
     }
 
@@ -50,37 +40,28 @@ class SwitchEventStore(private val context: Context) {
         }
     }
 
-    fun find(code: String): SwitchEvent? {
-        for (switchEvent in switchEvents) {
-            Log.d("SwitchEventStore", "Checking switch event ${switchEvent.code} for code $code")
-            if (switchEvent.code == code) {
-                Log.d("SwitchEventStore", "Found switch event for code $code")
-                return switchEvent
-            }
+    fun find(code: String): SwitchEvent? =
+        switchEvents.find { it.code == code }?.also {
+            Log.d("SwitchEventStore", "Found switch event for code $code")
+        } ?: run {
+            Log.d("SwitchEventStore", "No switch event found for code $code")
+            null
         }
-        Log.d("SwitchEventStore", "No switch event found for code $code")
-        return null
-    }
 
     fun getCount(): Int = switchEvents.size
 
     fun getSwitchEvents(): Set<SwitchEvent> = switchEvents.toSet()
 
     private fun readFile() {
-        val file = File(context.applicationContext.filesDir, fileName)
         if (file.exists()) {
             try {
-                file.readLines().forEach { line ->
-                    if (line.isNotBlank()) {
-                        switchEvents.add(SwitchEvent.fromString(line))
-                    }
-                }
+                val type = object : TypeToken<Set<SwitchEvent>>() {}.type
+                val events: Set<SwitchEvent> = gson.fromJson(file.readText(), type)
+                switchEvents.clear()
+                switchEvents.addAll(events)
             } catch (e: Exception) {
                 Log.e("SwitchEventStore", "Error reading from file", e)
-
-                // If there is an error reading the file, delete it
                 deleteFile()
-
                 Toast.makeText(
                     context,
                     "Error reading from file. Please reconfigure your switches.",
@@ -93,47 +74,37 @@ class SwitchEventStore(private val context: Context) {
     }
 
     private fun deleteFile() {
-        val file = File(context.applicationContext.filesDir, fileName)
         if (file.exists()) {
             file.delete()
         }
     }
 
     private fun saveToFile() {
-        val file = File(context.applicationContext.filesDir, fileName)
         try {
-            file.writeText(switchEvents.joinToString("\n") { it.toString() })
+            file.writeText(gson.toJson(switchEvents))
         } catch (e: Exception) {
             Log.e("SwitchEventStore", "Error writing to file", e)
         }
     }
 
-    // This function returns a string to tell the user if the configuration is valid
-    // If mode is auto, at least one switch must be configured to the select action
-    // If mode is manual, at least one switch must be configured to the next and previous actions
-    // and at least one switch must be configured to the select action
     fun isConfigInvalid(): String? {
         val preferenceManager = PreferenceManager(context)
         val mode =
             ScanMode(preferenceManager.getStringValue(PreferenceManager.PREFERENCE_KEY_SCAN_MODE))
-        val containsSelect =
-            switchEvents.any { it.containsAction(SwitchAction.Actions.ACTION_SELECT) }
+        val containsSelect = switchEvents.any { it.containsAction(SwitchAction.ACTION_SELECT) }
         val containsNext =
-            switchEvents.any { it.containsAction(SwitchAction.Actions.ACTION_MOVE_TO_NEXT_ITEM) }
+            switchEvents.any { it.containsAction(SwitchAction.ACTION_MOVE_TO_NEXT_ITEM) }
         val containsPrevious =
-            switchEvents.any { it.containsAction(SwitchAction.Actions.ACTION_MOVE_TO_PREVIOUS_ITEM) }
-        return when (mode.id) {
-            ScanMode.Modes.MODE_AUTO -> if (containsSelect) {
-                null
-            } else {
-                "At least one switch must be configured to the select action."
-            }
+            switchEvents.any { it.containsAction(SwitchAction.ACTION_MOVE_TO_PREVIOUS_ITEM) }
 
-            ScanMode.Modes.MODE_MANUAL -> if (containsSelect && containsNext && containsPrevious) {
-                null
-            } else {
-                "At least one switch must be configured to the next, previous, and select actions."
-            }
+        return when (mode.id) {
+            ScanMode.Modes.MODE_AUTO ->
+                if (containsSelect) null
+                else "At least one switch must be configured to the select action."
+
+            ScanMode.Modes.MODE_MANUAL ->
+                if (containsSelect && containsNext && containsPrevious) null
+                else "At least one switch must be configured to the next, previous, and select actions."
 
             else -> null
         }

@@ -24,7 +24,7 @@ class AddNewSwitchScreenModel(private val store: SwitchEventStore) : ViewModel()
     val shouldSave = MutableLiveData(false)
 
     // Actions for press and long press
-    val pressAction = MutableLiveData(SwitchAction(SwitchAction.Actions.ACTION_SELECT))
+    val pressAction = MutableLiveData(SwitchAction(SwitchAction.ACTION_SELECT))
     val longPressActions = MutableLiveData<List<SwitchAction>>(emptyList())
 
     fun processKeyCode(key: Key, context: Context) {

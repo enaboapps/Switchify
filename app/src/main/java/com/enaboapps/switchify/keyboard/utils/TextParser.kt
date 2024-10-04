@@ -22,6 +22,18 @@ class TextParser private constructor() {
 
     fun getAllText(): String = allText
 
+    fun getLatestParagraph(): String {
+        // Find the last newline character
+        val index = allText.lastIndexOf("\n")
+
+        val length = if (index == -1) allText.length else index + 1
+
+        if (index == -1) return allText
+
+        // Return the substring from the last newline character to the end of the text
+        return allText.substring(length)
+    }
+
     fun getLengthOfWhitespacesAtEndOfLatestSentence(): Int {
         var index = allText.length - 1
         var count = 0
