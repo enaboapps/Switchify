@@ -1,7 +1,34 @@
 package com.enaboapps.switchify.switches
 
-class SwitchAction(val id: Int) {
-    object Actions {
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
+
+data class SwitchActionExtra(
+    @SerializedName("app_package") val appPackage: String = "",
+    @SerializedName("app_name") val appName: String = ""
+) {
+    companion object {
+        fun fromJson(json: String): SwitchActionExtra =
+            Gson().fromJson(json, SwitchActionExtra::class.java)
+    }
+
+    fun toJson(): String = Gson().toJson(this)
+}
+
+data class SwitchAction(
+    @SerializedName("id") val id: Int,
+    @SerializedName("extra") val extra: SwitchActionExtra? = null
+) {
+    companion object {
+        fun fromJson(json: String): SwitchAction = Gson().fromJson(json, SwitchAction::class.java)
+
+        val actions: List<SwitchAction> = listOf(
+            ACTION_NONE, ACTION_SELECT, ACTION_STOP_SCANNING, ACTION_CHANGE_SCANNING_DIRECTION,
+            ACTION_MOVE_TO_NEXT_ITEM, ACTION_MOVE_TO_PREVIOUS_ITEM, ACTION_TOGGLE_GESTURE_LOCK,
+            ACTION_SYS_HOME, ACTION_SYS_BACK, ACTION_SYS_RECENTS, ACTION_SYS_QUICK_SETTINGS,
+            ACTION_SYS_NOTIFICATIONS, ACTION_SYS_LOCK_SCREEN, ACTION_OPEN_APP
+        ).map { SwitchAction(it) }
+
         const val ACTION_NONE = 0
         const val ACTION_SELECT = 1
         const val ACTION_STOP_SCANNING = 2
@@ -15,62 +42,58 @@ class SwitchAction(val id: Int) {
         const val ACTION_SYS_QUICK_SETTINGS = 10
         const val ACTION_SYS_NOTIFICATIONS = 11
         const val ACTION_SYS_LOCK_SCREEN = 12
+        const val ACTION_OPEN_APP = 13
     }
 
-    // static array of actions
-    companion object {
-        val actions = arrayOf(
-            SwitchAction(Actions.ACTION_NONE),
-            SwitchAction(Actions.ACTION_SELECT),
-            SwitchAction(Actions.ACTION_STOP_SCANNING),
-            SwitchAction(Actions.ACTION_CHANGE_SCANNING_DIRECTION),
-            SwitchAction(Actions.ACTION_MOVE_TO_NEXT_ITEM),
-            SwitchAction(Actions.ACTION_MOVE_TO_PREVIOUS_ITEM),
-            SwitchAction(Actions.ACTION_TOGGLE_GESTURE_LOCK),
-            SwitchAction(Actions.ACTION_SYS_HOME),
-            SwitchAction(Actions.ACTION_SYS_BACK),
-            SwitchAction(Actions.ACTION_SYS_RECENTS),
-            SwitchAction(Actions.ACTION_SYS_QUICK_SETTINGS),
-            SwitchAction(Actions.ACTION_SYS_NOTIFICATIONS),
-            SwitchAction(Actions.ACTION_SYS_LOCK_SCREEN)
-        )
+    fun toJson(): String = Gson().toJson(this)
+
+    fun hasExtra(): Boolean = extra != null
+
+    fun isExtraAvailable(): Boolean = id == ACTION_OPEN_APP
+
+    fun getActionName(): String = when {
+        hasExtra() -> getActionNameWithExtra()
+        else -> getActionNameWithoutExtra()
     }
 
-    fun getActionName(): String {
-        return when (id) {
-            Actions.ACTION_NONE -> "None"
-            Actions.ACTION_SELECT -> "Select"
-            Actions.ACTION_STOP_SCANNING -> "Stop Scanning"
-            Actions.ACTION_CHANGE_SCANNING_DIRECTION -> "Change Scanning Direction"
-            Actions.ACTION_MOVE_TO_NEXT_ITEM -> "Move to Next Item"
-            Actions.ACTION_MOVE_TO_PREVIOUS_ITEM -> "Move to Previous Item"
-            Actions.ACTION_TOGGLE_GESTURE_LOCK -> "Toggle Gesture Lock"
-            Actions.ACTION_SYS_HOME -> "Home"
-            Actions.ACTION_SYS_BACK -> "Back"
-            Actions.ACTION_SYS_RECENTS -> "Recents"
-            Actions.ACTION_SYS_QUICK_SETTINGS -> "Quick Settings"
-            Actions.ACTION_SYS_NOTIFICATIONS -> "Notifications"
-            Actions.ACTION_SYS_LOCK_SCREEN -> "Lock Screen"
-            else -> "Unknown"
-        }
+    private fun getActionNameWithExtra(): String = when (id) {
+        ACTION_OPEN_APP -> "Open ${extra?.appName}"
+        else -> getActionNameWithoutExtra()
     }
 
-    fun getActionDescription(): String {
-        return when (id) {
-            Actions.ACTION_NONE -> "Do nothing"
-            Actions.ACTION_SELECT -> "Select the current item"
-            Actions.ACTION_STOP_SCANNING -> "Stop scanning"
-            Actions.ACTION_CHANGE_SCANNING_DIRECTION -> "Change the scanning direction"
-            Actions.ACTION_MOVE_TO_NEXT_ITEM -> "Move to the next item"
-            Actions.ACTION_MOVE_TO_PREVIOUS_ITEM -> "Move to the previous item"
-            Actions.ACTION_TOGGLE_GESTURE_LOCK -> "Toggle the gesture lock"
-            Actions.ACTION_SYS_HOME -> "Go to the home screen"
-            Actions.ACTION_SYS_BACK -> "Go back"
-            Actions.ACTION_SYS_RECENTS -> "Open the recent apps"
-            Actions.ACTION_SYS_QUICK_SETTINGS -> "Open the quick settings"
-            Actions.ACTION_SYS_NOTIFICATIONS -> "Open the notifications"
-            Actions.ACTION_SYS_LOCK_SCREEN -> "Lock the screen"
-            else -> "Unknown"
-        }
+    private fun getActionNameWithoutExtra(): String = when (id) {
+        ACTION_NONE -> "None"
+        ACTION_SELECT -> "Select"
+        ACTION_STOP_SCANNING -> "Stop Scanning"
+        ACTION_CHANGE_SCANNING_DIRECTION -> "Change Scanning Direction"
+        ACTION_MOVE_TO_NEXT_ITEM -> "Move to Next Item"
+        ACTION_MOVE_TO_PREVIOUS_ITEM -> "Move to Previous Item"
+        ACTION_TOGGLE_GESTURE_LOCK -> "Toggle Gesture Lock"
+        ACTION_SYS_HOME -> "Home"
+        ACTION_SYS_BACK -> "Back"
+        ACTION_SYS_RECENTS -> "Recents"
+        ACTION_SYS_QUICK_SETTINGS -> "Quick Settings"
+        ACTION_SYS_NOTIFICATIONS -> "Notifications"
+        ACTION_SYS_LOCK_SCREEN -> "Lock Screen"
+        ACTION_OPEN_APP -> "Open App"
+        else -> "Unknown"
+    }
+
+    fun getActionDescription(): String = when (id) {
+        ACTION_NONE -> "Do nothing"
+        ACTION_SELECT -> "Select the current item"
+        ACTION_STOP_SCANNING -> "Stop scanning"
+        ACTION_CHANGE_SCANNING_DIRECTION -> "Change the scanning direction"
+        ACTION_MOVE_TO_NEXT_ITEM -> "Move to the next item"
+        ACTION_MOVE_TO_PREVIOUS_ITEM -> "Move to the previous item"
+        ACTION_TOGGLE_GESTURE_LOCK -> "Toggle the gesture lock"
+        ACTION_SYS_HOME -> "Go to the home screen"
+        ACTION_SYS_BACK -> "Go back"
+        ACTION_SYS_RECENTS -> "Open the recent apps"
+        ACTION_SYS_QUICK_SETTINGS -> "Open the quick settings"
+        ACTION_SYS_NOTIFICATIONS -> "Open the notifications"
+        ACTION_SYS_LOCK_SCREEN -> "Lock the screen"
+        ACTION_OPEN_APP -> "Open an app"
+        else -> "Unknown"
     }
 }

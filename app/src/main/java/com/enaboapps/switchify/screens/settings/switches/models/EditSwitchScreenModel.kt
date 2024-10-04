@@ -12,7 +12,7 @@ class EditSwitchScreenModel(
 ) : ViewModel() {
 
     val name = MutableLiveData("")
-    val pressAction = MutableLiveData(SwitchAction(SwitchAction.Actions.ACTION_SELECT))
+    val pressAction = MutableLiveData(SwitchAction(SwitchAction.ACTION_SELECT))
     val longPressActions = MutableLiveData<List<SwitchAction>>(emptyList())
 
     init {
