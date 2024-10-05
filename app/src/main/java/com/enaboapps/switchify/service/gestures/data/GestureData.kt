@@ -15,6 +15,7 @@ data class GestureData(
         const val TAP_AND_HOLD_DURATION = 1000L
         const val SWIPE_DURATION = 80L
         const val DRAG_DURATION = 1500L
+        const val HOLD_BEFORE_DRAG_DURATION = 400L
         const val SCROLL_DURATION = 800L
     }
 

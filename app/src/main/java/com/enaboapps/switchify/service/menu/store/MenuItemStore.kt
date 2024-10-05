@@ -180,6 +180,11 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 action = { GestureManager.getInstance().startDragGesture() }
             ),
             MenuItem(
+                id = "hold_and_drag",
+                text = "Hold and Drag",
+                action = { GestureManager.getInstance().startHoldAndDragGesture() }
+            ),
+            MenuItem(
                 id = "zoom_gestures",
                 text = "Zoom Gestures",
                 isLinkToMenu = true,

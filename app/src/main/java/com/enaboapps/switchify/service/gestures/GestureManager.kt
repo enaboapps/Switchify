@@ -236,6 +236,13 @@ class GestureManager private constructor() {
     }
 
     /**
+     * Starts a hold and drag gesture.
+     */
+    fun startHoldAndDragGesture() {
+        linearGesturePerformer.startGesture(GestureType.HOLD_AND_DRAG)
+    }
+
+    /**
      * Starts a custom swipe gesture.
      */
     fun startCustomSwipe() {
