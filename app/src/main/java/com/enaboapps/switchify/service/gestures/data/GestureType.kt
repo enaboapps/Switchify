@@ -9,6 +9,7 @@ enum class GestureType {
     SWIPE_LEFT,
     SWIPE_RIGHT,
     CUSTOM_SWIPE,
+    HOLD_AND_DRAG,
     DRAG,
     SCROLL_UP,
     SCROLL_DOWN,
