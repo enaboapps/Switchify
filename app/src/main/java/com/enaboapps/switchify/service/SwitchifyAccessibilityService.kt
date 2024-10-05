@@ -15,7 +15,6 @@ import com.enaboapps.switchify.service.utils.ScreenWatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 /**
@@ -30,16 +29,6 @@ class SwitchifyAccessibilityService : AccessibilityService() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     /**
-     * This function is called when the service is destroyed.
-     * It shuts down the scanning manager and cancels all coroutines.
-     */
-    override fun onDestroy() {
-        super.onDestroy()
-        scanningManager.shutdown()
-        serviceScope.cancel()
-    }
-
-    /**
      * This method is called when an AccessibilityEvent is fired.
      * It updates the nodes in the active window and the keyboard state.
      */
@@ -52,13 +41,7 @@ class SwitchifyAccessibilityService : AccessibilityService() {
         KeyboardBridge.updateKeyboardState(windows, this)
     }
 
-    /**
-     * This method is called when the service is interrupted.
-     * It shuts down the scanning manager.
-     */
-    override fun onInterrupt() {
-        scanningManager.shutdown()
-    }
+    override fun onInterrupt() {}
 
     /**
      * This method is called when the service is connected.
