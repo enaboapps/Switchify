@@ -1,7 +1,11 @@
 package com.enaboapps.switchify.service.switches
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.util.Log
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanningManager
@@ -25,6 +29,22 @@ class SwitchListener(
     private var latestAction: AbsorbedSwitchAction? = null
     private var lastSwitchPressedTime: Long = 0
     private var lastSwitchPressedCode: Int = 0
+
+    /**
+     * Receives broadcasts from the SwitchEventStore to update the switch events.
+     */
+    private val switchEventReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            switchEventStore.reload()
+        }
+    }
+
+    init {
+        LocalBroadcastManager.getInstance(context).registerReceiver(
+            switchEventReceiver,
+            IntentFilter(SwitchEventStore.EVENTS_UPDATED)
+        )
+    }
 
     /**
      * Checks if the pause on switch hold feature is enabled.
