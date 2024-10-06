@@ -5,11 +5,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -29,6 +33,8 @@ fun EditSwitchScreen(
     val editSwitchScreenModel = EditSwitchScreenModel(code, SwitchEventStore(LocalContext.current))
     val observeLongPressActions = editSwitchScreenModel.longPressActions.observeAsState()
     val verticalScrollState = rememberScrollState()
+    val showDeleteConfirmation = remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             NavBar(
@@ -79,10 +85,31 @@ fun EditSwitchScreen(
                 }
             })
             FullWidthButton(text = "Delete", onClick = {
-                editSwitchScreenModel.delete {
-                    navController.popBackStack()
-                }
+                showDeleteConfirmation.value = true
             })
         }
+    }
+
+    if (showDeleteConfirmation.value) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation.value = false },
+            title = { Text("Confirm Deletion") },
+            text = { Text("Are you sure you want to delete this switch?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirmation.value = false
+                    editSwitchScreenModel.delete {
+                        navController.popBackStack()
+                    }
+                }) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation.value = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
