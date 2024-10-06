@@ -1,8 +1,10 @@
 package com.enaboapps.switchify.switches
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.scanning.ScanMode
 import com.google.gson.Gson
@@ -16,7 +18,15 @@ class SwitchEventStore(private val context: Context) {
         get() = File(context.applicationContext.filesDir, fileName)
     private val gson = Gson()
 
+    companion object {
+        const val EVENTS_UPDATED = "com.enaboapps.switchify.EVENTS_UPDATED"
+    }
+
     init {
+        readFile()
+    }
+
+    fun reload() {
         readFile()
     }
 
@@ -82,6 +92,7 @@ class SwitchEventStore(private val context: Context) {
     private fun saveToFile() {
         try {
             file.writeText(gson.toJson(switchEvents))
+            LocalBroadcastManager.getInstance(context).sendBroadcast(Intent(EVENTS_UPDATED))
         } catch (e: Exception) {
             Log.e("SwitchEventStore", "Error writing to file", e)
         }

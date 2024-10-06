@@ -28,7 +28,6 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.enaboapps.switchify.service.utils.ServiceUtils
 import com.enaboapps.switchify.widgets.NavBar
 
 @Composable
@@ -37,20 +36,6 @@ fun TestSwitchesScreen(navController: NavHostController) {
     var switchState by remember { mutableStateOf("You haven't pressed any switch yet") }
 
     val context = LocalContext.current
-
-    val serviceUtils = ServiceUtils()
-    val isServiceEnabled = serviceUtils.isAccessibilityServiceEnabled(context)
-    LaunchedEffect(isServiceEnabled) {
-        // If the service is enabled, show a warning and pop back to the previous screen
-        if (isServiceEnabled) {
-            Toast.makeText(
-                context,
-                "Please disable the Switchify service before testing your switch",
-                Toast.LENGTH_LONG
-            ).show()
-            navController.popBackStack()
-        }
-    }
 
     Scaffold(
         topBar = {
