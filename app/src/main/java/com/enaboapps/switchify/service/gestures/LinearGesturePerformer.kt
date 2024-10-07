@@ -167,13 +167,17 @@ class LinearGesturePerformer(
     private fun performGesture(type: GestureType, start: PointF, end: PointF) {
         if (!checkGestureDelay()) return
 
-        val path = createGesturePath(start, end)
-        showVisualFeedback(start, end)
+        try {
+            val path = createGesturePath(start, end)
+            showVisualFeedback(start, end)
 
-        val gestureDescription = createGestureDescription(type, path, start, end)
-        dispatchGesture(gestureDescription)
+            val gestureDescription = createGestureDescription(type, path, start, end)
+            dispatchGesture(gestureDescription)
 
-        lastGestureTime = System.currentTimeMillis()
+            lastGestureTime = System.currentTimeMillis()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     /**
