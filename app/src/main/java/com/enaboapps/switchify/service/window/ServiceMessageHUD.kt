@@ -6,8 +6,11 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.Gravity
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.utils.ScreenUtils
 
@@ -15,23 +18,13 @@ import com.enaboapps.switchify.service.utils.ScreenUtils
  * ServiceMessageHUD is responsible for displaying overlay messages on top of all other application windows.
  * It supports two types of messages: disappearing and permanent, with configurable display durations.
  * This class implements immediate message replacement, ensuring the most recent message is always displayed.
- *
- * @property context The application context, set via the setup method.
- * @property switchifyAccessibilityWindow The window manager for adding and removing views.
- * @property message The current message text being displayed.
- * @property shownMessageType The type of the current message being displayed.
- * @property messageView The LinearLayout containing the message TextView.
- * @property handler A Handler for posting delayed operations on the main thread.
  */
 class ServiceMessageHUD private constructor() {
     companion object {
         /**
          * Singleton instance of ServiceMessageHUD.
          */
-        val instance: ServiceMessageHUD by lazy {
-            ServiceMessageHUD()
-        }
-
+        val instance: ServiceMessageHUD by lazy { ServiceMessageHUD() }
         private const val TAG = "ServiceMessageHUD"
     }
 
@@ -74,57 +67,85 @@ class ServiceMessageHUD private constructor() {
      * @property milliseconds The duration in milliseconds.
      */
     enum class Time(val milliseconds: Long) {
-        /**
-         * A short duration of 1 second.
-         */
         SHORT(1000),
-
-        /**
-         * A medium duration of 5 seconds.
-         */
         MEDIUM(5000),
-
-        /**
-         * A long duration of 10 seconds.
-         */
         LONG(10000)
     }
 
     /**
      * Creates or updates the message view with the specified message.
-     * If the messageView doesn't exist, it creates a new one.
-     * If it already exists, it updates the text of the existing view.
+     * If the messageView doesn't exist, it creates a new LinearLayout with a TextView.
+     * If it already exists, it updates the text of the existing TextView.
      */
     private fun createOrUpdateMessageView() {
         Log.d(TAG, "Creating or updating message view")
         context?.let { context ->
             if (messageView == null) {
+                // Create a new LinearLayout as the container
                 messageView = LinearLayout(context).apply {
                     orientation = LinearLayout.VERTICAL
                     gravity = Gravity.CENTER
-                    background = context.getDrawable(R.drawable.rounded_corners)
-                    setPadding(16, 16, 16, 16)
-                    layoutParams = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        gravity = Gravity.CENTER_HORIZONTAL
-                    }
+                    background = ResourcesCompat.getDrawable(
+                        context.resources,
+                        R.drawable.rounded_corners,
+                        null
+                    )
+
+                    // Set padding for the container
+                    val padding = ScreenUtils.dpToPx(context, 16)
+                    setPadding(padding, padding, padding, padding)
+
+                    // Set layout parameters for the container
+                    layoutParams = FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
                 }
 
-                val messageTextView = TextView(context).apply {
-                    text = message
+                // Create a TextView for displaying the message
+                val textView = TextView(context).apply {
                     setTextColor(Color.WHITE)
-                    textSize = 20f
+                    textSize = 16f
                     gravity = Gravity.CENTER
+                    setTextIsSelectable(false)
+                    // Allow multiple lines and wrap content
+                    layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    maxLines = Int.MAX_VALUE
                 }
 
-                messageView?.addView(messageTextView)
-            } else {
-                (messageView?.getChildAt(0) as? TextView)?.text = message
+                messageView?.addView(textView)
             }
+
+            // Update the text of the TextView
+            (messageView?.getChildAt(0) as? TextView)?.text = message
             Log.d(TAG, "Message view created or updated successfully")
         } ?: Log.e(TAG, "Context is null, cannot create or update message view")
+    }
+
+    /**
+     * Adds the message view to the window.
+     * This method is called when a new message view is created and needs to be displayed.
+     */
+    private fun addViewToWindow() {
+        handler.post {
+            messageView?.let { view ->
+                try {
+                    // Ensure the view is not already added
+                    if (view.parent == null) {
+                        switchifyAccessibilityWindow.addViewToBottom(
+                            view,
+                            ScreenUtils.dpToPx(context!!, 16)
+                        )
+                        Log.d(TAG, "Message view added to window successfully")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to add view to window", e)
+                }
+            } ?: Log.e(TAG, "MessageView is null, cannot add to window")
+        }
     }
 
     /**
@@ -156,33 +177,6 @@ class ServiceMessageHUD private constructor() {
     }
 
     /**
-     * Adds the message view to the window.
-     * This method is called when a new message view is created and needs to be displayed.
-     */
-    private fun addViewToWindow() {
-        val x = 100
-        val y = 150
-        val width = ScreenUtils.getWidth(context!!) - 200
-
-        handler.post {
-            messageView?.let {
-                try {
-                    switchifyAccessibilityWindow.addView(
-                        it,
-                        x,
-                        y,
-                        width,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    )
-                    Log.d(TAG, "Message view added to window successfully")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to add view to window", e)
-                }
-            } ?: Log.e(TAG, "MessageView is null, cannot add to window")
-        }
-    }
-
-    /**
      * Hides and removes the currently displayed message from the screen.
      * This method is called automatically for DISAPPEARING messages after their display time has elapsed,
      * or can be called manually to remove a message before its time has elapsed.
@@ -196,6 +190,8 @@ class ServiceMessageHUD private constructor() {
                     Log.d(TAG, "Message view removed from window successfully")
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to remove view from window", e)
+                } finally {
+                    messageView = null
                 }
             }
         } ?: Log.d(TAG, "No message view to hide")

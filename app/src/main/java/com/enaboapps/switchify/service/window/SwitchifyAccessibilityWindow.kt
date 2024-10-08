@@ -87,6 +87,23 @@ class SwitchifyAccessibilityWindow {
         }
     }
 
+    fun addViewToBottom(view: ViewGroup, margins: Int = 0) {
+        mainHandler.post {
+            try {
+                val params = RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.WRAP_CONTENT,
+                    RelativeLayout.LayoutParams.WRAP_CONTENT
+                )
+                params.addRule(RelativeLayout.CENTER_HORIZONTAL)
+                params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                params.setMargins(margins, margins, margins, margins)
+                baseLayout?.addView(view, params)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in addView: ${e.message}", e)
+            }
+        }
+    }
+
     fun addViewToCenter(view: ViewGroup) {
         mainHandler.post {
             try {
