@@ -30,6 +30,7 @@ fun AboutScreen(navController: NavController) {
     val context = LocalContext.current
     val version = context.packageManager.getPackageInfo(context.packageName, 0).versionName
 
+    val websiteUrl = "https://switchifyapp.com"
     val repositoryUrl = "https://github.com/enaboapps/switchify"
     val privacyPolicyUrl = "https://www.enaboapps.com/switchify-privacy-policy"
 
@@ -64,6 +65,10 @@ fun AboutScreen(navController: NavController) {
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(24.dp))
+            FullWidthButton(text = "Website", onClick = {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(websiteUrl)))
+            })
+            Spacer(modifier = Modifier.height(16.dp))
             FullWidthButton(
                 text = "View on GitHub",
                 onClick = {
