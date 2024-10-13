@@ -34,12 +34,11 @@ class EditSwitchScreenModel(
         completion()
     }
 
-    fun updateLongPressAction(oldAction: SwitchAction, newAction: SwitchAction) {
-        val currentActions = longPressActions.value?.toMutableList() ?: mutableListOf()
-        val index = currentActions.indexOf(oldAction)
-        if (index != -1) {
-            currentActions[index] = newAction
-            longPressActions.value = currentActions
+    fun updateLongPressAction(newAction: SwitchAction, index: Int) {
+        longPressActions.value?.let { actions ->
+            val updatedActions = actions.toMutableList()
+            updatedActions[index] = newAction
+            longPressActions.value = updatedActions
         }
     }
 
@@ -57,9 +56,11 @@ class EditSwitchScreenModel(
         longPressActions.value = currentActions
     }
 
-    fun removeLongPressAction(action: SwitchAction) {
-        val currentActions = longPressActions.value?.toMutableList() ?: mutableListOf()
-        currentActions.remove(action)
-        longPressActions.value = currentActions
+    fun removeLongPressAction(index: Int) {
+        longPressActions.value?.let { actions ->
+            val updatedActions = actions.toMutableList()
+            updatedActions.removeAt(index)
+            longPressActions.value = updatedActions
+        }
     }
 }

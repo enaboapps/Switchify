@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,17 +65,19 @@ fun EditSwitchScreen(
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
 
-            observeLongPressActions.value?.forEach { action ->
-                SwitchActionPicker(
-                    title = "Long Press Action ${observeLongPressActions.value!!.indexOf(action) + 1}",
-                    switchAction = action,
-                    onChange = { newAction ->
-                        editSwitchScreenModel.updateLongPressAction(action, newAction)
-                    },
-                    onDelete = {
-                        editSwitchScreenModel.removeLongPressAction(action)
-                    }
-                )
+            observeLongPressActions.value?.forEachIndexed { index, action ->
+                key(action) {
+                    SwitchActionPicker(
+                        title = "Long Press Action ${index + 1}",
+                        switchAction = action,
+                        onChange = { newAction ->
+                            editSwitchScreenModel.updateLongPressAction(newAction, index)
+                        },
+                        onDelete = {
+                            editSwitchScreenModel.removeLongPressAction(index)
+                        }
+                    )
+                }
             }
             FullWidthButton(text = "Add Long Press Action", onClick = {
                 editSwitchScreenModel.addLongPressAction(SwitchAction(SwitchAction.ACTION_SELECT))
