@@ -6,8 +6,8 @@ import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.GesturePointListener
 import com.enaboapps.switchify.service.methods.shared.ScanMethodUIConstants
 import com.enaboapps.switchify.service.scanning.ScanDirection
+import com.enaboapps.switchify.service.scanning.ScanMethodBase
 import com.enaboapps.switchify.service.scanning.ScanSettings
-import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 
@@ -16,7 +16,7 @@ import com.enaboapps.switchify.service.selection.AutoSelectionHandler
  *
  * @param context The application context.
  */
-class CursorManager(private val context: Context) : ScanStateInterface, GesturePointListener {
+class CursorManager(private val context: Context) : ScanMethodBase, GesturePointListener {
 
     companion object {
         private const val TAG = "CursorManager"
@@ -178,7 +178,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     /**
      * Swaps the scanning direction.
      */
-    fun swapDirection() {
+    override fun swapScanDirection() {
         if (isSetupRequired()) return // Failsafe in case setup was not successful
 
         direction = when (direction) {
@@ -213,6 +213,14 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
         }
 
         resumeScanning()
+    }
+
+    /**
+     * Starts the scanning process.
+     */
+    override fun startScanning() {
+        setup()
+        startAutoScanIfEnabled()
     }
 
     /**
@@ -361,7 +369,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     /**
      * Moves the cursor to the next item.
      */
-    fun moveToNextItem() {
+    override fun stepForward() {
         if (isReset()) {
             setupXQuadrant()
             startAutoScanIfEnabled()
@@ -379,7 +387,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     /**
      * Moves the cursor to the previous item.
      */
-    fun moveToPreviousItem() {
+    override fun stepBackward() {
         if (isReset()) {
             setupXQuadrant()
             startAutoScanIfEnabled()
@@ -397,7 +405,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     /**
      * Performs the selection action.
      */
-    fun performSelectionAction() {
+    override fun performSelectionAction() {
         setup()
         stopScanning()
 
@@ -466,6 +474,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     private fun performFinalAction() {
         reset()
         AutoSelectionHandler.setSelectAction { performTapAction() }
+        AutoSelectionHandler.setStartScanningAction { performSelectionAction() }
         AutoSelectionHandler.performSelectionAction()
     }
 
@@ -479,7 +488,7 @@ class CursorManager(private val context: Context) : ScanStateInterface, GestureP
     /**
      * Cleans up the cursor manager.
      */
-    fun cleanup() {
+    override fun cleanup() {
         reset()
         scanningScheduler?.shutdown()
         scanningScheduler = null

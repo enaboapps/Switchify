@@ -1,12 +1,12 @@
 package com.enaboapps.switchify.service.selection
 
 import android.content.Context
-import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.visuals.AutoTapVisual
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanMethod
+import com.enaboapps.switchify.service.scanning.ScanSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -17,10 +17,12 @@ import kotlinx.coroutines.launch
  */
 object AutoSelectionHandler {
     private var selectAction: (() -> Unit)? = null
+    private var startScanningAction: (() -> Unit)? = null
     private var autoSelectInProgress = false
     private var bypassAutoSelect = false
-    private var preferenceManager: PreferenceManager? = null
     private var autoTapVisual: AutoTapVisual? = null
+
+    private lateinit var scanSettings: ScanSettings
 
     /**
      * Initializes the auto-selection handler.
@@ -31,7 +33,7 @@ object AutoSelectionHandler {
      */
     fun init(appContext: Context) {
         // Use application context to avoid leaking activity or other contexts
-        preferenceManager = PreferenceManager(appContext.applicationContext)
+        scanSettings = ScanSettings(appContext)
         autoTapVisual = AutoTapVisual(appContext.applicationContext)
     }
 
@@ -42,6 +44,15 @@ object AutoSelectionHandler {
      */
     fun setSelectAction(newAction: () -> Unit) {
         selectAction = newAction
+    }
+
+    /**
+     * Sets the start scanning action to be executed.
+     *
+     * @param newAction The action to be executed as part of the selection process.
+     */
+    fun setStartScanningAction(newAction: () -> Unit) {
+        startScanningAction = newAction
     }
 
     /**
@@ -68,6 +79,7 @@ object AutoSelectionHandler {
         // If bypass auto-select is enabled, perform the selection action and return
         if (bypassAutoSelect) {
             selectAction?.invoke()
+            performStartScanningAction()
             return
         }
 
@@ -82,23 +94,20 @@ object AutoSelectionHandler {
         println("SelectionHandler.performSelectionAction()")
 
         // Check if auto-select is enabled
-        preferenceManager?.let { prefs ->
-            val autoSelectEnabled =
-                prefs.getBooleanValue(PreferenceManager.PREFERENCE_KEY_AUTO_SELECT)
-            // If auto-select is enabled, start the auto-select process
-            if (autoSelectEnabled) {
-                if (!autoSelectInProgress && selectAction != null) {
-                    autoSelectInProgress = true
-                    CoroutineScope(Dispatchers.Main).launch {
-                        val delayTime =
-                            prefs.getLongValue(PreferenceManager.PREFERENCE_KEY_AUTO_SELECT_DELAY)
-                        val point = GesturePoint.getPoint()
-                        autoTapVisual?.start(point.x, point.y, delayTime)
-                        delay(delayTime)
-                        if (autoSelectInProgress) {
-                            selectAction?.invoke()
-                            autoSelectInProgress = false
-                        }
+        val autoSelectEnabled = scanSettings.isAutoSelectEnabled()
+        // If auto-select is enabled, start the auto-select process
+        if (autoSelectEnabled) {
+            if (!autoSelectInProgress && selectAction != null) {
+                autoSelectInProgress = true
+                CoroutineScope(Dispatchers.Main).launch {
+                    val delayTime = scanSettings.getAutoSelectDelay()
+                    val point = GesturePoint.getPoint()
+                    autoTapVisual?.start(point.x, point.y, delayTime)
+                    delay(delayTime)
+                    if (autoSelectInProgress) {
+                        selectAction?.invoke()
+                        performStartScanningAction()
+                        autoSelectInProgress = false
                     }
                 }
             } else { // If auto-select is disabled, open the main menu
@@ -108,9 +117,28 @@ object AutoSelectionHandler {
     }
 
     /**
+     * Performs the start scanning action if it is enabled.
+     */
+    fun performStartScanningAction() {
+        if (scanSettings.getAutomaticallyStartScanAfterSelection()) {
+            startScanningAction?.invoke()
+        }
+    }
+
+    /**
      * Checks if the auto-select process is currently in progress.
      *
      * @return True if the auto-select process is in progress, false otherwise.
      */
     fun isAutoSelectInProgress(): Boolean = autoSelectInProgress
+
+    /**
+     * Resets the auto-select process.
+     */
+    fun reset() {
+        autoSelectInProgress = false
+        bypassAutoSelect = false
+        startScanningAction = null
+        selectAction = null
+    }
 }

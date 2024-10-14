@@ -3,8 +3,8 @@ package com.enaboapps.switchify.service.methods.radar
 import android.content.Context
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
+import com.enaboapps.switchify.service.scanning.ScanMethodBase
 import com.enaboapps.switchify.service.scanning.ScanSettings
-import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
 import com.enaboapps.switchify.service.selection.AutoSelectionHandler
 import com.enaboapps.switchify.service.utils.ScreenUtils
@@ -12,7 +12,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class RadarManager(private val context: Context) : ScanStateInterface {
+class RadarManager(private val context: Context) : ScanMethodBase {
 
     companion object {
         private const val TAG = "RadarManager"
@@ -150,7 +150,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
         }
     }
 
-    fun manualNextStep() {
+    override fun stepForward() {
         rotationDirection = RotationDirection.CLOCKWISE
         circleMovement = CircleMovement.OUTWARD
         if (currentStep == RadarStep.IDLE) {
@@ -164,7 +164,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
         }
     }
 
-    fun manualPreviousStep() {
+    override fun stepBackward() {
         rotationDirection = RotationDirection.ANTI_CLOCKWISE
         circleMovement = CircleMovement.INWARD
         if (currentStep == RadarStep.IDLE) {
@@ -176,6 +176,11 @@ class RadarManager(private val context: Context) : ScanStateInterface {
             RadarStep.MOVING -> moveCircle()
             RadarStep.IDLE -> {} // Do nothing
         }
+    }
+
+    override fun startScanning() {
+        setup()
+        startRadar()
     }
 
     override fun stopScanning() {
@@ -190,7 +195,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
         scanningScheduler?.resumeScanning()
     }
 
-    fun performSelectionAction() {
+    override fun performSelectionAction() {
         setup()
         if (isSetupRequired()) return // Failsafe in case setup was not successful
 
@@ -211,6 +216,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
                 GesturePoint.x = x.toInt()
                 GesturePoint.y = y.toInt()
                 AutoSelectionHandler.setSelectAction { performTapAction() }
+                AutoSelectionHandler.setStartScanningAction { startRadar() }
                 AutoSelectionHandler.performSelectionAction()
                 resetRadar()
             }
@@ -235,7 +241,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
         stopScanning()
     }
 
-    fun cleanup() {
+    override fun cleanup() {
         resetRadar()
         scanningScheduler?.shutdown()
         scanningScheduler = null
@@ -255,7 +261,7 @@ class RadarManager(private val context: Context) : ScanStateInterface {
         }
     }
 
-    fun toggleDirection() {
+    override fun swapScanDirection() {
         when (currentStep) {
             RadarStep.ROTATING -> toggleRotationDirection()
             RadarStep.MOVING -> toggleCircleMovement()

@@ -7,6 +7,7 @@ import android.widget.LinearLayout
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
+import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.scanning.tree.ScanTree
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
@@ -110,6 +111,12 @@ class MenuView(
         Handler(Looper.getMainLooper()).postDelayed({
             if (pageExists) {
                 scanTree.buildTree(menuPages[currentPage].translateMenuItemsToNodes(), 0)
+
+                // Perform the start scanning action if it is enabled in the app settings
+                val scanSettings = ScanSettings(context)
+                if (scanSettings.getAutomaticallyStartScanAfterSelection()) {
+                    scanTree.startScanning()
+                }
             } else {
                 MenuManager.getInstance().closeMenuHierarchy()
             }
