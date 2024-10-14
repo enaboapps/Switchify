@@ -62,6 +62,14 @@ class SettingsScreenModel(context: Context) : ViewModel() {
     }
     val groupScan: LiveData<Boolean> = _groupScan
 
+    private val _automaticallyStartScanAfterSelection = MutableLiveData<Boolean>().apply {
+        value = preferenceManager.getBooleanValue(
+            PreferenceManager.Keys.PREFERENCE_KEY_AUTOMATICALLY_START_SCAN_AFTER_SELECTION
+        )
+    }
+    val automaticallyStartScanAfterSelection: LiveData<Boolean> =
+        _automaticallyStartScanAfterSelection
+
 
     // Update methods now update MutableLiveData which in turn updates the UI
     fun setScanRate(rate: Long) {
@@ -117,6 +125,16 @@ class SettingsScreenModel(context: Context) : ViewModel() {
                 delay
             )
             _autoSelectDelay.postValue(delay)
+        }
+    }
+
+    fun setAutomaticallyStartScanAfterSelection(automaticallyStartScanAfterSelection: Boolean) {
+        viewModelScope.launch {
+            preferenceManager.setBooleanValue(
+                PreferenceManager.Keys.PREFERENCE_KEY_AUTOMATICALLY_START_SCAN_AFTER_SELECTION,
+                automaticallyStartScanAfterSelection
+            )
+            _automaticallyStartScanAfterSelection.postValue(automaticallyStartScanAfterSelection)
         }
     }
 

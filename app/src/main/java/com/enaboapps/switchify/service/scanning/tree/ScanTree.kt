@@ -2,9 +2,9 @@ package com.enaboapps.switchify.service.scanning.tree
 
 import android.content.Context
 import android.util.Log
+import com.enaboapps.switchify.service.scanning.ScanMethodBase
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.scanning.ScanSettings
-import com.enaboapps.switchify.service.scanning.ScanStateInterface
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
 
 /**
@@ -17,7 +17,7 @@ import com.enaboapps.switchify.service.scanning.ScanningScheduler
 class ScanTree(
     private val context: Context,
     private var stopScanningOnSelect: Boolean = false
-) : ScanStateInterface {
+) : ScanMethodBase {
 
     /** The settings for scanning behavior. */
     private val scanSettings = ScanSettings(context)
@@ -69,7 +69,7 @@ class ScanTree(
      * Performs the selection action based on the current scanning state.
      * This method handles the main logic flow of the scanning process.
      */
-    fun performSelection() {
+    override fun performSelectionAction() {
         try {
             setup()
             if (scanningScheduler?.isScanning() == false) {
@@ -150,7 +150,7 @@ class ScanTree(
      * Manually steps forward in the scanning tree.
      * This method is used for manual navigation through the tree.
      */
-    fun stepForward() {
+    override fun stepForward() {
         unhighlightCurrent()
         val movementSuccessful = navigator.moveSelectionToNext()
         if (highlightEscape(!movementSuccessful)) {
@@ -163,7 +163,7 @@ class ScanTree(
      * Manually steps backward in the scanning tree.
      * This method is used for manual navigation through the tree.
      */
-    fun stepBackward() {
+    override fun stepBackward() {
         unhighlightCurrent()
         val movementSuccessful = navigator.moveSelectionToPrevious()
         if (highlightEscape(!movementSuccessful)) {
@@ -176,7 +176,7 @@ class ScanTree(
      * Swaps the scanning direction between vertical and horizontal.
      * This method is called when the user wants to change the scanning direction.
      */
-    fun swapScanDirection() {
+    override fun swapScanDirection() {
         navigator.swapScanDirection()
         if (scanSettings.isAutoScanMode()) {
             resumeScanning()
@@ -249,7 +249,8 @@ class ScanTree(
     /**
      * Starts the scanning process.
      */
-    private fun startScanning() {
+    override fun startScanning() {
+        setup()
         if (tree.isNotEmpty()) {
             reset()
             highlightCurrent() // Highlight the first item
@@ -300,10 +301,13 @@ class ScanTree(
     }
 
     /**
-     * Clears the scanning tree and resets its state.
+     * Clears the scanning tree.
      */
     fun clearTree() {
-        reset()
-        tree.clear()
+        reset() // Reset the scanning state
+        tree.clear() // Clear the tree
+    }
+
+    override fun cleanup() {
     }
 }

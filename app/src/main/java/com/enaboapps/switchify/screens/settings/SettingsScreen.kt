@@ -15,11 +15,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.nav.NavigationRoute
-import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.screens.settings.models.SettingsScreenModel
 import com.enaboapps.switchify.screens.settings.scanning.ScanMethodSelectionSection
 import com.enaboapps.switchify.screens.settings.scanning.ScanModeSelectionSection
-import com.enaboapps.switchify.service.scanning.ScanMode
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.NavRouteLink
 import com.enaboapps.switchify.widgets.PreferenceSwitch
@@ -31,8 +29,6 @@ fun SettingsScreen(navController: NavController) {
     val verticalScrollState = rememberScrollState()
     val context = LocalContext.current
     val settingsScreenModel = SettingsScreenModel(context)
-    val mode =
-        ScanMode.fromId(PreferenceManager(context).getStringValue(PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE))
     Scaffold(
         topBar = {
             NavBar(title = "Settings", navController = navController)
@@ -55,17 +51,8 @@ fun SettingsScreen(navController: NavController) {
             Spacer(modifier = Modifier.padding(top = 16.dp))
             ScanMethodSelectionSection()
             ScanModeSelectionSection()
-            Spacer(modifier = Modifier.padding(top = 16.dp))
-            NavRouteLink(
-                title = "Scan Color",
-                summary = "Configure the scan color",
-                navController = navController,
-                route = NavigationRoute.ScanColor.name
-            )
             CursorSection(navController)
-            if (mode.id == ScanMode.Modes.MODE_AUTO) {
-                TimingSection(settingsScreenModel)
-            }
+            TimingAndScanningSection(settingsScreenModel, navController)
             NavRouteLink(
                 title = "Switch Stability",
                 summary = "Configure switch stability settings",
@@ -88,8 +75,11 @@ fun SettingsScreen(navController: NavController) {
 
 
 @Composable
-private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
-    Section(title = "Timing") {
+private fun TimingAndScanningSection(
+    settingsScreenModel: SettingsScreenModel,
+    navController: NavController
+) {
+    Section(title = "Timing and Scanning") {
         PreferenceTimeStepper(
             value = settingsScreenModel.scanRate.value ?: 0,
             title = "Scan rate",
@@ -110,6 +100,13 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
             settingsScreenModel.setRadarScanRate(it)
         }
         PreferenceSwitch(
+            title = "Automatically start scan after selection (auto scan only)",
+            summary = "Automatically start the scan after a selection is made",
+            checked = settingsScreenModel.automaticallyStartScanAfterSelection.value ?: false
+        ) {
+            settingsScreenModel.setAutomaticallyStartScanAfterSelection(it)
+        }
+        PreferenceSwitch(
             title = "Pause on first item",
             summary = "Pause scanning when the first item is highlighted",
             checked = settingsScreenModel.pauseOnFirstItem.value ?: false
@@ -127,6 +124,12 @@ private fun TimingSection(settingsScreenModel: SettingsScreenModel) {
                 settingsScreenModel.setPauseOnFirstItemDelay(it)
             }
         }
+        NavRouteLink(
+            title = "Scan Color",
+            summary = "Configure the scan color",
+            navController = navController,
+            route = NavigationRoute.ScanColor.name
+        )
     }
 }
 
