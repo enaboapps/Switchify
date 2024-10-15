@@ -10,7 +10,7 @@ import com.enaboapps.switchify.keyboard.KeyboardLayoutInfo
 import com.enaboapps.switchify.keyboard.SwitchifyKeyboardService
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.scanning.tree.ScanTree
-import com.enaboapps.switchify.service.selection.AutoSelectionHandler
+import com.enaboapps.switchify.service.selection.SelectionHandler
 import com.enaboapps.switchify.service.utils.ScreenWatcher
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
@@ -46,7 +46,8 @@ class NodeScanner {
     private val keyboardShowReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             isKeyboardVisible = true
-            AutoSelectionHandler.setBypassAutoSelect(true)
+            SelectionHandler.setBypassAutoSelect(true)
+            SelectionHandler.setStartScanningAction { scanTree.startScanning() }
             println("Keyboard shown")
         }
     }
@@ -99,7 +100,7 @@ class NodeScanner {
         isKeyboardVisible = false
         setScreenNodes(screenNodes)
         setKeyboardNodes(emptyList())
-        AutoSelectionHandler.setBypassAutoSelect(false)
+        SelectionHandler.setBypassAutoSelect(false)
         println("Keyboard hidden, updating nodes")
     }
 
