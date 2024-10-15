@@ -4,6 +4,7 @@ import com.enaboapps.switchify.preferences.PreferenceManager
 
 interface ScanMethodObserver {
     fun onScanMethodChanged(type: String)
+    fun onMenuStateChanged(isInMenu: Boolean)
 }
 
 /**
@@ -16,7 +17,11 @@ object ScanMethod {
     /**
      * This variable is used to determine if the scanning is in the menu
      */
-    var isInMenu = false
+    var isInMenu: Boolean = false
+        set(value) {
+            field = value
+            observer?.onMenuStateChanged(value)
+        }
 
     /**
      * This enum represents the type of the scanning method
