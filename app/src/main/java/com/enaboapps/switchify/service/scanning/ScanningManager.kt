@@ -7,6 +7,8 @@ import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_NOTIFICAT
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_RECENTS
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
@@ -36,6 +38,9 @@ class ScanningManager(
     private val radarManager = RadarManager(context)
     private val nodeScanner = NodeScanner()
 
+    // Scan settings
+    private val scanSettings = ScanSettings(context)
+
     /**
      * Provides the current active scanning state method on the current scanning method.
      */
@@ -54,6 +59,17 @@ class ScanningManager(
 
     override fun onScanMethodChanged(type: String) {
         cleanupInactiveScanningMethods(type)
+    }
+
+    override fun onMenuStateChanged(isInMenu: Boolean) {
+        cleanupInactiveScanningMethods(ScanMethod.getType())
+
+        // Start scanning if the setting is enabled after 600ms
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (scanSettings.getAutomaticallyStartScanAfterSelection()) {
+                currentScanMethod.startScanning()
+            }
+        }, 600)
     }
 
     /**
