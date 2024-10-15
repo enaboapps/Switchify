@@ -9,7 +9,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanningManager
-import com.enaboapps.switchify.service.selection.AutoSelectionHandler
+import com.enaboapps.switchify.service.selection.SelectionHandler
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
 
@@ -139,7 +139,7 @@ class SwitchListener(
      * @param switchEvent The switch event to handle.
      */
     private fun handleImmediatePressAction(switchEvent: SwitchEvent) {
-        if (AutoSelectionHandler.isAutoSelectInProgress()) AutoSelectionHandler.performSelectionAction()
+        if (SelectionHandler.isAutoSelectInProgress()) SelectionHandler.performSelectionAction()
         else scanningManager.performAction(switchEvent.pressAction)
     }
 
@@ -185,10 +185,10 @@ class SwitchListener(
             preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
         val pauseEnabled = isPauseEnabled()
 
-        if (pauseEnabled && !AutoSelectionHandler.isAutoSelectInProgress()) scanningManager.resumeScanning()
+        if (pauseEnabled && !SelectionHandler.isAutoSelectInProgress()) scanningManager.resumeScanning()
 
         when {
-            AutoSelectionHandler.isAutoSelectInProgress() && (switchEvent.holdActions.isNotEmpty() || pauseEnabled) -> AutoSelectionHandler.performSelectionAction()
+            SelectionHandler.isAutoSelectInProgress() && (switchEvent.holdActions.isNotEmpty() || pauseEnabled) -> SelectionHandler.performSelectionAction()
             switchEvent.holdActions.isEmpty() && pauseEnabled -> scanningManager.performAction(
                 switchEvent.pressAction
             )

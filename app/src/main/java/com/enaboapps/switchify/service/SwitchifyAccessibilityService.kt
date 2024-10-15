@@ -8,7 +8,7 @@ import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.methods.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.scanning.ScanningManager
-import com.enaboapps.switchify.service.selection.AutoSelectionHandler
+import com.enaboapps.switchify.service.selection.SelectionHandler
 import com.enaboapps.switchify.service.switches.SwitchListener
 import com.enaboapps.switchify.service.utils.KeyboardBridge
 import com.enaboapps.switchify.service.utils.ScreenWatcher
@@ -65,7 +65,7 @@ class SwitchifyAccessibilityService : AccessibilityService() {
         switchListener = SwitchListener(this, scanningManager)
 
         GestureManager.getInstance().setup(this)
-        AutoSelectionHandler.init(this)
+        SelectionHandler.init(this)
 
         rootInActiveWindow?.let { rootNode ->
             serviceScope.launch {

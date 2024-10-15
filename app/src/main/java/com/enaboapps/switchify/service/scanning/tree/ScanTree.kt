@@ -309,5 +309,6 @@ class ScanTree(
     }
 
     override fun cleanup() {
+        shutdown()
     }
 }

@@ -2,11 +2,16 @@ package com.enaboapps.switchify.service.scanning
 
 import com.enaboapps.switchify.preferences.PreferenceManager
 
+interface ScanMethodObserver {
+    fun onScanMethodChanged(type: String)
+}
+
 /**
  * This object is used to manage the scanning method
  */
 object ScanMethod {
     var preferenceManager: PreferenceManager? = null
+    var observer: ScanMethodObserver? = null
 
     /**
      * This variable is used to determine if the scanning is in the menu
@@ -86,5 +91,6 @@ object ScanMethod {
             PreferenceManager.PREFERENCE_KEY_SCAN_METHOD,
             value
         )
+        observer?.onScanMethodChanged(value)
     }
 }
