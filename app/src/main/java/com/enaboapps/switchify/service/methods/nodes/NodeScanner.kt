@@ -9,9 +9,8 @@ import com.enaboapps.switchify.keyboard.KeyboardAccessibilityManager
 import com.enaboapps.switchify.keyboard.KeyboardLayoutInfo
 import com.enaboapps.switchify.keyboard.SwitchifyKeyboardService
 import com.enaboapps.switchify.service.scanning.ScanMethod
-import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.tree.ScanTree
-import com.enaboapps.switchify.service.selection.AutoSelectionHandler
+import com.enaboapps.switchify.service.selection.SelectionHandler
 import com.enaboapps.switchify.service.utils.ScreenWatcher
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
@@ -47,7 +46,8 @@ class NodeScanner {
     private val keyboardShowReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             isKeyboardVisible = true
-            AutoSelectionHandler.setBypassAutoSelect(true)
+            SelectionHandler.setBypassAutoSelect(true)
+            SelectionHandler.setStartScanningAction { scanTree.startScanning() }
             println("Keyboard shown")
         }
     }
@@ -100,7 +100,7 @@ class NodeScanner {
         isKeyboardVisible = false
         setScreenNodes(screenNodes)
         setKeyboardNodes(emptyList())
-        AutoSelectionHandler.setBypassAutoSelect(false)
+        SelectionHandler.setBypassAutoSelect(false)
         println("Keyboard hidden, updating nodes")
     }
 
@@ -142,7 +142,6 @@ class NodeScanner {
         this.keyboardNodes = nodes
         if (isKeyboardVisible) {
             updateNodes(nodes)
-            performStartScanningActionIfEnabled()
         }
     }
 
@@ -155,17 +154,6 @@ class NodeScanner {
         this.screenNodes = nodes
         if (!isKeyboardVisible) {
             updateNodes(nodes)
-            performStartScanningActionIfEnabled()
-        }
-    }
-
-    private fun performStartScanningActionIfEnabled() {
-        // Perform the start scanning action if it is enabled in the app settings
-        val scanSettings = ScanSettings(context)
-        val isItemMode = ScanMethod.getType() == ScanMethod.MethodType.ITEM_SCAN
-        val isInMenu = ScanMethod.isInMenu
-        if (scanSettings.getAutomaticallyStartScanAfterSelection() && isItemMode && !isInMenu) {
-            scanTree.startScanning()
         }
     }
 

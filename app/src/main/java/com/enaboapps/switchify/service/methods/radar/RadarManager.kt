@@ -6,7 +6,7 @@ import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.scanning.ScanMethodBase
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
-import com.enaboapps.switchify.service.selection.AutoSelectionHandler
+import com.enaboapps.switchify.service.selection.SelectionHandler
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import kotlin.math.cos
 import kotlin.math.sin
@@ -215,9 +215,9 @@ class RadarManager(private val context: Context) : ScanMethodBase {
                 val y = screenCenterY + distance * sin(angle).toFloat()
                 GesturePoint.x = x.toInt()
                 GesturePoint.y = y.toInt()
-                AutoSelectionHandler.setSelectAction { performTapAction() }
-                AutoSelectionHandler.setStartScanningAction { startRadar() }
-                AutoSelectionHandler.performSelectionAction()
+                SelectionHandler.setSelectAction { performTapAction() }
+                SelectionHandler.setStartScanningAction { startRadar() }
+                SelectionHandler.performSelectionAction()
                 resetRadar()
             }
 

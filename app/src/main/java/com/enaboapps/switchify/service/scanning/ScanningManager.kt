@@ -15,7 +15,7 @@ import com.enaboapps.switchify.service.methods.nodes.Node
 import com.enaboapps.switchify.service.methods.nodes.NodeScanner
 import com.enaboapps.switchify.service.methods.nodes.NodeScannerUI
 import com.enaboapps.switchify.service.methods.radar.RadarManager
-import com.enaboapps.switchify.service.selection.AutoSelectionHandler
+import com.enaboapps.switchify.service.selection.SelectionHandler
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.utils.AppLauncher
@@ -30,16 +30,16 @@ import com.enaboapps.switchify.utils.AppLauncher
 class ScanningManager(
     private val accessibilityService: SwitchifyAccessibilityService,
     val context: Context
-) {
+) : ScanMethodObserver {
     // Managers for different scanning methods
     private val cursorManager = CursorManager(context)
     private val radarManager = RadarManager(context)
     private val nodeScanner = NodeScanner()
 
     /**
-     * Provides the current active scanning state based on the current scanning method.
+     * Provides the current active scanning state method on the current scanning method.
      */
-    private val currentScanState: ScanMethodBase
+    private val currentScanMethod: ScanMethodBase
         get() = when {
             ScanMethod.isInMenu -> MenuManager.getInstance().menuHierarchy?.getTopMenu()?.scanTree
             else -> when (ScanMethod.getType()) {
@@ -52,6 +52,10 @@ class ScanningManager(
             }
         } as ScanMethodBase
 
+    override fun onScanMethodChanged(type: String) {
+        cleanupInactiveScanningMethods(type)
+    }
+
     /**
      * Sets up the scanning manager, initializing necessary components.
      */
@@ -60,6 +64,7 @@ class ScanningManager(
         SwitchifyAccessibilityWindow.instance.show()
         nodeScanner.start(context)
         MenuManager.getInstance().setup(this, accessibilityService)
+        ScanMethod.observer = this
     }
 
     /**
@@ -90,7 +95,7 @@ class ScanningManager(
      */
     fun setItemScanType() {
         setType(ScanMethod.MethodType.ITEM_SCAN)
-        AutoSelectionHandler.setStartScanningAction { nodeScanner.scanTree.startScanning() }
+        SelectionHandler.setStartScanningAction { nodeScanner.scanTree.startScanning() }
         nodeScanner.startTimeoutToRevertToCursor()
     }
 
@@ -99,7 +104,6 @@ class ScanningManager(
      */
     fun setMenuType() {
         ScanMethod.isInMenu = true
-        cleanupInactiveScanningMethods()
         NodeScannerUI.instance.hideAll()
     }
 
@@ -111,7 +115,6 @@ class ScanningManager(
     private fun setType(type: String) {
         ScanMethod.setType(type)
         ScanMethod.isInMenu = false
-        cleanupInactiveScanningMethods()
         NodeScannerUI.instance.hideAll()
         nodeScanner.scanTree.reset()
     }
@@ -120,7 +123,7 @@ class ScanningManager(
      * Performs the selection action for the current scanning state.
      */
     fun select() {
-        currentScanState.performSelectionAction()
+        currentScanMethod.performSelectionAction()
     }
 
     /**
@@ -129,7 +132,7 @@ class ScanningManager(
      * @param action The SwitchAction to perform.
      */
     fun performAction(action: SwitchAction) {
-        cleanupInactiveScanningMethods()
+        cleanupInactiveScanningMethods(ScanMethod.getType())
 
         if (GestureManager.getInstance().performGestureLockAction()) {
             return
@@ -137,10 +140,10 @@ class ScanningManager(
 
         when (action.id) {
             SwitchAction.ACTION_SELECT -> select()
-            SwitchAction.ACTION_STOP_SCANNING -> currentScanState.stopScanning()
-            SwitchAction.ACTION_CHANGE_SCANNING_DIRECTION -> currentScanState.swapScanDirection()
-            SwitchAction.ACTION_MOVE_TO_NEXT_ITEM -> currentScanState.stepForward()
-            SwitchAction.ACTION_MOVE_TO_PREVIOUS_ITEM -> currentScanState.stepBackward()
+            SwitchAction.ACTION_STOP_SCANNING -> currentScanMethod.stopScanning()
+            SwitchAction.ACTION_CHANGE_SCANNING_DIRECTION -> currentScanMethod.swapScanDirection()
+            SwitchAction.ACTION_MOVE_TO_NEXT_ITEM -> currentScanMethod.stepForward()
+            SwitchAction.ACTION_MOVE_TO_PREVIOUS_ITEM -> currentScanMethod.stepBackward()
             SwitchAction.ACTION_TOGGLE_GESTURE_LOCK -> GestureManager.getInstance()
                 .toggleGestureLock()
 
@@ -185,24 +188,38 @@ class ScanningManager(
      * Pauses the scanning process for the current scanning state.
      */
     fun pauseScanning() {
-        currentScanState.pauseScanning()
+        currentScanMethod.pauseScanning()
     }
 
     /**
      * Resumes the scanning process for the current scanning state.
      */
     fun resumeScanning() {
-        currentScanState.resumeScanning()
+        currentScanMethod.resumeScanning()
     }
 
     /**
      * Cleans up inactive scanning methods to free up resources.
      */
-    private fun cleanupInactiveScanningMethods() {
-        listOf(cursorManager, radarManager, nodeScanner.scanTree)
-            .filterNot { it == currentScanState }
-            .forEach { it.cleanup() }
-        AutoSelectionHandler.reset()
+    private fun cleanupInactiveScanningMethods(activeType: String) {
+        when (activeType) {
+            ScanMethod.MethodType.CURSOR -> {
+                radarManager.cleanup()
+                nodeScanner.scanTree.cleanup()
+            }
+
+            ScanMethod.MethodType.RADAR -> {
+                cursorManager.cleanup()
+                nodeScanner.scanTree.cleanup()
+            }
+
+            ScanMethod.MethodType.ITEM_SCAN -> {
+                cursorManager.cleanup()
+                radarManager.cleanup()
+            }
+        }
+
+        NodeScannerUI.instance.hideAll()
     }
 
     /**
@@ -211,7 +228,6 @@ class ScanningManager(
     fun reset() {
         pauseScanning()
         listOf(cursorManager, radarManager, nodeScanner.scanTree).forEach { it.cleanup() }
-        AutoSelectionHandler.reset()
         MenuManager.getInstance().closeMenuHierarchy()
     }
 

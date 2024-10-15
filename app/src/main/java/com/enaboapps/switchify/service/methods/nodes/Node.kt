@@ -8,7 +8,7 @@ import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
-import com.enaboapps.switchify.service.selection.AutoSelectionHandler
+import com.enaboapps.switchify.service.selection.SelectionHandler
 
 /**
  * This class represents a node
@@ -158,10 +158,10 @@ class Node(
             GesturePoint.x = centerX
             GesturePoint.y = centerY
 
-            AutoSelectionHandler.setSelectAction {
+            SelectionHandler.setSelectAction {
                 GestureManager.getInstance().performTap()
             }
-            AutoSelectionHandler.performSelectionAction()
+            SelectionHandler.performSelectionAction()
         } else {
             select?.invoke()
         }

@@ -9,7 +9,7 @@ import com.enaboapps.switchify.service.scanning.ScanDirection
 import com.enaboapps.switchify.service.scanning.ScanMethodBase
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
-import com.enaboapps.switchify.service.selection.AutoSelectionHandler
+import com.enaboapps.switchify.service.selection.SelectionHandler
 
 /**
  * CursorManager class manages the cursor movement, quadrants, and scanning for the Switchify accessibility service.
@@ -473,9 +473,9 @@ class CursorManager(private val context: Context) : ScanMethodBase, GesturePoint
      */
     private fun performFinalAction() {
         reset()
-        AutoSelectionHandler.setSelectAction { performTapAction() }
-        AutoSelectionHandler.setStartScanningAction { performSelectionAction() }
-        AutoSelectionHandler.performSelectionAction()
+        SelectionHandler.setSelectAction { performTapAction() }
+        SelectionHandler.setStartScanningAction { performSelectionAction() }
+        SelectionHandler.performSelectionAction()
     }
 
     /**

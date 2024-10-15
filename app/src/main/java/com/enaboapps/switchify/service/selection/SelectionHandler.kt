@@ -13,11 +13,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * This class handles the auto-selection process.
+ * This class handles the selection process.
  */
-object AutoSelectionHandler {
+object SelectionHandler {
     private var selectAction: (() -> Unit)? = null
     private var startScanningAction: (() -> Unit)? = null
+    private var methodTypeInvokedForStartScanningAction: String? = null
     private var autoSelectInProgress = false
     private var bypassAutoSelect = false
     private var autoTapVisual: AutoTapVisual? = null
@@ -25,7 +26,7 @@ object AutoSelectionHandler {
     private lateinit var scanSettings: ScanSettings
 
     /**
-     * Initializes the auto-selection handler.
+     * Initializes the selection handler.
      * This method is intended to be called once, ideally during application startup.
      * It uses the application context to avoid memory leaks.
      *
@@ -74,6 +75,7 @@ object AutoSelectionHandler {
             return
         }
 
+        methodTypeInvokedForStartScanningAction = ScanMethod.getType()
         MenuManager.getInstance().scanMethodToRevertTo = ScanMethod.getType()
 
         // If bypass auto-select is enabled, perform the selection action and return
@@ -120,8 +122,13 @@ object AutoSelectionHandler {
      * Performs the start scanning action if it is enabled.
      */
     fun performStartScanningAction() {
-        if (scanSettings.getAutomaticallyStartScanAfterSelection()) {
-            startScanningAction?.invoke()
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(300)
+            if (scanSettings.getAutomaticallyStartScanAfterSelection()) {
+                if (methodTypeInvokedForStartScanningAction == ScanMethod.getType()) {
+                    startScanningAction?.invoke()
+                }
+            }
         }
     }
 
@@ -131,14 +138,4 @@ object AutoSelectionHandler {
      * @return True if the auto-select process is in progress, false otherwise.
      */
     fun isAutoSelectInProgress(): Boolean = autoSelectInProgress
-
-    /**
-     * Resets the auto-select process.
-     */
-    fun reset() {
-        autoSelectInProgress = false
-        bypassAutoSelect = false
-        startScanningAction = null
-        selectAction = null
-    }
 }
