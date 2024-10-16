@@ -1,15 +1,10 @@
 package com.enaboapps.switchify.screens.settings
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -18,61 +13,98 @@ import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.screens.settings.models.SettingsScreenModel
 import com.enaboapps.switchify.screens.settings.scanning.ScanMethodSelectionSection
 import com.enaboapps.switchify.screens.settings.scanning.ScanModeSelectionSection
-import com.enaboapps.switchify.widgets.NavBar
-import com.enaboapps.switchify.widgets.NavRouteLink
-import com.enaboapps.switchify.widgets.PreferenceSwitch
-import com.enaboapps.switchify.widgets.PreferenceTimeStepper
-import com.enaboapps.switchify.widgets.Section
+import com.enaboapps.switchify.widgets.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(navController: NavController) {
-    val verticalScrollState = rememberScrollState()
     val context = LocalContext.current
     val settingsScreenModel = SettingsScreenModel(context)
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+
     Scaffold(
         topBar = {
             NavBar(title = "Settings", navController = navController)
         }
-    ) {
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(verticalScrollState)
-                .padding(it)
-                .padding(all = 16.dp),
-            verticalArrangement = Arrangement.Top
+                .padding(paddingValues)
         ) {
-            NavRouteLink(
-                title = "Switches",
-                summary = "Configure your switches",
-                navController = navController,
-                route = NavigationRoute.Switches.name
-            )
-            Spacer(modifier = Modifier.padding(top = 16.dp))
-            ScanMethodSelectionSection()
-            ScanModeSelectionSection()
-            CursorSection(navController)
-            TimingAndScanningSection(settingsScreenModel, navController)
-            NavRouteLink(
-                title = "Switch Stability",
-                summary = "Configure switch stability settings",
-                navController = navController,
-                route = NavigationRoute.SwitchStability.name
-            )
-            SelectionSection(settingsScreenModel)
-            ItemScanSection(settingsScreenModel)
-            KeyboardSection(navController)
-            Spacer(modifier = Modifier.padding(top = 16.dp))
-            NavRouteLink(
-                title = "About",
-                summary = "About the app",
-                navController = navController,
-                route = NavigationRoute.About.name
-            )
+            TabRow(selectedTabIndex = selectedTabIndex) {
+                listOf("Input", "Scanning", "Selection", "About").forEachIndexed { index, tab ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(tab) }
+                    )
+                }
+            }
+
+            when (selectedTabIndex) {
+                0 -> InputSettingsTab(navController)
+                1 -> ScanningSettingsTab(settingsScreenModel, navController)
+                2 -> SelectionSettingsTab(settingsScreenModel)
+                3 -> AboutScreen()
+            }
         }
     }
 }
 
+@Composable
+fun InputSettingsTab(navController: NavController) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        NavRouteLink(
+            title = "Switches",
+            summary = "Configure your switches",
+            navController = navController,
+            route = NavigationRoute.Switches.name
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        NavRouteLink(
+            title = "Switch Stability",
+            summary = "Configure switch stability settings",
+            navController = navController,
+            route = NavigationRoute.SwitchStability.name
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        KeyboardSection(navController)
+        CursorSection(navController)
+    }
+}
+
+@Composable
+fun ScanningSettingsTab(settingsScreenModel: SettingsScreenModel, navController: NavController) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        ScanMethodSelectionSection()
+        ScanModeSelectionSection()
+        TimingAndScanningSection(settingsScreenModel, navController)
+        ItemScanSection(settingsScreenModel)
+    }
+}
+
+@Composable
+fun SelectionSettingsTab(settingsScreenModel: SettingsScreenModel) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        SelectionSection(settingsScreenModel)
+    }
+}
 
 @Composable
 private fun TimingAndScanningSection(
@@ -113,7 +145,7 @@ private fun TimingAndScanningSection(
         ) {
             settingsScreenModel.setPauseOnFirstItem(it)
         }
-        if (settingsScreenModel.pauseOnFirstItem.observeAsState().value == true) {
+        if (settingsScreenModel.pauseOnFirstItem.value == true) {
             PreferenceTimeStepper(
                 value = settingsScreenModel.pauseOnFirstItemDelay.value ?: 0,
                 title = "Pause on first item delay",
@@ -124,6 +156,14 @@ private fun TimingAndScanningSection(
                 settingsScreenModel.setPauseOnFirstItemDelay(it)
             }
         }
+        PreferenceSwitch(
+            title = "Assisted selection",
+            summary = "Assist the user in selecting items by selecting the closest available item to where they tap",
+            checked = settingsScreenModel.assistedSelection.value ?: false,
+            onCheckedChange = {
+                settingsScreenModel.setAssistedSelection(it)
+            }
+        )
         NavRouteLink(
             title = "Scan Color",
             summary = "Configure the scan color",
@@ -177,14 +217,6 @@ private fun SelectionSection(screenModel: SettingsScreenModel) {
         ) {
             screenModel.setAutoSelectDelay(it)
         }
-        PreferenceSwitch(
-            title = "Assisted selection",
-            summary = "Assist the user in selecting items by selecting the closest available item to where they tap",
-            checked = screenModel.assistedSelection.value ?: false,
-            onCheckedChange = {
-                screenModel.setAssistedSelection(it)
-            }
-        )
     }
 }
 

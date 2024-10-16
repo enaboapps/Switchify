@@ -12,7 +12,6 @@ sealed class NavigationRoute(val name: String) {
     data object ChangePassword : NavigationRoute("ChangePassword")
     data object Settings : NavigationRoute("Settings")
     data object SwitchStability : NavigationRoute("SwitchStability")
-    data object About : NavigationRoute("About")
     data object PredictionLanguage : NavigationRoute("PredictionLanguage")
     data object ScanColor : NavigationRoute("ScanColor")
     data object CursorSettings : NavigationRoute("CursorSettings")
