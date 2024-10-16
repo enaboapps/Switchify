@@ -110,6 +110,7 @@ class MenuView(
         Handler(Looper.getMainLooper()).postDelayed({
             if (pageExists) {
                 scanTree.buildTree(menuPages[currentPage].translateMenuItemsToNodes(), 0)
+                adjustMenuPosition()
             } else {
                 MenuManager.getInstance().closeMenuHierarchy()
             }
@@ -128,29 +129,32 @@ class MenuView(
 
         // Set the menu viewTreeObserver
         baseLayout.viewTreeObserver.addOnGlobalLayoutListener {
-            val width = baseLayout.width
-            val height = baseLayout.height
-
-            val screenWidth = context.resources.displayMetrics.widthPixels
-            val screenHeight = context.resources.displayMetrics.heightPixels
-
-            val point = GesturePoint.getPoint()
-
-            // Set the menu position to be above or below the point making sure it fits on the screen
-            val x = if (point.x + width > screenWidth) {
-                screenWidth - width.toFloat()
-            } else {
-                point.x
-            }
-            val y = if (point.y + height > screenHeight) {
-                screenHeight - height.toFloat()
-            } else {
-                point.y
-            }
-            switchifyAccessibilityWindow.updateViewLayout(baseLayout, x.toInt(), y.toInt())
+            adjustMenuPosition()
         }
     }
 
+    private fun adjustMenuPosition() {
+        val width = baseLayout.width
+        val height = baseLayout.height
+
+        val screenWidth = context.resources.displayMetrics.widthPixels
+        val screenHeight = context.resources.displayMetrics.heightPixels
+
+        val point = GesturePoint.getPoint()
+
+        // Set the menu position to be above or below the point making sure it fits on the screen
+        val x = if (point.x + width > screenWidth) {
+            screenWidth - width.toFloat()
+        } else {
+            point.x
+        }
+        val y = if (point.y + height > screenHeight) {
+            screenHeight - height.toFloat()
+        } else {
+            point.y
+        }
+        switchifyAccessibilityWindow.updateViewLayout(baseLayout, x.toInt(), y.toInt())
+    }
 
     // This function is called when the menu is opened
     fun open(scanningManager: ScanningManager) {
