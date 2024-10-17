@@ -1,14 +1,20 @@
 package com.enaboapps.switchify.screens.settings
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.enaboapps.switchify.R
 import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.screens.settings.models.SettingsScreenModel
 import com.enaboapps.switchify.screens.settings.scanning.ScanMethodSelectionSection
@@ -46,7 +52,7 @@ fun SettingsScreen(navController: NavController) {
                 0 -> InputSettingsTab(navController)
                 1 -> ScanningSettingsTab(settingsScreenModel, navController)
                 2 -> SelectionSettingsTab(settingsScreenModel)
-                3 -> AboutScreen()
+                3 -> AboutSection()
             }
         }
     }
@@ -237,6 +243,61 @@ private fun ItemScanSection(screenModel: SettingsScreenModel) {
             checked = screenModel.groupScan.value ?: false,
             onCheckedChange = {
                 screenModel.setGroupScan(it)
+            }
+        )
+    }
+}
+
+@Composable
+fun AboutSection() {
+    val context = LocalContext.current
+    val version = context.packageManager.getPackageInfo(context.packageName, 0).versionName
+
+    val websiteUrl = "https://switchifyapp.com"
+    val repositoryUrl = "https://github.com/enaboapps/switchify"
+    val privacyPolicyUrl = "https://www.enaboapps.com/switchify-privacy-policy"
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding()
+            .padding(horizontal = 16.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = stringResource(R.string.app_name),
+            style = MaterialTheme.typography.displayLarge,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Version $version",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = stringResource(R.string.app_description),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        FullWidthButton(text = "Website", onClick = {
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(websiteUrl)))
+        })
+        Spacer(modifier = Modifier.height(16.dp))
+        FullWidthButton(
+            text = "View on GitHub",
+            onClick = {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(repositoryUrl)))
+            }
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        FullWidthButton(
+            text = "Privacy Policy",
+            onClick = {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(privacyPolicyUrl)))
             }
         )
     }
