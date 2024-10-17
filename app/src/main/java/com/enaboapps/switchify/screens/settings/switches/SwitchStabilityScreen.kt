@@ -42,7 +42,7 @@ fun SwitchStabilityScreen(navController: NavController) {
                 PreferenceSwitch(
                     title = "Pause scan on switch hold",
                     summary = "Pause scanning when a switch is held",
-                    checked = pausedScanOnSwitchHold.value ?: false
+                    checked = pausedScanOnSwitchHold.value == true
                 ) {
                     switchStabilityScreenModel.setPauseScanOnSwitchHold(it)
                 }
@@ -50,7 +50,7 @@ fun SwitchStabilityScreen(navController: NavController) {
             PreferenceSwitch(
                 title = "Ignore repeat",
                 summary = "Ignore repeated switch presses",
-                checked = ignoredRepeat.value ?: false
+                checked = ignoredRepeat.value == true
             ) {
                 switchStabilityScreenModel.setSwitchIgnoreRepeat(it)
             }

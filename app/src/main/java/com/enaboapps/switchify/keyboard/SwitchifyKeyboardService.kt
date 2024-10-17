@@ -215,8 +215,8 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
             val rowLayout = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
+                    MATCH_PARENT,
+                    WRAP_CONTENT
                 )
             }
 
@@ -231,7 +231,7 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                     // Set a higher weight for the space key
                     val weight = if (type is KeyType.Space) 3f else 1f
                     layoutParams =
-                        LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, weight)
+                        LinearLayout.LayoutParams(0, WRAP_CONTENT, weight)
                     tapAction = {
                         handleKeyPress(type)
                     }
