@@ -26,7 +26,6 @@ class MenuPage(
     private var baseLayout: LinearLayout = LinearLayout(context)
     private var menuChangeBtn: MenuItem? = null
 
-
     init {
         baseLayout.orientation = LinearLayout.VERTICAL
         baseLayout.layoutParams = LinearLayout.LayoutParams(
@@ -34,7 +33,6 @@ class MenuPage(
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
     }
-
 
     /**
      * Get the menu items of the page
@@ -52,7 +50,6 @@ class MenuPage(
         return menuItems
     }
 
-
     /**
      * Translate the menu items to nodes
      * @return The nodes of the menu items
@@ -66,7 +63,6 @@ class MenuPage(
         }
         return nodes
     }
-
 
     /**
      * Get the layout of the menu
@@ -104,7 +100,6 @@ class MenuPage(
         return baseLayout
     }
 
-
     /**
      * Get the navigation items of the page
      * @return The navigation items of the page
@@ -122,7 +117,6 @@ class MenuPage(
         }
     }
 
-
     /**
      * Create a row layout
      * @return The row layout
@@ -136,7 +130,6 @@ class MenuPage(
             ).also { it.gravity = Gravity.CENTER_HORIZONTAL }
         }
     }
-
 
     /**
      * Change the page

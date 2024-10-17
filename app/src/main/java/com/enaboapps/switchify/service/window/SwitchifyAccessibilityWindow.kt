@@ -125,6 +125,18 @@ class SwitchifyAccessibilityWindow {
                 val params = view.layoutParams as RelativeLayout.LayoutParams
                 params.leftMargin = x
                 params.topMargin = y
+
+                // Ensure the view stays within screen bounds
+                val screenWidth = context?.resources?.displayMetrics?.widthPixels ?: 0
+                val screenHeight = context?.resources?.displayMetrics?.heightPixels ?: 0
+
+                if (params.leftMargin + view.width > screenWidth) {
+                    params.leftMargin = screenWidth - view.width
+                }
+                if (params.topMargin + view.height > screenHeight) {
+                    params.topMargin = screenHeight - view.height
+                }
+
                 baseLayout?.updateViewLayout(view, params)
             } catch (e: Exception) {
                 Log.e(TAG, "Error in updateViewLayout: ${e.message}", e)
@@ -140,6 +152,18 @@ class SwitchifyAccessibilityWindow {
                 params.topMargin = y
                 params.width = width
                 params.height = height
+
+                // Ensure the view stays within screen bounds
+                val screenWidth = context?.resources?.displayMetrics?.widthPixels ?: 0
+                val screenHeight = context?.resources?.displayMetrics?.heightPixels ?: 0
+
+                if (params.leftMargin + params.width > screenWidth) {
+                    params.leftMargin = screenWidth - params.width
+                }
+                if (params.topMargin + params.height > screenHeight) {
+                    params.topMargin = screenHeight - params.height
+                }
+
                 baseLayout?.updateViewLayout(view, params)
             } catch (e: Exception) {
                 Log.e(TAG, "Error in updateViewLayout: ${e.message}", e)
