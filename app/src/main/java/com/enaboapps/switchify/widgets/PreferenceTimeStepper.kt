@@ -62,6 +62,7 @@ fun PreferenceTimeStepper(
                     text = StringUtils.getSecondsString(time),
                     style = MaterialTheme.typography.bodySmall
                 )
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = {
                         if (time > min) {
