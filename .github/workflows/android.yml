@@ -22,5 +22,11 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+
+    - name: Create local.properties
+      run: |
+        echo "fleksy.apiKey=your_api_key" >> local.properties
+        echo "fleksy.apiSecret=your_api_secret" >> local.properties
+
     - name: Build with Gradle
       run: ./gradlew build
