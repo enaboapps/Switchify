@@ -369,6 +369,34 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                             AudioManager.FLAG_SHOW_UI
                         )
                     }
+                ),
+                MenuItem(
+                    id = "full_volume",
+                    text = "Full Volume",
+                    closeOnSelect = false,
+                    action = {
+                        val audioManager =
+                            accessibilityService.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        audioManager.setStreamVolume(
+                            AudioManager.STREAM_ACCESSIBILITY,
+                            audioManager.getStreamMaxVolume(AudioManager.STREAM_ACCESSIBILITY),
+                            AudioManager.FLAG_SHOW_UI
+                        )
+                    }
+                ),
+                MenuItem(
+                    id = "mute",
+                    text = "Mute",
+                    closeOnSelect = false,
+                    action = {
+                        val audioManager =
+                            accessibilityService.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        audioManager.setStreamVolume(
+                            AudioManager.STREAM_ACCESSIBILITY,
+                            0,
+                            AudioManager.FLAG_SHOW_UI
+                        )
+                    }
                 )
             )
         )
