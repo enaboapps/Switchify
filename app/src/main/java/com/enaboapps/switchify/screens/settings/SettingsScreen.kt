@@ -75,7 +75,6 @@ fun InputSettingsTab(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         KeyboardSection(navController)
-        CursorSection(navController)
     }
 }
 
@@ -91,6 +90,7 @@ fun ScanningSettingsTab(settingsScreenModel: SettingsScreenModel, navController:
         ScanModeSelectionSection()
         TimingAndScanningSection(settingsScreenModel, navController)
         ItemScanSection(settingsScreenModel)
+        CursorSection(navController)
     }
 }
 
