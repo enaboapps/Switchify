@@ -126,17 +126,6 @@ class SwitchifyAccessibilityWindow {
                 params.leftMargin = x
                 params.topMargin = y
 
-                // Ensure the view stays within screen bounds
-                val screenWidth = context?.resources?.displayMetrics?.widthPixels ?: 0
-                val screenHeight = context?.resources?.displayMetrics?.heightPixels ?: 0
-
-                if (params.leftMargin + view.width > screenWidth) {
-                    params.leftMargin = screenWidth - view.width
-                }
-                if (params.topMargin + view.height > screenHeight) {
-                    params.topMargin = screenHeight - view.height
-                }
-
                 baseLayout?.updateViewLayout(view, params)
             } catch (e: Exception) {
                 Log.e(TAG, "Error in updateViewLayout: ${e.message}", e)
@@ -144,25 +133,35 @@ class SwitchifyAccessibilityWindow {
         }
     }
 
-    fun updateViewLayout(view: ViewGroup, x: Int, y: Int, width: Int, height: Int) {
+    fun updateViewLayout(
+        view: ViewGroup,
+        x: Int,
+        y: Int,
+        widthParam: Int,
+        heightParam: Int
+    ) {
         mainHandler.post {
             try {
                 val params = view.layoutParams as RelativeLayout.LayoutParams
                 params.leftMargin = x
                 params.topMargin = y
-                params.width = width
-                params.height = height
 
-                // Ensure the view stays within screen bounds
-                val screenWidth = context?.resources?.displayMetrics?.widthPixels ?: 0
-                val screenHeight = context?.resources?.displayMetrics?.heightPixels ?: 0
+                // Handle WRAP_CONTENT for width
+                params.width = if (widthParam == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                } else {
+                    widthParam
+                }
 
-                if (params.leftMargin + params.width > screenWidth) {
-                    params.leftMargin = screenWidth - params.width
+                // Handle WRAP_CONTENT for height
+                params.height = if (heightParam == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                } else {
+                    heightParam
                 }
-                if (params.topMargin + params.height > screenHeight) {
-                    params.topMargin = screenHeight - params.height
-                }
+
+                // Request layout to ensure the view is measured again
+                view.requestLayout()
 
                 baseLayout?.updateViewLayout(view, params)
             } catch (e: Exception) {

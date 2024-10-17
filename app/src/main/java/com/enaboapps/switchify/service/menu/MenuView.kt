@@ -3,6 +3,9 @@ package com.enaboapps.switchify.service.menu
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.ViewTreeObserver
 import android.widget.LinearLayout
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.gestures.GesturePoint
@@ -11,67 +14,90 @@ import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.scanning.tree.ScanTree
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 
+/**
+ * Interface for listening to menu view closure events.
+ */
 interface MenuViewListener {
+    /**
+     * Called when the menu view is closed.
+     */
     fun onMenuViewClosed()
 }
 
+/**
+ * MenuView class responsible for managing and displaying the menu interface.
+ * This class handles the creation, display, and navigation of menu pages,
+ * as well as the dynamic resizing of the menu when pages change.
+ * It maintains a fixed position on the screen and tracks the maximum width and height encountered.
+ *
+ * @property context The application context.
+ * @property menu The base menu to be displayed.
+ */
 class MenuView(
     val context: Context,
     private val menu: BaseMenu
 ) {
+    /** Listener for menu view events */
     var menuViewListener: MenuViewListener? = null
 
+    /** Instance of SwitchifyAccessibilityWindow for managing window display */
     private val switchifyAccessibilityWindow: SwitchifyAccessibilityWindow =
         SwitchifyAccessibilityWindow.instance
 
+    /** Base layout for the menu */
     private var baseLayout = LinearLayout(context)
 
-    // Page variables
+    /** Current page index */
     private var currentPage = 0
+
+    /** Total number of pages */
     private var numOfPages = 0
+
+    /** List of menu pages */
     private val menuPages = mutableListOf<MenuPage>()
 
-    // Scan tree
+    /** Scan tree for managing menu item selection */
     val scanTree = ScanTree(context)
+
+    /** Tracks the maximum width encountered */
+    private var maxWidth = 0
+
+    /** Tracks the maximum height encountered */
+    private var maxHeight = 0
 
     init {
         setup()
     }
 
-    // This function sets up the menu
+    /**
+     * Sets up the menu by retrieving menu items and creating menu pages.
+     */
     private fun setup() {
-        // Get the menu items
         val menuItems = menu.getMenuItems()
-        // Create the menu pages
         createMenuPages(menuItems)
     }
 
-    // This function creates the menu pages
+    /**
+     * Creates menu pages from the provided list of menu items.
+     *
+     * @param menuItems List of MenuItem objects to be displayed in the menu.
+     */
     private fun createMenuPages(menuItems: List<MenuItem>) {
-        // Number of items per page
         val numOfItemsPerPage = 6
-        // Calculate the number of pages
         numOfPages = (menuItems.size + numOfItemsPerPage - 1) / numOfItemsPerPage
-        // Create the menu pages
         for (i in 0 until numOfPages) {
-            // Calculate the start and end of the interval
             val start = i * numOfItemsPerPage
             val end = ((i + 1) * numOfItemsPerPage).coerceAtMost(menuItems.size)
 
-            // Get the items for the page
             val pageItems = menuItems.subList(start, end)
             val navRowItems = menu.buildNavMenuItems()
             val systemNavItems = menu.buildSystemNavItems()
 
-            // Create the rows
-            // Add the system navigation row to the beginning
             val rows = mutableListOf(systemNavItems)
-            // Split the items into rows of 3
             pageItems.chunked(3).forEach { rowItems ->
                 rows.add(rowItems)
             }
 
-            // Add the menu page
             menuPages.add(
                 MenuPage(
                     context,
@@ -85,97 +111,148 @@ class MenuView(
         }
     }
 
-    // This function is called when the menu page is changed
+    /**
+     * Callback function triggered when a menu page is changed.
+     * Updates the current page index and inflates the new menu page.
+     *
+     * @param pageIndex The index of the new page.
+     */
     private fun onMenuPageChanged(pageIndex: Int) {
-        // Set the current page to the new page
         currentPage = pageIndex
-        // Inflate the menu
         inflateMenu()
     }
 
-    // This function inflates the menu
+    /**
+     * Inflates the current menu page and sets up the scan tree.
+     * This method is responsible for adding the current page's layout to the base layout
+     * and setting up a ViewTreeObserver to handle layout changes.
+     */
     private fun inflateMenu() {
-        // Clear the scan tree
         scanTree.clearTree()
-        // Remove all views from the LinearLayout
         baseLayout.removeAllViews()
 
         val pageExists = currentPage < menuPages.size
-        // If the page exists, add the menu items to the LinearLayout
         if (pageExists) {
-            baseLayout.addView(menuPages[currentPage].getMenuLayout())
+            val pageLayout = menuPages[currentPage].getMenuLayout()
+            baseLayout.addView(
+                pageLayout,
+                ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+
+            pageLayout.viewTreeObserver.addOnGlobalLayoutListener(object :
+                ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    pageLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    updateMaxDimensions()
+                    resizeAndRepositionMenu()
+                }
+            })
         }
 
-        // Build the scan tree after half a second if the page exists, otherwise, close the menu hierarchy
         Handler(Looper.getMainLooper()).postDelayed({
             if (pageExists) {
                 scanTree.buildTree(menuPages[currentPage].translateMenuItemsToNodes(), 0)
-                adjustMenuPosition()
             } else {
                 MenuManager.getInstance().closeMenuHierarchy()
             }
         }, 500)
     }
 
+    /**
+     * Updates the maximum dimensions based on the current layout size.
+     */
+    private fun updateMaxDimensions() {
+        maxWidth = maxWidth.coerceAtLeast(baseLayout.width)
+        maxHeight = maxHeight.coerceAtLeast(baseLayout.height)
+    }
+
+    /**
+     * Creates the base LinearLayout for the menu.
+     * Sets the layout parameters to WRAP_CONTENT for both width and height to allow dynamic resizing.
+     */
     private fun createLinearLayout() {
         baseLayout = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(context.resources.getColor(R.color.navy, null))
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         }
     }
 
+    /**
+     * Adds the menu view to the accessibility window.
+     * It is initially off screen to ensure the menu is properly sized.
+     */
     private fun addToWindow() {
-        switchifyAccessibilityWindow.addView(baseLayout, Int.MAX_VALUE, Int.MAX_VALUE)
+        switchifyAccessibilityWindow.addView(
+            baseLayout,
+            Int.MAX_VALUE,
+            Int.MAX_VALUE
+        )
+    }
 
-        // Set the menu viewTreeObserver
-        baseLayout.viewTreeObserver.addOnGlobalLayoutListener {
-            adjustMenuPosition()
+    /**
+     * Resizes and repositions the menu on the screen.
+     * This method ensures the menu is properly sized,
+     * handling both larger and smaller page transitions.
+     * It also ensures the menu is positioned correctly on the screen.
+     */
+    private fun resizeAndRepositionMenu() {
+        baseLayout.post {
+            val screenWidth = context.resources.displayMetrics.widthPixels
+            val screenHeight = context.resources.displayMetrics.heightPixels
+
+            val gesturePoint = GesturePoint.getPoint()
+            val x = if (gesturePoint.x + maxWidth > screenWidth) {
+                screenWidth - maxWidth.toFloat()
+            } else {
+                gesturePoint.x
+            }
+            val y = if (gesturePoint.y + maxHeight > screenHeight) {
+                screenHeight - maxHeight.toFloat()
+            } else {
+                gesturePoint.y
+            }
+
+            switchifyAccessibilityWindow.updateViewLayout(
+                baseLayout,
+                x.toInt(),
+                y.toInt(),
+                WRAP_CONTENT,
+                WRAP_CONTENT
+            )
         }
     }
 
-    private fun adjustMenuPosition() {
-        val width = baseLayout.width
-        val height = baseLayout.height
-
-        val screenWidth = context.resources.displayMetrics.widthPixels
-        val screenHeight = context.resources.displayMetrics.heightPixels
-
-        val point = GesturePoint.getPoint()
-
-        // Set the menu position to be above or below the point making sure it fits on the screen
-        val x = if (point.x + width > screenWidth) {
-            screenWidth - width.toFloat()
-        } else {
-            point.x
-        }
-        val y = if (point.y + height > screenHeight) {
-            screenHeight - height.toFloat()
-        } else {
-            point.y
-        }
-        switchifyAccessibilityWindow.updateViewLayout(baseLayout, x.toInt(), y.toInt())
-    }
-
-    // This function is called when the menu is opened
+    /**
+     * Opens the menu.
+     * This method initializes the menu, adds it to the window, and inflates the first page.
+     *
+     * @param scanningManager The ScanningManager instance to set the menu type.
+     */
     fun open(scanningManager: ScanningManager) {
-        // Set the menu type
         scanningManager.setMenuType()
-        // Create the LinearLayout
         createLinearLayout()
-        // Add to the window
         addToWindow()
-        // Inflate the menu
         inflateMenu()
     }
 
-    // This function is called when the menu is closed
+    /**
+     * Closes the menu and performs necessary cleanup.
+     * This method removes the menu from the window, shuts down the scan tree,
+     * notifies the listener, and resets the max dimensions.
+     */
     fun close() {
-        // Remove the LinearLayout from the window
         baseLayout.removeAllViews()
         switchifyAccessibilityWindow.removeView(baseLayout)
-        // Shutdown the scan tree
         scanTree.shutdown()
-        // Call the listener
         menuViewListener?.onMenuViewClosed()
+        maxWidth = 0
+        maxHeight = 0
     }
 }
