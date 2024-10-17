@@ -32,19 +32,17 @@ android {
         val localPropertiesFile = rootProject.file("local.properties")
         if (localPropertiesFile.exists()) {
             localProperties.load(localPropertiesFile.inputStream())
-        } else {
-            throw IllegalStateException("local.properties file not found")
         }
 
         buildConfigField(
             "String",
             "FLEKSY_API_KEY",
-            "\"${localProperties.getProperty("fleksy.apiKey", "")}\""
+            "\"${localProperties.getProperty("fleksy.apiKey", "defaultApiKey")}\""
         )
         buildConfigField(
             "String",
             "FLEKSY_API_SECRET",
-            "\"${localProperties.getProperty("fleksy.apiSecret", "")}\""
+            "\"${localProperties.getProperty("fleksy.apiSecret", "defaultApiSecret")}\""
         )
     }
 
