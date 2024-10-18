@@ -398,7 +398,10 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
 
             KeyType.Space -> {
                 currentInputConnection.commitText(" ", 1)
-                KeyboardLayoutManager.switchLayout(KeyboardLayoutType.AlphabeticLower)
+                if (!KeyboardLayoutManager.isAlphabeticLayout()) {
+                    KeyboardLayoutManager.switchLayout(KeyboardLayoutType.AlphabeticLower)
+                    updateTextState()
+                }
             }
 
             KeyType.ImeAction -> {
@@ -418,7 +421,10 @@ class SwitchifyKeyboardService : InputMethodService(), KeyboardLayoutListener, P
                         KeyEvent.KEYCODE_ENTER
                     )
                 )
-                KeyboardLayoutManager.switchLayout(KeyboardLayoutType.AlphabeticLower)
+                if (!KeyboardLayoutManager.isAlphabeticLayout()) {
+                    KeyboardLayoutManager.switchLayout(KeyboardLayoutType.AlphabeticLower)
+                    updateTextState()
+                }
             }
 
             KeyType.Tab -> {
