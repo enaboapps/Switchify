@@ -14,6 +14,7 @@ import com.enaboapps.switchify.screens.account.ForgotPasswordScreen
 import com.enaboapps.switchify.screens.account.SignInScreen
 import com.enaboapps.switchify.screens.account.SignUpScreen
 import com.enaboapps.switchify.screens.howto.HowToUseScreen
+import com.enaboapps.switchify.screens.settings.MenuItemCustomizationScreen
 import com.enaboapps.switchify.screens.settings.SettingsScreen
 import com.enaboapps.switchify.screens.settings.prediction.PredictionLanguageScreen
 import com.enaboapps.switchify.screens.settings.scanning.CursorSettingsScreen
@@ -79,6 +80,9 @@ fun NavGraph(navController: NavHostController) {
             it.arguments?.getString("code")?.let { code ->
                 EditSwitchScreen(navController, code)
             }
+        }
+        composable(NavigationRoute.MenuItemCustomization.name) {
+            MenuItemCustomizationScreen(navController)
         }
         composable(NavigationRoute.EnableAccessibilityService.name) {
             EnableAccessibilityServiceScreen(navController)

@@ -37,8 +37,7 @@ fun SetupScreen(navController: NavController) {
         ) {
             SetupScreenContent(
                 switchCount = setupScreenModel.switchCount.value ?: 0,
-                isAccessibilityServiceEnabled = setupScreenModel.isAccessibilityServiceEnabled.value
-                    ?: false,
+                isAccessibilityServiceEnabled = setupScreenModel.isAccessibilityServiceEnabled.value == true,
                 onAddSwitchClick = {
                     navController.navigate(NavigationRoute.AddNewSwitch.name)
                 },

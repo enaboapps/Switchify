@@ -19,7 +19,7 @@ class PredictionLanguageManager(private val context: Context) : CoroutineScope {
             if (result.isSuccess) {
                 val languages = result.getOrNull()
                 if (languages != null) {
-                    val enLanguages = languages.filter { it?.locale?.startsWith("en") ?: false }
+                    val enLanguages = languages.filter { it?.locale?.startsWith("en") == true }
                     completion(enLanguages)
                 } else {
                     completion(emptyList())

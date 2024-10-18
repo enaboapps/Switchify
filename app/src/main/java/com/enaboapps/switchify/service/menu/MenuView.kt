@@ -73,7 +73,7 @@ class MenuView(
      * Sets up the menu by retrieving menu items and creating menu pages.
      */
     private fun setup() {
-        val menuItems = menu.getMenuItems()
+        val menuItems = menu.getMenuItems().filter { it.isVisible(context) }
         createMenuPages(menuItems)
     }
 
@@ -137,8 +137,8 @@ class MenuView(
             baseLayout.addView(
                 pageLayout,
                 ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    WRAP_CONTENT,
+                    WRAP_CONTENT
                 )
             )
 
@@ -178,8 +178,8 @@ class MenuView(
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(context.resources.getColor(R.color.navy, null))
             layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                WRAP_CONTENT,
+                WRAP_CONTENT
             )
         }
     }
