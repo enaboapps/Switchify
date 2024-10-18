@@ -20,6 +20,7 @@ fun MenuItemCustomizationScreen(navController: NavController) {
     val context = LocalContext.current
     val preferenceManager = PreferenceManager(context)
     val menuItemStore = MenuItemStore()
+    val gestureLockItem = menuItemStore.toggleGestureLockMenuItem
 
     Scaffold(
         topBar = {
@@ -45,6 +46,16 @@ fun MenuItemCustomizationScreen(navController: NavController) {
                     }
                 )
             }
+            val isVisible = remember { mutableStateOf(gestureLockItem.isVisible(context)) }
+            PreferenceSwitch(
+                title = gestureLockItem.text,
+                summary = "When enabled, this menu item will be visible",
+                checked = isVisible.value,
+                onCheckedChange = {
+                    isVisible.value = it
+                    preferenceManager.setMenuItemVisibility(gestureLockItem.id, it)
+                }
+            )
         }
     }
 }
