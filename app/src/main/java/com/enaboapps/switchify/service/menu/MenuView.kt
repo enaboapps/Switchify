@@ -73,7 +73,7 @@ class MenuView(
      * Sets up the menu by retrieving menu items and creating menu pages.
      */
     private fun setup() {
-        val menuItems = menu.getMenuItems().filter { it.visible }
+        val menuItems = menu.getMenuItems().filter { it.isVisible(context) }
         createMenuPages(menuItems)
     }
 

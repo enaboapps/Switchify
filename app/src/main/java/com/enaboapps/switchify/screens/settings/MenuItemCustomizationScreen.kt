@@ -12,6 +12,7 @@ import androidx.navigation.NavController
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.menu.store.MenuItemStore
 import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.widgets.PreferenceSwitch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,24 +34,16 @@ fun MenuItemCustomizationScreen(navController: NavController) {
                 .padding(16.dp)
         ) {
             menuItemStore.mainMenuObject.getMenuItems().forEach { menuItem ->
-                val isVisible =
-                    remember { mutableStateOf(preferenceManager.getMenuItemVisibility(menuItem.id)) }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = menuItem.text)
-                    Switch(
-                        checked = isVisible.value,
-                        onCheckedChange = {
-                            isVisible.value = it
-                            preferenceManager.setMenuItemVisibility(menuItem.id, it)
-                            menuItem.visible = it
-                        }
-                    )
-                }
+                val isVisible = remember { mutableStateOf(menuItem.isVisible(context)) }
+                PreferenceSwitch(
+                    title = menuItem.text,
+                    summary = "When enabled, this menu item will be visible",
+                    checked = isVisible.value,
+                    onCheckedChange = {
+                        isVisible.value = it
+                        preferenceManager.setMenuItemVisibility(menuItem.id, it)
+                    }
+                )
             }
         }
     }

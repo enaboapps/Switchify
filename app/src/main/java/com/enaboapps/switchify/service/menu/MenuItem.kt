@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.menu
 
+import android.content.Context
 import android.util.TypedValue
 import android.view.Gravity
 import android.widget.ImageView
@@ -9,6 +10,7 @@ import android.widget.TextView.AUTO_SIZE_TEXT_TYPE_NONE
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import com.enaboapps.switchify.R
+import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.utils.ScreenUtils
 import kotlin.properties.Delegates
 
@@ -23,7 +25,6 @@ import kotlin.properties.Delegates
  * @property isMenuHierarchyManipulator Whether the item manipulates the menu hierarchy
  * @property page The page of the menu item
  * @property action The action to perform when the item is selected
- * @property visible Whether the menu item is visible
  */
 class MenuItem(
     val id: String,
@@ -34,8 +35,7 @@ class MenuItem(
     var isLinkToMenu: Boolean = false,
     var isMenuHierarchyManipulator: Boolean = false,
     private var page: Int = 0,
-    private val action: () -> Unit,
-    var visible: Boolean = true
+    private val action: () -> Unit
 ) {
     /**
      * The view of the menu item
@@ -67,8 +67,6 @@ class MenuItem(
      * @param height The height of the menu item
      */
     fun inflate(linearLayout: LinearLayout, width: Int = 90, height: Int = 75) {
-        if (!visible) return
-
         val widthPx = ScreenUtils.dpToPx(linearLayout.context, width)
         val heightPx = ScreenUtils.dpToPx(linearLayout.context, height)
 
@@ -147,6 +145,11 @@ class MenuItem(
         }
 
         linearLayout.addView(view)
+    }
+
+    fun isVisible(context: Context): Boolean {
+        val preferenceManager = PreferenceManager(context)
+        return preferenceManager.getMenuItemVisibility(id)
     }
 
     /**
