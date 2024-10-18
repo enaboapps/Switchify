@@ -39,7 +39,7 @@ fun SettingsScreen(navController: NavController) {
                 .padding(paddingValues)
         ) {
             TabRow(selectedTabIndex = selectedTabIndex) {
-                listOf("Input", "Scanning", "Selection", "About").forEachIndexed { index, tab ->
+                listOf("General", "Scanning", "Selection", "About").forEachIndexed { index, tab ->
                     Tab(
                         selected = selectedTabIndex == index,
                         onClick = { selectedTabIndex = index },
@@ -49,7 +49,7 @@ fun SettingsScreen(navController: NavController) {
             }
 
             when (selectedTabIndex) {
-                0 -> InputSettingsTab(navController)
+                0 -> GeneralSettingsTab(navController)
                 1 -> ScanningSettingsTab(settingsScreenModel, navController)
                 2 -> SelectionSettingsTab(settingsScreenModel)
                 3 -> AboutSection()
@@ -59,7 +59,7 @@ fun SettingsScreen(navController: NavController) {
 }
 
 @Composable
-fun InputSettingsTab(navController: NavController) {
+fun GeneralSettingsTab(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
