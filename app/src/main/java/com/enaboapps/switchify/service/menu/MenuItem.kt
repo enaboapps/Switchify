@@ -23,6 +23,7 @@ import kotlin.properties.Delegates
  * @property isMenuHierarchyManipulator Whether the item manipulates the menu hierarchy
  * @property page The page of the menu item
  * @property action The action to perform when the item is selected
+ * @property visible Whether the menu item is visible
  */
 class MenuItem(
     val id: String,
@@ -33,7 +34,8 @@ class MenuItem(
     var isLinkToMenu: Boolean = false,
     var isMenuHierarchyManipulator: Boolean = false,
     private var page: Int = 0,
-    private val action: () -> Unit
+    private val action: () -> Unit,
+    var visible: Boolean = true
 ) {
     /**
      * The view of the menu item
@@ -65,6 +67,8 @@ class MenuItem(
      * @param height The height of the menu item
      */
     fun inflate(linearLayout: LinearLayout, width: Int = 90, height: Int = 75) {
+        if (!visible) return
+
         val widthPx = ScreenUtils.dpToPx(linearLayout.context, width)
         val heightPx = ScreenUtils.dpToPx(linearLayout.context, height)
 

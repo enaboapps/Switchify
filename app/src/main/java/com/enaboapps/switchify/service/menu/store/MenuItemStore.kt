@@ -404,22 +404,19 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
             ),
             MenuItem(
                 id = "scroll_down",
-                text = "Scroll Down",
-                action = {
+                text = {
                     GestureManager.getInstance().performSwipeOrScroll(GestureType.SCROLL_DOWN)
                 }
             ),
             MenuItem(
                 id = "scroll_left",
-                text = "Scroll Left",
-                action = {
+                text = {
                     GestureManager.getInstance().performSwipeOrScroll(GestureType.SCROLL_LEFT)
                 }
             ),
             MenuItem(
                 id = "scroll_right",
-                text = "Scroll Right",
-                action = {
+                text = {
                     GestureManager.getInstance().performSwipeOrScroll(GestureType.SCROLL_RIGHT)
                 }
             ),
@@ -467,5 +464,30 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 } else null
             )
         )
+    }
+
+    /**
+     * Get the menu items for a given menu object
+     * @param menuObject The menu object
+     * @return The menu items
+     */
+    fun getMenuItems(menuObject: MenuItemStoreObject): List<MenuItem> {
+        return menuObject.getMenuItems().filter { it.visible }
+    }
+
+    /**
+     * Show a menu item
+     * @param menuItem The menu item to show
+     */
+    fun showMenuItem(menuItem: MenuItem) {
+        menuItem.visible = true
+    }
+
+    /**
+     * Hide a menu item
+     * @param menuItem The menu item to hide
+     */
+    fun hideMenuItem(menuItem: MenuItem) {
+        menuItem.visible = false
     }
 }

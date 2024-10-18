@@ -39,7 +39,7 @@ fun SettingsScreen(navController: NavController) {
                 .padding(paddingValues)
         ) {
             TabRow(selectedTabIndex = selectedTabIndex) {
-                listOf("Input", "Scanning", "Selection", "About").forEachIndexed { index, tab ->
+                listOf("Input", "Scanning", "Selection", "About", "Menu Items").forEachIndexed { index, tab ->
                     Tab(
                         selected = selectedTabIndex == index,
                         onClick = { selectedTabIndex = index },
@@ -53,6 +53,7 @@ fun SettingsScreen(navController: NavController) {
                 1 -> ScanningSettingsTab(settingsScreenModel, navController)
                 2 -> SelectionSettingsTab(settingsScreenModel)
                 3 -> AboutSection()
+                4 -> MenuItemCustomizationSection(navController)
             }
         }
     }
@@ -81,6 +82,13 @@ fun InputSettingsTab(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         KeyboardSection(navController)
+        Spacer(modifier = Modifier.height(16.dp))
+        NavRouteLink(
+            title = "Customize Menu Items",
+            summary = "Show or hide menu items",
+            navController = navController,
+            route = NavigationRoute.MenuItemCustomization.name
+        )
     }
 }
 
@@ -299,6 +307,23 @@ fun AboutSection() {
             onClick = {
                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(privacyPolicyUrl)))
             }
+        )
+    }
+}
+
+@Composable
+fun MenuItemCustomizationSection(navController: NavController) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        NavRouteLink(
+            title = "Customize Menu Items",
+            summary = "Show or hide menu items",
+            navController = navController,
+            route = NavigationRoute.MenuItemCustomization.name
         )
     }
 }
