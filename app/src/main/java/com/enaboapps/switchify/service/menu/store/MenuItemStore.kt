@@ -17,7 +17,7 @@ import com.enaboapps.switchify.service.methods.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.utils.ScreenUtils
 
-class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityService) {
+class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityService? = null) {
     private val tapMenuItem = MenuItem(
         id = "tap",
         text = "Tap",
@@ -48,13 +48,13 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
             id = "sys_back",
             drawableId = R.drawable.ic_sys_back,
             drawableDescription = "Back",
-            action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK) }
+            action = { accessibilityService?.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK) }
         ),
         MenuItem(
             id = "sys_home",
             drawableId = R.drawable.ic_sys_home,
             drawableDescription = "Home",
-            action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME) }
+            action = { accessibilityService?.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME) }
         )
     )
 
@@ -286,29 +286,30 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
      * The device menu item store object
      */
     fun buildDeviceMenuObject(): MenuItemStoreObject {
-        val packageManager = accessibilityService.packageManager
+        val packageManager = accessibilityService?.packageManager
         return MenuItemStoreObject(
             id = "device_menu",
             items = listOfNotNull(
                 MenuItem(
                     id = "recent_apps",
                     text = "Recent Apps",
-                    action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS) }
+                    action = { accessibilityService?.performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS) }
                 ),
                 MenuItem(
                     id = "notifications",
                     text = "Notifications",
-                    action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS) }
+                    action = { accessibilityService?.performGlobalAction(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS) }
                 ),
                 MenuItem(
                     id = "all_apps",
                     text = "All Apps",
-                    action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_ACCESSIBILITY_ALL_APPS) }
+                    action = { accessibilityService?.performGlobalAction(AccessibilityService.GLOBAL_ACTION_ACCESSIBILITY_ALL_APPS) }
                 ),
-                if (packageManager.hasSystemFeature(PackageManager.FEATURE_ACTIVITIES_ON_SECONDARY_DISPLAYS) && ScreenUtils.isTablet(
-                        accessibilityService
-                    )
-                ) {
+                if (packageManager?.hasSystemFeature(PackageManager.FEATURE_ACTIVITIES_ON_SECONDARY_DISPLAYS) == true && accessibilityService?.let {
+                        ScreenUtils.isTablet(
+                            it
+                        )
+                    } == true) {
                     MenuItem(
                         id = "toggle_split_screen",
                         text = "Toggle Split Screen",
@@ -318,17 +319,17 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 MenuItem(
                     id = "quick_settings",
                     text = "Quick Settings",
-                    action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS) }
+                    action = { accessibilityService?.performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS) }
                 ),
                 MenuItem(
                     id = "lock_screen",
                     text = "Lock Screen",
-                    action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN) }
+                    action = { accessibilityService?.performGlobalAction(AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN) }
                 ),
                 MenuItem(
                     id = "power_dialog",
                     text = "Power Dialog",
-                    action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG) }
+                    action = { accessibilityService?.performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG) }
                 ),
                 openVolumeControlMenu
             )
@@ -347,13 +348,15 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                     text = "Volume Up",
                     closeOnSelect = false,
                     action = {
-                        val audioManager =
-                            accessibilityService.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                        audioManager.adjustStreamVolume(
-                            AudioManager.STREAM_ACCESSIBILITY,
-                            AudioManager.ADJUST_RAISE,
-                            AudioManager.FLAG_SHOW_UI
-                        )
+                        accessibilityService?.let { service ->
+                            val audioManager =
+                                service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                            audioManager.adjustStreamVolume(
+                                AudioManager.STREAM_ACCESSIBILITY,
+                                AudioManager.ADJUST_RAISE,
+                                AudioManager.FLAG_SHOW_UI
+                            )
+                        }
                     }
                 ),
                 MenuItem(
@@ -361,13 +364,47 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                     text = "Volume Down",
                     closeOnSelect = false,
                     action = {
-                        val audioManager =
-                            accessibilityService.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                        audioManager.adjustStreamVolume(
-                            AudioManager.STREAM_ACCESSIBILITY,
-                            AudioManager.ADJUST_LOWER,
-                            AudioManager.FLAG_SHOW_UI
-                        )
+                        accessibilityService?.let { service ->
+                            val audioManager =
+                                service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                            audioManager.adjustStreamVolume(
+                                AudioManager.STREAM_ACCESSIBILITY,
+                                AudioManager.ADJUST_LOWER,
+                                AudioManager.FLAG_SHOW_UI
+                            )
+                        }
+                    }
+                ),
+                MenuItem(
+                    id = "full_volume",
+                    text = "Full Volume",
+                    closeOnSelect = false,
+                    action = {
+                        accessibilityService?.let { service ->
+                            val audioManager =
+                                service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                            audioManager.setStreamVolume(
+                                AudioManager.STREAM_ACCESSIBILITY,
+                                audioManager.getStreamMaxVolume(AudioManager.STREAM_ACCESSIBILITY),
+                                AudioManager.FLAG_SHOW_UI
+                            )
+                        }
+                    }
+                ),
+                MenuItem(
+                    id = "mute",
+                    text = "Mute",
+                    closeOnSelect = false,
+                    action = {
+                        accessibilityService?.let { service ->
+                            val audioManager =
+                                service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                            audioManager.setStreamVolume(
+                                AudioManager.STREAM_ACCESSIBILITY,
+                                0,
+                                AudioManager.FLAG_SHOW_UI
+                            )
+                        }
                     }
                 )
             )
@@ -383,7 +420,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
             MenuItem(
                 id = "play_pause",
                 text = "Play/Pause",
-                action = { accessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_KEYCODE_HEADSETHOOK) }
+                action = { accessibilityService?.performGlobalAction(AccessibilityService.GLOBAL_ACTION_KEYCODE_HEADSETHOOK) }
             ),
             openVolumeControlMenu
         )
@@ -404,19 +441,22 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
             ),
             MenuItem(
                 id = "scroll_down",
-                text = {
+                text = "Scroll Down",
+                action = {
                     GestureManager.getInstance().performSwipeOrScroll(GestureType.SCROLL_DOWN)
                 }
             ),
             MenuItem(
                 id = "scroll_left",
-                text = {
+                text = "Scroll Left",
+                action = {
                     GestureManager.getInstance().performSwipeOrScroll(GestureType.SCROLL_LEFT)
                 }
             ),
             MenuItem(
                 id = "scroll_right",
-                text = {
+                text = "Scroll Right",
+                action = {
                     GestureManager.getInstance().performSwipeOrScroll(GestureType.SCROLL_RIGHT)
                 }
             ),
@@ -464,30 +504,5 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                 } else null
             )
         )
-    }
-
-    /**
-     * Get the menu items for a given menu object
-     * @param menuObject The menu object
-     * @return The menu items
-     */
-    fun getMenuItems(menuObject: MenuItemStoreObject): List<MenuItem> {
-        return menuObject.getMenuItems().filter { it.visible }
-    }
-
-    /**
-     * Show a menu item
-     * @param menuItem The menu item to show
-     */
-    fun showMenuItem(menuItem: MenuItem) {
-        menuItem.visible = true
-    }
-
-    /**
-     * Hide a menu item
-     * @param menuItem The menu item to hide
-     */
-    fun hideMenuItem(menuItem: MenuItem) {
-        menuItem.visible = false
     }
 }

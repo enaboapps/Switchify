@@ -148,14 +148,14 @@ private fun TimingAndScanningSection(
         PreferenceSwitch(
             title = "Automatically start scan after selection (auto scan only)",
             summary = "Automatically start the scan after a selection is made",
-            checked = settingsScreenModel.automaticallyStartScanAfterSelection.value ?: false
+            checked = settingsScreenModel.automaticallyStartScanAfterSelection.value == true
         ) {
             settingsScreenModel.setAutomaticallyStartScanAfterSelection(it)
         }
         PreferenceSwitch(
             title = "Pause on first item",
             summary = "Pause scanning when the first item is highlighted",
-            checked = settingsScreenModel.pauseOnFirstItem.value ?: false
+            checked = settingsScreenModel.pauseOnFirstItem.value == true
         ) {
             settingsScreenModel.setPauseOnFirstItem(it)
         }
@@ -173,7 +173,7 @@ private fun TimingAndScanningSection(
         PreferenceSwitch(
             title = "Assisted selection",
             summary = "Assist the user in selecting items by selecting the closest available item to where they tap",
-            checked = settingsScreenModel.assistedSelection.value ?: false,
+            checked = settingsScreenModel.assistedSelection.value == true,
             onCheckedChange = {
                 settingsScreenModel.setAssistedSelection(it)
             }
@@ -217,7 +217,7 @@ private fun SelectionSection(screenModel: SettingsScreenModel) {
         PreferenceSwitch(
             title = "Auto select",
             summary = "Automatically select the item after a delay",
-            checked = screenModel.autoSelect.value ?: false,
+            checked = screenModel.autoSelect.value == true,
             onCheckedChange = {
                 screenModel.setAutoSelect(it)
             }
@@ -240,7 +240,7 @@ private fun ItemScanSection(screenModel: SettingsScreenModel) {
         PreferenceSwitch(
             title = "Row column scan",
             summary = "Scan items in a row column pattern",
-            checked = screenModel.rowColumnScan.value ?: false,
+            checked = screenModel.rowColumnScan.value == true,
             onCheckedChange = {
                 screenModel.setRowColumnScan(it)
             }
@@ -248,7 +248,7 @@ private fun ItemScanSection(screenModel: SettingsScreenModel) {
         PreferenceSwitch(
             title = "Group scan (requires row column scan)",
             summary = "Scan items in a group pattern",
-            checked = screenModel.groupScan.value ?: false,
+            checked = screenModel.groupScan.value == true,
             onCheckedChange = {
                 screenModel.setGroupScan(it)
             }

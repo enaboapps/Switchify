@@ -27,7 +27,7 @@ import kotlin.properties.Delegates
  */
 class MenuItem(
     val id: String,
-    private val text: String = "",
+    val text: String = "",
     private val drawableId: Int = 0,
     private val drawableDescription: String = "",
     val closeOnSelect: Boolean = true,

@@ -18,7 +18,7 @@ import com.enaboapps.switchify.widgets.NavBar
 fun MenuItemCustomizationScreen(navController: NavController) {
     val context = LocalContext.current
     val preferenceManager = PreferenceManager(context)
-    val menuItemStore = MenuItemStore(context)
+    val menuItemStore = MenuItemStore()
 
     Scaffold(
         topBar = {
@@ -33,7 +33,8 @@ fun MenuItemCustomizationScreen(navController: NavController) {
                 .padding(16.dp)
         ) {
             menuItemStore.mainMenuObject.getMenuItems().forEach { menuItem ->
-                val isVisible = remember { mutableStateOf(preferenceManager.getMenuItemVisibility(menuItem.id)) }
+                val isVisible =
+                    remember { mutableStateOf(preferenceManager.getMenuItemVisibility(menuItem.id)) }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

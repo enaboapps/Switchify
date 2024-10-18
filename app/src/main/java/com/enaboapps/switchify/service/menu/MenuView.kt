@@ -137,8 +137,8 @@ class MenuView(
             baseLayout.addView(
                 pageLayout,
                 ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    WRAP_CONTENT,
+                    WRAP_CONTENT
                 )
             )
 
@@ -178,8 +178,8 @@ class MenuView(
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(context.resources.getColor(R.color.navy, null))
             layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                WRAP_CONTENT,
+                WRAP_CONTENT
             )
         }
     }
