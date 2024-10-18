@@ -81,6 +81,13 @@ fun InputSettingsTab(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         KeyboardSection(navController)
+        Spacer(modifier = Modifier.height(16.dp))
+        NavRouteLink(
+            title = "Customize Menu Items",
+            summary = "Show or hide menu items",
+            navController = navController,
+            route = NavigationRoute.MenuItemCustomization.name
+        )
     }
 }
 
