@@ -80,14 +80,8 @@ fun GeneralSettingsTab(navController: NavController) {
             route = NavigationRoute.SwitchStability.name
         )
         Spacer(modifier = Modifier.height(16.dp))
+        MenuSection(navController)
         KeyboardSection(navController)
-        Spacer(modifier = Modifier.height(16.dp))
-        NavRouteLink(
-            title = "Customize Menu Items",
-            summary = "Show or hide menu items",
-            navController = navController,
-            route = NavigationRoute.MenuItemCustomization.name
-        )
     }
 }
 
@@ -194,6 +188,18 @@ private fun KeyboardSection(navController: NavController) {
             summary = "Choose the prediction language",
             navController = navController,
             route = NavigationRoute.PredictionLanguage.name
+        )
+    }
+}
+
+@Composable
+private fun MenuSection(navController: NavController) {
+    Section(title = "Menu") {
+        NavRouteLink(
+            title = "Customize Menu Items",
+            summary = "Show or hide menu items",
+            navController = navController,
+            route = NavigationRoute.MenuItemCustomization.name
         )
     }
 }
