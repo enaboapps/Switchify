@@ -34,6 +34,6 @@ fun SwitchActionAppLaunchPicker(
             onAppSelected(updatedAction)
         },
         itemToString = { it.displayName },
-        itemDescription = { it.packageName }
+        itemDescription = { "Will open ${it.displayName}" }
     )
 }
