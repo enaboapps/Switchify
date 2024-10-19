@@ -24,6 +24,7 @@ import com.enaboapps.switchify.screens.settings.switches.EditSwitchScreen
 import com.enaboapps.switchify.screens.settings.switches.SwitchStabilityScreen
 import com.enaboapps.switchify.screens.settings.switches.SwitchesScreen
 import com.enaboapps.switchify.screens.setup.SetupScreen
+import com.enaboapps.switchify.screens.settings.AddMenuItemScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -89,6 +90,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(NavigationRoute.EnableSwitchifyKeyboard.name) {
             EnableKeyboardScreen(navController)
+        }
+        composable(NavigationRoute.AddMenuItem.name) {
+            AddMenuItemScreen(navController)
         }
     }
 }
