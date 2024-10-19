@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.store.MenuItemStore
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.PreferenceSwitch
@@ -20,7 +21,12 @@ fun MenuItemCustomizationScreen(navController: NavController) {
     val context = LocalContext.current
     val preferenceManager = PreferenceManager(context)
     val menuItemStore = MenuItemStore()
-    val gestureLockItem = menuItemStore.toggleGestureLockMenuItem
+
+    val items: MutableList<MenuItem> = mutableListOf()
+    items.addAll(menuItemStore.mainMenuObject.getMenuItems())
+    items.add(menuItemStore.toggleGestureLockMenuItem)
+    items.addAll(menuItemStore.buildDeviceMenuObject().getMenuItems())
+    val uniqueItems = items.distinctBy { it.id }
 
     Scaffold(
         topBar = {
@@ -34,11 +40,11 @@ fun MenuItemCustomizationScreen(navController: NavController) {
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            menuItemStore.mainMenuObject.getMenuItems().forEach { menuItem ->
+            uniqueItems.forEach { menuItem ->
                 val isVisible = remember { mutableStateOf(menuItem.isVisible(context)) }
                 PreferenceSwitch(
                     title = menuItem.text,
-                    summary = "When enabled, this menu item will be visible",
+                    summary = if (isVisible.value) "Shown" else "Hidden",
                     checked = isVisible.value,
                     onCheckedChange = {
                         isVisible.value = it
@@ -46,16 +52,6 @@ fun MenuItemCustomizationScreen(navController: NavController) {
                     }
                 )
             }
-            val isVisible = remember { mutableStateOf(gestureLockItem.isVisible(context)) }
-            PreferenceSwitch(
-                title = gestureLockItem.text,
-                summary = "When enabled, this menu item will be visible",
-                checked = isVisible.value,
-                onCheckedChange = {
-                    isVisible.value = it
-                    preferenceManager.setMenuItemVisibility(gestureLockItem.id, it)
-                }
-            )
         }
     }
 }
