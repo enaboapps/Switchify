@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.screens.settings
+package com.enaboapps.switchify.screens.settings.menu
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,12 +9,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.store.structure.MenuStructureHolder
 import com.enaboapps.switchify.widgets.NavBar
-import com.enaboapps.switchify.widgets.NavBarAction
 import com.enaboapps.switchify.widgets.PreferenceSwitch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,14 +30,7 @@ fun MenuItemCustomizationScreen(navController: NavController) {
 
     Scaffold(
         topBar = {
-            NavBar(title = "Customize Menu Items", navController = navController, actions = listOf(
-                NavBarAction(
-                    text = "Add New Item",
-                    onClick = {
-                        navController.navigate(NavigationRoute.AddMenuItem.name)
-                    }
-                )
-            ))
+            NavBar(title = "Customize Menu Items", navController = navController)
         }
     ) { paddingValues ->
         Column(
