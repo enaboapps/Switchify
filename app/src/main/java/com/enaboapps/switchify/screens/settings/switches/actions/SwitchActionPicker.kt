@@ -16,8 +16,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.enaboapps.switchify.screens.settings.switches.actions.extras.SwitchActionAppLaunchPicker
+import com.enaboapps.switchify.service.custom.actions.AppLaunchPicker
 import com.enaboapps.switchify.switches.SwitchAction
+import com.enaboapps.switchify.switches.SwitchActionExtra
+import com.enaboapps.switchify.utils.AppLauncher
 import com.enaboapps.switchify.widgets.Picker
 
 @Composable
@@ -59,11 +61,22 @@ fun SwitchActionPicker(
                     tint = MaterialTheme.colorScheme.onSurface
                 )
                 when (currentAction.id) {
-                    SwitchAction.ACTION_OPEN_APP -> SwitchActionAppLaunchPicker(
-                        switchAction = currentAction,
-                        onAppSelected = { newAction ->
-                            currentAction = newAction
-                            onChange(newAction)
+                    SwitchAction.ACTION_OPEN_APP -> AppLaunchPicker(
+                        initialApp = currentAction.extra?.let {
+                            AppLauncher.AppInfo(
+                                it.appName,
+                                it.appPackage
+                            )
+                        },
+                        onAppSelected = { appInfo ->
+                            val updatedAction = currentAction.copy(
+                                extra = SwitchActionExtra(
+                                    appName = appInfo.displayName,
+                                    appPackage = appInfo.packageName
+                                )
+                            )
+                            currentAction = updatedAction
+                            onChange(updatedAction)
                         }
                     )
                 }
