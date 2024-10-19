@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.screens.settings
+package com.enaboapps.switchify.screens.settings.menu
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,14 +17,12 @@ import com.enaboapps.switchify.utils.AppLauncher
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.Picker
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMenuItemScreen(navController: NavController) {
     val context = LocalContext.current
     val menuItemJsonStore = MenuItemJsonStore(context)
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     val availableActions = remember { mutableStateListOf<String>() }
@@ -34,11 +32,16 @@ fun AddMenuItemScreen(navController: NavController) {
     val selectedExtra = remember { mutableStateOf<ActionExtra?>(null) }
     val menuItemText = remember { mutableStateOf("") }
 
-    val saveButtonEnabled = remember { mutableStateOf(true) }
+    val saveButtonEnabled =
+        remember(menuItemText.value, selectedAction.value, selectedExtra.value) {
+            menuItemText.value.isNotBlank() && selectedAction.value.isNotBlank() && selectedExtra.value != null
+        }
+
+    val isSaving = remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
-            NavBar(title = "Add Menu Item", navController = navController)
+            NavBar(title = "Add Action", navController = navController)
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
@@ -70,6 +73,9 @@ fun AddMenuItemScreen(navController: NavController) {
                 items = availableActions,
                 onItemSelected = { action ->
                     selectedAction.value = action
+                    if (action != ACTION_OPEN_APP) {
+                        selectedExtra.value = null
+                    }
                 },
                 itemToString = { it },
                 itemDescription = { it }
@@ -98,32 +104,16 @@ fun AddMenuItemScreen(navController: NavController) {
 
             FullWidthButton(
                 text = "Add Menu Item",
-                enabled = !saveButtonEnabled.value,
+                enabled = saveButtonEnabled && !isSaving.value,
                 onClick = {
-                    when {
-                        menuItemText.value.isBlank() -> {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Menu item text is required")
-                            }
-                        }
-
-                        selectedAction.value == ACTION_OPEN_APP && selectedExtra.value == null -> {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Please select an app to launch")
-                            }
-                        }
-
-                        else -> {
-                            saveButtonEnabled.value = false
-                            val id = menuItemJsonStore.addMenuItem(
-                                action = selectedAction.value,
-                                text = menuItemText.value,
-                                extra = selectedExtra.value
-                            )
-                            println("ID: $id")
-                            navController.popBackStack()
-                        }
-                    }
+                    isSaving.value = true
+                    val id = menuItemJsonStore.addMenuItem(
+                        action = selectedAction.value,
+                        text = menuItemText.value,
+                        extra = selectedExtra.value
+                    )
+                    println("ID: $id")
+                    navController.popBackStack()
                 }
             )
         }
