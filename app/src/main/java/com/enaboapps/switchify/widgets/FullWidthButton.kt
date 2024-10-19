@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun FullWidthButton(
     text: String,
+    enabled: Boolean = true,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -24,6 +25,7 @@ fun FullWidthButton(
     ) {
         Button(
             onClick = onClick,
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = text)

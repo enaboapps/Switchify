@@ -1,122 +1,131 @@
 package com.enaboapps.switchify.screens.settings
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.enaboapps.switchify.service.menu.MenuItem
+import com.enaboapps.switchify.service.custom.actions.AppLaunchPicker
+import com.enaboapps.switchify.service.custom.actions.data.ACTION_OPEN_APP
+import com.enaboapps.switchify.service.custom.actions.data.ActionExtra
 import com.enaboapps.switchify.service.menu.store.MenuItemJsonStore
+import com.enaboapps.switchify.utils.AppLauncher
+import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.widgets.Picker
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMenuItemScreen(navController: NavController) {
     val context = LocalContext.current
     val menuItemJsonStore = MenuItemJsonStore(context)
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    var id by remember { mutableStateOf("") }
-    var text by remember { mutableStateOf("") }
-    var drawableId by remember { mutableStateOf(0) }
-    var drawableDescription by remember { mutableStateOf("") }
-    var closeOnSelect by remember { mutableStateOf(true) }
-    var isLinkToMenu by remember { mutableStateOf(false) }
-    var isMenuHierarchyManipulator by remember { mutableStateOf(false) }
-    var page by remember { mutableStateOf(0) }
+    val availableActions = remember { mutableStateListOf<String>() }
+    availableActions.addAll(menuItemJsonStore.getAvailableActions())
+
+    val selectedAction = remember { mutableStateOf(availableActions.first()) }
+    val selectedExtra = remember { mutableStateOf<ActionExtra?>(null) }
+    val menuItemText = remember { mutableStateOf("") }
+
+    val saveButtonEnabled = remember { mutableStateOf(true) }
 
     Scaffold(
         topBar = {
             NavBar(title = "Add Menu Item", navController = navController)
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
             OutlinedTextField(
-                value = id,
-                onValueChange = { id = it },
-                label = { Text("ID") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                label = { Text("Text") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = drawableId.toString(),
-                onValueChange = { drawableId = it.toIntOrNull() ?: 0 },
-                label = { Text("Drawable ID") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = drawableDescription,
-                onValueChange = { drawableDescription = it },
-                label = { Text("Drawable Description") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Row(
+                value = menuItemText.value,
+                onValueChange = { menuItemText.value = it },
+                label = { Text("Menu Item Text") },
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Close on Select")
-                Switch(
-                    checked = closeOnSelect,
-                    onCheckedChange = { closeOnSelect = it }
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Is Link to Menu")
-                Switch(
-                    checked = isLinkToMenu,
-                    onCheckedChange = { isLinkToMenu = it }
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Is Menu Hierarchy Manipulator")
-                Switch(
-                    checked = isMenuHierarchyManipulator,
-                    onCheckedChange = { isMenuHierarchyManipulator = it }
-                )
-            }
-            OutlinedTextField(
-                value = page.toString(),
-                onValueChange = { page = it.toIntOrNull() ?: 0 },
-                label = { Text("Page") },
-                modifier = Modifier.fillMaxWidth()
+                isError = menuItemText.value.isBlank(),
+                supportingText = {
+                    if (menuItemText.value.isBlank()) {
+                        Text("Menu item text is required")
+                    }
+                }
             )
-            Button(
-                onClick = {
-                    val newMenuItem = MenuItem(
-                        id = id,
-                        text = text,
-                        drawableId = drawableId,
-                        drawableDescription = drawableDescription,
-                        closeOnSelect = closeOnSelect,
-                        isLinkToMenu = isLinkToMenu,
-                        isMenuHierarchyManipulator = isMenuHierarchyManipulator,
-                        page = page,
-                        action = {}
-                    )
-                    menuItemJsonStore.addMenuItem(newMenuItem)
-                    navController.popBackStack()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Picker(
+                title = "Select Action",
+                selectedItem = selectedAction.value,
+                items = availableActions,
+                onItemSelected = { action ->
+                    selectedAction.value = action
                 },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Save")
+                itemToString = { it },
+                itemDescription = { it }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            when (selectedAction.value) {
+                ACTION_OPEN_APP -> AppLaunchPicker(
+                    initialApp = selectedExtra.value?.let {
+                        AppLauncher.AppInfo(
+                            it.appName,
+                            it.appPackage
+                        )
+                    },
+                    onAppSelected = { appInfo ->
+                        selectedExtra.value = ActionExtra(
+                            appName = appInfo.displayName,
+                            appPackage = appInfo.packageName
+                        )
+                    }
+                )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            FullWidthButton(
+                text = "Add Menu Item",
+                enabled = !saveButtonEnabled.value,
+                onClick = {
+                    when {
+                        menuItemText.value.isBlank() -> {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Menu item text is required")
+                            }
+                        }
+
+                        selectedAction.value == ACTION_OPEN_APP && selectedExtra.value == null -> {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Please select an app to launch")
+                            }
+                        }
+
+                        else -> {
+                            saveButtonEnabled.value = false
+                            val id = menuItemJsonStore.addMenuItem(
+                                action = selectedAction.value,
+                                text = menuItemText.value,
+                                extra = selectedExtra.value
+                            )
+                            println("ID: $id")
+                            navController.popBackStack()
+                        }
+                    }
+                }
+            )
         }
     }
 }

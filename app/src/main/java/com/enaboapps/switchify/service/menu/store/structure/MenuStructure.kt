@@ -1,8 +1,8 @@
-package com.enaboapps.switchify.service.menu.store
+package com.enaboapps.switchify.service.menu.store.structure
 
 import com.enaboapps.switchify.service.menu.MenuItem
 
-class MenuItemStoreObject(
+class MenuStructure(
     val id: String,
     private val items: List<MenuItem>
 ) {

@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.menu
 
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
+import com.enaboapps.switchify.service.menu.menus.custom.MyActionsMenu
 import com.enaboapps.switchify.service.menu.menus.edit.EditMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.GesturesMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.SwipeGesturesMenu
@@ -164,6 +165,14 @@ class MenuManager {
     fun openZoomGesturesMenu() {
         val zoomGesturesMenu = ZoomGesturesMenu(accessibilityService!!)
         openMenu(zoomGesturesMenu.build())
+    }
+
+    /**
+     * This function opens the my actions menu
+     */
+    fun openMyActionsMenu() {
+        val myActionsMenu = MyActionsMenu(accessibilityService!!)
+        openMenu(myActionsMenu.build())
     }
 
     /**

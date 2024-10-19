@@ -17,8 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.enaboapps.switchify.service.custom.actions.AppLaunchPicker
+import com.enaboapps.switchify.service.custom.actions.data.ActionExtra
 import com.enaboapps.switchify.switches.SwitchAction
-import com.enaboapps.switchify.switches.SwitchActionExtra
 import com.enaboapps.switchify.utils.AppLauncher
 import com.enaboapps.switchify.widgets.Picker
 
@@ -70,7 +70,7 @@ fun SwitchActionPicker(
                         },
                         onAppSelected = { appInfo ->
                             val updatedAction = currentAction.copy(
-                                extra = SwitchActionExtra(
+                                extra = ActionExtra(
                                     appName = appInfo.displayName,
                                     appPackage = appInfo.packageName
                                 )

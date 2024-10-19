@@ -1,23 +1,12 @@
 package com.enaboapps.switchify.switches
 
+import com.enaboapps.switchify.service.custom.actions.data.ActionExtra
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 
-data class SwitchActionExtra(
-    @SerializedName("app_package") val appPackage: String = "",
-    @SerializedName("app_name") val appName: String = ""
-) {
-    companion object {
-        fun fromJson(json: String): SwitchActionExtra =
-            Gson().fromJson(json, SwitchActionExtra::class.java)
-    }
-
-    fun toJson(): String = Gson().toJson(this)
-}
-
 data class SwitchAction(
     @SerializedName("id") val id: Int,
-    @SerializedName("extra") val extra: SwitchActionExtra? = null
+    @SerializedName("extra") val extra: ActionExtra? = null
 ) {
     companion object {
         fun fromJson(json: String): SwitchAction = Gson().fromJson(json, SwitchAction::class.java)

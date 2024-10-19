@@ -3,7 +3,7 @@ package com.enaboapps.switchify.service.menu.menus
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuView
-import com.enaboapps.switchify.service.menu.store.MenuItemStore
+import com.enaboapps.switchify.service.menu.store.structure.MenuStructureHolder
 
 /**
  * This class represents a base menu
@@ -27,7 +27,7 @@ open class BaseMenu(
      * @return The system navigation items
      */
     fun buildSystemNavItems(): List<MenuItem> {
-        return MenuItemStore(accessibilityService).systemNavItems
+        return MenuStructureHolder(accessibilityService).systemNavItems
     }
 
     /**
@@ -35,7 +35,7 @@ open class BaseMenu(
      * @return The navigation menu items
      */
     fun buildNavMenuItems(): List<MenuItem> {
-        return MenuItemStore(accessibilityService).menuManipulatorItems
+        return MenuStructureHolder(accessibilityService).menuManipulatorItems
     }
 
     /**
