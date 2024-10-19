@@ -14,6 +14,7 @@ import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.store.MenuItemStore
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.PreferenceSwitch
+import com.enaboapps.switchify.nav.NavigationRoute
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +32,9 @@ fun MenuItemCustomizationScreen(navController: NavController) {
     Scaffold(
         topBar = {
             NavBar(title = "Customize Menu Items", navController = navController)
+            IconButton(onClick = { navController.navigate(NavigationRoute.AddMenuItem.name) }) {
+                Icon(Icons.Default.Add, contentDescription = "Add")
+            }
         }
     ) { paddingValues ->
         Column(

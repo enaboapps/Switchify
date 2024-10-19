@@ -22,5 +22,6 @@ sealed class NavigationRoute(val name: String) {
     data object MenuItemCustomization : NavigationRoute("MenuItemCustomization")
     data object EnableAccessibilityService : NavigationRoute("EnableAccessibilityService")
     data object EnableSwitchifyKeyboard : NavigationRoute("EnableSwitchifyKeyboard")
+    data object AddMenuItem : NavigationRoute("AddMenuItem")
 
 }
