@@ -15,7 +15,7 @@ import com.enaboapps.switchify.screens.account.SignInScreen
 import com.enaboapps.switchify.screens.account.SignUpScreen
 import com.enaboapps.switchify.screens.howto.HowToUseScreen
 import com.enaboapps.switchify.screens.settings.SettingsScreen
-import com.enaboapps.switchify.screens.settings.menu.AddMenuItemScreen
+import com.enaboapps.switchify.screens.settings.menu.AddEditMenuItemScreen
 import com.enaboapps.switchify.screens.settings.menu.MenuItemCustomizationScreen
 import com.enaboapps.switchify.screens.settings.menu.MyActionsScreen
 import com.enaboapps.switchify.screens.settings.prediction.PredictionLanguageScreen
@@ -96,7 +96,12 @@ fun NavGraph(navController: NavHostController) {
             EnableKeyboardScreen(navController)
         }
         composable(NavigationRoute.AddMyActionsMenuItem.name) {
-            AddMenuItemScreen(navController)
+            AddEditMenuItemScreen(navController)
+        }
+        composable("${NavigationRoute.EditMyActionsMenuItem.name}/{id}") {
+            it.arguments?.getString("id")?.let { id ->
+                AddEditMenuItemScreen(navController, id)
+            }
         }
     }
 }

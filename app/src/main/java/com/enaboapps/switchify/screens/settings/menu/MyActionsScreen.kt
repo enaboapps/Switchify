@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -16,6 +17,7 @@ import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.service.menu.store.MenuItemJson
 import com.enaboapps.switchify.service.menu.store.MenuItemJsonStore
 import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.widgets.NavRouteLink
 import com.enaboapps.switchify.widgets.Section
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +57,9 @@ fun MyActionsScreen(navController: NavController) {
             Section(title = "Actions") {
                 menuItems.forEach { menuItem ->
                     ActionItem(
+                        id = menuItem.id,
                         action = menuItem.text,
+                        navController = navController,
                         onDelete = {
                             menuItemJsonStore.removeMenuItem(menuItem.id)
                             menuItems.remove(menuItem)
@@ -69,16 +73,25 @@ fun MyActionsScreen(navController: NavController) {
 
 @Composable
 private fun ActionItem(
+    id: String,
     action: String,
+    navController: NavController,
     onDelete: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = action)
-        Spacer(modifier = Modifier.weight(1f))
+        Column(modifier = Modifier.weight(1f)) {
+            NavRouteLink(
+                title = action,
+                summary = "Edit this action",
+                navController = navController,
+                route = "${NavigationRoute.EditMyActionsMenuItem.name}/${id}"
+            )
+        }
         IconButton(onClick = onDelete) {
             Icon(
                 imageVector = Icons.Default.Delete,
