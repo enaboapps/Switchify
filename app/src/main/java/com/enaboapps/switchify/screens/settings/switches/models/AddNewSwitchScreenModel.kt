@@ -22,6 +22,7 @@ class AddNewSwitchScreenModel(private val store: SwitchEventStore) : ViewModel()
     )
 
     val shouldSave = MutableLiveData(false)
+    val isValid = MutableLiveData(false)
 
     // Actions for press and long press
     val pressAction = MutableLiveData(SwitchAction(SwitchAction.ACTION_SELECT))
@@ -39,18 +40,21 @@ class AddNewSwitchScreenModel(private val store: SwitchEventStore) : ViewModel()
 
         code = key.nativeKeyCode
         shouldSave.value = true
+        isValid.value = store.validateSwitchEvent(buildSwitchEvent())
     }
 
     fun addLongPressAction(action: SwitchAction) {
         val currentActions = longPressActions.value?.toMutableList() ?: mutableListOf()
         currentActions.add(action)
         longPressActions.value = currentActions
+        isValid.value = store.validateSwitchEvent(buildSwitchEvent())
     }
 
     fun removeLongPressAction(action: SwitchAction) {
         val currentActions = longPressActions.value?.toMutableList() ?: mutableListOf()
         currentActions.remove(action)
         longPressActions.value = currentActions
+        isValid.value = store.validateSwitchEvent(buildSwitchEvent())
     }
 
     fun updateLongPressAction(oldAction: SwitchAction, newAction: SwitchAction) {
@@ -60,16 +64,26 @@ class AddNewSwitchScreenModel(private val store: SwitchEventStore) : ViewModel()
             currentActions[index] = newAction
             longPressActions.value = currentActions
         }
+        isValid.value = store.validateSwitchEvent(buildSwitchEvent())
+    }
+
+    fun setPressAction(action: SwitchAction) {
+        pressAction.value = action
+        isValid.value = store.validateSwitchEvent(buildSwitchEvent())
+    }
+
+    private fun buildSwitchEvent(): SwitchEvent {
+        return SwitchEvent(
+            name = name.value!!,
+            code = code.toString(),
+            pressAction = pressAction.value!!,
+            holdActions = longPressActions.value!!
+        )
     }
 
     fun save() {
         if (shouldSave.value == true) {
-            val event = SwitchEvent(
-                name = name.value!!,
-                code = code.toString(),
-                pressAction = pressAction.value!!,
-                holdActions = longPressActions.value!!
-            )
+            val event = buildSwitchEvent()
             if (store.find(event.code) == null) {
                 store.add(event)
             } else {

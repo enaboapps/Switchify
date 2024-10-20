@@ -33,6 +33,7 @@ fun EditSwitchScreen(
 ) {
     val editSwitchScreenModel = EditSwitchScreenModel(code, SwitchEventStore(LocalContext.current))
     val observeLongPressActions = editSwitchScreenModel.longPressActions.observeAsState()
+    val isValid = editSwitchScreenModel.isValid.observeAsState()
     val verticalScrollState = rememberScrollState()
     val showDeleteConfirmation = remember { mutableStateOf(false) }
 
@@ -51,7 +52,7 @@ fun EditSwitchScreen(
         ) {
             editSwitchScreenModel.pressAction.value?.let { press ->
                 SwitchActionPicker(title = "Press Action", switchAction = press, onChange = {
-                    editSwitchScreenModel.pressAction.value = it
+                    editSwitchScreenModel.setPressAction(it)
                 })
             }
 
@@ -82,7 +83,7 @@ fun EditSwitchScreen(
             FullWidthButton(text = "Add Long Press Action", onClick = {
                 editSwitchScreenModel.addLongPressAction(SwitchAction(SwitchAction.ACTION_SELECT))
             })
-            FullWidthButton(text = "Save", onClick = {
+            FullWidthButton(text = "Save", enabled = isValid.value!!, onClick = {
                 editSwitchScreenModel.save {
                     navController.popBackStack()
                 }

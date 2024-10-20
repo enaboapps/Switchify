@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.enaboapps.switchify.preferences.PreferenceManager
+import com.enaboapps.switchify.service.custom.actions.data.ActionExtra
 import com.enaboapps.switchify.service.scanning.ScanMode
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -61,6 +62,35 @@ class SwitchEventStore(private val context: Context) {
     fun getCount(): Int = switchEvents.size
 
     fun getSwitchEvents(): Set<SwitchEvent> = switchEvents.toSet()
+
+    fun validateSwitchEvent(switchEvent: SwitchEvent): Boolean {
+        val hasName = switchEvent.name.isNotBlank()
+        val hasCode = switchEvent.code.isNotBlank()
+
+        if (!validateExtra(switchEvent.pressAction.id, switchEvent.pressAction.extra)) {
+            println("Press action extra is invalid")
+            return false
+        }
+
+        for (holdAction in switchEvent.holdActions) {
+            if (!validateExtra(holdAction.id, holdAction.extra)) {
+                println("Hold action extra is invalid")
+                return false
+            }
+        }
+
+        return hasName && hasCode
+    }
+
+    private fun validateExtra(type: Int, extra: ActionExtra?): Boolean {
+        return when (type) {
+            SwitchAction.ACTION_OPEN_APP -> {
+                extra != null && extra.appName.isNotEmpty() && extra.appPackage.isNotEmpty()
+            }
+
+            else -> true
+        }
+    }
 
     private fun readFile() {
         if (file.exists()) {

@@ -14,6 +14,7 @@ class EditSwitchScreenModel(
     val name = MutableLiveData("")
     val pressAction = MutableLiveData(SwitchAction(SwitchAction.ACTION_SELECT))
     val longPressActions = MutableLiveData<List<SwitchAction>>(emptyList())
+    val isValid = MutableLiveData(false)
 
     init {
         val event = store.find(code)
@@ -21,17 +22,27 @@ class EditSwitchScreenModel(
         pressAction.value = event?.pressAction
         longPressActions.value =
             event?.holdActions ?: listOf() // Initialize with multiple long press actions
+        isValid.value = store.validateSwitchEvent(event!!)
     }
 
     fun save(completion: () -> Unit) {
-        val event = SwitchEvent(
+        val event = buildSwitchEvent()
+        store.update(event)
+        completion()
+    }
+
+    fun setPressAction(action: SwitchAction) {
+        pressAction.value = action
+        isValid.value = store.validateSwitchEvent(buildSwitchEvent())
+    }
+
+    private fun buildSwitchEvent(): SwitchEvent {
+        return SwitchEvent(
             name = name.value!!,
             code = code,
             pressAction = pressAction.value!!,
             holdActions = longPressActions.value!! // Save the list of long press actions
         )
-        store.update(event)
-        completion()
     }
 
     fun updateLongPressAction(newAction: SwitchAction, index: Int) {
@@ -40,6 +51,7 @@ class EditSwitchScreenModel(
             updatedActions[index] = newAction
             longPressActions.value = updatedActions
         }
+        isValid.value = store.validateSwitchEvent(buildSwitchEvent())
     }
 
     fun delete(completion: () -> Unit) {
@@ -54,6 +66,7 @@ class EditSwitchScreenModel(
         val currentActions = longPressActions.value?.toMutableList() ?: mutableListOf()
         currentActions.add(action)
         longPressActions.value = currentActions
+        isValid.value = store.validateSwitchEvent(buildSwitchEvent())
     }
 
     fun removeLongPressAction(index: Int) {
@@ -62,5 +75,6 @@ class EditSwitchScreenModel(
             updatedActions.removeAt(index)
             longPressActions.value = updatedActions
         }
+        isValid.value = store.validateSwitchEvent(buildSwitchEvent())
     }
 }
