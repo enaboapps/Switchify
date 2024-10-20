@@ -31,6 +31,7 @@ fun AddMenuItemScreen(navController: NavController) {
     val selectedAction = remember { mutableStateOf(availableActions.first()) }
     val selectedExtra = remember { mutableStateOf<ActionExtra?>(null) }
     val menuItemText = remember { mutableStateOf("") }
+    val extraValid = remember { mutableStateOf(true) }
 
     val saveButtonEnabled =
         remember(menuItemText.value, selectedAction.value, selectedExtra.value) {
@@ -96,6 +97,10 @@ fun AddMenuItemScreen(navController: NavController) {
                             appName = appInfo.displayName,
                             appPackage = appInfo.packageName
                         )
+                        extraValid.value = true
+                    },
+                    onNoAppSelected = {
+                        extraValid.value = false
                     }
                 )
             }
@@ -104,7 +109,7 @@ fun AddMenuItemScreen(navController: NavController) {
 
             FullWidthButton(
                 text = "Add Menu Item",
-                enabled = saveButtonEnabled && !isSaving.value,
+                enabled = saveButtonEnabled && !isSaving.value && extraValid.value,
                 onClick = {
                     isSaving.value = true
                     val id = menuItemJsonStore.addMenuItem(
