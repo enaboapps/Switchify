@@ -6,7 +6,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.enaboapps.switchify.preferences.PreferenceManager
-import com.enaboapps.switchify.service.custom.actions.data.ActionExtra
 import com.enaboapps.switchify.service.scanning.ScanMode
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -82,10 +81,10 @@ class SwitchEventStore(private val context: Context) {
         return hasName && hasCode
     }
 
-    private fun validateExtra(type: Int, extra: ActionExtra?): Boolean {
+    private fun validateExtra(type: Int, extra: SwitchActionExtra?): Boolean {
         return when (type) {
-            SwitchAction.ACTION_OPEN_APP -> {
-                extra != null && extra.appName.isNotEmpty() && extra.appPackage.isNotEmpty()
+            SwitchAction.ACTION_PERFORM_USER_ACTION -> {
+                extra != null && extra.myActionsId != null && extra.myActionName != null
             }
 
             else -> true

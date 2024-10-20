@@ -7,7 +7,7 @@ import android.media.AudioManager
 import android.view.accessibility.AccessibilityNodeInfo
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
-import com.enaboapps.switchify.service.custom.actions.data.ACTION_OPEN_APP
+import com.enaboapps.switchify.service.custom.actions.ActionPerformer
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.data.GestureType
@@ -18,7 +18,6 @@ import com.enaboapps.switchify.service.methods.nodes.Node
 import com.enaboapps.switchify.service.methods.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.utils.ScreenUtils
-import com.enaboapps.switchify.utils.AppLauncher
 
 class MenuStructureHolder(private val accessibilityService: SwitchifyAccessibilityService? = null) {
     private val tapMenuItem = MenuItem(
@@ -534,15 +533,8 @@ class MenuStructureHolder(private val accessibilityService: SwitchifyAccessibili
                     id = menuItem.id,
                     text = menuItem.text,
                     action = {
-                        when (menuItem.action) {
-                            ACTION_OPEN_APP -> {
-                                val appLauncher = AppLauncher(accessibilityService)
-                                val packageName =
-                                    menuItem.extra?.appPackage ?: ""
-                                val appName = menuItem.extra?.appName ?: ""
-                                appLauncher.launchAppByPackageName(packageName)
-                            }
-                        }
+                        val actionPerformer = ActionPerformer(accessibilityService)
+                        actionPerformer.performAction(menuItem.id)
                     }
                 )
             }

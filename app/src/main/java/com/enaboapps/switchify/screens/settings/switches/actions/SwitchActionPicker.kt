@@ -15,11 +15,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.enaboapps.switchify.service.custom.actions.AppLaunchPicker
-import com.enaboapps.switchify.service.custom.actions.data.ActionExtra
+import com.enaboapps.switchify.service.menu.store.MenuItemJsonStore
 import com.enaboapps.switchify.switches.SwitchAction
-import com.enaboapps.switchify.utils.AppLauncher
+import com.enaboapps.switchify.switches.SwitchActionExtra
 import com.enaboapps.switchify.widgets.Picker
 
 @Composable
@@ -61,28 +61,41 @@ fun SwitchActionPicker(
                     tint = MaterialTheme.colorScheme.onSurface
                 )
                 when (currentAction.id) {
-                    SwitchAction.ACTION_OPEN_APP -> AppLaunchPicker(
-                        initialApp = currentAction.extra?.let {
-                            AppLauncher.AppInfo(
-                                it.appName,
-                                it.appPackage
-                            )
-                        },
-                        onAppSelected = { appInfo ->
-                            val updatedAction = currentAction.copy(
-                                extra = ActionExtra(
-                                    appName = appInfo.displayName,
-                                    appPackage = appInfo.packageName
-                                )
-                            )
-                            currentAction = updatedAction
-                            onChange(updatedAction)
-                        }
+                    SwitchAction.ACTION_PERFORM_USER_ACTION -> MyActionsPicker(
+                        currentAction = currentAction,
+                        onChange = onChange
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
     }
+}
+
+@Composable
+private fun MyActionsPicker(
+    currentAction: SwitchAction,
+    onChange: (SwitchAction) -> Unit
+) {
+    val context = LocalContext.current
+    val menuItemJsonStore = MenuItemJsonStore(context)
+    val menuItems = menuItemJsonStore.getMenuItems()
+
+    Picker(
+        title = "Select My Action",
+        selectedItem = currentAction,
+        items = menuItems.map { menuItem ->
+            SwitchAction(
+                id = SwitchAction.ACTION_PERFORM_USER_ACTION,
+                extra = SwitchActionExtra(
+                    myActionsId = menuItem.id,
+                    myActionName = menuItem.text
+                )
+            )
+        },
+        onItemSelected = onChange,
+        itemToString = { it.extra?.myActionName ?: "" },
+        itemDescription = { "Perform this action" }
+    )
 }
