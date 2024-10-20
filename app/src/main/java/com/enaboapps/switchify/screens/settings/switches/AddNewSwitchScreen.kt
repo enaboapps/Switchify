@@ -44,6 +44,7 @@ fun AddNewSwitchScreen(navController: NavController) {
     }
     val verticalScrollState = rememberScrollState()
     val shouldSave by addNewSwitchScreenModel.shouldSave.observeAsState()
+    val isValid by addNewSwitchScreenModel.isValid.observeAsState()
     Scaffold(
         topBar = {
             NavBar(title = "Add New Switch", navController = navController)
@@ -68,7 +69,7 @@ fun AddNewSwitchScreen(navController: NavController) {
                 ) {
                     Text(text = "Switch captured", style = MaterialTheme.typography.labelMedium)
                     SwitchActionSection(addNewSwitchScreenModel)
-                    FullWidthButton(text = "Save", onClick = {
+                    FullWidthButton(text = "Save", enabled = isValid!!, onClick = {
                         addNewSwitchScreenModel.save()
                         navController.popBackStack()
                     })
@@ -126,7 +127,7 @@ fun SwitchActionSection(
             title = "Press Action",
             switchAction = viewModel.pressAction.value!!,
             onChange = {
-                viewModel.pressAction.value = it
+                viewModel.setPressAction(it)
             }
         )
 
