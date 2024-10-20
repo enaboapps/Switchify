@@ -10,6 +10,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
+import com.enaboapps.switchify.service.custom.actions.ActionPerformer
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.methods.cursor.CursorManager
@@ -20,7 +21,6 @@ import com.enaboapps.switchify.service.methods.radar.RadarManager
 import com.enaboapps.switchify.service.selection.SelectionHandler
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.switches.SwitchAction
-import com.enaboapps.switchify.utils.AppLauncher
 
 /**
  * ScanningManager is responsible for managing the scanning process in the application.
@@ -187,13 +187,9 @@ class ScanningManager(
                 GLOBAL_ACTION_LOCK_SCREEN
             )
 
-            SwitchAction.ACTION_OPEN_APP -> {
-                val appLauncher = AppLauncher(context)
-                val packageName =
-                    appLauncher.findPackageNameByDisplayName(action.extra?.appName ?: "")
-                if (packageName != null) {
-                    appLauncher.launchAppByPackageName(packageName)
-                }
+            SwitchAction.ACTION_PERFORM_USER_ACTION -> {
+                val actionPerformer = ActionPerformer(context)
+                actionPerformer.performAction(action.extra?.myActionsId ?: "")
             }
 
             else -> {} // Do nothing for ACTION_NONE
