@@ -83,6 +83,7 @@ class ActionPerformer(
     private fun callANumber(numberToCall: String) {
         val intent = Intent(Intent.ACTION_DIAL)
         intent.data = Uri.parse("tel:$numberToCall")
-        context.startActivity(intent)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        context.applicationContext.startActivity(intent)
     }
 }
