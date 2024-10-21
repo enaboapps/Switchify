@@ -189,7 +189,7 @@ class ScanningManager(
 
             SwitchAction.ACTION_PERFORM_USER_ACTION -> {
                 val actionPerformer = ActionPerformer(context)
-                actionPerformer.performAction(action.extra?.myActionsId ?: "")
+                actionPerformer.performActionFromStore(action.extra?.myActionsId ?: "")
             }
 
             else -> {} // Do nothing for ACTION_NONE
