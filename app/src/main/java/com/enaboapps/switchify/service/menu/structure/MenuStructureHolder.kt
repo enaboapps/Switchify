@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.menu.store.structure
+package com.enaboapps.switchify.service.menu.structure
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
@@ -8,12 +8,12 @@ import android.view.accessibility.AccessibilityNodeInfo
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.custom.actions.ActionPerformer
+import com.enaboapps.switchify.service.custom.actions.store.ActionStore
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.data.GestureType
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.MenuManager
-import com.enaboapps.switchify.service.menu.store.MenuItemJsonStore
 import com.enaboapps.switchify.service.methods.nodes.Node
 import com.enaboapps.switchify.service.methods.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
@@ -155,7 +155,7 @@ class MenuStructureHolder(private val accessibilityService: SwitchifyAccessibili
                     }
                 )
             } else null,
-            if (accessibilityService != null && !MenuItemJsonStore(accessibilityService).isEmpty()) {
+            if (accessibilityService != null && !ActionStore(accessibilityService).isEmpty()) {
                 MenuItem(
                     id = "my_actions",
                     text = "My Actions",
@@ -524,17 +524,17 @@ class MenuStructureHolder(private val accessibilityService: SwitchifyAccessibili
         if (accessibilityService == null) {
             return MenuStructure(id = "my_actions_menu", items = emptyList())
         }
-        val jsonStore = MenuItemJsonStore(accessibilityService)
-        val menuItems = jsonStore.getMenuItems()
+        val actionStore = ActionStore(accessibilityService)
+        val actions = actionStore.getActions()
         return MenuStructure(
             id = "my_actions_menu",
-            items = menuItems.map { menuItem ->
+            items = actions.map { action ->
                 MenuItem(
-                    id = menuItem.id,
-                    text = menuItem.text,
+                    id = action.id,
+                    text = action.text,
                     action = {
                         val actionPerformer = ActionPerformer(accessibilityService)
-                        actionPerformer.performAction(menuItem.id)
+                        actionPerformer.performAction(action.id)
                     }
                 )
             }

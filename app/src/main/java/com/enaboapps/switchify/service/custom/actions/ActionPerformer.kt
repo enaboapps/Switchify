@@ -1,19 +1,19 @@
 package com.enaboapps.switchify.service.custom.actions
 
 import android.content.Context
-import com.enaboapps.switchify.service.custom.actions.data.ACTION_OPEN_APP
-import com.enaboapps.switchify.service.menu.store.MenuItemJsonStore
+import com.enaboapps.switchify.service.custom.actions.store.ActionStore
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
 import com.enaboapps.switchify.utils.AppLauncher
 
 class ActionPerformer(
     private val context: Context
 ) {
-    private val actionJsonStore = MenuItemJsonStore(context)
+    private val actionStore = ActionStore(context)
 
     fun performAction(actionId: String) {
-        val action = actionJsonStore.getMenuItem(actionId)
+        val action = actionStore.getAction(actionId)
         when (action?.action) {
-            ACTION_OPEN_APP -> openApp(action.extra?.appPackage ?: "")
+            ACTION_OPEN_APP -> openApp(action.extra?.appPackage ?: "") // Open app
         }
     }
 

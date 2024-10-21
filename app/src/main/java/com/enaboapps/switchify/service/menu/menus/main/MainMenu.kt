@@ -3,7 +3,7 @@ package com.enaboapps.switchify.service.menu.menus.main
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
-import com.enaboapps.switchify.service.menu.store.structure.MenuStructureHolder
+import com.enaboapps.switchify.service.menu.structure.MenuStructureHolder
 
 class MainMenu(accessibilityService: SwitchifyAccessibilityService) :
     BaseMenu(accessibilityService, buildMainMenuItems(accessibilityService)) {

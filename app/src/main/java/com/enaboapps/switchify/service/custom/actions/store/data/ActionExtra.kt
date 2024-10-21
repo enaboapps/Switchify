@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.custom.actions.data
+package com.enaboapps.switchify.service.custom.actions.store.data
 
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName

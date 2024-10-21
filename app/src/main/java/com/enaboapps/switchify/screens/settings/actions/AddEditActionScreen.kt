@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.screens.settings.menu
+package com.enaboapps.switchify.screens.settings.actions
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,9 +10,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.service.custom.actions.AppLaunchPicker
-import com.enaboapps.switchify.service.custom.actions.data.ACTION_OPEN_APP
-import com.enaboapps.switchify.service.custom.actions.data.ActionExtra
-import com.enaboapps.switchify.service.menu.store.MenuItemJsonStore
+import com.enaboapps.switchify.service.custom.actions.store.ActionStore
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
+import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
 import com.enaboapps.switchify.utils.AppLauncher
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
@@ -20,36 +20,36 @@ import com.enaboapps.switchify.widgets.Picker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddEditMenuItemScreen(navController: NavController, menuItemId: String? = null) {
+fun AddEditActionScreen(navController: NavController, actionId: String? = null) {
     val context = LocalContext.current
-    val menuItemJsonStore = remember { MenuItemJsonStore(context) }
+    val actionStore = remember { ActionStore(context) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val isEditMode = menuItemId != null
+    val isEditMode = actionId != null
     val screenTitle = if (isEditMode) "Edit Action" else "Add Action"
 
-    val availableActions = remember { menuItemJsonStore.getAvailableActions() }
+    val availableActions = remember { actionStore.getAvailableActions() }
 
     var selectedAction by remember { mutableStateOf(availableActions.first()) }
     var selectedExtra by remember { mutableStateOf<ActionExtra?>(null) }
-    var menuItemText by remember { mutableStateOf("") }
+    var actionText by remember { mutableStateOf("") }
     var extraValid by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
 
-    // Load existing menu item data if in edit mode
-    LaunchedEffect(menuItemId) {
+    // Load existing action data if in edit mode
+    LaunchedEffect(actionId) {
         if (isEditMode) {
-            menuItemJsonStore.getMenuItem(menuItemId)?.let { menuItem ->
-                menuItemText = menuItem.text
-                selectedAction = menuItem.action
-                selectedExtra = menuItem.extra
-                println("Loaded menu item: $menuItem")
+            actionStore.getAction(actionId)?.let { action ->
+                actionText = action.text
+                selectedAction = action.action
+                selectedExtra = action.extra
+                println("Loaded action: $action")
             }
         }
     }
 
-    val saveButtonEnabled = remember(menuItemText, selectedAction, selectedExtra, extraValid) {
-        menuItemText.isNotBlank() && selectedAction.isNotBlank() && selectedExtra != null && extraValid
+    val saveButtonEnabled = remember(actionText, selectedAction, selectedExtra, extraValid) {
+        actionText.isNotBlank() && selectedAction.isNotBlank() && selectedExtra != null && extraValid
     }
 
     Scaffold(
@@ -65,9 +65,9 @@ fun AddEditMenuItemScreen(navController: NavController, menuItemId: String? = nu
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            MenuItemTextInput(
-                text = menuItemText,
-                onTextChange = { menuItemText = it }
+            ActionTextInput(
+                text = actionText,
+                onTextChange = { actionText = it }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -98,16 +98,16 @@ fun AddEditMenuItemScreen(navController: NavController, menuItemId: String? = nu
                 onSaveClicked = {
                     isSaving = true
                     if (isEditMode) {
-                        menuItemJsonStore.updateMenuItem(
-                            id = menuItemId,
+                        actionStore.updateAction(
+                            id = actionId,
                             action = selectedAction,
-                            text = menuItemText,
+                            text = actionText,
                             extra = selectedExtra
                         )
                     } else {
-                        menuItemJsonStore.addMenuItem(
+                        actionStore.addAction(
                             action = selectedAction,
-                            text = menuItemText,
+                            text = actionText,
                             extra = selectedExtra
                         )
                     }
@@ -119,19 +119,19 @@ fun AddEditMenuItemScreen(navController: NavController, menuItemId: String? = nu
 }
 
 @Composable
-private fun MenuItemTextInput(
+private fun ActionTextInput(
     text: String,
     onTextChange: (String) -> Unit
 ) {
     OutlinedTextField(
         value = text,
         onValueChange = onTextChange,
-        label = { Text("Menu Item Text") },
+        label = { Text("Action Text") },
         modifier = Modifier.fillMaxWidth(),
         isError = text.isBlank(),
         supportingText = {
             if (text.isBlank()) {
-                Text("Menu item text is required")
+                Text("Action text is required")
             }
         }
     )
@@ -208,7 +208,7 @@ private fun SaveButton(
     onSaveClicked: () -> Unit
 ) {
     FullWidthButton(
-        text = if (isEditMode) "Update Menu Item" else "Add Menu Item",
+        text = if (isEditMode) "Update Action" else "Add Action",
         enabled = isEnabled && !isSaving,
         onClick = onSaveClicked
     )

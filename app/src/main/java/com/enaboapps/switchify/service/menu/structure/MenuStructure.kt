@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.menu.store.structure
+package com.enaboapps.switchify.service.menu.structure
 
 import com.enaboapps.switchify.service.menu.MenuItem
 

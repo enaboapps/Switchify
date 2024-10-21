@@ -81,6 +81,7 @@ fun GeneralSettingsTab(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         MenuSection(navController)
+        ActionsSection(navController)
         KeyboardSection(navController)
     }
 }
@@ -201,7 +202,12 @@ private fun MenuSection(navController: NavController) {
             navController = navController,
             route = NavigationRoute.MenuItemCustomization.name
         )
-        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun ActionsSection(navController: NavController) {
+    Section(title = "Actions") {
         NavRouteLink(
             title = "My Actions",
             summary = "Customize your own actions",

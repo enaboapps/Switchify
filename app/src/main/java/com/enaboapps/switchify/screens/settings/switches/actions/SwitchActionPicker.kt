@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.enaboapps.switchify.service.menu.store.MenuItemJsonStore
+import com.enaboapps.switchify.service.custom.actions.store.ActionStore
 import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchActionExtra
 import com.enaboapps.switchify.widgets.Picker
@@ -79,18 +79,18 @@ private fun MyActionsPicker(
     onChange: (SwitchAction) -> Unit
 ) {
     val context = LocalContext.current
-    val menuItemJsonStore = MenuItemJsonStore(context)
-    val menuItems = menuItemJsonStore.getMenuItems()
+    val actionStore = ActionStore(context)
+    val actions = actionStore.getActions()
 
     Picker(
         title = "Select My Action",
         selectedItem = currentAction,
-        items = menuItems.map { menuItem ->
+        items = actions.map { action ->
             SwitchAction(
                 id = SwitchAction.ACTION_PERFORM_USER_ACTION,
                 extra = SwitchActionExtra(
-                    myActionsId = menuItem.id,
-                    myActionName = menuItem.text
+                    myActionsId = action.id,
+                    myActionName = action.text
                 )
             )
         },

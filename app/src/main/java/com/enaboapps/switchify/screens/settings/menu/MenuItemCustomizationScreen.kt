@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.menu.MenuItem
-import com.enaboapps.switchify.service.menu.store.structure.MenuStructureHolder
+import com.enaboapps.switchify.service.menu.structure.MenuStructureHolder
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.PreferenceSwitch
 
