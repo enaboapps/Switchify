@@ -9,6 +9,7 @@ import com.enaboapps.switchify.service.custom.actions.store.ActionStore
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_CALL_A_NUMBER
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_COPY_TEXT_TO_CLIPBOARD
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_LINK
 import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
 import com.enaboapps.switchify.utils.AppLauncher
 
@@ -50,6 +51,7 @@ class ActionPerformer(
                 extra?.textToCopy ?: ""
             ) // Copy text to clipboard
             ACTION_CALL_A_NUMBER -> callANumber(extra?.numberToCall ?: "") // Call a number
+            ACTION_OPEN_LINK -> openLink(extra?.linkUrl ?: "") // Open a link
         }
     }
 
@@ -83,6 +85,18 @@ class ActionPerformer(
     private fun callANumber(numberToCall: String) {
         val intent = Intent(Intent.ACTION_DIAL)
         intent.data = Uri.parse("tel:$numberToCall")
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        context.applicationContext.startActivity(intent)
+    }
+
+    /**
+     * Opens a link.
+     *
+     * @param linkUrl The URL of the link to open.
+     */
+    private fun openLink(linkUrl: String) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data = Uri.parse(linkUrl)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         context.applicationContext.startActivity(intent)
     }
