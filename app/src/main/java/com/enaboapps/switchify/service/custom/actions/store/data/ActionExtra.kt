@@ -7,7 +7,8 @@ data class ActionExtra(
     @SerializedName("app_package") val appPackage: String = "",
     @SerializedName("app_name") val appName: String = "",
     @SerializedName("text_to_copy") val textToCopy: String = "",
-    @SerializedName("number_to_call") val numberToCall: String = ""
+    @SerializedName("number_to_call") val numberToCall: String = "",
+    @SerializedName("link_url") val linkUrl: String = ""
 ) {
     companion object {
         fun fromJson(json: String): ActionExtra =

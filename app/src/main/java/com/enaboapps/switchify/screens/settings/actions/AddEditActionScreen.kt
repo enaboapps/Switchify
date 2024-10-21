@@ -15,6 +15,7 @@ import com.enaboapps.switchify.service.custom.actions.store.ActionStore
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_CALL_A_NUMBER
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_COPY_TEXT_TO_CLIPBOARD
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_LINK
 import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
 import com.enaboapps.switchify.utils.AppLauncher
 import com.enaboapps.switchify.widgets.FullWidthButton
@@ -192,7 +193,13 @@ private fun ActionExtraInput(
             onExtraUpdated = onExtraUpdated,
             onExtraValidated = onExtraValidated
         )
-        // Add more cases here for future action types
+
+        ACTION_OPEN_LINK -> OpenLinkExtraInput(
+            selectedExtra = selectedExtra,
+            onExtraUpdated = onExtraUpdated,
+            onExtraValidated = onExtraValidated
+        )
+
         else -> {
             // Handle unknown action types or actions without extras
             onExtraUpdated(null)
@@ -278,6 +285,34 @@ private fun AppLaunchExtraInput(
                 )
             )
             onExtraValidated(true)
+        }
+    )
+}
+
+@Composable
+private fun OpenLinkExtraInput(
+    selectedExtra: ActionExtra?,
+    onExtraUpdated: (ActionExtra?) -> Unit,
+    onExtraValidated: (Boolean) -> Unit
+) {
+    OutlinedTextField(
+        value = selectedExtra?.linkUrl ?: "",
+        onValueChange = { text ->
+            onExtraUpdated(
+                ActionExtra(
+                    linkUrl = text
+                )
+            )
+            val isValid = text.isNotBlank() && text.matches(Regex("^(http|https)://.*$"))
+            onExtraValidated(isValid)
+        },
+        label = { Text("Link URL") },
+        modifier = Modifier.fillMaxWidth(),
+        isError = selectedExtra?.linkUrl.isNullOrBlank() == true,
+        supportingText = {
+            if (selectedExtra?.linkUrl.isNullOrBlank() == true) {
+                Text("Link URL is required")
+            }
         }
     )
 }
