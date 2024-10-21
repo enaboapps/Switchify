@@ -5,7 +5,8 @@ import com.google.gson.annotations.SerializedName
 
 data class ActionExtra(
     @SerializedName("app_package") val appPackage: String = "",
-    @SerializedName("app_name") val appName: String = ""
+    @SerializedName("app_name") val appName: String = "",
+    @SerializedName("text_to_copy") val textToCopy: String = ""
 ) {
     companion object {
         fun fromJson(json: String): ActionExtra =
