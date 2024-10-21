@@ -534,7 +534,7 @@ class MenuStructureHolder(private val accessibilityService: SwitchifyAccessibili
                     text = action.text,
                     action = {
                         val actionPerformer = ActionPerformer(accessibilityService)
-                        actionPerformer.performAction(action.id)
+                        actionPerformer.performActionFromStore(action.id)
                     }
                 )
             }

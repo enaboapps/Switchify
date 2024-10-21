@@ -9,8 +9,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.enaboapps.switchify.service.custom.actions.ActionPerformer
 import com.enaboapps.switchify.service.custom.actions.AppLaunchPicker
 import com.enaboapps.switchify.service.custom.actions.store.ActionStore
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_CALL_A_NUMBER
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_COPY_TEXT_TO_CLIPBOARD
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
 import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
@@ -49,7 +51,9 @@ fun AddEditActionScreen(navController: NavController, actionId: String? = null) 
         }
     }
 
-    val saveButtonEnabled = remember(actionText, selectedAction, selectedExtra, extraValid) {
+    val actionPerformer = remember { ActionPerformer(context) }
+
+    val buttonsEnabled = remember(actionText, selectedAction, selectedExtra, extraValid) {
         actionText.isNotBlank() && selectedAction.isNotBlank() && selectedExtra != null && extraValid
     }
 
@@ -92,10 +96,19 @@ fun AddEditActionScreen(navController: NavController, actionId: String? = null) 
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            TestButton(
+                isEnabled = buttonsEnabled,
+                onTestClicked = {
+                    if (selectedAction.isNotBlank() && selectedExtra != null) {
+                        actionPerformer.test(selectedAction, selectedExtra)
+                    }
+                }
+            )
+
             SaveButton(
                 isEditMode = isEditMode,
                 isSaving = isSaving,
-                isEnabled = saveButtonEnabled,
+                isEnabled = buttonsEnabled,
                 onSaveClicked = {
                     isSaving = true
                     if (isEditMode) {
@@ -173,6 +186,12 @@ private fun ActionExtraInput(
             onExtraUpdated = onExtraUpdated,
             onExtraValidated = onExtraValidated
         )
+
+        ACTION_CALL_A_NUMBER -> CallANumberExtraInput(
+            selectedExtra = selectedExtra,
+            onExtraUpdated = onExtraUpdated,
+            onExtraValidated = onExtraValidated
+        )
         // Add more cases here for future action types
         else -> {
             // Handle unknown action types or actions without extras
@@ -205,6 +224,34 @@ private fun CopyTextExtraInput(
         supportingText = {
             if (selectedExtra?.textToCopy.isNullOrBlank() == true) {
                 Text("Text to copy is required")
+            }
+        }
+    )
+}
+
+@Composable
+private fun CallANumberExtraInput(
+    selectedExtra: ActionExtra?,
+    onExtraUpdated: (ActionExtra?) -> Unit,
+    onExtraValidated: (Boolean) -> Unit
+) {
+    OutlinedTextField(
+        value = selectedExtra?.numberToCall ?: "",
+        onValueChange = { text ->
+            onExtraUpdated(
+                ActionExtra(
+                    numberToCall = text
+                )
+            )
+            val isValid = text.isNotBlank() && text.matches(Regex("^\\d+$"))
+            onExtraValidated(isValid)
+        },
+        label = { Text("Number to Call") },
+        modifier = Modifier.fillMaxWidth(),
+        isError = selectedExtra?.numberToCall.isNullOrBlank() == true,
+        supportingText = {
+            if (selectedExtra?.numberToCall.isNullOrBlank() == true) {
+                Text("Number to call is required")
             }
         }
     )
@@ -246,5 +293,17 @@ private fun SaveButton(
         text = if (isEditMode) "Update Action" else "Add Action",
         enabled = isEnabled && !isSaving,
         onClick = onSaveClicked
+    )
+}
+
+@Composable
+private fun TestButton(
+    isEnabled: Boolean,
+    onTestClicked: () -> Unit
+) {
+    FullWidthButton(
+        text = "Test",
+        enabled = isEnabled,
+        onClick = onTestClicked
     )
 }
