@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.service.custom.actions.AppLaunchPicker
 import com.enaboapps.switchify.service.custom.actions.store.ActionStore
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_COPY_TEXT_TO_CLIPBOARD
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
 import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
 import com.enaboapps.switchify.utils.AppLauncher
@@ -166,6 +167,12 @@ private fun ActionExtraInput(
             onExtraUpdated = onExtraUpdated,
             onExtraValidated = onExtraValidated
         )
+
+        ACTION_COPY_TEXT_TO_CLIPBOARD -> CopyTextExtraInput(
+            selectedExtra = selectedExtra,
+            onExtraUpdated = onExtraUpdated,
+            onExtraValidated = onExtraValidated
+        )
         // Add more cases here for future action types
         else -> {
             // Handle unknown action types or actions without extras
@@ -173,6 +180,34 @@ private fun ActionExtraInput(
             onExtraValidated(true)
         }
     }
+}
+
+@Composable
+private fun CopyTextExtraInput(
+    selectedExtra: ActionExtra?,
+    onExtraUpdated: (ActionExtra?) -> Unit,
+    onExtraValidated: (Boolean) -> Unit
+) {
+    OutlinedTextField(
+        value = selectedExtra?.textToCopy ?: "",
+        onValueChange = { text ->
+            onExtraUpdated(
+                ActionExtra(
+                    textToCopy = text
+                )
+            )
+
+            onExtraValidated(text.isNotBlank())
+        },
+        label = { Text("Text to Copy") },
+        modifier = Modifier.fillMaxWidth(),
+        isError = selectedExtra?.textToCopy.isNullOrBlank() == true,
+        supportingText = {
+            if (selectedExtra?.textToCopy.isNullOrBlank() == true) {
+                Text("Text to copy is required")
+            }
+        }
+    )
 }
 
 @Composable

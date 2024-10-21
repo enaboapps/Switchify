@@ -2,7 +2,7 @@ package com.enaboapps.switchify.service.custom.actions.store
 
 import android.content.Context
 import android.util.Log
-import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTIONS
 import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -103,7 +103,7 @@ class ActionStore(private val context: Context) {
      *
      * @return A list of strings representing available actions.
      */
-    fun getAvailableActions(): List<String> = listOf(ACTION_OPEN_APP)
+    fun getAvailableActions(): List<String> = ACTIONS
 
     /**
      * Adds a new action.
