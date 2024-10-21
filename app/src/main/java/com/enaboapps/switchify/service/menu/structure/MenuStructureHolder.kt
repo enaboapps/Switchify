@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.service.menu.store
+package com.enaboapps.switchify.service.menu.structure
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
@@ -7,6 +7,8 @@ import android.media.AudioManager
 import android.view.accessibility.AccessibilityNodeInfo
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.SwitchifyAccessibilityService
+import com.enaboapps.switchify.service.custom.actions.ActionPerformer
+import com.enaboapps.switchify.service.custom.actions.store.ActionStore
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.data.GestureType
@@ -17,7 +19,7 @@ import com.enaboapps.switchify.service.methods.nodes.NodeExaminer
 import com.enaboapps.switchify.service.scanning.ScanMethod
 import com.enaboapps.switchify.service.utils.ScreenUtils
 
-class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityService? = null) {
+class MenuStructureHolder(private val accessibilityService: SwitchifyAccessibilityService? = null) {
     private val tapMenuItem = MenuItem(
         id = "tap",
         text = "Tap",
@@ -83,7 +85,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
     /**
      * The main menu item store object
      */
-    val mainMenuObject = MenuItemStoreObject(
+    val mainMenuObject = MenuStructure(
         id = "main_menu",
         items = listOfNotNull(
             tapMenuItem,
@@ -152,14 +154,23 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                         MenuManager.getInstance().switchToCursor()
                     }
                 )
-            } else null
+            } else null,
+            if (accessibilityService != null && !ActionStore(accessibilityService).isEmpty()) {
+                MenuItem(
+                    id = "my_actions",
+                    text = "My Actions",
+                    action = {
+                        MenuManager.getInstance().openMyActionsMenu()
+                    }
+                )
+            } else null,
         )
     )
 
     /**
      * The gestures menu item store object
      */
-    val gesturesMenuObject = MenuItemStoreObject(
+    val gesturesMenuObject = MenuStructure(
         id = "gestures_menu",
         items = listOf(
             MenuItem(
@@ -197,7 +208,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
     /**
      * The swipe gestures menu item store object
      */
-    val swipeGesturesMenuObject = MenuItemStoreObject(
+    val swipeGesturesMenuObject = MenuStructure(
         id = "swipe_gestures_menu",
         items = listOf(
             MenuItem(
@@ -238,7 +249,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
     /**
      * The tap gestures menu item store object
      */
-    val tapGesturesMenuObject = MenuItemStoreObject(
+    val tapGesturesMenuObject = MenuStructure(
         id = "tap_gestures_menu",
         items = listOf(
             tapMenuItem,
@@ -259,7 +270,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
     /**
      * The zoom gestures menu item store object
      */
-    val zoomGesturesMenuObject = MenuItemStoreObject(
+    val zoomGesturesMenuObject = MenuStructure(
         id = "zoom_gestures_menu",
         items = listOf(
             MenuItem(
@@ -285,9 +296,9 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
     /**
      * The device menu item store object
      */
-    fun buildDeviceMenuObject(): MenuItemStoreObject {
+    fun buildDeviceMenuObject(): MenuStructure {
         val packageManager = accessibilityService?.packageManager
-        return MenuItemStoreObject(
+        return MenuStructure(
             id = "device_menu",
             items = listOfNotNull(
                 MenuItem(
@@ -339,8 +350,8 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
     /**
      * The volume control menu item store object
      */
-    fun buildVolumeControlMenuObject(): MenuItemStoreObject {
-        return MenuItemStoreObject(
+    fun buildVolumeControlMenuObject(): MenuStructure {
+        return MenuStructure(
             id = "volume_control_menu",
             items = listOf(
                 MenuItem(
@@ -414,7 +425,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
     /**
      * The media control menu item store object
      */
-    val mediaControlMenuObject = MenuItemStoreObject(
+    val mediaControlMenuObject = MenuStructure(
         id = "media_control_menu",
         items = listOf(
             MenuItem(
@@ -429,7 +440,7 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
     /**
      * The scroll menu item store object
      */
-    val scrollMenuObject = MenuItemStoreObject(
+    val scrollMenuObject = MenuStructure(
         id = "scroll_menu",
         items = listOf(
             MenuItem(
@@ -467,12 +478,12 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
     /**
      * The edit menu item store object
      */
-    fun buildEditMenuObject(): MenuItemStoreObject {
+    fun buildEditMenuObject(): MenuStructure {
         val currentPoint = GesturePoint.getPoint()
         val cutNode = NodeExaminer.findNodeForAction(currentPoint, Node.ActionType.CUT)
         val copyNode = NodeExaminer.findNodeForAction(currentPoint, Node.ActionType.COPY)
         val pasteNode = NodeExaminer.findNodeForAction(currentPoint, Node.ActionType.PASTE)
-        return MenuItemStoreObject(
+        return MenuStructure(
             id = "edit_menu",
             items = listOfNotNull(
                 if (cutNode != null) {
@@ -503,6 +514,30 @@ class MenuItemStore(private val accessibilityService: SwitchifyAccessibilityServ
                     )
                 } else null
             )
+        )
+    }
+
+    /**
+     * The my actions menu item store object
+     */
+    fun buildMyActionsMenuObject(): MenuStructure {
+        if (accessibilityService == null) {
+            return MenuStructure(id = "my_actions_menu", items = emptyList())
+        }
+        val actionStore = ActionStore(accessibilityService)
+        val actions = actionStore.getActions()
+        return MenuStructure(
+            id = "my_actions_menu",
+            items = actions.map { action ->
+                MenuItem(
+                    id = action.id,
+                    text = action.text,
+                    action = {
+                        val actionPerformer = ActionPerformer(accessibilityService)
+                        actionPerformer.performActionFromStore(action.id)
+                    }
+                )
+            }
         )
     }
 }

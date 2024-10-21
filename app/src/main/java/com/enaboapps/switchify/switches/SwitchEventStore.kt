@@ -62,6 +62,35 @@ class SwitchEventStore(private val context: Context) {
 
     fun getSwitchEvents(): Set<SwitchEvent> = switchEvents.toSet()
 
+    fun validateSwitchEvent(switchEvent: SwitchEvent): Boolean {
+        val hasName = switchEvent.name.isNotBlank()
+        val hasCode = switchEvent.code.isNotBlank()
+
+        if (!validateExtra(switchEvent.pressAction.id, switchEvent.pressAction.extra)) {
+            println("Press action extra is invalid")
+            return false
+        }
+
+        for (holdAction in switchEvent.holdActions) {
+            if (!validateExtra(holdAction.id, holdAction.extra)) {
+                println("Hold action extra is invalid")
+                return false
+            }
+        }
+
+        return hasName && hasCode
+    }
+
+    private fun validateExtra(type: Int, extra: SwitchActionExtra?): Boolean {
+        return when (type) {
+            SwitchAction.ACTION_PERFORM_USER_ACTION -> {
+                extra != null && extra.myActionsId != null && extra.myActionName != null
+            }
+
+            else -> true
+        }
+    }
+
     private fun readFile() {
         if (file.exists()) {
             try {

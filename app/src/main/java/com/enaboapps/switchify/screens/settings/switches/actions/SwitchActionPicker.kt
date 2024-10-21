@@ -15,9 +15,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.enaboapps.switchify.screens.settings.switches.actions.extras.SwitchActionAppLaunchPicker
+import com.enaboapps.switchify.service.custom.actions.store.ActionStore
 import com.enaboapps.switchify.switches.SwitchAction
+import com.enaboapps.switchify.switches.SwitchActionExtra
 import com.enaboapps.switchify.widgets.Picker
 
 @Composable
@@ -59,17 +61,41 @@ fun SwitchActionPicker(
                     tint = MaterialTheme.colorScheme.onSurface
                 )
                 when (currentAction.id) {
-                    SwitchAction.ACTION_OPEN_APP -> SwitchActionAppLaunchPicker(
-                        switchAction = currentAction,
-                        onAppSelected = { newAction ->
-                            currentAction = newAction
-                            onChange(newAction)
-                        }
+                    SwitchAction.ACTION_PERFORM_USER_ACTION -> MyActionsPicker(
+                        currentAction = currentAction,
+                        onChange = onChange
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
     }
+}
+
+@Composable
+private fun MyActionsPicker(
+    currentAction: SwitchAction,
+    onChange: (SwitchAction) -> Unit
+) {
+    val context = LocalContext.current
+    val actionStore = ActionStore(context)
+    val actions = actionStore.getActions()
+
+    Picker(
+        title = "Select My Action",
+        selectedItem = currentAction,
+        items = actions.map { action ->
+            SwitchAction(
+                id = SwitchAction.ACTION_PERFORM_USER_ACTION,
+                extra = SwitchActionExtra(
+                    myActionsId = action.id,
+                    myActionName = action.text
+                )
+            )
+        },
+        onItemSelected = onChange,
+        itemToString = { it.extra?.myActionName ?: "" },
+        itemDescription = { "Perform this action" }
+    )
 }

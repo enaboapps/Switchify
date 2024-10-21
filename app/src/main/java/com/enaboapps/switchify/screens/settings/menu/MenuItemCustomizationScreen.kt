@@ -1,4 +1,4 @@
-package com.enaboapps.switchify.screens.settings
+package com.enaboapps.switchify.screens.settings.menu
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.menu.MenuItem
-import com.enaboapps.switchify.service.menu.store.MenuItemStore
+import com.enaboapps.switchify.service.menu.structure.MenuStructureHolder
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.PreferenceSwitch
 
@@ -20,12 +20,12 @@ import com.enaboapps.switchify.widgets.PreferenceSwitch
 fun MenuItemCustomizationScreen(navController: NavController) {
     val context = LocalContext.current
     val preferenceManager = PreferenceManager(context)
-    val menuItemStore = MenuItemStore()
+    val menuStructureHolder = MenuStructureHolder()
 
     val items: MutableList<MenuItem> = mutableListOf()
-    items.addAll(menuItemStore.mainMenuObject.getMenuItems())
-    items.add(menuItemStore.toggleGestureLockMenuItem)
-    items.addAll(menuItemStore.buildDeviceMenuObject().getMenuItems())
+    items.addAll(menuStructureHolder.mainMenuObject.getMenuItems())
+    items.add(menuStructureHolder.toggleGestureLockMenuItem)
+    items.addAll(menuStructureHolder.buildDeviceMenuObject().getMenuItems())
     val uniqueItems = items.distinctBy { it.id }
 
     Scaffold(

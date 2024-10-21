@@ -14,8 +14,10 @@ import com.enaboapps.switchify.screens.account.ForgotPasswordScreen
 import com.enaboapps.switchify.screens.account.SignInScreen
 import com.enaboapps.switchify.screens.account.SignUpScreen
 import com.enaboapps.switchify.screens.howto.HowToUseScreen
-import com.enaboapps.switchify.screens.settings.MenuItemCustomizationScreen
 import com.enaboapps.switchify.screens.settings.SettingsScreen
+import com.enaboapps.switchify.screens.settings.actions.AddEditActionScreen
+import com.enaboapps.switchify.screens.settings.actions.MyActionsScreen
+import com.enaboapps.switchify.screens.settings.menu.MenuItemCustomizationScreen
 import com.enaboapps.switchify.screens.settings.prediction.PredictionLanguageScreen
 import com.enaboapps.switchify.screens.settings.scanning.CursorSettingsScreen
 import com.enaboapps.switchify.screens.settings.scanning.ScanColorSelectionScreen
@@ -84,11 +86,22 @@ fun NavGraph(navController: NavHostController) {
         composable(NavigationRoute.MenuItemCustomization.name) {
             MenuItemCustomizationScreen(navController)
         }
+        composable(NavigationRoute.MyActions.name) {
+            MyActionsScreen(navController)
+        }
         composable(NavigationRoute.EnableAccessibilityService.name) {
             EnableAccessibilityServiceScreen(navController)
         }
         composable(NavigationRoute.EnableSwitchifyKeyboard.name) {
             EnableKeyboardScreen(navController)
+        }
+        composable(NavigationRoute.AddMyActionsMenuItem.name) {
+            AddEditActionScreen(navController)
+        }
+        composable("${NavigationRoute.EditMyActionsMenuItem.name}/{id}") {
+            it.arguments?.getString("id")?.let { id ->
+                AddEditActionScreen(navController, id)
+            }
         }
     }
 }

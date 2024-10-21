@@ -4,16 +4,9 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 
 data class SwitchActionExtra(
-    @SerializedName("app_package") val appPackage: String = "",
-    @SerializedName("app_name") val appName: String = ""
-) {
-    companion object {
-        fun fromJson(json: String): SwitchActionExtra =
-            Gson().fromJson(json, SwitchActionExtra::class.java)
-    }
-
-    fun toJson(): String = Gson().toJson(this)
-}
+    @SerializedName("my_actions_id") val myActionsId: String? = null,
+    @SerializedName("my_action_name") val myActionName: String? = null
+)
 
 data class SwitchAction(
     @SerializedName("id") val id: Int,
@@ -26,7 +19,7 @@ data class SwitchAction(
             ACTION_NONE, ACTION_SELECT, ACTION_STOP_SCANNING, ACTION_CHANGE_SCANNING_DIRECTION,
             ACTION_MOVE_TO_NEXT_ITEM, ACTION_MOVE_TO_PREVIOUS_ITEM, ACTION_TOGGLE_GESTURE_LOCK,
             ACTION_SYS_HOME, ACTION_SYS_BACK, ACTION_SYS_RECENTS, ACTION_SYS_QUICK_SETTINGS,
-            ACTION_SYS_NOTIFICATIONS, ACTION_SYS_LOCK_SCREEN, ACTION_OPEN_APP
+            ACTION_SYS_NOTIFICATIONS, ACTION_SYS_LOCK_SCREEN, ACTION_PERFORM_USER_ACTION
         ).map { SwitchAction(it) }
 
         const val ACTION_NONE = 0
@@ -42,14 +35,14 @@ data class SwitchAction(
         const val ACTION_SYS_QUICK_SETTINGS = 10
         const val ACTION_SYS_NOTIFICATIONS = 11
         const val ACTION_SYS_LOCK_SCREEN = 12
-        const val ACTION_OPEN_APP = 13
+        const val ACTION_PERFORM_USER_ACTION = 13
     }
 
     fun toJson(): String = Gson().toJson(this)
 
     fun hasExtra(): Boolean = extra != null
 
-    fun isExtraAvailable(): Boolean = id == ACTION_OPEN_APP
+    fun isExtraAvailable(): Boolean = id == ACTION_PERFORM_USER_ACTION
 
     fun getActionName(): String = when {
         hasExtra() -> getActionNameWithExtra()
@@ -57,7 +50,7 @@ data class SwitchAction(
     }
 
     private fun getActionNameWithExtra(): String = when (id) {
-        ACTION_OPEN_APP -> "Open ${extra?.appName}"
+        ACTION_PERFORM_USER_ACTION -> "Perform ${extra?.myActionName}"
         else -> getActionNameWithoutExtra()
     }
 
@@ -75,7 +68,7 @@ data class SwitchAction(
         ACTION_SYS_QUICK_SETTINGS -> "Quick Settings"
         ACTION_SYS_NOTIFICATIONS -> "Notifications"
         ACTION_SYS_LOCK_SCREEN -> "Lock Screen"
-        ACTION_OPEN_APP -> "Open App"
+        ACTION_PERFORM_USER_ACTION -> "Perform My Own Action"
         else -> "Unknown"
     }
 
@@ -93,7 +86,7 @@ data class SwitchAction(
         ACTION_SYS_QUICK_SETTINGS -> "Open the quick settings"
         ACTION_SYS_NOTIFICATIONS -> "Open the notifications"
         ACTION_SYS_LOCK_SCREEN -> "Lock the screen"
-        ACTION_OPEN_APP -> "Open an app"
+        ACTION_PERFORM_USER_ACTION -> "Perform an action"
         else -> "Unknown"
     }
 }
