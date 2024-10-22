@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.service.custom.actions.ActionPerformer
@@ -23,6 +24,7 @@ import com.enaboapps.switchify.utils.AppLauncher
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.Picker
+import com.enaboapps.switchify.widgets.TextArea
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -140,17 +142,13 @@ private fun ActionTextInput(
     text: String,
     onTextChange: (String) -> Unit
 ) {
-    OutlinedTextField(
+    TextArea(
         value = text,
         onValueChange = onTextChange,
-        label = { Text("Action Text") },
-        modifier = Modifier.fillMaxWidth(),
+        label = "Action Text",
+        imeAction = ImeAction.Next,
         isError = text.isBlank(),
-        supportingText = {
-            if (text.isBlank()) {
-                Text("Action text is required")
-            }
-        }
+        supportingText = "Action text is required"
     )
 }
 
@@ -222,7 +220,7 @@ private fun CopyTextExtraInput(
     onExtraUpdated: (ActionExtra?) -> Unit,
     onExtraValidated: (Boolean) -> Unit
 ) {
-    OutlinedTextField(
+    TextArea(
         value = selectedExtra?.textToCopy ?: "",
         onValueChange = { text ->
             onExtraUpdated(
@@ -233,14 +231,9 @@ private fun CopyTextExtraInput(
 
             onExtraValidated(text.isNotBlank())
         },
-        label = { Text("Text to Copy") },
-        modifier = Modifier.fillMaxWidth(),
+        label = "Text to Copy",
         isError = selectedExtra?.textToCopy.isNullOrBlank() == true,
-        supportingText = {
-            if (selectedExtra?.textToCopy.isNullOrBlank() == true) {
-                Text("Text to copy is required")
-            }
-        }
+        supportingText = "Text to copy is required"
     )
 }
 
@@ -250,7 +243,7 @@ private fun CallNumberExtraInput(
     onExtraUpdated: (ActionExtra?) -> Unit,
     onExtraValidated: (Boolean) -> Unit
 ) {
-    OutlinedTextField(
+    TextArea(
         value = selectedExtra?.numberToCall ?: "",
         onValueChange = { text ->
             onExtraUpdated(
@@ -261,14 +254,9 @@ private fun CallNumberExtraInput(
             val isValid = text.isNotBlank() && text.matches(Regex("^\\d+$"))
             onExtraValidated(isValid)
         },
-        label = { Text("Number to Call") },
-        modifier = Modifier.fillMaxWidth(),
+        label = "Number to Call",
         isError = selectedExtra?.numberToCall.isNullOrBlank() == true,
-        supportingText = {
-            if (selectedExtra?.numberToCall.isNullOrBlank() == true) {
-                Text("Number to call is required")
-            }
-        }
+        supportingText = "Number to call is required"
     )
 }
 
@@ -303,7 +291,7 @@ private fun OpenLinkExtraInput(
     onExtraUpdated: (ActionExtra?) -> Unit,
     onExtraValidated: (Boolean) -> Unit
 ) {
-    OutlinedTextField(
+    TextArea(
         value = selectedExtra?.linkUrl ?: "",
         onValueChange = { text ->
             onExtraUpdated(
@@ -314,14 +302,9 @@ private fun OpenLinkExtraInput(
             val isValid = text.isNotBlank() && text.matches(Regex("^(http|https)://.*$"))
             onExtraValidated(isValid)
         },
-        label = { Text("Link URL") },
-        modifier = Modifier.fillMaxWidth(),
+        label = "Link URL",
         isError = selectedExtra?.linkUrl.isNullOrBlank() == true,
-        supportingText = {
-            if (selectedExtra?.linkUrl.isNullOrBlank() == true) {
-                Text("Link URL is required")
-            }
-        }
+        supportingText = "Link URL is required"
     )
 }
 
@@ -332,7 +315,7 @@ private fun SendTextExtraInput(
     onExtraValidated: (Boolean) -> Unit
 ) {
     Column {
-        OutlinedTextField(
+        TextArea(
             value = selectedExtra?.numberToSend ?: "",
             onValueChange = { text ->
                 onExtraUpdated(
@@ -344,19 +327,14 @@ private fun SendTextExtraInput(
                 val isValid = text.isNotBlank() && text.matches(Regex("^\\d+$"))
                 onExtraValidated(isValid)
             },
-            label = { Text("Number to Send Text") },
-            modifier = Modifier.fillMaxWidth(),
+            label = "Number to Send Text",
             isError = selectedExtra?.numberToSend.isNullOrBlank() == true,
-            supportingText = {
-                if (selectedExtra?.numberToSend.isNullOrBlank() == true) {
-                    Text("Number to send text is required")
-                }
-            }
+            supportingText = "Number to send text is required"
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
+        TextArea(
             value = selectedExtra?.message ?: "",
             onValueChange = { text ->
                 onExtraUpdated(
@@ -367,8 +345,7 @@ private fun SendTextExtraInput(
                 )
                 onExtraValidated(true)
             },
-            label = { Text("Message (Optional)") },
-            modifier = Modifier.fillMaxWidth()
+            label = "Message (Optional)"
         )
     }
 }
