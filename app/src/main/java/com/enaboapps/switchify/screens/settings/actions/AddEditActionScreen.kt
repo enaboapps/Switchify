@@ -11,7 +11,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.service.custom.actions.ActionPerformer
-import com.enaboapps.switchify.service.custom.actions.AppLaunchPicker
 import com.enaboapps.switchify.service.custom.actions.store.ActionStore
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_CALL_NUMBER
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_COPY_TEXT_TO_CLIPBOARD
@@ -20,7 +19,11 @@ import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_LIN
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_SEND_TEXT
 import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
 import com.enaboapps.switchify.service.custom.actions.store.data.getActionDescription
-import com.enaboapps.switchify.utils.AppLauncher
+import com.enaboapps.switchify.screens.settings.actions.inputs.AppLaunchExtraInput
+import com.enaboapps.switchify.screens.settings.actions.inputs.CallNumberExtraInput
+import com.enaboapps.switchify.screens.settings.actions.inputs.CopyTextExtraInput
+import com.enaboapps.switchify.screens.settings.actions.inputs.OpenLinkExtraInput
+import com.enaboapps.switchify.screens.settings.actions.inputs.SendTextExtraInput
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.Picker
@@ -211,142 +214,6 @@ private fun ActionExtraInput(
             onExtraUpdated(null)
             onExtraValidated(true)
         }
-    }
-}
-
-@Composable
-private fun CopyTextExtraInput(
-    selectedExtra: ActionExtra?,
-    onExtraUpdated: (ActionExtra?) -> Unit,
-    onExtraValidated: (Boolean) -> Unit
-) {
-    TextArea(
-        value = selectedExtra?.textToCopy ?: "",
-        onValueChange = { text ->
-            onExtraUpdated(
-                ActionExtra(
-                    textToCopy = text
-                )
-            )
-
-            onExtraValidated(text.isNotBlank())
-        },
-        label = "Text to Copy",
-        isError = selectedExtra?.textToCopy.isNullOrBlank() == true,
-        supportingText = "Text to copy is required"
-    )
-}
-
-@Composable
-private fun CallNumberExtraInput(
-    selectedExtra: ActionExtra?,
-    onExtraUpdated: (ActionExtra?) -> Unit,
-    onExtraValidated: (Boolean) -> Unit
-) {
-    TextArea(
-        value = selectedExtra?.numberToCall ?: "",
-        onValueChange = { text ->
-            onExtraUpdated(
-                ActionExtra(
-                    numberToCall = text
-                )
-            )
-            val isValid = text.isNotBlank() && text.matches(Regex("^\\d+$"))
-            onExtraValidated(isValid)
-        },
-        label = "Number to Call",
-        isError = selectedExtra?.numberToCall.isNullOrBlank() == true,
-        supportingText = "Number to call is required"
-    )
-}
-
-@Composable
-private fun AppLaunchExtraInput(
-    selectedExtra: ActionExtra?,
-    onExtraUpdated: (ActionExtra?) -> Unit,
-    onExtraValidated: (Boolean) -> Unit
-) {
-    AppLaunchPicker(
-        initialApp = selectedExtra?.let {
-            AppLauncher.AppInfo(
-                it.appName,
-                it.appPackage
-            )
-        },
-        onAppSelected = { appInfo ->
-            onExtraUpdated(
-                ActionExtra(
-                    appName = appInfo.displayName,
-                    appPackage = appInfo.packageName
-                )
-            )
-            onExtraValidated(true)
-        }
-    )
-}
-
-@Composable
-private fun OpenLinkExtraInput(
-    selectedExtra: ActionExtra?,
-    onExtraUpdated: (ActionExtra?) -> Unit,
-    onExtraValidated: (Boolean) -> Unit
-) {
-    TextArea(
-        value = selectedExtra?.linkUrl ?: "",
-        onValueChange = { text ->
-            onExtraUpdated(
-                ActionExtra(
-                    linkUrl = text
-                )
-            )
-            val isValid = text.isNotBlank() && text.matches(Regex("^(http|https)://.*$"))
-            onExtraValidated(isValid)
-        },
-        label = "Link URL",
-        isError = selectedExtra?.linkUrl.isNullOrBlank() == true,
-        supportingText = "Link URL is required"
-    )
-}
-
-@Composable
-private fun SendTextExtraInput(
-    selectedExtra: ActionExtra?,
-    onExtraUpdated: (ActionExtra?) -> Unit,
-    onExtraValidated: (Boolean) -> Unit
-) {
-    Column {
-        TextArea(
-            value = selectedExtra?.numberToSend ?: "",
-            onValueChange = { text ->
-                onExtraUpdated(
-                    ActionExtra(
-                        numberToSend = text,
-                        message = selectedExtra?.message ?: ""
-                    )
-                )
-                val isValid = text.isNotBlank() && text.matches(Regex("^\\d+$"))
-                onExtraValidated(isValid)
-            },
-            label = "Number to Send Text",
-            isError = selectedExtra?.numberToSend.isNullOrBlank() == true,
-            supportingText = "Number to send text is required"
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextArea(
-            value = selectedExtra?.message ?: "",
-            onValueChange = { text ->
-                onExtraUpdated(
-                    ActionExtra(
-                        numberToSend = selectedExtra?.numberToSend ?: "",
-                        message = text
-                    )
-                )
-                onExtraValidated(true)
-            },
-            label = "Message (Optional)"
-        )
     }
 }
 
