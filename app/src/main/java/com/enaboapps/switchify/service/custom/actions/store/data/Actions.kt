@@ -13,3 +13,14 @@ val ACTIONS = listOf(
     ACTION_OPEN_LINK,
     ACTION_SEND_TEXT
 )
+
+fun getActionDescription(action: String): String {
+    return when (action) {
+        ACTION_OPEN_APP -> "Open an app"
+        ACTION_COPY_TEXT_TO_CLIPBOARD -> "Copy text to clipboard"
+        ACTION_CALL_A_NUMBER -> "Call a number"
+        ACTION_OPEN_LINK -> "Open a link in a browser"
+        ACTION_SEND_TEXT -> "Send a text to someone"
+        else -> "Unknown"
+    }
+}

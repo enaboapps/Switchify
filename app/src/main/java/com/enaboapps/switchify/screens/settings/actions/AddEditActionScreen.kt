@@ -18,6 +18,7 @@ import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_LINK
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_SEND_TEXT
 import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
+import com.enaboapps.switchify.service.custom.actions.store.data.getActionDescription
 import com.enaboapps.switchify.utils.AppLauncher
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
@@ -165,7 +166,7 @@ private fun ActionPicker(
         items = availableActions,
         onItemSelected = onActionSelected,
         itemToString = { it },
-        itemDescription = { it }
+        itemDescription = { getActionDescription(it) }
     )
 }
 
