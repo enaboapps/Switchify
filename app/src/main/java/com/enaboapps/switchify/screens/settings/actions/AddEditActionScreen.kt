@@ -17,6 +17,7 @@ import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_COPY_TEX
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_LINK
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_SEND_TEXT
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_SEND_EMAIL
 import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
 import com.enaboapps.switchify.service.custom.actions.store.data.getActionDescription
 import com.enaboapps.switchify.screens.settings.actions.inputs.AppLaunchExtraInput
@@ -24,6 +25,7 @@ import com.enaboapps.switchify.screens.settings.actions.inputs.CallNumberExtraIn
 import com.enaboapps.switchify.screens.settings.actions.inputs.CopyTextExtraInput
 import com.enaboapps.switchify.screens.settings.actions.inputs.OpenLinkExtraInput
 import com.enaboapps.switchify.screens.settings.actions.inputs.SendTextExtraInput
+import com.enaboapps.switchify.screens.settings.actions.inputs.SendEmailExtraInput
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.Picker
@@ -204,6 +206,12 @@ private fun ActionExtraInput(
         )
 
         ACTION_SEND_TEXT -> SendTextExtraInput(
+            selectedExtra = selectedExtra,
+            onExtraUpdated = onExtraUpdated,
+            onExtraValidated = onExtraValidated
+        )
+
+        ACTION_SEND_EMAIL -> SendEmailExtraInput(
             selectedExtra = selectedExtra,
             onExtraUpdated = onExtraUpdated,
             onExtraValidated = onExtraValidated

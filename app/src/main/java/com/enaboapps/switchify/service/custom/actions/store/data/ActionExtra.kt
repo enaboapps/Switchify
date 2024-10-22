@@ -10,7 +10,8 @@ data class ActionExtra(
     @SerializedName("number_to_call") val numberToCall: String = "",
     @SerializedName("link_url") val linkUrl: String = "",
     @SerializedName("number_to_send") val numberToSend: String = "",
-    @SerializedName("message") val message: String = ""
+    @SerializedName("message") val message: String = "",
+    @SerializedName("email_address") val emailAddress: String = ""
 ) {
     companion object {
         fun fromJson(json: String): ActionExtra =
