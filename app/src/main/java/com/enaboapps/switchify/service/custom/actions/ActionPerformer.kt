@@ -10,6 +10,7 @@ import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_CALL_A_N
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_COPY_TEXT_TO_CLIPBOARD
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_LINK
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_SEND_TEXT
 import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
 import com.enaboapps.switchify.utils.AppLauncher
 
@@ -52,6 +53,7 @@ class ActionPerformer(
             ) // Copy text to clipboard
             ACTION_CALL_A_NUMBER -> callANumber(extra?.numberToCall ?: "") // Call a number
             ACTION_OPEN_LINK -> openLink(extra?.linkUrl ?: "") // Open a link
+            ACTION_SEND_TEXT -> sendText(extra?.numberToCall ?: "", extra?.textToCopy ?: "") // Send a text
         }
     }
 
@@ -97,6 +99,20 @@ class ActionPerformer(
     private fun openLink(linkUrl: String) {
         val intent = Intent(Intent.ACTION_VIEW)
         intent.data = Uri.parse(linkUrl)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        context.applicationContext.startActivity(intent)
+    }
+
+    /**
+     * Sends a text message.
+     *
+     * @param numberToSend The number to send the text to.
+     * @param message The message to send.
+     */
+    private fun sendText(numberToSend: String, message: String) {
+        val intent = Intent(Intent.ACTION_SENDTO)
+        intent.data = Uri.parse("smsto:$numberToSend")
+        intent.putExtra("sms_body", message)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         context.applicationContext.startActivity(intent)
     }
