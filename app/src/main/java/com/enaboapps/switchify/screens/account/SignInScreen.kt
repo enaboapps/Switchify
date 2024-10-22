@@ -8,17 +8,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.auth.AuthManager
@@ -37,6 +33,7 @@ import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.widgets.TextArea
 
 @Composable
 fun SignInScreen(navController: NavController) {
@@ -71,29 +68,24 @@ fun SignInScreen(navController: NavController) {
             }
             Text(text = "Sign in to access your settings.")
             Spacer(modifier = Modifier.height(16.dp))
-            // Email TextField with KeyboardOptions for Email
-            TextField(
+            TextArea(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next,
-                    keyboardType = KeyboardType.Email // Helps with autofill support
-                )
+                label = "Email",
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next,
+                isError = email.isBlank(),
+                supportingText = "Email is required"
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            // Password TextField with KeyboardOptions for Password
-            TextField(
+            Spacer(modifier = Modifier.height(8.dp)) // Add some spacing
+            TextArea(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Password // Helps with autofill support
-                )
+                label = "Password",
+                keyboardType = KeyboardType.Password,
+                isSecure = true,
+                isError = password.isBlank(),
+                supportingText = "Password is required"
             )
             Spacer(modifier = Modifier.height(16.dp))
             FullWidthButton(

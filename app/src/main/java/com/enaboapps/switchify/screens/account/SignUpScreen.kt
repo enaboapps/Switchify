@@ -8,17 +8,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,13 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.auth.AuthManager
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.widgets.TextArea
 
 @Composable
 fun SignUpScreen(navController: NavController) {
@@ -72,42 +69,35 @@ fun SignUpScreen(navController: NavController) {
             }
             Text(text = "Create an account to save your settings. This will allow you to access your settings on any device.")
             Spacer(modifier = Modifier.height(16.dp))
-            // Email TextField
-            TextField(
+            TextArea(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next,
-                    keyboardType = KeyboardType.Email // Suggests email input for autofill
-                )
+                label = "Email",
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next,
+                isError = email.isBlank(),
+                supportingText = "Email is required"
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            // Password TextField
-            TextField(
+            Spacer(modifier = Modifier.height(8.dp)) // Add some spacing
+            TextArea(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next,
-                    keyboardType = KeyboardType.Password // Suggests password input for autofill
-                )
+                label = "Password",
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Next,
+                isSecure = true,
+                isError = password.isBlank(),
+                supportingText = "Password is required"
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            // Confirm Password TextField
-            TextField(
+            Spacer(modifier = Modifier.height(8.dp)) // Add some spacing
+            TextArea(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
-                label = { Text("Confirm Password") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Password // Consistency for autofill services
-                )
+                label = "Confirm Password",
+                keyboardType = KeyboardType.Password,
+                isSecure = true,
+                isError = confirmPassword.isBlank(),
+                supportingText = "Confirm password is required"
             )
             Spacer(modifier = Modifier.height(16.dp))
             FullWidthButton(

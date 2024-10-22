@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.core.ktx)
     implementation(libs.compose.ui)
     implementation(libs.compose.material)
+    implementation(libs.compose.icons)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.compose.runtime.livedata)

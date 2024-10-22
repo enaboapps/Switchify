@@ -4,16 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,12 +20,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.auth.AuthManager
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.widgets.TextArea
 
 @Composable
 fun ChangePasswordScreen(navController: NavController) {
@@ -62,43 +59,37 @@ fun ChangePasswordScreen(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            TextField(
+            TextArea(
                 value = currentPassword,
                 onValueChange = { currentPassword = it },
-                label = { Text("Current Password") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next,
-                    keyboardType = KeyboardType.Password
-                ),
-                singleLine = true
+                label = "Current Password",
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Next,
+                isSecure = true,
+                isError = currentPassword.isBlank(),
+                supportingText = "Current password is required"
             )
             Spacer(modifier = Modifier.height(8.dp))
-            TextField(
+            TextArea(
                 value = newPassword,
                 onValueChange = { newPassword = it },
-                label = { Text("New Password") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next,
-                    keyboardType = KeyboardType.Password
-                ),
-                singleLine = true
+                label = "New Password",
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Next,
+                isSecure = true,
+                isError = newPassword.isBlank(),
+                supportingText = "New password is required"
             )
             Spacer(modifier = Modifier.height(8.dp))
-            TextField(
+            TextArea(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
-                label = { Text("Confirm New Password") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Password
-                ),
-                singleLine = true
+                label = "Confirm New Password",
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done,
+                isSecure = true,
+                isError = confirmPassword.isBlank(),
+                supportingText = "Confirm new password is required"
             )
             Spacer(modifier = Modifier.height(16.dp))
             FullWidthButton(

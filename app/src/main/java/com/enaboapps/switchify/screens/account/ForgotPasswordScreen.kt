@@ -4,16 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +25,7 @@ import androidx.navigation.NavController
 import com.enaboapps.switchify.auth.AuthManager
 import com.enaboapps.switchify.widgets.FullWidthButton
 import com.enaboapps.switchify.widgets.NavBar
+import com.enaboapps.switchify.widgets.TextArea
 
 @Composable
 fun ForgotPasswordScreen(navController: NavController) {
@@ -59,16 +57,14 @@ fun ForgotPasswordScreen(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            TextField(
+            TextArea(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Email
-                ),
-                singleLine = true
+                label = "Email",
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Done,
+                isError = email.isBlank(),
+                supportingText = "Email is required"
             )
             Spacer(modifier = Modifier.height(16.dp))
             FullWidthButton(
