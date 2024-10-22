@@ -16,6 +16,7 @@ import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_CALL_A_N
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_COPY_TEXT_TO_CLIPBOARD
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_LINK
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_SEND_TEXT
 import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
 import com.enaboapps.switchify.utils.AppLauncher
 import com.enaboapps.switchify.widgets.FullWidthButton
@@ -200,6 +201,12 @@ private fun ActionExtraInput(
             onExtraValidated = onExtraValidated
         )
 
+        ACTION_SEND_TEXT -> SendTextExtraInput(
+            selectedExtra = selectedExtra,
+            onExtraUpdated = onExtraUpdated,
+            onExtraValidated = onExtraValidated
+        )
+
         else -> {
             // Handle unknown action types or actions without extras
             onExtraUpdated(null)
@@ -315,6 +322,54 @@ private fun OpenLinkExtraInput(
             }
         }
     )
+}
+
+@Composable
+private fun SendTextExtraInput(
+    selectedExtra: ActionExtra?,
+    onExtraUpdated: (ActionExtra?) -> Unit,
+    onExtraValidated: (Boolean) -> Unit
+) {
+    Column {
+        OutlinedTextField(
+            value = selectedExtra?.numberToCall ?: "",
+            onValueChange = { text ->
+                onExtraUpdated(
+                    ActionExtra(
+                        numberToCall = text,
+                        textToCopy = selectedExtra?.textToCopy ?: ""
+                    )
+                )
+                val isValid = text.isNotBlank() && text.matches(Regex("^\\d+$"))
+                onExtraValidated(isValid)
+            },
+            label = { Text("Number to Send Text") },
+            modifier = Modifier.fillMaxWidth(),
+            isError = selectedExtra?.numberToCall.isNullOrBlank() == true,
+            supportingText = {
+                if (selectedExtra?.numberToCall.isNullOrBlank() == true) {
+                    Text("Number to send text is required")
+                }
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = selectedExtra?.textToCopy ?: "",
+            onValueChange = { text ->
+                onExtraUpdated(
+                    ActionExtra(
+                        numberToCall = selectedExtra?.numberToCall ?: "",
+                        textToCopy = text
+                    )
+                )
+                onExtraValidated(true)
+            },
+            label = { Text("Message (Optional)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
 
 @Composable
