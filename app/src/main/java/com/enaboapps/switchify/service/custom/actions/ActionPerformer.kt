@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import com.enaboapps.switchify.service.custom.actions.store.ActionStore
-import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_CALL_A_NUMBER
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_CALL_NUMBER
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_COPY_TEXT_TO_CLIPBOARD
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_LINK
@@ -51,7 +51,7 @@ class ActionPerformer(
             ACTION_COPY_TEXT_TO_CLIPBOARD -> copyTextToClipboard(
                 extra?.textToCopy ?: ""
             ) // Copy text to clipboard
-            ACTION_CALL_A_NUMBER -> callANumber(extra?.numberToCall ?: "") // Call a number
+            ACTION_CALL_NUMBER -> callNumber(extra?.numberToCall ?: "") // Call a number
             ACTION_OPEN_LINK -> openLink(extra?.linkUrl ?: "") // Open a link
             ACTION_SEND_TEXT -> sendText(extra?.numberToSend ?: "", extra?.message ?: "") // Send a text
         }
@@ -84,7 +84,7 @@ class ActionPerformer(
      *
      * @param numberToCall The number to call.
      */
-    private fun callANumber(numberToCall: String) {
+    private fun callNumber(numberToCall: String) {
         val intent = Intent(Intent.ACTION_DIAL)
         intent.data = Uri.parse("tel:$numberToCall")
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK

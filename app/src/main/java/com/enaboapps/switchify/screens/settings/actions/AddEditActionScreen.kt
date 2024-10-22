@@ -12,7 +12,7 @@ import androidx.navigation.NavController
 import com.enaboapps.switchify.service.custom.actions.ActionPerformer
 import com.enaboapps.switchify.service.custom.actions.AppLaunchPicker
 import com.enaboapps.switchify.service.custom.actions.store.ActionStore
-import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_CALL_A_NUMBER
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_CALL_NUMBER
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_COPY_TEXT_TO_CLIPBOARD
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_LINK
@@ -190,7 +190,7 @@ private fun ActionExtraInput(
             onExtraValidated = onExtraValidated
         )
 
-        ACTION_CALL_A_NUMBER -> CallANumberExtraInput(
+        ACTION_CALL_NUMBER -> CallNumberExtraInput(
             selectedExtra = selectedExtra,
             onExtraUpdated = onExtraUpdated,
             onExtraValidated = onExtraValidated
@@ -245,7 +245,7 @@ private fun CopyTextExtraInput(
 }
 
 @Composable
-private fun CallANumberExtraInput(
+private fun CallNumberExtraInput(
     selectedExtra: ActionExtra?,
     onExtraUpdated: (ActionExtra?) -> Unit,
     onExtraValidated: (Boolean) -> Unit
