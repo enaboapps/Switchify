@@ -107,6 +107,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.fleksylib)
     implementation(libs.androidx.material3.android)
+    implementation(libs.app.update)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)

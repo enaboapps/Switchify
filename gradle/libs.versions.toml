@@ -17,6 +17,7 @@ androidx-test-ext-junit = "1.2.1"
 espresso-core = "3.6.1"
 google-services = "4.4.2"
 firebase-crashlytics-gradle = "3.0.2"
+app-update = "2.1.0"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -42,6 +43,7 @@ espresso-core = { group = "androidx.test.espresso", name = "espresso-core", vers
 compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose-runtime-livedata" }
+app-update = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "app-update" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
