@@ -11,6 +11,7 @@ import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_COPY_TEX
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_APP
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_OPEN_LINK
 import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_SEND_TEXT
+import com.enaboapps.switchify.service.custom.actions.store.data.ACTION_SEND_EMAIL
 import com.enaboapps.switchify.service.custom.actions.store.data.ActionExtra
 import com.enaboapps.switchify.utils.AppLauncher
 
@@ -54,6 +55,7 @@ class ActionPerformer(
             ACTION_CALL_NUMBER -> callNumber(extra?.numberToCall ?: "") // Call a number
             ACTION_OPEN_LINK -> openLink(extra?.linkUrl ?: "") // Open a link
             ACTION_SEND_TEXT -> sendText(extra?.numberToSend ?: "", extra?.message ?: "") // Send a text
+            ACTION_SEND_EMAIL -> sendEmail(extra?.emailAddress ?: "") // Send an email
         }
     }
 
@@ -113,6 +115,18 @@ class ActionPerformer(
         val intent = Intent(Intent.ACTION_SENDTO)
         intent.data = Uri.parse("smsto:$numberToSend")
         intent.putExtra("sms_body", message)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        context.applicationContext.startActivity(intent)
+    }
+
+    /**
+     * Sends an email.
+     *
+     * @param emailAddress The email address to send the email to.
+     */
+    private fun sendEmail(emailAddress: String) {
+        val intent = Intent(Intent.ACTION_SENDTO)
+        intent.data = Uri.parse("mailto:$emailAddress")
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         context.applicationContext.startActivity(intent)
     }
