@@ -53,7 +53,7 @@ class ActionPerformer(
             ) // Copy text to clipboard
             ACTION_CALL_A_NUMBER -> callANumber(extra?.numberToCall ?: "") // Call a number
             ACTION_OPEN_LINK -> openLink(extra?.linkUrl ?: "") // Open a link
-            ACTION_SEND_TEXT -> sendText(extra?.numberToCall ?: "", extra?.textToCopy ?: "") // Send a text
+            ACTION_SEND_TEXT -> sendText(extra?.numberToSend ?: "", extra?.message ?: "") // Send a text
         }
     }
 

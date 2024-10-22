@@ -332,12 +332,12 @@ private fun SendTextExtraInput(
 ) {
     Column {
         OutlinedTextField(
-            value = selectedExtra?.numberToCall ?: "",
+            value = selectedExtra?.numberToSend ?: "",
             onValueChange = { text ->
                 onExtraUpdated(
                     ActionExtra(
-                        numberToCall = text,
-                        textToCopy = selectedExtra?.textToCopy ?: ""
+                        numberToSend = text,
+                        message = selectedExtra?.message ?: ""
                     )
                 )
                 val isValid = text.isNotBlank() && text.matches(Regex("^\\d+$"))
@@ -345,9 +345,9 @@ private fun SendTextExtraInput(
             },
             label = { Text("Number to Send Text") },
             modifier = Modifier.fillMaxWidth(),
-            isError = selectedExtra?.numberToCall.isNullOrBlank() == true,
+            isError = selectedExtra?.numberToSend.isNullOrBlank() == true,
             supportingText = {
-                if (selectedExtra?.numberToCall.isNullOrBlank() == true) {
+                if (selectedExtra?.numberToSend.isNullOrBlank() == true) {
                     Text("Number to send text is required")
                 }
             }
@@ -356,12 +356,12 @@ private fun SendTextExtraInput(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = selectedExtra?.textToCopy ?: "",
+            value = selectedExtra?.message ?: "",
             onValueChange = { text ->
                 onExtraUpdated(
                     ActionExtra(
-                        numberToCall = selectedExtra?.numberToCall ?: "",
-                        textToCopy = text
+                        numberToSend = selectedExtra?.numberToSend ?: "",
+                        message = text
                     )
                 )
                 onExtraValidated(true)
