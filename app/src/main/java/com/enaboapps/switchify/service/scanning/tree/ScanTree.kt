@@ -181,6 +181,8 @@ class ScanTree(
         if (scanSettings.isAutoScanMode()) {
             resumeScanning()
         }
+
+        highlightCurrent()
     }
 
     /**
