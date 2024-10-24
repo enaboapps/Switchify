@@ -12,7 +12,9 @@ import com.enaboapps.switchify.widgets.Picker
 import com.enaboapps.switchify.widgets.Section
 
 @Composable
-fun ScanModeSelectionSection() {
+fun ScanModeSelectionSection(
+    onChange: ((String) -> Unit)? = null
+) {
     val preferenceManager = PreferenceManager(LocalContext.current)
     var currentMode by remember {
         mutableStateOf(
@@ -32,7 +34,10 @@ fun ScanModeSelectionSection() {
             title = "Select Scan Mode",
             selectedItem = currentMode,
             items = ScanMode.modes.toList(),
-            onItemSelected = setScanMode,
+            onItemSelected = { mode ->
+                setScanMode(mode)
+                onChange?.invoke(mode.id)
+            },
             itemToString = { it.getModeName() },
             itemDescription = { it.getModeDescription() }
         )
