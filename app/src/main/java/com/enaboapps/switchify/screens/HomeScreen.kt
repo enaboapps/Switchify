@@ -69,12 +69,6 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
         ) {
             item {
                 Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "Welcome to Switchify",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(20.dp))
             }
 
             item {
