@@ -25,6 +25,7 @@ import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.preferences.PreferenceManager
 import com.enaboapps.switchify.service.utils.ServiceUtils
 import com.enaboapps.switchify.switches.SwitchConfigInvalidBanner
+import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.widgets.NavBar
 import com.enaboapps.switchify.widgets.NavBarAction
 import com.enaboapps.switchify.widgets.NavRouteLink
@@ -86,7 +87,7 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
             }
 
             item {
-                SwitchConfigInvalidBanner()
+                SwitchConfigInvalidBanner(SwitchEventStore(LocalContext.current).isConfigInvalid())
             }
 
             if (!isAccessibilityServiceEnabled) {
