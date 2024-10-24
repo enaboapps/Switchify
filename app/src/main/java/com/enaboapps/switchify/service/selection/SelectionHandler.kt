@@ -112,9 +112,9 @@ object SelectionHandler {
                         autoSelectInProgress = false
                     }
                 }
-            } else { // If auto-select is disabled, open the main menu
-                MenuManager.getInstance().openMainMenu()
             }
+        } else { // If auto-select is disabled, open the main menu
+            MenuManager.getInstance().openMainMenu()
         }
     }
 
