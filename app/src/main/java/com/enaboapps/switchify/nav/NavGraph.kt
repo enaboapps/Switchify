@@ -41,6 +41,8 @@ import com.enaboapps.switchify.screens.settings.switches.CameraSwitchesScreen
 import com.enaboapps.switchify.screens.settings.switches.ExternalSwitchesScreen
 import com.enaboapps.switchify.screens.settings.switches.SwitchStabilityScreen
 import com.enaboapps.switchify.screens.settings.switches.SwitchesScreen
+import com.enaboapps.switchify.screens.settings.switches.SwitchProfileDetailScreen
+import com.enaboapps.switchify.screens.settings.switches.SwitchProfilesScreen
 import com.enaboapps.switchify.screens.settings.techniques.AccessTechniqueSettingsScreen
 import com.enaboapps.switchify.screens.settings.pause.PauseSettingsScreen
 import com.enaboapps.switchify.screens.settings.favouriteapps.FavouriteAppsScreen
@@ -126,18 +128,48 @@ fun NavGraph(navController: NavHostController) {
         composable(NavigationRoute.Switches.name) {
             SwitchesScreen(navController)
         }
+        composable(NavigationRoute.SwitchProfiles.name) {
+            SwitchProfilesScreen(navController)
+        }
+        composable("${NavigationRoute.SwitchProfileDetail.name}/{profileId}") {
+            it.arguments?.getString("profileId")?.let { profileId ->
+                SwitchProfileDetailScreen(navController, profileId)
+            }
+        }
         composable(NavigationRoute.ExternalSwitches.name) {
             ExternalSwitchesScreen(navController)
+        }
+        composable("${NavigationRoute.ExternalSwitches.name}/{profileId}") {
+            it.arguments?.getString("profileId")?.let { profileId ->
+                ExternalSwitchesScreen(navController, profileId)
+            }
         }
         composable(NavigationRoute.CameraSwitches.name) {
             CameraSwitchesScreen(navController)
         }
+        composable("${NavigationRoute.CameraSwitches.name}/{profileId}") {
+            it.arguments?.getString("profileId")?.let { profileId ->
+                CameraSwitchesScreen(navController, profileId)
+            }
+        }
         composable(NavigationRoute.AddNewExternalSwitch.name) {
             AddEditExternalSwitchScreen(navController)
+        }
+        composable("${NavigationRoute.AddNewExternalSwitch.name}/{profileId}") {
+            it.arguments?.getString("profileId")?.let { profileId ->
+                AddEditExternalSwitchScreen(navController, profileId = profileId)
+            }
         }
         composable("${NavigationRoute.EditExternalSwitch.name}/{code}") {
             it.arguments?.getString("code")?.let { code ->
                 AddEditExternalSwitchScreen(navController, code)
+            }
+        }
+        composable("${NavigationRoute.EditExternalSwitch.name}/{profileId}/{code}") {
+            val profileId = it.arguments?.getString("profileId")
+            val code = it.arguments?.getString("code")
+            if (profileId != null && code != null) {
+                AddEditExternalSwitchScreen(navController, code, profileId)
             }
         }
         composable(NavigationRoute.EnableAccessibilityService.name) {
@@ -152,9 +184,21 @@ fun NavGraph(navController: NavHostController) {
         composable(NavigationRoute.AddNewCameraSwitch.name) {
             AddEditCameraSwitchScreen(navController)
         }
+        composable("${NavigationRoute.AddNewCameraSwitch.name}/{profileId}") {
+            it.arguments?.getString("profileId")?.let { profileId ->
+                AddEditCameraSwitchScreen(navController, profileId = profileId)
+            }
+        }
         composable("${NavigationRoute.EditCameraSwitch.name}/{code}") {
             it.arguments?.getString("code")?.let { code ->
                 AddEditCameraSwitchScreen(navController, code)
+            }
+        }
+        composable("${NavigationRoute.EditCameraSwitch.name}/{profileId}/{code}") {
+            val profileId = it.arguments?.getString("profileId")
+            val code = it.arguments?.getString("code")
+            if (profileId != null && code != null) {
+                AddEditCameraSwitchScreen(navController, code, profileId)
             }
         }
         composable(NavigationRoute.Debug.name) {
@@ -201,6 +245,13 @@ fun NavGraph(navController: NavHostController) {
         composable("${NavigationRoute.LongPressActions.name}/{code}") {
             it.arguments?.getString("code")?.let { code ->
                 LongPressActionsScreen(navController, code)
+            }
+        }
+        composable("${NavigationRoute.LongPressActions.name}/{profileId}/{code}") {
+            val profileId = it.arguments?.getString("profileId")
+            val code = it.arguments?.getString("code")
+            if (profileId != null && code != null) {
+                LongPressActionsScreen(navController, code, profileId)
             }
         }
     }

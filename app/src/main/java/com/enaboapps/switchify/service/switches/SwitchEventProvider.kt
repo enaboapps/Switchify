@@ -26,6 +26,7 @@ import java.util.Collections
 
 class SwitchEventProvider(private val context: Context) {
     private val switchEvents = Collections.synchronizedSet(mutableSetOf<SwitchEvent>())
+    private var stagedSwitchEvents: List<SwitchEvent>? = null
     private val localStorage = SwitchEventLocalStorage()
     private val cameraSwitchListeners = mutableSetOf<CameraSwitchListener>()
     private val mutex = Mutex()
@@ -103,21 +104,21 @@ class SwitchEventProvider(private val context: Context) {
     }
 
     fun findExternal(code: String): SwitchEvent? = synchronized(switchEvents) {
-        switchEvents.find {
+        effectiveSwitchEvents().find {
             it.code == code &&
                     it.type == SWITCH_EVENT_TYPE_EXTERNAL
         }
     }
 
     fun findCamera(code: String): SwitchEvent? = synchronized(switchEvents) {
-        switchEvents.find {
+        effectiveSwitchEvents().find {
             it.code == code &&
                     it.type == SWITCH_EVENT_TYPE_CAMERA
         }
     }
 
     fun externalSwitches(): List<SwitchEvent> = synchronized(switchEvents) {
-        switchEvents.filter { it.type == SWITCH_EVENT_TYPE_EXTERNAL }.map { it.copy() }
+        effectiveSwitchEvents().filter { it.type == SWITCH_EVENT_TYPE_EXTERNAL }.map { it.copy() }
     }
 
     fun addCameraSwitchListener(listener: CameraSwitchListener) {
@@ -128,14 +129,14 @@ class SwitchEventProvider(private val context: Context) {
         cameraSwitchListeners.remove(listener)
     }
 
-    fun isFacialGestureAssigned(gestureId: String): Boolean = switchEvents.any {
+    fun isFacialGestureAssigned(gestureId: String): Boolean = effectiveSwitchEvents().any {
         it.code == gestureId &&
                 it.type == SWITCH_EVENT_TYPE_CAMERA
     }
 
     private fun checkCameraSwitchAvailability() {
         val previous = hasCameraSwitch
-        hasCameraSwitch = switchEvents.any {
+        hasCameraSwitch = effectiveSwitchEvents().any {
             it.type == SWITCH_EVENT_TYPE_CAMERA
         }
         Log.d(TAG, "Camera switch availability changed: $hasCameraSwitch")
@@ -170,6 +171,31 @@ class SwitchEventProvider(private val context: Context) {
             loadInitialEvents()
         }
     }
+
+    fun stage(events: List<SwitchEvent>) {
+        stagedSwitchEvents = events.map { it.copy(holdActions = it.holdActions.toList()) }
+        checkCameraSwitchAvailability()
+    }
+
+    fun clearStage() {
+        stagedSwitchEvents = null
+        checkCameraSwitchAvailability()
+    }
+
+    fun promoteStage(): Boolean {
+        val staged = stagedSwitchEvents ?: return false
+        synchronized(switchEvents) {
+            switchEvents.clear()
+            switchEvents.addAll(staged)
+        }
+        stagedSwitchEvents = null
+        checkCameraSwitchAvailability()
+        SwitchifyRemoteBridgeCoordinator.configuredSwitchesChanged()
+        ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.SwitchEventsUpdated)
+        return true
+    }
+
+    private fun effectiveSwitchEvents(): Collection<SwitchEvent> = stagedSwitchEvents ?: switchEvents
 
     interface CameraSwitchListener {
         fun onCameraSwitchAvailabilityChanged(available: Boolean)

@@ -30,6 +30,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.enaboapps.switchify.R
+import com.enaboapps.switchify.service.core.ServiceCore
 import com.enaboapps.switchify.service.face.FaceProcessingService
 import com.enaboapps.switchify.service.window.MessageSeverity
 import com.enaboapps.switchify.service.window.ServiceMessageHUD
@@ -481,6 +482,10 @@ class CameraForegroundService : Service(), CameraLifecycle {
 
     private fun onCameraInUse() {
         if (!isPausedForConflict) {
+            ServiceCore.getSwitchProfileActivationCoordinator()?.cancel(
+                reason = "camera_initialization_failure",
+                showMessage = false
+            )
             ServiceMessageHUD.instance.showMessage(
                 R.string.hud_camera_unavailable_external_app,
                 ServiceMessageHUD.MessageType.DISAPPEARING,
@@ -492,6 +497,10 @@ class CameraForegroundService : Service(), CameraLifecycle {
     }
 
     private fun onCameraFatal() {
+        ServiceCore.getSwitchProfileActivationCoordinator()?.cancel(
+            reason = "camera_initialization_failure",
+            showMessage = false
+        )
         ServiceMessageHUD.instance.showMessage(
             R.string.hud_camera_access_error,
             ServiceMessageHUD.MessageType.DISAPPEARING,

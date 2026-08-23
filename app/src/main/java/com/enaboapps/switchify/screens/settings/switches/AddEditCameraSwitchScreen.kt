@@ -36,9 +36,15 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 @Composable
-fun AddEditCameraSwitchScreen(navController: NavController, code: String? = null) {
+fun AddEditCameraSwitchScreen(
+    navController: NavController,
+    code: String? = null,
+    profileId: String? = null
+) {
     val context = LocalContext.current
-    val viewModel = remember { AddEditCameraSwitchScreenModel().apply { init(code, context) } }
+    val viewModel = remember {
+        AddEditCameraSwitchScreenModel().apply { init(code, context, profileId) }
+    }
 
     BaseView(
         titleResId = if (code == null) R.string.screen_title_add_switch else R.string.screen_title_edit_switch,

@@ -106,6 +106,10 @@ object ServiceBridge {
          */
         data class AccessTechniqueChanged(val technique: String) : ServiceCommand()
 
+        data class BeginSwitchProfileActivation(val profileId: String) : ServiceCommand()
+
+        data object CancelSwitchProfileActivation : ServiceCommand()
+
         /**
          * Request service to validate and update configuration.
          * @param key The preference key that changed
@@ -139,6 +143,28 @@ object ServiceBridge {
          * Replaces SwitchEventBus.switchEventsUpdated.
          */
         object SwitchEventsUpdated : ServiceEvent()
+
+        object SwitchProfilesUpdated : ServiceEvent()
+
+        data class SwitchProfileVerificationStarted(
+            val profileId: String,
+            val profileName: String,
+            val expiresAtMillis: Long
+        ) : ServiceEvent()
+
+        data class SwitchProfileActivationFailed(
+            val profileId: String,
+            val reason: String,
+            val missingActionIds: Set<Int> = emptySet(),
+            val unsupportedActionIds: Set<Int> = emptySet()
+        ) : ServiceEvent()
+
+        data class SwitchProfileActivated(
+            val profileId: String,
+            val profileName: String
+        ) : ServiceEvent()
+
+        data object SwitchProfileActivationCancelled : ServiceEvent()
 
         /**
          * Service is ready and fully initialized.

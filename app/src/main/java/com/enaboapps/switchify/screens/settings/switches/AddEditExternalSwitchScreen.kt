@@ -58,12 +58,16 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 @Composable
-fun AddEditExternalSwitchScreen(navController: NavController, code: String? = null) {
+fun AddEditExternalSwitchScreen(
+    navController: NavController,
+    code: String? = null,
+    profileId: String? = null
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val addEditExternalSwitchScreenModel = remember {
         AddEditExternalSwitchScreenModel().apply {
-            init(code, context)
+            init(code, context, profileId)
         }
     }
     val shouldSave by addEditExternalSwitchScreenModel.shouldSave.observeAsState()
@@ -153,7 +157,12 @@ fun AddEditExternalSwitchScreen(navController: NavController, code: String? = nu
                         onNameChange = { addEditExternalSwitchScreenModel.updateName(it) }
                     )
                     Spacer(modifier = Modifier.padding(8.dp))
-                    SwitchActionSection(navController, addEditExternalSwitchScreenModel, code)
+                    SwitchActionSection(
+                        navController,
+                        addEditExternalSwitchScreenModel,
+                        code,
+                        profileId
+                    )
                     Spacer(modifier = Modifier.padding(12.dp))
                 }
             }
@@ -276,7 +285,8 @@ fun SwitchName(
 fun SwitchActionSection(
     navController: NavController,
     viewModel: AddEditExternalSwitchScreenModel,
-    switchCode: String?
+    switchCode: String?,
+    profileId: String? = null
 ) {
     val allowLongPress = viewModel.allowLongPress.observeAsState()
     val longPressActions = viewModel.longPressActions.observeAsState()
@@ -302,7 +312,12 @@ fun SwitchActionSection(
             actionCount = actionCount,
             onClick = {
                 if (switchCode != null) {
-                    navController.navigate("${NavigationRoute.LongPressActions.name}/$switchCode")
+                    val route = if (profileId == null) {
+                        "${NavigationRoute.LongPressActions.name}/$switchCode"
+                    } else {
+                        "${NavigationRoute.LongPressActions.name}/$profileId/$switchCode"
+                    }
+                    navController.navigate(route)
                 }
             },
             enabled = switchCode != null

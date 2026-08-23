@@ -29,6 +29,7 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
 
     private val store = SwitchEventStore.getInstance()
     private var code: String? = null
+    private var profileId: String? = null
     private var isInitialized = false
 
     var name = ""
@@ -45,8 +46,9 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
     }
     val longPressActions = MutableLiveData<List<SwitchAction>>(emptyList())
 
-    fun init(code: String?, context: Context) {
+    fun init(code: String?, context: Context, profileId: String? = null) {
         this.code = code
+        this.profileId = profileId
 
         if (code != null) {
             reload(context)
@@ -63,7 +65,7 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
     private fun reload(context: Context) {
         viewModelScope.launch {
             if (code != null) {
-                val event = store.find(code ?: "")
+                val event = store.find(code ?: "", profileId)
                 name = event?.name ?: ""
                 val initialPress = event?.pressAction ?: SwitchAction(SwitchAction.ACTION_SELECT)
                 val allowed = SupportedActionsPolicy.supportedActionIds(context)
@@ -98,7 +100,7 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
         Log.d(TAG, "processKeyCode: ${key.nativeKeyCode}")
 
         // If switch already exists, don't save and show toast
-        if (store.find(key.nativeKeyCode.toString()) != null) {
+        if (store.find(key.nativeKeyCode.toString(), profileId) != null) {
             shouldSave.value = false
             Toast.makeText(context, "Switch already exists", Toast.LENGTH_SHORT).show()
             return
@@ -149,7 +151,7 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
      */
     fun reloadLongPressActionsFromStore(context: Context) {
         if (code != null) {
-            val event = store.find(code ?: "")
+            val event = store.find(code ?: "", profileId)
             val allowed = SupportedActionsPolicy.supportedActionIds(context)
             longPressActions.value = (event?.holdActions ?: emptyList()).map { a ->
                 if (allowed.contains(a.id)) a else SwitchAction(SwitchAction.ACTION_SELECT)
@@ -206,8 +208,8 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
     fun save(context: Context, completion: ((Boolean) -> Unit)) {
         if (shouldSave.value == true) {
             val event = buildSwitchEvent()
-            if (store.find(event.code) == null) {
-                store.add(event, context) { success ->
+            if (store.find(event.code, profileId) == null) {
+                store.add(event, context, profileId) { success ->
                     if (success) {
                         completion(true)
                     } else {
@@ -215,7 +217,7 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
                     }
                 }
             } else {
-                store.update(event, context) { success ->
+                store.update(event, context, profileId) { success ->
                     if (success) {
                         completion(true)
                     } else {
@@ -228,9 +230,9 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
     }
 
     fun delete(context: Context, completion: (Boolean) -> Unit) {
-        val event = store.find(code ?: "")
+        val event = store.find(code ?: "", profileId)
         event?.let {
-            store.remove(it, context) { success ->
+            store.remove(it, context, profileId) { success ->
                 completion(success)
             }
         }

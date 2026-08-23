@@ -39,21 +39,25 @@ import com.enaboapps.switchify.switches.SwitchEventStore
  * @param code The switch code to load/save long press actions for.
  */
 @Composable
-fun LongPressActionsScreen(navController: NavController, code: String) {
+fun LongPressActionsScreen(
+    navController: NavController,
+    code: String,
+    profileId: String? = null
+) {
     val context = LocalContext.current
     val store = remember { SwitchEventStore.getInstance() }
 
     // Load actions from store - refresh key triggers reload
     var refreshKey by remember { mutableStateOf(0) }
     val actions = remember(refreshKey) {
-        store.find(code)?.holdActions ?: emptyList()
+        store.find(code, profileId)?.holdActions ?: emptyList()
     }
 
     // Save helper that updates store and refreshes UI
     fun saveAndRefresh(newActions: List<SwitchAction>) {
-        val event = store.find(code) ?: return
+        val event = store.find(code, profileId) ?: return
         val updatedEvent = event.copy(holdActions = newActions)
-        store.update(updatedEvent, context) { success ->
+        store.update(updatedEvent, context, profileId) { success ->
             if (success) {
                 refreshKey++
             }

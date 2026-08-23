@@ -227,6 +227,8 @@ class ScanningManager(
     fun performAction(action: SwitchAction) {
         if (!isAcceptingActions) return
 
+        if (ServiceCore.getSwitchProfileActivationCoordinator()?.intercept(action) == true) return
+
         if (GestureManager.instance.performGestureLockAction()) return
 
         try {
