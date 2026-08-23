@@ -16,7 +16,7 @@ object ServiceCore {
     private lateinit var externalSwitchListenerRef: WeakReference<ExternalSwitchListener>
     private lateinit var switchEventProviderRef: WeakReference<SwitchEventProvider>
     private lateinit var cameraManagerRef: WeakReference<CameraManager>
-    private lateinit var switchProfileActivationCoordinatorRef: WeakReference<SwitchProfileActivationCoordinator>
+    private var switchProfileActivationCoordinator: SwitchProfileActivationCoordinator? = null
     private var gestureTargetIndicator: GestureTargetIndicatorController? = null
 
     /**
@@ -37,12 +37,10 @@ object ServiceCore {
 
         val scanningManager = scanningManagerRef.get() ?: return
         val switchEventProvider = switchEventProviderRef.get() ?: return
-        switchProfileActivationCoordinatorRef = WeakReference(
-            SwitchProfileActivationCoordinator(
-                accessibilityService,
-                switchEventProvider,
-                accessibilityService.getServiceScope()
-            )
+        switchProfileActivationCoordinator = SwitchProfileActivationCoordinator(
+            accessibilityService,
+            switchEventProvider,
+            accessibilityService.getServiceScope()
         )
         SwitchifyRemoteBridgeCoordinator.attach(switchEventProvider)
 
@@ -84,9 +82,7 @@ object ServiceCore {
     }
 
     internal fun getSwitchProfileActivationCoordinator(): SwitchProfileActivationCoordinator? {
-        return if (::switchProfileActivationCoordinatorRef.isInitialized) {
-            switchProfileActivationCoordinatorRef.get()
-        } else null
+        return switchProfileActivationCoordinator
     }
 
     /**
@@ -134,8 +130,6 @@ object ServiceCore {
         if (::cameraManagerRef.isInitialized) {
             cameraManagerRef = WeakReference(null)
         }
-        if (::switchProfileActivationCoordinatorRef.isInitialized) {
-            switchProfileActivationCoordinatorRef = WeakReference(null)
-        }
+        switchProfileActivationCoordinator = null
     }
 }
