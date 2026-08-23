@@ -24,11 +24,15 @@ internal class SwitchProfileRepository internal constructor(
     val document: StateFlow<SwitchProfileDocument> = _document.asStateFlow()
 
     suspend fun initialize() = mutex.withLock {
-        if (initialized) return@withLock
-        val stored = persistence.readProfiles().getOrNull()
-        val resolved = stored?.takeIf(::isValidDocument) ?: migrateLegacy()
-        _document.value = resolved
-        initialized = true
+        if (initialized) {
+            adoptLateLegacyLocked()
+            return@withLock
+        }
+        initializeLocked()
+    }
+
+    suspend fun refresh() = mutex.withLock {
+        initializeLocked()
     }
 
     fun profiles(): List<SwitchProfile> = _document.value.profiles
@@ -51,7 +55,7 @@ internal class SwitchProfileRepository internal constructor(
     }
 
     suspend fun rename(profileId: String, name: String): SwitchProfileMutationResult = mutex.withLock {
-        ensureInitializedLocked()
+        if (!ensureInitializedLocked()) return@withLock SwitchProfileMutationResult.StorageFailure
         val current = profile(profileId) ?: return@withLock SwitchProfileMutationResult.NotFound
         validateName(name, profileId)?.let { return@withLock it }
         val renamed = current.copy(name = name.trim())
@@ -63,7 +67,7 @@ internal class SwitchProfileRepository internal constructor(
     }
 
     suspend fun delete(profileId: String): SwitchProfileMutationResult = mutex.withLock {
-        ensureInitializedLocked()
+        if (!ensureInitializedLocked()) return@withLock SwitchProfileMutationResult.StorageFailure
         val current = profile(profileId) ?: return@withLock SwitchProfileMutationResult.NotFound
         if (_document.value.activeProfileId == profileId) {
             return@withLock SwitchProfileMutationResult.ActiveProfile
@@ -79,7 +83,7 @@ internal class SwitchProfileRepository internal constructor(
     }
 
     suspend fun replaceEvents(profileId: String, events: List<SwitchEvent>): Boolean = mutex.withLock {
-        ensureInitializedLocked()
+        if (!ensureInitializedLocked()) return@withLock false
         val current = profile(profileId) ?: return@withLock false
         if (events.map { it.code }.distinct().size != events.size) return@withLock false
         val updatedProfile = current.copy(
@@ -95,16 +99,32 @@ internal class SwitchProfileRepository internal constructor(
     }
 
     suspend fun commitActiveProfile(profileId: String): Boolean = mutex.withLock {
-        ensureInitializedLocked()
+        if (!ensureInitializedLocked()) return@withLock false
         if (profile(profileId) == null) return@withLock false
         persist(_document.value.copy(activeProfileId = profileId))
+    }
+
+    suspend fun commitActiveProfile(
+        profileId: String,
+        prepare: (SwitchProfile, SwitchProfile) -> Boolean,
+        rollback: (SwitchProfile) -> Unit
+    ): SwitchProfile? = mutex.withLock {
+        if (!ensureInitializedLocked()) return@withLock null
+        val target = profile(profileId) ?: return@withLock null
+        val previous = profile(_document.value.activeProfileId) ?: return@withLock null
+        if (!prepare(target, previous)) return@withLock null
+        if (!persist(_document.value.copy(activeProfileId = profileId))) {
+            rollback(previous)
+            return@withLock null
+        }
+        target
     }
 
     private suspend fun create(
         name: String,
         switches: List<SwitchEvent>
     ): SwitchProfileMutationResult = mutex.withLock {
-        ensureInitializedLocked()
+        if (!ensureInitializedLocked()) return@withLock SwitchProfileMutationResult.StorageFailure
         validateName(name)?.let { return@withLock it }
         val created = SwitchProfile(
             id = idFactory(),
@@ -128,20 +148,52 @@ internal class SwitchProfileRepository internal constructor(
         return if (exists) SwitchProfileMutationResult.InvalidName("duplicate") else null
     }
 
-    private suspend fun ensureInitializedLocked() {
-        if (initialized) return
-        val stored = persistence.readProfiles().getOrNull()
-        _document.value = stored?.takeIf(::isValidDocument) ?: migrateLegacy()
-        initialized = true
+    private suspend fun ensureInitializedLocked(): Boolean {
+        if (initialized) return true
+        return initializeLocked()
     }
 
-    private suspend fun migrateLegacy(): SwitchProfileDocument {
-        val legacyEvents = persistence.readLegacyEvents().getOrNull().orEmpty()
-        val migrated = newDocument(legacyEvents)
-        if (persistence.writeProfiles(migrated).isSuccess) {
-            persistence.deleteLegacyEvents()
+    private suspend fun initializeLocked(): Boolean {
+        val storedResult = persistence.readProfiles()
+        if (storedResult.isFailure) return false
+        val stored = storedResult.getOrNull()
+        if (stored != null) {
+            if (!isValidDocument(stored)) return false
+            _document.value = stored
+            initialized = true
+            adoptLateLegacyLocked()
+            return true
         }
-        return migrated
+        val legacyResult = persistence.readLegacyEvents()
+        if (legacyResult.isFailure) return false
+        val resolved = newDocument(legacyResult.getOrNull().orEmpty())
+        if (persistence.writeProfiles(resolved).isFailure) return false
+        _document.value = resolved
+        initialized = true
+        if (legacyResult.getOrNull() != null) persistence.deleteLegacyEvents()
+        return true
+    }
+
+    private suspend fun adoptLateLegacyLocked() {
+        val current = _document.value
+        if (!isEmptyDefaultDocument(current)) return
+        val legacyResult = persistence.readLegacyEvents()
+        if (legacyResult.isFailure) return
+        val legacyEvents = legacyResult.getOrNull() ?: return
+        val migratedProfile = current.profiles.single().copy(
+            switches = legacyEvents.map { it.copy(holdActions = it.holdActions.toList()) }
+        )
+        val migrated = current.copy(profiles = listOf(migratedProfile))
+        if (persistence.writeProfiles(migrated).isFailure) return
+        _document.value = migrated
+        persistence.deleteLegacyEvents()
+    }
+
+    private fun isEmptyDefaultDocument(document: SwitchProfileDocument): Boolean {
+        val profile = document.profiles.singleOrNull() ?: return false
+        return profile.id == document.activeProfileId &&
+            profile.name == "Default" &&
+            profile.switches.isEmpty()
     }
 
     private suspend fun persist(document: SwitchProfileDocument): Boolean {

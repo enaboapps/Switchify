@@ -26,11 +26,13 @@ import java.util.Collections
 
 class SwitchEventProvider(private val context: Context) {
     private val switchEvents = Collections.synchronizedSet(mutableSetOf<SwitchEvent>())
+    @Volatile
     private var stagedSwitchEvents: List<SwitchEvent>? = null
     private val localStorage = SwitchEventLocalStorage()
     private val cameraSwitchListeners = mutableSetOf<CameraSwitchListener>()
     private val mutex = Mutex()
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private var runtimeGeneration = 0L
     var hasCameraSwitch = false
         private set
 
@@ -62,11 +64,15 @@ class SwitchEventProvider(private val context: Context) {
 
     private suspend fun loadInitialEvents() {
         mutex.withLock {
+            val loadGeneration = synchronized(switchEvents) { runtimeGeneration }
             val loadedEvents = localStorage.loadFromFile(context)
-            synchronized(switchEvents) {
+            val applied = synchronized(switchEvents) {
+                if (loadGeneration != runtimeGeneration) return@synchronized false
                 switchEvents.clear()
                 switchEvents.addAll(loadedEvents)
+                true
             }
+            if (!applied) return@withLock
             checkCameraSwitchAvailability()
             val cameraSwitchCount = switchEvents.count { it.type == SWITCH_EVENT_TYPE_CAMERA }
             Log.d(TAG, "Loaded ${switchEvents.size} switches")
@@ -129,15 +135,19 @@ class SwitchEventProvider(private val context: Context) {
         cameraSwitchListeners.remove(listener)
     }
 
-    fun isFacialGestureAssigned(gestureId: String): Boolean = effectiveSwitchEvents().any {
-        it.code == gestureId &&
-                it.type == SWITCH_EVENT_TYPE_CAMERA
+    fun isFacialGestureAssigned(gestureId: String): Boolean = synchronized(switchEvents) {
+        effectiveSwitchEvents().any {
+            it.code == gestureId &&
+                    it.type == SWITCH_EVENT_TYPE_CAMERA
+        }
     }
 
     private fun checkCameraSwitchAvailability() {
         val previous = hasCameraSwitch
-        hasCameraSwitch = effectiveSwitchEvents().any {
-            it.type == SWITCH_EVENT_TYPE_CAMERA
+        hasCameraSwitch = synchronized(switchEvents) {
+            effectiveSwitchEvents().any {
+                it.type == SWITCH_EVENT_TYPE_CAMERA
+            }
         }
         Log.d(TAG, "Camera switch availability changed: $hasCameraSwitch")
         if (previous != hasCameraSwitch) {
@@ -173,22 +183,27 @@ class SwitchEventProvider(private val context: Context) {
     }
 
     fun stage(events: List<SwitchEvent>) {
-        stagedSwitchEvents = events.map { it.copy(holdActions = it.holdActions.toList()) }
+        synchronized(switchEvents) {
+            stagedSwitchEvents = events.map { it.copy(holdActions = it.holdActions.toList()) }
+        }
         checkCameraSwitchAvailability()
     }
 
     fun clearStage() {
-        stagedSwitchEvents = null
+        synchronized(switchEvents) {
+            stagedSwitchEvents = null
+        }
         checkCameraSwitchAvailability()
     }
 
-    fun promoteStage(): Boolean {
-        val staged = stagedSwitchEvents ?: return false
+    fun promoteStage(events: List<SwitchEvent>): Boolean {
+        val promoted = events.map { it.copy(holdActions = it.holdActions.toList()) }
         synchronized(switchEvents) {
             switchEvents.clear()
-            switchEvents.addAll(staged)
+            switchEvents.addAll(promoted)
+            stagedSwitchEvents = null
+            runtimeGeneration += 1
         }
-        stagedSwitchEvents = null
         checkCameraSwitchAvailability()
         SwitchifyRemoteBridgeCoordinator.configuredSwitchesChanged()
         ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.SwitchEventsUpdated)

@@ -36,7 +36,7 @@ class SwitchProfileRepositoryTest {
     }
 
     @Test
-    fun malformedDocumentFallsBackToDefaultProfile() = runBlocking {
+    fun malformedDocumentIsNotOverwritten() = runBlocking {
         val malformed = SwitchProfileDocument(activeProfileId = "missing", profiles = emptyList())
         val persistence = FakePersistence(stored = malformed)
         val repository = repository(persistence)
@@ -45,7 +45,64 @@ class SwitchProfileRepositoryTest {
 
         assertEquals("Default", repository.activeProfile().name)
         assertEquals(1, repository.profiles().size)
-        assertNotEquals("missing", repository.document.value.activeProfileId)
+        assertEquals(malformed, persistence.stored)
+        assertEquals(0, persistence.writeCount)
+    }
+
+    @Test
+    fun profileReadFailureDoesNotWriteDefaultOrDeleteLegacy() = runBlocking {
+        val persistence = FakePersistence(
+            legacy = listOf(event("legacy")),
+            failProfileReads = true
+        )
+        val repository = repository(persistence)
+
+        repository.initialize()
+
+        assertEquals(0, persistence.writeCount)
+        assertFalse(persistence.legacyDeleted)
+        assertEquals(null, persistence.stored)
+    }
+
+    @Test
+    fun legacyReadFailureDoesNotWriteDefault() = runBlocking {
+        val persistence = FakePersistence(failLegacyReads = true)
+        val repository = repository(persistence)
+
+        repository.initialize()
+
+        assertEquals(0, persistence.writeCount)
+        assertEquals(null, persistence.stored)
+    }
+
+    @Test
+    fun adoptsLegacyMappingsThatArriveAfterEmptyInitialization() = runBlocking {
+        val persistence = FakePersistence()
+        val repository = repository(persistence)
+        repository.initialize()
+        val originalProfileId = repository.activeProfile().id
+        persistence.legacy = listOf(event("late"))
+
+        repository.initialize()
+
+        assertEquals(originalProfileId, repository.activeProfile().id)
+        assertEquals(listOf("late"), repository.events().map { it.code })
+        assertEquals(2, persistence.writeCount)
+        assertTrue(persistence.legacyDeleted)
+    }
+
+    @Test
+    fun lateLegacyMappingsDoNotReplacePopulatedDocument() = runBlocking {
+        val persistence = FakePersistence()
+        val repository = repository(persistence)
+        repository.initialize()
+        repository.replaceEvents(repository.activeProfile().id, listOf(event("current")))
+        persistence.legacy = listOf(event("late"))
+
+        repository.refresh()
+
+        assertEquals(listOf("current"), repository.events().map { it.code })
+        assertFalse(persistence.legacyDeleted)
     }
 
     @Test
@@ -109,6 +166,48 @@ class SwitchProfileRepositoryTest {
     }
 
     @Test
+    fun activationPreparationReceivesLatestProfileMappings() = runBlocking {
+        val repository = repository(FakePersistence())
+        repository.initialize()
+        val next = repository.createEmpty("Next") as SwitchProfileMutationResult.Success
+        repository.replaceEvents(next.profile.id, listOf(event("edited")))
+        var preparedCodes = emptyList<String>()
+
+        val activated = repository.commitActiveProfile(
+            next.profile.id,
+            prepare = { target, _ ->
+                preparedCodes = target.switches.map { it.code }
+                true
+            },
+            rollback = {}
+        )
+
+        assertEquals(listOf("edited"), preparedCodes)
+        assertEquals(next.profile.id, activated?.id)
+    }
+
+    @Test
+    fun failedActivationCommitRollsBackPreparedRuntimeState() = runBlocking {
+        val persistence = FakePersistence()
+        val repository = repository(persistence)
+        repository.initialize()
+        val previousId = repository.activeProfile().id
+        val next = repository.createEmpty("Next") as SwitchProfileMutationResult.Success
+        persistence.failWrites = true
+        var rolledBackProfileId: String? = null
+
+        val activated = repository.commitActiveProfile(
+            next.profile.id,
+            prepare = { _, _ -> true },
+            rollback = { rolledBackProfileId = it.id }
+        )
+
+        assertEquals(null, activated)
+        assertEquals(previousId, rolledBackProfileId)
+        assertEquals(previousId, repository.activeProfile().id)
+    }
+
+    @Test
     fun rejectsDuplicateCodesInsideOneProfile() = runBlocking {
         val repository = repository(FakePersistence())
         repository.initialize()
@@ -135,20 +234,30 @@ class SwitchProfileRepositoryTest {
 
     private class FakePersistence(
         var stored: SwitchProfileDocument? = null,
-        private val legacy: List<SwitchEvent>? = null,
-        var failWrites: Boolean = false
+        var legacy: List<SwitchEvent>? = null,
+        var failWrites: Boolean = false,
+        private val failProfileReads: Boolean = false,
+        private val failLegacyReads: Boolean = false
     ) : SwitchProfilePersistence {
         var legacyDeleted = false
+        var writeCount = 0
 
-        override suspend fun readProfiles(): Result<SwitchProfileDocument?> = Result.success(stored)
+        override suspend fun readProfiles(): Result<SwitchProfileDocument?> {
+            if (failProfileReads) return Result.failure(IllegalStateException("read failed"))
+            return Result.success(stored)
+        }
 
         override suspend fun writeProfiles(document: SwitchProfileDocument): Result<Unit> {
             if (failWrites) return Result.failure(IllegalStateException("write failed"))
+            writeCount += 1
             stored = document
             return Result.success(Unit)
         }
 
-        override suspend fun readLegacyEvents(): Result<List<SwitchEvent>?> = Result.success(legacy)
+        override suspend fun readLegacyEvents(): Result<List<SwitchEvent>?> {
+            if (failLegacyReads) return Result.failure(IllegalStateException("read failed"))
+            return Result.success(legacy)
+        }
 
         override suspend fun deleteLegacyEvents(): Result<Unit> {
             legacyDeleted = true

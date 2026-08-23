@@ -352,8 +352,14 @@ class SwitchEventStore private constructor() {
      * Uses hybrid approach: Flow for same-process, Broadcast for cross-process.
      */
     private fun refreshActiveCache(repository: SwitchProfileRepository) {
-        switchEvents.clear()
-        switchEvents.addAll(repository.events())
+        replaceActiveProfileCache(repository.events())
+    }
+
+    internal fun replaceActiveProfileCache(events: List<SwitchEvent>) {
+        synchronized(switchEvents) {
+            switchEvents.clear()
+            switchEvents.addAll(events)
+        }
     }
 
     private fun broadcastReloadEvent(context: Context, activeChanged: Boolean) {

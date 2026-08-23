@@ -19,16 +19,20 @@ internal interface SwitchProfilePersistence {
 }
 
 internal class SwitchProfileLocalPersistence(context: Context) : SwitchProfilePersistence {
-    private val protectedContext = context.applicationContext.createDeviceProtectedStorageContext()
+    private val applicationContext = context.applicationContext
+    private val protectedContext = applicationContext.createDeviceProtectedStorageContext()
     private val profileFile = AtomicFile(File(protectedContext.filesDir, PROFILE_FILE_NAME))
-    private val legacyFile = File(protectedContext.filesDir, LEGACY_FILE_NAME)
+    private val legacyFiles = listOf(
+        File(protectedContext.filesDir, LEGACY_FILE_NAME),
+        File(applicationContext.filesDir, LEGACY_FILE_NAME)
+    ).distinctBy { it.absolutePath }
     private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 
     override suspend fun readProfiles(): Result<SwitchProfileDocument?> = withContext(Dispatchers.IO) {
         runCatching {
             if (!profileFile.baseFile.exists()) return@runCatching null
             profileFile.openRead().bufferedReader().use { reader ->
-                gson.fromJson(reader, SwitchProfileDocument::class.java)
+                checkNotNull(gson.fromJson(reader, SwitchProfileDocument::class.java))
             }
         }
     }
@@ -56,10 +60,10 @@ internal class SwitchProfileLocalPersistence(context: Context) : SwitchProfilePe
 
     override suspend fun readLegacyEvents(): Result<List<SwitchEvent>?> = withContext(Dispatchers.IO) {
         runCatching {
-            if (!legacyFile.exists()) return@runCatching null
+            val legacyFile = legacyFiles.firstOrNull { it.exists() } ?: return@runCatching null
             val type = object : TypeToken<Set<SwitchEvent>>() {}.type
             legacyFile.bufferedReader().use { reader ->
-                val events: Set<SwitchEvent> = gson.fromJson(reader, type)
+                val events: Set<SwitchEvent> = checkNotNull(gson.fromJson(reader, type))
                 events.toList()
             }
         }
@@ -67,7 +71,9 @@ internal class SwitchProfileLocalPersistence(context: Context) : SwitchProfilePe
 
     override suspend fun deleteLegacyEvents(): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
-            if (legacyFile.exists()) check(legacyFile.delete())
+            legacyFiles.forEach { legacyFile ->
+                if (legacyFile.exists()) check(legacyFile.delete())
+            }
         }
     }
 
