@@ -5,6 +5,7 @@ import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.camera.CameraPermissionManager
 import com.enaboapps.switchify.service.core.ServiceBridge
 import com.enaboapps.switchify.service.core.ServiceCore
+import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.window.MessageSeverity
 import com.enaboapps.switchify.service.window.ServiceMessageHUD
 import com.enaboapps.switchify.switches.RequiredActionsPolicy
@@ -14,6 +15,7 @@ import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.switches.profiles.SwitchProfile
 import com.enaboapps.switchify.switches.profiles.SwitchProfileActivationState
+import com.enaboapps.switchify.switches.profiles.SwitchProfileConfirmationMode
 import com.enaboapps.switchify.switches.profiles.SwitchProfileRepository
 import com.enaboapps.switchify.switches.profiles.SwitchProfileValidator
 import kotlinx.coroutines.CoroutineScope
@@ -41,7 +43,11 @@ internal class SwitchProfileActivationCoordinator(
     private var confirmationStarted = false
     private var activationGeneration = 0L
 
-    fun begin(profileId: String) {
+    fun begin(
+        profileId: String,
+        confirmationMode: SwitchProfileConfirmationMode =
+            SwitchProfileConfirmationMode.INPUT_ACTION
+    ) {
         val generation = synchronized(stateLock) {
             if (confirmationStarted) return
             activationGeneration += 1
@@ -89,12 +95,17 @@ internal class SwitchProfileActivationCoordinator(
                     false
                 } else {
                     switchEventProvider.stage(profile.switches)
-                    _state.value = SwitchProfileActivationState.Verifying(profile, expiresAt)
+                    _state.value = SwitchProfileActivationState.Verifying(
+                        profile,
+                        expiresAt,
+                        confirmationMode
+                    )
                     ServiceBridge.emitEvent(
                         ServiceBridge.ServiceEvent.SwitchProfileVerificationStarted(
                             profile.id,
                             profile.name,
-                            expiresAt
+                            expiresAt,
+                            confirmationMode == SwitchProfileConfirmationMode.MENU
                         )
                     )
                     true
@@ -102,18 +113,19 @@ internal class SwitchProfileActivationCoordinator(
             }
             if (!started) return@launch
             ServiceCore.getCameraManager()?.evaluateAndUpdateCameraState()
+            if (confirmationMode == SwitchProfileConfirmationMode.MENU) {
+                MenuManager.getInstance().openSwitchProfileConfirmationMenu(profile.name)
+            }
             val job = scope.launch {
                 while (true) {
                     val remaining = (expiresAt - now()).coerceAtLeast(0L)
                     if (remaining == 0L) break
-                    ServiceMessageHUD.instance.showMessageText(
-                        context.getString(
-                            R.string.switch_profile_verification_prompt,
-                            profile.name,
-                            (remaining + 999L) / 1000L
-                        ),
-                        ServiceMessageHUD.MessageType.PERMANENT,
-                        severity = MessageSeverity.Info
+                    showVerificationPrompt(
+                        SwitchProfileActivationState.Verifying(
+                            profile,
+                            expiresAt,
+                            confirmationMode
+                        )
                     )
                     delay(1000L)
                 }
@@ -133,7 +145,9 @@ internal class SwitchProfileActivationCoordinator(
         var confirmation: Pair<SwitchProfileActivationState.Verifying, Long>? = null
         val consumed = synchronized(stateLock) {
             val currentState = _state.value
-            when (SwitchProfileVerificationInputPolicy.decide(currentState, action)) {
+            if (confirmationStarted && currentState is SwitchProfileActivationState.Verifying) {
+                true
+            } else when (SwitchProfileVerificationInputPolicy.decide(currentState, action)) {
                 SwitchProfileVerificationInputDecision.PASS_THROUGH -> false
                 SwitchProfileVerificationInputDecision.CONSUME -> true
                 SwitchProfileVerificationInputDecision.CONFIRM -> {
@@ -157,11 +171,48 @@ internal class SwitchProfileActivationCoordinator(
         return consumed
     }
 
-    fun cancel(reason: String = "cancelled", showMessage: Boolean = true) {
+    fun confirmFromMenu() {
+        val confirmation = synchronized(stateLock) {
+            val currentState = _state.value
+            if (currentState !is SwitchProfileActivationState.Verifying ||
+                currentState.confirmationMode != SwitchProfileConfirmationMode.MENU ||
+                confirmationStarted
+            ) {
+                null
+            } else {
+                confirmationStarted = true
+                timeoutJob?.cancel()
+                timeoutJob = null
+                currentState to activationGeneration
+            }
+        } ?: return
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            confirm(confirmation.first, confirmation.second)
+        }
+    }
+
+    fun repeatMenuPrompt() {
+        val verifying = synchronized(stateLock) {
+            (_state.value as? SwitchProfileActivationState.Verifying)
+                ?.takeIf { it.confirmationMode == SwitchProfileConfirmationMode.MENU }
+        } ?: return
+        showVerificationPrompt(verifying)
+    }
+
+    fun cancel(
+        reason: String = "cancelled",
+        showMessage: Boolean = true,
+        dismissConfirmationMenu: Boolean = true
+    ) {
+        var confirmationMode = SwitchProfileConfirmationMode.INPUT_ACTION
         val wasVerifying = synchronized(stateLock) {
             if (confirmationStarted) return
             activationGeneration += 1
-            val verifying = _state.value is SwitchProfileActivationState.Verifying
+            val currentState = _state.value
+            val verifying = currentState is SwitchProfileActivationState.Verifying
+            if (currentState is SwitchProfileActivationState.Verifying) {
+                confirmationMode = currentState.confirmationMode
+            }
             timeoutJob?.cancel()
             timeoutJob = null
             confirmationStarted = false
@@ -172,6 +223,9 @@ internal class SwitchProfileActivationCoordinator(
         if (!wasVerifying) return
         ServiceCore.getCameraManager()?.evaluateAndUpdateCameraState()
         ServiceMessageHUD.instance.clearMessage()
+        if (dismissConfirmationMenu && confirmationMode == SwitchProfileConfirmationMode.MENU) {
+            MenuManager.getInstance().dismissSwitchProfileConfirmationMenu()
+        }
         ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.SwitchProfileActivationCancelled)
         if (showMessage) {
             ServiceMessageHUD.instance.showMessage(
@@ -238,7 +292,8 @@ internal class SwitchProfileActivationCoordinator(
                 verifying.profile.id,
                 failureReason,
                 missingActionIds,
-                unsupportedActionIds
+                unsupportedActionIds,
+                verifying.confirmationMode
             )
             return@withContext
         }
@@ -253,6 +308,10 @@ internal class SwitchProfileActivationCoordinator(
             )
         )
         ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.SwitchProfilesUpdated)
+        ServiceMessageHUD.instance.clearMessage()
+        if (verifying.confirmationMode == SwitchProfileConfirmationMode.MENU) {
+            MenuManager.getInstance().closeMenuHierarchy()
+        }
         ServiceMessageHUD.instance.showMessage(
             R.string.switch_profile_activated,
             arrayOf(activated.name),
@@ -272,7 +331,9 @@ internal class SwitchProfileActivationCoordinator(
         profileId: String,
         reason: String,
         missingActionIds: Set<Int> = emptySet(),
-        unsupportedActionIds: Set<Int> = emptySet()
+        unsupportedActionIds: Set<Int> = emptySet(),
+        confirmationMode: SwitchProfileConfirmationMode =
+            SwitchProfileConfirmationMode.INPUT_ACTION
     ) {
         synchronized(stateLock) {
             if (generation != activationGeneration) return
@@ -283,6 +344,10 @@ internal class SwitchProfileActivationCoordinator(
             _state.value = SwitchProfileActivationState.Failed(profileId, reason)
         }
         ServiceCore.getCameraManager()?.evaluateAndUpdateCameraState()
+        ServiceMessageHUD.instance.clearMessage()
+        if (confirmationMode == SwitchProfileConfirmationMode.MENU) {
+            MenuManager.getInstance().dismissSwitchProfileConfirmationMenu()
+        }
         ServiceBridge.emitEvent(
             ServiceBridge.ServiceEvent.SwitchProfileActivationFailed(
                 profileId,
@@ -324,6 +389,28 @@ internal class SwitchProfileActivationCoordinator(
             RequiredActionsPolicy.requiredActionIds(context),
             SupportedActionsPolicy.supportedActionIds(context) + SwitchAction.ACTION_NONE
         )
+
+    private fun showVerificationPrompt(verifying: SwitchProfileActivationState.Verifying) {
+        val remainingSeconds = ((verifying.expiresAtMillis - now()).coerceAtLeast(0L) + 999L) / 1000L
+        val message = if (verifying.confirmationMode == SwitchProfileConfirmationMode.MENU) {
+            context.getString(
+                R.string.switch_profile_menu_verification_prompt,
+                verifying.profile.name,
+                remainingSeconds
+            )
+        } else {
+            context.getString(
+                R.string.switch_profile_verification_prompt,
+                verifying.profile.name,
+                remainingSeconds
+            )
+        }
+        ServiceMessageHUD.instance.showMessageText(
+            message,
+            ServiceMessageHUD.MessageType.PERMANENT,
+            severity = MessageSeverity.Info
+        )
+    }
 
     private fun isCurrent(generation: Long): Boolean = synchronized(stateLock) {
         generation == activationGeneration && !confirmationStarted

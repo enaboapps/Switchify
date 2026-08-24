@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.menu
 
 import com.enaboapps.switchify.service.core.SwitchifyAccessibilityService
+import com.enaboapps.switchify.service.core.ServiceCore
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.visuals.GestureTargetIndicatorController
 import com.enaboapps.switchify.service.gestures.visuals.GestureTargetIndicatorOwner
@@ -19,6 +20,8 @@ import com.enaboapps.switchify.service.menu.menus.main.MainMenu
 import com.enaboapps.switchify.service.menu.menus.media.MediaControlMenu
 import com.enaboapps.switchify.service.menu.menus.favouriteapps.FavouriteAppsMenu
 import com.enaboapps.switchify.service.menu.menus.switchprofiles.SwitchProfilesMenu
+import com.enaboapps.switchify.service.menu.menus.switchprofiles.SwitchProfileConfirmationMenu
+import com.enaboapps.switchify.service.menu.structure.MenuConstants
 import com.enaboapps.switchify.service.menu.menus.scroll.ScrollMenu
 import com.enaboapps.switchify.service.menu.menus.settings.SettingsMenu
 import com.enaboapps.switchify.service.menu.menus.system.DeviceMenu
@@ -238,6 +241,22 @@ class MenuManager {
         openMenu(switchProfilesMenu.build())
     }
 
+    fun openSwitchProfileConfirmationMenu(profileName: String) {
+        val confirmationMenu = SwitchProfileConfirmationMenu(
+            accessibilityService!!,
+            profileName
+        )
+        openMenu(confirmationMenu.build())
+    }
+
+    fun dismissSwitchProfileConfirmationMenu() {
+        if (getCurrentMenuView()?.menuId ==
+            MenuConstants.MenuIds.SWITCH_PROFILE_CONFIRMATION_MENU
+        ) {
+            menuHierarchy?.popMenu()
+        }
+    }
+
     /**
      * This function opens the PC chooser menu listing the given discovered PCs
      * @param pcs The PCs discovered on the local network
@@ -275,6 +294,14 @@ class MenuManager {
      * This function closes the menu hierarchy
      */
     fun closeMenuHierarchy() {
+        if (getCurrentMenuView()?.menuId ==
+            MenuConstants.MenuIds.SWITCH_PROFILE_CONFIRMATION_MENU
+        ) {
+            ServiceCore.getSwitchProfileActivationCoordinator()?.cancel(
+                reason = "menu_dismissed",
+                dismissConfirmationMenu = false
+            )
+        }
         menuHierarchy?.removeAllMenus()
 
         gestureTargetIndicator.release(GestureTargetIndicatorOwner.MENU)

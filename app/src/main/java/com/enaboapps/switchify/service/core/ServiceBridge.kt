@@ -149,7 +149,8 @@ object ServiceBridge {
         data class SwitchProfileVerificationStarted(
             val profileId: String,
             val profileName: String,
-            val expiresAtMillis: Long
+            val expiresAtMillis: Long,
+            val usesConfirmationMenu: Boolean
         ) : ServiceEvent()
 
         data class SwitchProfileActivationFailed(
