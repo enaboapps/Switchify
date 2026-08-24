@@ -5,7 +5,6 @@ import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.camera.CameraPermissionManager
 import com.enaboapps.switchify.service.core.ServiceBridge
 import com.enaboapps.switchify.service.core.ServiceCore
-import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.window.MessageSeverity
 import com.enaboapps.switchify.service.window.ServiceMessageHUD
 import com.enaboapps.switchify.switches.RequiredActionsPolicy
@@ -34,6 +33,7 @@ internal class SwitchProfileActivationCoordinator(
     private val switchEventProvider: SwitchEventProvider,
     private val scope: CoroutineScope,
     private val repository: SwitchProfileRepository = SwitchProfileRepository.getInstance(context),
+    private val menuActions: SwitchProfileMenuActions = SwitchProfileMenuActions(),
     private val now: () -> Long = System::currentTimeMillis
 ) {
     private val _state = MutableStateFlow<SwitchProfileActivationState>(SwitchProfileActivationState.Idle)
@@ -114,7 +114,9 @@ internal class SwitchProfileActivationCoordinator(
             if (!started) return@launch
             ServiceCore.getCameraManager()?.evaluateAndUpdateCameraState()
             if (confirmationMode == SwitchProfileConfirmationMode.MENU) {
-                MenuManager.getInstance().openSwitchProfileConfirmationMenu(profile.name)
+                menuActions.open(profile.name) {
+                    isCurrentVerification(generation, profile.id)
+                }
             }
             val job = scope.launch {
                 while (true) {
@@ -224,7 +226,9 @@ internal class SwitchProfileActivationCoordinator(
         ServiceCore.getCameraManager()?.evaluateAndUpdateCameraState()
         ServiceMessageHUD.instance.clearMessage()
         if (dismissConfirmationMenu && confirmationMode == SwitchProfileConfirmationMode.MENU) {
-            MenuManager.getInstance().dismissSwitchProfileConfirmationMenu()
+            scope.launch {
+                menuActions.dismiss()
+            }
         }
         ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.SwitchProfileActivationCancelled)
         if (showMessage) {
@@ -310,7 +314,7 @@ internal class SwitchProfileActivationCoordinator(
         ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.SwitchProfilesUpdated)
         ServiceMessageHUD.instance.clearMessage()
         if (verifying.confirmationMode == SwitchProfileConfirmationMode.MENU) {
-            MenuManager.getInstance().closeMenuHierarchy()
+            menuActions.closeAll()
         }
         ServiceMessageHUD.instance.showMessage(
             R.string.switch_profile_activated,
@@ -326,7 +330,7 @@ internal class SwitchProfileActivationCoordinator(
         }
     }
 
-    private fun fail(
+    private suspend fun fail(
         generation: Long,
         profileId: String,
         reason: String,
@@ -346,7 +350,7 @@ internal class SwitchProfileActivationCoordinator(
         ServiceCore.getCameraManager()?.evaluateAndUpdateCameraState()
         ServiceMessageHUD.instance.clearMessage()
         if (confirmationMode == SwitchProfileConfirmationMode.MENU) {
-            MenuManager.getInstance().dismissSwitchProfileConfirmationMenu()
+            menuActions.dismiss()
         }
         ServiceBridge.emitEvent(
             ServiceBridge.ServiceEvent.SwitchProfileActivationFailed(
@@ -419,6 +423,16 @@ internal class SwitchProfileActivationCoordinator(
     private fun isCurrentConfirmation(generation: Long): Boolean = synchronized(stateLock) {
         generation == activationGeneration && confirmationStarted
     }
+
+    private fun isCurrentVerification(generation: Long, profileId: String): Boolean =
+        synchronized(stateLock) {
+            val currentState = _state.value
+            generation == activationGeneration &&
+                !confirmationStarted &&
+                currentState is SwitchProfileActivationState.Verifying &&
+                currentState.profile.id == profileId &&
+                currentState.confirmationMode == SwitchProfileConfirmationMode.MENU
+        }
 
     private companion object {
         const val VERIFICATION_TIMEOUT_MS = 60_000L
