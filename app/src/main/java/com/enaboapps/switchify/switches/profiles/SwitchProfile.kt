@@ -34,9 +34,18 @@ internal data class SwitchProfileValidationResult(
     val unsupportedActionIds: Set<Int> = emptySet()
 )
 
+internal enum class SwitchProfileConfirmationMode {
+    INPUT_ACTION,
+    MENU
+}
+
 internal sealed interface SwitchProfileActivationState {
     data object Idle : SwitchProfileActivationState
-    data class Verifying(val profile: SwitchProfile, val expiresAtMillis: Long) :
+    data class Verifying(
+        val profile: SwitchProfile,
+        val expiresAtMillis: Long,
+        val confirmationMode: SwitchProfileConfirmationMode = SwitchProfileConfirmationMode.INPUT_ACTION
+    ) :
         SwitchProfileActivationState
     data class Failed(val profileId: String, val reason: String) : SwitchProfileActivationState
     data class Activated(val profile: SwitchProfile) : SwitchProfileActivationState

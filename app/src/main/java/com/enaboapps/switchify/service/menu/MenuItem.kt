@@ -64,6 +64,11 @@ internal enum class MenuItemVisualRole {
     }
 }
 
+internal enum class MenuSelectionSource {
+    TOUCH,
+    SCANNING
+}
+
 /**
  * This class represents a menu item
  * @property id The id of the menu item
@@ -93,6 +98,8 @@ class MenuItem(
     private val drawableId: Int = 0,
     private val circleText: String? = null,
     val closeOnSelect: Boolean = true,
+    private val requiresScanningSelection: Boolean = false,
+    private val onRejectedTouchSelection: (() -> Unit)? = null,
     var isLinkToMenu: Boolean = false,
     var isMenuHierarchyManipulator: Boolean = false,
     val isBackButton: Boolean = false,
@@ -183,6 +190,14 @@ class MenuItem(
      * Select the menu item
      */
     fun select() {
+        select(MenuSelectionSource.TOUCH)
+    }
+
+    internal fun select(source: MenuSelectionSource) {
+        if (requiresScanningSelection && source != MenuSelectionSource.SCANNING) {
+            onRejectedTouchSelection?.invoke()
+            return
+        }
         if (!isLinkToMenu && !isMenuHierarchyManipulator && closeOnSelect) {
             MenuManager.getInstance().closeMenuHierarchy()
         }

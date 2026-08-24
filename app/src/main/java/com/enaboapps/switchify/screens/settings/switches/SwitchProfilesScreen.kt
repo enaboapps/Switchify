@@ -64,10 +64,12 @@ fun SwitchProfilesScreen(navController: NavController) {
         ServiceBridge.serviceEvents.collect { event ->
             when (event) {
                 is ServiceBridge.ServiceEvent.SwitchProfileVerificationStarted -> {
-                    verification = VerificationUi(
-                        event.profileName,
-                        event.expiresAtMillis
-                    )
+                    if (!event.usesConfirmationMenu) {
+                        verification = VerificationUi(
+                            event.profileName,
+                            event.expiresAtMillis
+                        )
+                    }
                 }
                 is ServiceBridge.ServiceEvent.SwitchProfileActivated,
                 is ServiceBridge.ServiceEvent.SwitchProfileActivationFailed,

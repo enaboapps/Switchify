@@ -5,6 +5,7 @@ import com.enaboapps.switchify.service.menu.MenuItem
 import com.enaboapps.switchify.service.menu.menus.BaseMenu
 import com.enaboapps.switchify.service.menu.structure.MenuConstants
 import com.enaboapps.switchify.switches.profiles.SwitchProfileRepository
+import com.enaboapps.switchify.switches.profiles.SwitchProfileConfirmationMode
 
 class SwitchProfilesMenu(
     accessibilityService: SwitchifyAccessibilityService
@@ -25,12 +26,12 @@ class SwitchProfilesMenu(
                 userProvidedDescription = if (active) "Active profile" else "Test and activate profile",
                 drawableId = com.enaboapps.switchify.R.drawable.ic_hand_switch_press,
                 circleText = if (active) "✓" else null,
-                closeOnSelect = !active,
+                closeOnSelect = false,
                 action = {
                     if (!active) {
                         com.enaboapps.switchify.service.core.ServiceCore
                             .getSwitchProfileActivationCoordinator()
-                            ?.begin(profile.id)
+                            ?.begin(profile.id, SwitchProfileConfirmationMode.MENU)
                     }
                 }
             )

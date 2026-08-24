@@ -10,6 +10,7 @@ import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.placement.FingerMode
 import com.enaboapps.switchify.service.menu.MenuItem
+import com.enaboapps.switchify.service.menu.MenuSelectionSource
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.scanning.tree.CollectionRowHint
 import com.enaboapps.switchify.service.scanning.tree.CollectionRowHintProvider
@@ -103,7 +104,7 @@ class Node(
          * @return The node
          */
         fun fromMenuItem(menuItem: MenuItem): Node {
-            val node = Node { menuItem.select() }
+            val node = Node { menuItem.select(MenuSelectionSource.SCANNING) }
             node.x = menuItem.x
             node.y = menuItem.y
             node.centerX = menuItem.x + menuItem.width / 2
