@@ -512,6 +512,39 @@ class ServiceMessageHUD private constructor() {
         showMessageInternal(messageResId, messageArgs, messageType, time, severity, target)
     }
 
+    fun showMessageText(
+        message: String,
+        messageType: MessageType,
+        time: Time = Time.MEDIUM,
+        severity: MessageSeverity = MessageSeverity.Info,
+        target: OverlayTarget.Display = OverlayTargets.defaultDisplay()
+    ) {
+        handler.post {
+            handler.removeCallbacksAndMessages(null)
+            ensureMessageComposeViewIsCreated()
+            messageComposeView?.let { view ->
+                if (view.parent != null && currentTarget != target) {
+                    SwitchifyAccessibilityWindow.instance.removeView(view)
+                    currentTarget = null
+                }
+                if (view.parent == null) {
+                    SwitchifyAccessibilityWindow.instance.addViewToBottom(target, view)
+                    currentTarget = target
+                }
+            }
+            currentMessageString.value = message
+            currentMessageSeverity.value = severity
+            isMessageVisible.value = true
+            if (messageType == MessageType.DISAPPEARING) {
+                handler.postDelayed({ hideMessage() }, time.milliseconds)
+            }
+        }
+    }
+
+    fun clearMessage() {
+        handler.post { hideMessage() }
+    }
+
     /**
      * Hides the currently displayed message with an animation.
      */

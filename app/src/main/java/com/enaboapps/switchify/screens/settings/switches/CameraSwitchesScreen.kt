@@ -36,7 +36,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun CameraSwitchesScreen(navController: NavController) {
+fun CameraSwitchesScreen(navController: NavController, profileId: String? = null) {
     val context = LocalContext.current
     val cameraSwitchesScreenModel = remember {
         CameraSwitchesScreenModel()
@@ -48,7 +48,7 @@ fun CameraSwitchesScreen(navController: NavController) {
     )
 
     LaunchedEffect(Unit) {
-        cameraSwitchesScreenModel.setup(context)
+        cameraSwitchesScreenModel.setup(context, profileId)
     }
 
     BaseView(
@@ -60,7 +60,10 @@ fun CameraSwitchesScreen(navController: NavController) {
             if (cameraPermissionState.status.isGranted) {
                 FloatingActionButton(
                     onClick = {
-                        navController.navigate(NavigationRoute.AddNewCameraSwitch.name)
+                        navController.navigate(
+                            profileId?.let { "${NavigationRoute.AddNewCameraSwitch.name}/$it" }
+                                ?: NavigationRoute.AddNewCameraSwitch.name
+                        )
                     }
                 ) {
                     Icon(
@@ -86,8 +89,9 @@ fun CameraSwitchesScreen(navController: NavController) {
                     permissionState = cameraPermissionState,
                     onPermissionGranted = {
                         CameraSwitchesContent(
-                            cameraSwitches = uiState.cameraSwitches,
-                            navController = navController
+                    cameraSwitches = uiState.cameraSwitches,
+                    navController = navController,
+                    profileId = profileId
                         )
                     },
                     onNavigateBack = { navController.popBackStack() }
@@ -101,7 +105,8 @@ fun CameraSwitchesScreen(navController: NavController) {
 @Composable
 private fun CameraSwitchesContent(
     cameraSwitches: List<SwitchEvent>,
-    navController: NavController
+    navController: NavController,
+    profileId: String?
 ) {
     if (cameraSwitches.isEmpty()) {
         Box(
@@ -121,7 +126,8 @@ private fun CameraSwitchesContent(
                 cameraSwitches.forEach { event ->
                     SwitchEventItem(
                         navController = navController,
-                        switchEvent = event
+                        switchEvent = event,
+                        profileId = profileId
                     )
                 }
             }
@@ -132,7 +138,8 @@ private fun CameraSwitchesContent(
 @Composable
 private fun SwitchEventItem(
     navController: NavController,
-    switchEvent: SwitchEvent
+    switchEvent: SwitchEvent,
+    profileId: String?
 ) {
     val gestureName =
         com.enaboapps.switchify.switches.CameraSwitchFacialGesture(switchEvent.code).getName()
@@ -148,6 +155,12 @@ private fun SwitchEventItem(
         secondaryActions = emptyList(),
         isEnabled = true,
         hasConfigurationIssues = false,
-        onClick = { navController.navigate("${NavigationRoute.EditCameraSwitch.name}/${switchEvent.code}") }
+        onClick = {
+            navController.navigate(
+                profileId?.let {
+                    "${NavigationRoute.EditCameraSwitch.name}/$it/${switchEvent.code}"
+                } ?: "${NavigationRoute.EditCameraSwitch.name}/${switchEvent.code}"
+            )
+        }
     )
 }

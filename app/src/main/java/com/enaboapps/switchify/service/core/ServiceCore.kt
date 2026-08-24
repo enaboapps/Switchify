@@ -7,6 +7,7 @@ import com.enaboapps.switchify.service.remotebridge.SwitchifyRemoteBridgeCoordin
 import com.enaboapps.switchify.service.pauseresume.PauseManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.switches.SwitchEventProvider
+import com.enaboapps.switchify.service.switches.SwitchProfileActivationCoordinator
 import com.enaboapps.switchify.service.switches.external.ExternalSwitchListener
 import java.lang.ref.WeakReference
 
@@ -15,6 +16,7 @@ object ServiceCore {
     private lateinit var externalSwitchListenerRef: WeakReference<ExternalSwitchListener>
     private lateinit var switchEventProviderRef: WeakReference<SwitchEventProvider>
     private lateinit var cameraManagerRef: WeakReference<CameraManager>
+    private var switchProfileActivationCoordinator: SwitchProfileActivationCoordinator? = null
     private var gestureTargetIndicator: GestureTargetIndicatorController? = null
 
     /**
@@ -35,6 +37,11 @@ object ServiceCore {
 
         val scanningManager = scanningManagerRef.get() ?: return
         val switchEventProvider = switchEventProviderRef.get() ?: return
+        switchProfileActivationCoordinator = SwitchProfileActivationCoordinator(
+            accessibilityService,
+            switchEventProvider,
+            accessibilityService.getServiceScope()
+        )
         SwitchifyRemoteBridgeCoordinator.attach(switchEventProvider)
 
         scanningManager.setup()
@@ -74,6 +81,10 @@ object ServiceCore {
         return if (::switchEventProviderRef.isInitialized) switchEventProviderRef.get() else null
     }
 
+    internal fun getSwitchProfileActivationCoordinator(): SwitchProfileActivationCoordinator? {
+        return switchProfileActivationCoordinator
+    }
+
     /**
      * Gets the pause manager instance.
      * @return The pause manager instance (singleton)
@@ -102,6 +113,7 @@ object ServiceCore {
      * Cleans up the service core.
      */
     fun cleanup() {
+        getSwitchProfileActivationCoordinator()?.cancel(showMessage = false)
         SwitchifyRemoteBridgeCoordinator.detach()
         gestureTargetIndicator?.release()
         gestureTargetIndicator = null
@@ -118,5 +130,6 @@ object ServiceCore {
         if (::cameraManagerRef.isInitialized) {
             cameraManagerRef = WeakReference(null)
         }
+        switchProfileActivationCoordinator = null
     }
 }

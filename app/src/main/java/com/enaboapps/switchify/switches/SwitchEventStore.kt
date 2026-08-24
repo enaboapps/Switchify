@@ -6,6 +6,7 @@ import android.util.Log
 import com.enaboapps.switchify.backend.preferences.PreferenceManager
 import com.enaboapps.switchify.service.core.ServiceBridge
 import com.enaboapps.switchify.service.scanning.ScanMode
+import com.enaboapps.switchify.switches.profiles.SwitchProfileRepository
 import com.enaboapps.switchify.utils.LogEvent
 import com.enaboapps.switchify.utils.Logger
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +32,7 @@ class SwitchEventStore private constructor() {
     private val tag = "SwitchEventStore"
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private val localStorage = SwitchEventLocalStorage()
+    private var profileRepository: SwitchProfileRepository? = null
 
     companion object {
         const val EVENTS_UPDATED = "com.enaboapps.switchify.EVENTS_UPDATED"
@@ -54,6 +56,7 @@ class SwitchEventStore private constructor() {
             return
         }
         isInitializing = true
+        profileRepository = SwitchProfileRepository.getInstance(context)
 
         coroutineScope.launch {
             val loadedEvents = localStorage.loadFromFile(context)
@@ -73,6 +76,7 @@ class SwitchEventStore private constructor() {
             return
         }
 
+        profileRepository = SwitchProfileRepository.getInstance(context)
         val loadedEvents = localStorage.loadFromFile(context)
         switchEvents.clear()
         switchEvents.addAll(loadedEvents)
@@ -81,7 +85,20 @@ class SwitchEventStore private constructor() {
 
     fun getCount(): Int = switchEvents.size
 
-    fun getSwitchEvents(): Set<SwitchEvent> = switchEvents.toSet()
+    fun getSwitchEvents(profileId: String? = null): Set<SwitchEvent> {
+        if (profileId == null || profileId == profileRepository?.document?.value?.activeProfileId) {
+            return switchEvents.toSet()
+        }
+        return profileRepository?.events(profileId)?.toSet().orEmpty()
+    }
+
+    internal suspend fun refreshActiveProfile(context: Context) {
+        val repository = profileRepository ?: SwitchProfileRepository.getInstance(context).also {
+            profileRepository = it
+        }
+        repository.initialize()
+        refreshActiveCache(repository)
+    }
 
     /**
      * Check if the store has been initialized and switch events loaded
@@ -127,23 +144,36 @@ class SwitchEventStore private constructor() {
         }
     }
 
-    fun find(code: String): SwitchEvent? =
-        switchEvents.find { it.code == code }?.also {
+    fun find(code: String, profileId: String? = null): SwitchEvent? =
+        getSwitchEvents(profileId).find { it.code == code }?.also {
             Log.d(tag, "Found switch event for code $code")
         } ?: run {
             Log.d(tag, "No switch event found for code $code")
             null
         }
 
-    fun add(switchEvent: SwitchEvent, context: Context, completion: ((Boolean) -> Unit)) {
+    fun add(
+        switchEvent: SwitchEvent,
+        context: Context,
+        profileId: String? = null,
+        completion: ((Boolean) -> Unit)
+    ) {
         coroutineScope.launch {
-            val added = switchEvents.add(switchEvent)
+            val repository = profileRepository ?: SwitchProfileRepository.getInstance(context).also {
+                profileRepository = it
+                it.initialize()
+            }
+            val targetProfileId = profileId ?: repository.document.value.activeProfileId
+            val events = repository.events(targetProfileId).toMutableList()
+            val added = events.none { it.code == switchEvent.code }
+            if (added) events.add(switchEvent)
 
             if (added) {
-                if (localStorage.saveToFile(context, switchEvents)) {
+                if (repository.replaceEvents(targetProfileId, events)) {
+                    refreshActiveCache(repository)
                     Log.d(tag, "Successfully added and saved switch event")
                     completion(true)
-                    broadcastReloadEvent(context)
+                    broadcastReloadEvent(context, targetProfileId == repository.document.value.activeProfileId)
                     Logger.log(LogEvent.SwitchAdded)
                 } else {
                     Log.e(tag, "Failed to save switch event to file")
@@ -156,7 +186,6 @@ class SwitchEventStore private constructor() {
                             "switch_code" to switchEvent.code
                         )
                     )
-                    switchEvents.remove(switchEvent)
                     completion(false)
                 }
             } else {
@@ -175,17 +204,28 @@ class SwitchEventStore private constructor() {
         }
     }
 
-    fun update(switchEvent: SwitchEvent, context: Context, completion: ((Boolean) -> Unit)) {
+    fun update(
+        switchEvent: SwitchEvent,
+        context: Context,
+        profileId: String? = null,
+        completion: ((Boolean) -> Unit)
+    ) {
         coroutineScope.launch {
-            var updated = switchEvents.removeIf { it.code == switchEvent.code }
-            if (updated) {
-                updated = switchEvents.add(switchEvent)
+            val repository = profileRepository ?: SwitchProfileRepository.getInstance(context).also {
+                profileRepository = it
+                it.initialize()
             }
+            val targetProfileId = profileId ?: repository.document.value.activeProfileId
+            val events = repository.events(targetProfileId).toMutableList()
+            val index = events.indexOfFirst { it.code == switchEvent.code }
+            val updated = index >= 0
+            if (updated) events[index] = switchEvent
 
             if (updated) {
-                if (localStorage.saveToFile(context, switchEvents)) {
+                if (repository.replaceEvents(targetProfileId, events)) {
+                    refreshActiveCache(repository)
                     completion(true)
-                    broadcastReloadEvent(context)
+                    broadcastReloadEvent(context, targetProfileId == repository.document.value.activeProfileId)
                     Logger.log(LogEvent.SwitchUpdated)
                 } else {
                     Logger.log(
@@ -214,14 +254,26 @@ class SwitchEventStore private constructor() {
         }
     }
 
-    fun remove(switchEvent: SwitchEvent, context: Context, handler: ((Boolean) -> Unit)) {
+    fun remove(
+        switchEvent: SwitchEvent,
+        context: Context,
+        profileId: String? = null,
+        handler: ((Boolean) -> Unit)
+    ) {
         coroutineScope.launch {
-            val removed = switchEvents.removeIf { it.code == switchEvent.code }
+            val repository = profileRepository ?: SwitchProfileRepository.getInstance(context).also {
+                profileRepository = it
+                it.initialize()
+            }
+            val targetProfileId = profileId ?: repository.document.value.activeProfileId
+            val events = repository.events(targetProfileId).toMutableList()
+            val removed = events.removeIf { it.code == switchEvent.code }
 
             if (removed) {
-                if (localStorage.saveToFile(context, switchEvents)) {
+                if (repository.replaceEvents(targetProfileId, events)) {
+                    refreshActiveCache(repository)
                     Logger.log(LogEvent.SwitchRemoved)
-                    broadcastReloadEvent(context)
+                    broadcastReloadEvent(context, targetProfileId == repository.document.value.activeProfileId)
                     handler(true)
                 } else {
                     Logger.log(
@@ -233,7 +285,6 @@ class SwitchEventStore private constructor() {
                             "switch_code" to switchEvent.code
                         )
                     )
-                    switchEvents.add(switchEvent)
                     handler(false)
                 }
             } else {
@@ -300,12 +351,23 @@ class SwitchEventStore private constructor() {
      * Notifies all listeners that switch events have been updated.
      * Uses hybrid approach: Flow for same-process, Broadcast for cross-process.
      */
-    private fun broadcastReloadEvent(context: Context) {
-        // Notify same-process listeners via ServiceBridge
-        ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.SwitchEventsUpdated)
+    private fun refreshActiveCache(repository: SwitchProfileRepository) {
+        replaceActiveProfileCache(repository.events())
+    }
 
-        // Notify cross-process listeners (e.g., accessibility service)
-        context.sendBroadcast(Intent(EVENTS_UPDATED).setPackage(context.packageName))
+    internal fun replaceActiveProfileCache(events: List<SwitchEvent>) {
+        synchronized(switchEvents) {
+            switchEvents.clear()
+            switchEvents.addAll(events)
+        }
+    }
+
+    private fun broadcastReloadEvent(context: Context, activeChanged: Boolean) {
+        ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.SwitchProfilesUpdated)
+        if (activeChanged) {
+            ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.SwitchEventsUpdated)
+            context.sendBroadcast(Intent(EVENTS_UPDATED).setPackage(context.packageName))
+        }
     }
 
 }

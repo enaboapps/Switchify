@@ -121,6 +121,13 @@ class MainMenuStructure(
                 }
             } else null,
             deviceItem,
+            MenuItemRegistry.getMainMenuDefinition(MenuConstants.ItemIds.Main.SWITCH_PROFILE)?.let { def ->
+                MenuItem(
+                    definition = def,
+                    isLinkToMenu = true,
+                    action = { MenuManager.getInstance().openSwitchProfilesMenu() }
+                )
+            },
             MenuItemRegistry.getMainMenuDefinition("settings")?.let { def ->
                 MenuItem(
                     definition = def,

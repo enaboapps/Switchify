@@ -470,6 +470,19 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
                     ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
                 }
 
+                is ServiceBridge.ServiceCommand.BeginSwitchProfileActivation -> {
+                    commandKey = command.profileId
+                    ServiceCore.getSwitchProfileActivationCoordinator()?.begin(command.profileId)
+                        ?: run {
+                            result = "skipped"
+                            reason = "service_not_ready"
+                        }
+                }
+
+                ServiceBridge.ServiceCommand.CancelSwitchProfileActivation -> {
+                    ServiceCore.getSwitchProfileActivationCoordinator()?.cancel()
+                }
+
                 is ServiceBridge.ServiceCommand.UpdateConfiguration -> {
                     commandKey = command.key
                     // Handle specific configuration updates

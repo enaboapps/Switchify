@@ -170,7 +170,7 @@ class ExternalSwitchListener(
 
         if (SelectionHandler.isAutoSelectInProgress()) {
             cancelCurrentPressInteraction()
-            SelectionHandler.performSelectionAction()
+            performAutoSelectionAction()
             return true
         }
 
@@ -308,7 +308,7 @@ class ExternalSwitchListener(
         when {
             SelectionHandler.isAutoSelectInProgress() &&
                     switchEvent.holdActions.isNotEmpty() ->
-                SelectionHandler.performSelectionAction()
+                performAutoSelectionAction()
 
             switchEvent.holdActions.isEmpty() -> {
                 performReleasePressAction(switchEvent.pressAction)
@@ -340,6 +340,13 @@ class ExternalSwitchListener(
             scanningManager.resumeScanning()
         }
         scanningManager.performAction(action)
+    }
+
+    private fun performAutoSelectionAction() {
+        val selectAction = SwitchAction(SwitchAction.ACTION_SELECT)
+        if (ServiceCore.getSwitchProfileActivationCoordinator()?.intercept(selectAction) != true) {
+            SelectionHandler.performSelectionAction()
+        }
     }
 
     /**

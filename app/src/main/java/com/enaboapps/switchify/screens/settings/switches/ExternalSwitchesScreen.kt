@@ -31,7 +31,7 @@ import com.enaboapps.switchify.screens.settings.switches.models.ExternalSwitches
 import com.enaboapps.switchify.switches.SwitchEvent
 
 @Composable
-fun ExternalSwitchesScreen(navController: NavController) {
+fun ExternalSwitchesScreen(navController: NavController, profileId: String? = null) {
     val context = LocalContext.current
     val externalSwitchesScreenModel = remember {
         ExternalSwitchesScreenModel()
@@ -39,7 +39,7 @@ fun ExternalSwitchesScreen(navController: NavController) {
     val uiState by externalSwitchesScreenModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
-        externalSwitchesScreenModel.setup(context)
+        externalSwitchesScreenModel.setup(context, profileId)
     }
 
     BaseView(
@@ -50,7 +50,10 @@ fun ExternalSwitchesScreen(navController: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate(NavigationRoute.AddNewExternalSwitch.name)
+                    navController.navigate(
+                        profileId?.let { "${NavigationRoute.AddNewExternalSwitch.name}/$it" }
+                            ?: NavigationRoute.AddNewExternalSwitch.name
+                    )
                 }
             ) {
                 Icon(
@@ -73,7 +76,8 @@ fun ExternalSwitchesScreen(navController: NavController) {
             else -> {
                 ExternalSwitchesContent(
                     externalSwitches = uiState.externalSwitches,
-                    navController = navController
+                    navController = navController,
+                    profileId = profileId
                 )
             }
         }
@@ -84,7 +88,8 @@ fun ExternalSwitchesScreen(navController: NavController) {
 @Composable
 private fun ExternalSwitchesContent(
     externalSwitches: List<SwitchEvent>,
-    navController: NavController
+    navController: NavController,
+    profileId: String?
 ) {
     if (externalSwitches.isEmpty()) {
         Box(
@@ -104,7 +109,8 @@ private fun ExternalSwitchesContent(
                 externalSwitches.forEach { event ->
                     SwitchEventItem(
                         navController = navController,
-                        switchEvent = event
+                        switchEvent = event,
+                        profileId = profileId
                     )
                 }
             }
@@ -115,7 +121,8 @@ private fun ExternalSwitchesContent(
 @Composable
 private fun SwitchEventItem(
     navController: NavController,
-    switchEvent: SwitchEvent
+    switchEvent: SwitchEvent,
+    profileId: String?
 ) {
     val primaryAction = SwitchAction(
         trigger = "Press",
@@ -136,6 +143,12 @@ private fun SwitchEventItem(
         secondaryActions = secondaryActions,
         isEnabled = true,
         hasConfigurationIssues = false,
-        onClick = { navController.navigate("${NavigationRoute.EditExternalSwitch.name}/${switchEvent.code}") }
+        onClick = {
+            navController.navigate(
+                profileId?.let {
+                    "${NavigationRoute.EditExternalSwitch.name}/$it/${switchEvent.code}"
+                } ?: "${NavigationRoute.EditExternalSwitch.name}/${switchEvent.code}"
+            )
+        }
     )
 }

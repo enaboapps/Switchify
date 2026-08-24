@@ -16,6 +16,10 @@ class ScreenWatcherManager(
     fun register(scanningManager: ScanningManager, externalSwitchListener: ExternalSwitchListener) {
         screenWatcher = ScreenWatcher(
             onScreenSleep = {
+                ServiceCore.getSwitchProfileActivationCoordinator()?.cancel(
+                    reason = "screen_sleep",
+                    showMessage = false
+                )
                 SwitchifyRemoteBridgeCoordinator.clearActive()
                 scanningManager.clearAppScanTechniqueOverride()
                 val pauseManager = ServiceCore.getPauseManager()
