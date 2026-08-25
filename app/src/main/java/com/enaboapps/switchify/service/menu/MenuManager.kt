@@ -7,6 +7,7 @@ import com.enaboapps.switchify.service.gestures.visuals.GestureTargetIndicatorCo
 import com.enaboapps.switchify.service.gestures.visuals.GestureTargetIndicatorOwner
 import com.enaboapps.switchify.service.gestures.visuals.GestureTargetPoint
 import com.enaboapps.switchify.service.menu.menus.ai.AiMenu
+import com.enaboapps.switchify.service.menu.menus.actions.AccessibilityActionsMenu
 import com.enaboapps.switchify.service.menu.menus.edit.EditMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.CustomGestureConfirmationMenu
 import com.enaboapps.switchify.service.menu.menus.gestures.FingerModeMenu
@@ -27,6 +28,7 @@ import com.enaboapps.switchify.service.menu.menus.settings.SettingsMenu
 import com.enaboapps.switchify.service.menu.menus.system.DeviceMenu
 import com.enaboapps.switchify.service.menu.menus.system.VolumeControlMenu
 import com.enaboapps.switchify.service.scanning.ScanningManager
+import com.enaboapps.switchify.service.techniques.nodes.NodeActionTarget
 import com.enaboapps.switchify.utils.LogEvent
 import com.enaboapps.switchify.utils.Logger
 
@@ -121,6 +123,11 @@ class MenuManager {
     fun openAiMenu() {
         val aiMenu = AiMenu(accessibilityService!!)
         openMenu(aiMenu.build())
+    }
+
+    internal fun openAccessibilityActionsMenu(target: NodeActionTarget) {
+        val actionsMenu = AccessibilityActionsMenu(accessibilityService!!, target)
+        openMenu(actionsMenu.build())
     }
 
     /**
