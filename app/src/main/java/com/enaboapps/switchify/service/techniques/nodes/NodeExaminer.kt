@@ -520,6 +520,31 @@ object NodeExaminer {
                 findNodeForAction(point, Node.ActionType.PASTE) != null
     }
 
+    internal fun findActionTarget(point: PointF, context: Context): NodeActionTarget? {
+        val candidates = allNodes.mapIndexedNotNull { index, node ->
+            val actions = NodeActionPolicy.resolve(
+                actions = node.reportedActions(),
+                standardLabel = { actionId ->
+                    AndroidNodeActionLabels.standardLabel(context, actionId)
+                },
+                isExcluded = AndroidNodeActionLabels::isExcluded
+            )
+            if (actions.isEmpty()) return@mapIndexedNotNull null
+
+            val target = NodeActionTarget(actions, node::performAvailableAction)
+            NodeActionCandidate(
+                target = target,
+                left = node.getLeft(),
+                top = node.getTop(),
+                width = node.getWidth(),
+                height = node.getHeight(),
+                traversalOrder = index
+            )
+        }
+
+        return NodeActionTargetSelector.selectSmallest(point.x, point.y, candidates)
+    }
+
     /**
      * Finds the closest node to a given point on the screen.
      *

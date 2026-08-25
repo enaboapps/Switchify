@@ -201,6 +201,18 @@ class Node(
         nodeInfo?.performAction(action)
     }
 
+    internal fun reportedActions(): List<ReportedNodeAction> =
+        nodeInfo?.actionList.orEmpty().map { action ->
+            ReportedNodeAction(action.id, action.label?.toString())
+        }
+
+    internal fun performAvailableAction(actionId: Int): Boolean {
+        val info = nodeInfo ?: return false
+        if (!info.refresh()) return false
+        if (info.actionList.none { it.id == actionId }) return false
+        return info.performAction(actionId)
+    }
+
     /**
      * This function returns whether the node contains a point
      *
