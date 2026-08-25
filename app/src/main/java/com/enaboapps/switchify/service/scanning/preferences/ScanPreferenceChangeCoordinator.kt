@@ -2,6 +2,7 @@ package com.enaboapps.switchify.service.scanning.preferences
 
 import android.content.SharedPreferences
 import com.enaboapps.switchify.backend.preferences.PreferenceManager
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -15,29 +16,34 @@ internal class ScanPreferenceChangeCoordinator(
     private val uiDispatcher: CoroutineDispatcher,
     private val applyPlan: (ScanPreferenceUpdatePlan) -> Unit,
     private val onApplied: () -> Unit,
+    private val onApplyFailed: (Exception) -> Unit,
     private val batchDelayMillis: Long = 16L
 ) {
     private val pendingKeys = mutableSetOf<String>()
     private val lock = Any()
     private var batchJob: Job? = null
-    @Volatile
     private var started = false
-    @Volatile
     private var generation = 0L
 
     fun start() {
-        if (started) return
-        started = true
-        generation++
-        source.start(::enqueue)
+        synchronized(lock) {
+            if (started) return
+            batchJob?.cancel()
+            batchJob = null
+            pendingKeys.clear()
+            started = true
+            generation++
+            val sourceGeneration = generation
+            source.start { key -> enqueue(key, sourceGeneration) }
+        }
     }
 
     fun stop() {
-        if (!started) return
-        started = false
-        generation++
-        source.stop()
         synchronized(lock) {
+            if (!started) return
+            started = false
+            generation++
+            source.stop()
             batchJob?.cancel()
             batchJob = null
             pendingKeys.clear()
@@ -45,33 +51,67 @@ internal class ScanPreferenceChangeCoordinator(
     }
 
     fun enqueue(key: String) {
-        if (!started || ScanPreferencePolicy.effectFor(key) == null) return
         synchronized(lock) {
-            pendingKeys.add(key)
-            if (batchJob?.isActive == true) return
-            val scheduledGeneration = generation
-            batchJob = scope.launch {
-                while (started && generation == scheduledGeneration) {
-                    delay(batchDelayMillis)
-                    val keys = synchronized(lock) {
+            enqueueLocked(key, generation)
+        }
+    }
+
+    private fun enqueue(key: String, sourceGeneration: Long) {
+        synchronized(lock) {
+            enqueueLocked(key, sourceGeneration)
+        }
+    }
+
+    private fun enqueueLocked(key: String, sourceGeneration: Long) {
+        val effect = ScanPreferencePolicy.effectFor(key)
+        if (!started || generation != sourceGeneration || effect == null) {
+            return
+        }
+        pendingKeys.add(key)
+        if (batchJob?.isActive == true) return
+        batchJob = scope.launch {
+            while (true) {
+                delay(batchDelayMillis)
+                val keys = synchronized(lock) {
+                    if (!isCurrentGenerationLocked(sourceGeneration)) null else {
                         pendingKeys.toSet().also { pendingKeys.clear() }
                     }
-                    val plan = ScanPreferencePolicy.reduce(keys)
-                    withContext(uiDispatcher) {
-                        if (!started || generation != scheduledGeneration || plan.isEmpty) return@withContext
-                        applyPlan(plan)
-                        onApplied()
-                    }
-                    val drained = synchronized(lock) {
-                        pendingKeys.isEmpty().also {
-                            if (it) batchJob = null
-                        }
-                    }
-                    if (drained) return@launch
+                } ?: return@launch
+                val plan = ScanPreferencePolicy.reduce(keys)
+                withContext(uiDispatcher) {
+                    if (!isCurrentGeneration(sourceGeneration) || plan.isEmpty) return@withContext
+                    applySafely(plan, sourceGeneration)
                 }
+                val drained = synchronized(lock) {
+                    if (!isCurrentGenerationLocked(sourceGeneration)) return@launch
+                    pendingKeys.isEmpty().also {
+                        if (it) batchJob = null
+                    }
+                }
+                if (drained) return@launch
             }
         }
     }
+
+    private fun applySafely(plan: ScanPreferenceUpdatePlan, sourceGeneration: Long) {
+        try {
+            applyPlan(plan)
+            if (isCurrentGeneration(sourceGeneration)) onApplied()
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            if (isCurrentGeneration(sourceGeneration)) {
+                runCatching { onApplyFailed(error) }
+            }
+        }
+    }
+
+    private fun isCurrentGeneration(sourceGeneration: Long): Boolean = synchronized(lock) {
+        isCurrentGenerationLocked(sourceGeneration)
+    }
+
+    private fun isCurrentGenerationLocked(sourceGeneration: Long): Boolean =
+        started && generation == sourceGeneration
 }
 
 internal interface ScanPreferenceChangeSource {

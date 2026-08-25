@@ -151,6 +151,22 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
             },
             onApplied = {
                 ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
+            },
+            onApplyFailed = { error ->
+                Logger.log(
+                    LogEvent.ServiceCommandFailed,
+                    data = mapOf(
+                        "result" to "failure",
+                        "reason" to "exception",
+                        "command" to "ScanPreferenceChange",
+                        "key" to null
+                    ),
+                    throwable = error
+                )
+                logd("Failed to apply scan preference update")
+                ServiceBridge.emitEvent(
+                    ServiceBridge.ServiceEvent.ServiceError("Configuration update failed")
+                )
             }
         )
         scanPreferenceChangeCoordinator.start()
@@ -493,7 +509,6 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
                     // Handle access technique changes and camera state evaluation
                     logd("Access technique changed to: ${command.technique}")
                     cameraManager.evaluateAndUpdateCameraState()
-                    ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
                 }
 
                 is ServiceBridge.ServiceCommand.BeginSwitchProfileActivation -> {

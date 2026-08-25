@@ -90,7 +90,8 @@ class ScanPreferenceChangeCoordinatorTest {
             scope = this,
             uiDispatcher = uiDispatcher,
             applyPlan = plans::add,
-            onApplied = {}
+            onApplied = {},
+            onApplyFailed = {}
         )
         coordinator.start()
 
@@ -113,7 +114,8 @@ class ScanPreferenceChangeCoordinatorTest {
             scope = this,
             uiDispatcher = uiDispatcher,
             applyPlan = plans::add,
-            onApplied = {}
+            onApplied = {},
+            onApplyFailed = {}
         )
         coordinator.start()
 
@@ -132,6 +134,75 @@ class ScanPreferenceChangeCoordinatorTest {
         assertTrue(plans[1].contains(ScanPreferenceEffect.REFRESH_POINT_STRUCTURE))
     }
 
+    @Test
+    fun containsApplyFailureAndDoesNotNotifySuccess() = runTest {
+        val source = FakeSource()
+        val failures = mutableListOf<Exception>()
+        var notificationCount = 0
+        val expectedFailure = IllegalStateException("failed")
+        val coordinator = ScanPreferenceChangeCoordinator(
+            source = source,
+            scope = this,
+            uiDispatcher = StandardTestDispatcher(testScheduler),
+            applyPlan = { throw expectedFailure },
+            onApplied = { notificationCount++ },
+            onApplyFailed = failures::add
+        )
+        coordinator.start()
+
+        source.emit(PreferenceManager.PREFERENCE_KEY_GROUP_SCAN)
+        advanceTimeBy(16)
+        runCurrent()
+
+        assertEquals(listOf(expectedFailure), failures)
+        assertEquals(0, notificationCount)
+    }
+
+    @Test
+    fun notifiesSuccessOnlyAfterPlanApplies() = runTest {
+        val source = FakeSource()
+        val calls = mutableListOf<String>()
+        val coordinator = ScanPreferenceChangeCoordinator(
+            source = source,
+            scope = this,
+            uiDispatcher = StandardTestDispatcher(testScheduler),
+            applyPlan = { calls.add("apply") },
+            onApplied = { calls.add("notify") },
+            onApplyFailed = { calls.add("failure") }
+        )
+        coordinator.start()
+
+        source.emit(PreferenceManager.PREFERENCE_KEY_GROUP_SCAN)
+        advanceTimeBy(16)
+        runCurrent()
+
+        assertEquals(listOf("apply", "notify"), calls)
+    }
+
+    @Test
+    fun restartClearsPendingKeysAndRejectsStoppedSourceCallbacks() = runTest {
+        val source = FakeSource()
+        val plans = mutableListOf<ScanPreferenceUpdatePlan>()
+        val coordinator = coordinator(source, plans)
+        coordinator.start()
+        source.emit(PreferenceManager.PREFERENCE_KEY_GROUP_SCAN)
+
+        coordinator.stop()
+        coordinator.start()
+        source.emitStopped(PreferenceManager.PREFERENCE_KEY_SCAN_RATE)
+        advanceTimeBy(16)
+        runCurrent()
+
+        assertTrue(plans.isEmpty())
+
+        source.emit(PreferenceManager.PREFERENCE_KEY_CURSOR_MODE)
+        advanceTimeBy(16)
+        runCurrent()
+
+        assertEquals(1, plans.size)
+        assertTrue(plans.single().contains(ScanPreferenceEffect.REFRESH_POINT_STRUCTURE))
+    }
+
     private fun TestScope.coordinator(
         source: FakeSource,
         plans: MutableList<ScanPreferenceUpdatePlan>,
@@ -141,11 +212,13 @@ class ScanPreferenceChangeCoordinatorTest {
         scope = this,
         uiDispatcher = StandardTestDispatcher(testScheduler),
         applyPlan = plans::add,
-        onApplied = onApplied
+        onApplied = onApplied,
+        onApplyFailed = {}
     )
 
     private class FakeSource : ScanPreferenceChangeSource {
         private var listener: ((String) -> Unit)? = null
+        private var stoppedListener: ((String) -> Unit)? = null
         var started = false
         var startCount = 0
         var stopCount = 0
@@ -157,6 +230,7 @@ class ScanPreferenceChangeCoordinatorTest {
         }
 
         override fun stop() {
+            stoppedListener = listener
             listener = null
             started = false
             stopCount++
@@ -164,6 +238,10 @@ class ScanPreferenceChangeCoordinatorTest {
 
         fun emit(key: String) {
             listener?.invoke(key)
+        }
+
+        fun emitStopped(key: String) {
+            stoppedListener?.invoke(key)
         }
     }
 
