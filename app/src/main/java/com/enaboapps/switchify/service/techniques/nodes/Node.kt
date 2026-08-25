@@ -39,6 +39,7 @@ class Node(
     private var onSelect: (() -> Unit?)? = null
 ) : ScanNodeInterface, CollectionRowHintProvider {
     private var nodeInfo: AccessibilityNodeInfo? = null
+    private var childPath: List<Int> = emptyList()
     private var x: Int = 0
     private var y: Int = 0
     private var centerX: Int = 0
@@ -75,7 +76,10 @@ class Node(
          * @param nodeInfo The AccessibilityNodeInfo
          * @return The node
          */
-        fun fromAccessibilityNodeInfo(nodeInfo: AccessibilityNodeInfo): Node {
+        fun fromAccessibilityNodeInfo(
+            nodeInfo: AccessibilityNodeInfo,
+            childPath: List<Int> = emptyList()
+        ): Node {
             val node = Node()
             val rect = Rect()
             nodeInfo.getBoundsInScreen(rect)
@@ -86,6 +90,7 @@ class Node(
             }
             val overlayBounds = overlayBoundsFor(nodeInfo, rect, boundsInWindow)
             node.nodeInfo = nodeInfo
+            node.childPath = childPath
             node.x = rect.left
             node.y = rect.top
             node.contentDescription = nodeInfo.contentDescription?.toString() ?: ""
@@ -206,11 +211,14 @@ class Node(
             ReportedNodeAction(action.id, action.label?.toString())
         }
 
-    internal fun performAvailableAction(actionId: Int): Boolean {
-        val info = nodeInfo ?: return false
-        if (!info.refresh()) return false
-        if (info.actionList.none { it.id == actionId }) return false
-        return info.performAction(actionId)
+    internal fun actionLocator(point: PointF): NodeActionLocator? {
+        val info = nodeInfo ?: return null
+        return NodeActionLocator(
+            identity = identity(info, childPath),
+            selectionX = point.x,
+            selectionY = point.y,
+            reportedActionIds = info.actionList.map { it.id }.toSet()
+        )
     }
 
     /**

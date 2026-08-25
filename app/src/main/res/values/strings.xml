@@ -1266,7 +1266,6 @@
     <string name="menu_title_accessibility_actions">Actions</string>
     <string name="menu_item_accessibility_actions_description">Open actions for the selected item</string>
     <string name="menu_item_accessibility_action_description">Perform this action on the selected item</string>
-    <string name="accessibility_action_unavailable">This action is no longer available</string>
     <string name="accessibility_action_click">Click</string>
     <string name="accessibility_action_long_click">Long click</string>
     <string name="accessibility_action_context_click">Context click</string>

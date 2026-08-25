@@ -29,6 +29,9 @@ import com.enaboapps.switchify.service.menu.menus.system.DeviceMenu
 import com.enaboapps.switchify.service.menu.menus.system.VolumeControlMenu
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.techniques.nodes.NodeActionTarget
+import com.enaboapps.switchify.service.techniques.nodes.NodeActionLocator
+import com.enaboapps.switchify.service.techniques.nodes.AccessibilityActionCoordinator
+import com.enaboapps.switchify.service.techniques.nodes.AndroidNodeActionResolver
 import com.enaboapps.switchify.utils.LogEvent
 import com.enaboapps.switchify.utils.Logger
 
@@ -67,6 +70,8 @@ class MenuManager {
      */
     private var accessibilityService: SwitchifyAccessibilityService? = null
 
+    private var accessibilityActionCoordinator: AccessibilityActionCoordinator? = null
+
     /**
      * The menu hierarchy
      */
@@ -86,6 +91,17 @@ class MenuManager {
         menuHierarchy = MenuHierarchy(scanningManager)
         this.accessibilityService = accessibilityService
         this.gestureTargetIndicator = gestureTargetIndicator
+        accessibilityActionCoordinator?.cancel()
+        accessibilityActionCoordinator = AccessibilityActionCoordinator(
+            scope = accessibilityService.getServiceScope(),
+            resolver = AndroidNodeActionResolver(accessibilityService, accessibilityService),
+            menuActions = AndroidAccessibilityActionMenuActions(
+                openMenu = ::openResolvedAccessibilityActionsMenu,
+                replaceMenu = ::replaceResolvedAccessibilityActionsMenu,
+                showMain = ::rebuildMainMenuWithoutAccessibilityActions,
+                closeMenus = ::closeMenuHierarchy
+            )
+        )
     }
 
     fun switchToPointScan() {
@@ -125,9 +141,36 @@ class MenuManager {
         openMenu(aiMenu.build())
     }
 
-    internal fun openAccessibilityActionsMenu(target: NodeActionTarget) {
+    internal fun openAccessibilityActionsMenu(locator: NodeActionLocator) {
+        accessibilityActionCoordinator?.open(locator)
+    }
+
+    internal fun selectAccessibilityAction(target: NodeActionTarget, actionId: Int) {
+        accessibilityActionCoordinator?.select(target, actionId)
+    }
+
+    private fun openResolvedAccessibilityActionsMenu(target: NodeActionTarget) {
         val actionsMenu = AccessibilityActionsMenu(accessibilityService!!, target)
         openMenu(actionsMenu.build())
+    }
+
+    private fun replaceResolvedAccessibilityActionsMenu(target: NodeActionTarget) {
+        val actionsMenu = AccessibilityActionsMenu(accessibilityService!!, target)
+        menuHierarchy?.replaceTopMenu(actionsMenu.build())
+    }
+
+    private fun rebuildMainMenuWithoutAccessibilityActions() {
+        val mainMenu = MainMenu(accessibilityService!!, includeAccessibilityActions = false)
+        menuHierarchy?.replaceAllMenus(mainMenu.build())
+    }
+
+    internal fun cancelAccessibilityActionResolution() {
+        accessibilityActionCoordinator?.cancel()
+    }
+
+    internal fun cleanupAccessibilityActions() {
+        accessibilityActionCoordinator?.cancel()
+        accessibilityActionCoordinator = null
     }
 
     /**
@@ -301,6 +344,7 @@ class MenuManager {
      * This function closes the menu hierarchy
      */
     fun closeMenuHierarchy() {
+        accessibilityActionCoordinator?.cancel()
         if (getCurrentMenuView()?.menuId ==
             MenuConstants.MenuIds.SWITCH_PROFILE_CONFIRMATION_MENU
         ) {
@@ -375,6 +419,9 @@ class MenuManager {
      * Notify observers that a menu was closed
      */
     internal fun notifyMenuClosed(menuView: MenuView) {
+        if (menuView.menuId == MenuConstants.MenuIds.ACCESSIBILITY_ACTIONS_MENU) {
+            accessibilityActionCoordinator?.cancel()
+        }
         Logger.log(
             LogEvent.MenuClosed,
             data = mapOf(

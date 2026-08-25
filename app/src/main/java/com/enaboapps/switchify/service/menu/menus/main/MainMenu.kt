@@ -20,26 +20,33 @@ class MainMenu private constructor(
         leadingItems = content.leadingItems
     ) {
 
-    constructor(accessibilityService: SwitchifyAccessibilityService) : this(
+    constructor(
+        accessibilityService: SwitchifyAccessibilityService,
+        includeAccessibilityActions: Boolean = true
+    ) : this(
         accessibilityService,
-        buildContent(accessibilityService)
+        buildContent(accessibilityService, includeAccessibilityActions)
     )
 
     companion object {
         private fun buildContent(
-            accessibilityService: SwitchifyAccessibilityService
+            accessibilityService: SwitchifyAccessibilityService,
+            includeAccessibilityActions: Boolean
         ): MainMenuContent {
-            val target = NodeExaminer.findActionTarget(
-                GesturePoint.getPoint(),
-                accessibilityService
-            )
+            val target = if (includeAccessibilityActions) {
+                NodeExaminer.findActionTarget(GesturePoint.getPoint(), accessibilityService)
+            } else {
+                null
+            }
             val actionsItem = target?.let {
                 MenuItem(
                     id = MenuConstants.ItemIds.Main.ACCESSIBILITY_ACTIONS,
                     labelResource = com.enaboapps.switchify.R.string.menu_title_accessibility_actions,
                     descriptionResource = com.enaboapps.switchify.R.string.menu_item_accessibility_actions_description,
                     isLinkToMenu = true,
-                    action = { MenuManager.getInstance().openAccessibilityActionsMenu(it) }
+                    action = {
+                        MenuManager.getInstance().openAccessibilityActionsMenu(it.locator)
+                    }
                 )
             }
             return MainMenuContent(

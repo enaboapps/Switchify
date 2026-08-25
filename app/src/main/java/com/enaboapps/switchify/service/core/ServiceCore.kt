@@ -5,6 +5,7 @@ import com.enaboapps.switchify.service.gestures.visuals.AndroidGestureTargetIndi
 import com.enaboapps.switchify.service.gestures.visuals.GestureTargetIndicatorController
 import com.enaboapps.switchify.service.remotebridge.SwitchifyRemoteBridgeCoordinator
 import com.enaboapps.switchify.service.pauseresume.PauseManager
+import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.switches.SwitchEventProvider
 import com.enaboapps.switchify.service.switches.SwitchProfileActivationCoordinator
@@ -113,6 +114,7 @@ object ServiceCore {
      * Cleans up the service core.
      */
     fun cleanup() {
+        MenuManager.getInstance().cleanupAccessibilityActions()
         getSwitchProfileActivationCoordinator()?.cancel(showMessage = false)
         SwitchifyRemoteBridgeCoordinator.detach()
         gestureTargetIndicator?.release()

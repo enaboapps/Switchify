@@ -218,17 +218,17 @@ object NodeExaminer {
         isKeyboardVisible: Boolean
     ) {
         // Flatten the accessibility tree to get all nodes
-        val newNodeInfos = flattenTree(rootNode)
+        val flattenedNodes = flattenTree(rootNode)
 
         // Early termination for oversized trees
-        if (newNodeInfos.size > MAX_NODES_THRESHOLD) {
+        if (flattenedNodes.size > MAX_NODES_THRESHOLD) {
             if (!treeTooLargeLogged) {
-                Log.w(TAG, "Tree too large (${newNodeInfos.size} nodes), skipping detailed processing")
+                    Log.w(TAG, "Tree too large (${flattenedNodes.size} nodes), skipping detailed processing")
                 Logger.log(
                     LogEvent.NodeTreeTooLarge,
                     data = mapOf(
                         "result" to "skipped",
-                        "node_count" to newNodeInfos.size,
+                            "node_count" to flattenedNodes.size,
                         "max_threshold" to MAX_NODES_THRESHOLD,
                         "keyboard_visible" to isKeyboardVisible,
                         "app_package" to (rootNode.packageName?.toString() ?: "unknown")
@@ -241,12 +241,12 @@ object NodeExaminer {
         }
 
         // Lightweight mapping for all nodes (no deep content examination)
-        allNodes = newNodeInfos.map { nodeInfo ->
-            Node.fromAccessibilityNodeInfo(nodeInfo)
+        allNodes = flattenedNodes.map { flattenedNode ->
+            Node.fromAccessibilityNodeInfo(flattenedNode.nodeInfo, flattenedNode.childPath)
         }
 
-        val newActionableNodes = newNodeInfos
-            .map { examineNodeContent(it) }
+        val newActionableNodes = flattenedNodes
+            .map { examineNodeContent(it.nodeInfo, it.childPath) }
             .filter { it.isCurrentlyScannable() }
 
         // Get screen dimensions for filtering nodes
@@ -399,9 +399,12 @@ object NodeExaminer {
      * @param node The AccessibilityNodeInfo to examine.
      * @return A Node object with populated content description where possible.
      */
-    private fun examineNodeContent(node: AccessibilityNodeInfo): Node {
+    private fun examineNodeContent(
+        node: AccessibilityNodeInfo,
+        childPath: List<Int>
+    ): Node {
         try {
-            val baseNode = Node.fromAccessibilityNodeInfo(node)
+            val baseNode = Node.fromAccessibilityNodeInfo(node, childPath)
 
             // If content description is empty, try to build it from child nodes
             if (baseNode.getContentDescription().isEmpty()) {
@@ -423,7 +426,7 @@ object NodeExaminer {
                 ),
                 throwable = e
             )
-            return Node.fromAccessibilityNodeInfo(node)
+            return Node.fromAccessibilityNodeInfo(node, childPath)
         }
     }
 
@@ -478,24 +481,32 @@ object NodeExaminer {
      * @param rootNode The root node of the tree to start flattening from.
      * @return A list of all AccessibilityNodeInfo objects in the tree.
      */
-    private fun flattenTree(rootNode: AccessibilityNodeInfo): List<AccessibilityNodeInfo> {
-        val nodes = ArrayList<AccessibilityNodeInfo>(64)
-        val queue = ArrayDeque<AccessibilityNodeInfo>(64)
-        queue.add(rootNode)
+    private fun flattenTree(rootNode: AccessibilityNodeInfo): List<FlattenedNode> {
+        val nodes = ArrayList<FlattenedNode>(64)
+        val queue = ArrayDeque<FlattenedNode>(64)
+        queue.add(FlattenedNode(rootNode, emptyList()))
 
         while (queue.isNotEmpty()) {
-            val node = queue.removeFirst()
-            nodes.add(node)
+            val flattenedNode = queue.removeFirst()
+            val node = flattenedNode.nodeInfo
+            nodes.add(flattenedNode)
             // Early exit if tree is too large
             if (nodes.size > MAX_NODES_THRESHOLD) {
                 return nodes
             }
             for (i in 0 until node.childCount) {
-                node.getChild(i)?.let { queue.add(it) }
+                node.getChild(i)?.let {
+                    queue.add(FlattenedNode(it, flattenedNode.childPath + i))
+                }
             }
         }
         return nodes
     }
+
+    private data class FlattenedNode(
+        val nodeInfo: AccessibilityNodeInfo,
+        val childPath: List<Int>
+    )
 
     /**
      * Finds the node that can perform the given action at the given point.
@@ -531,7 +542,8 @@ object NodeExaminer {
             )
             if (actions.isEmpty()) return@mapIndexedNotNull null
 
-            val target = NodeActionTarget(actions, node::performAvailableAction)
+            val locator = node.actionLocator(point) ?: return@mapIndexedNotNull null
+            val target = NodeActionTarget(locator, actions)
             NodeActionCandidate(
                 target = target,
                 left = node.getLeft(),
