@@ -1,7 +1,6 @@
 package com.enaboapps.switchify.service.techniques.itemscan
 
 import android.content.Context
-import android.content.Intent
 import com.enaboapps.switchify.backend.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GestureManager
 
@@ -13,17 +12,8 @@ object ItemScanSettings {
 
     private var preferenceManager: PreferenceManager? = null
 
-    const val ITEM_SCAN_SETTINGS_CHANGED_ACTION =
-        "com.enaboapps.switchify.ITEM_SCAN_SETTINGS_CHANGED"
-
     fun init(context: Context) {
         preferenceManager = PreferenceManager(context)
-    }
-
-    private fun broadcastChanged(context: Context) {
-        context.sendBroadcast(
-            Intent(ITEM_SCAN_SETTINGS_CHANGED_ACTION).setPackage(context.packageName)
-        )
     }
 
     /**
@@ -40,14 +30,12 @@ object ItemScanSettings {
     /**
      * Set item scan speech enabled
      * @param enabled Whether to enable speech
-     * @param context Context for broadcasting changes
      */
-    fun setSpeechEnabled(enabled: Boolean, context: Context) {
+    fun setSpeechEnabled(enabled: Boolean) {
         preferenceManager?.setBooleanValue(
             PreferenceManager.Keys.PREFERENCE_KEY_ITEM_SCAN_SPEECH,
             enabled
         )
-        broadcastChanged(context)
     }
 
     /**
@@ -68,14 +56,12 @@ object ItemScanSettings {
     /**
      * Set automatically start scan after selection
      * @param enabled Whether to enable automatic scan restart
-     * @param context Context for broadcasting changes
      */
-    fun setAutomaticallyStartScanAfterSelectionEnabled(enabled: Boolean, context: Context) {
+    fun setAutomaticallyStartScanAfterSelectionEnabled(enabled: Boolean) {
         preferenceManager?.setBooleanValue(
             PreferenceManager.Keys.PREFERENCE_KEY_AUTOMATICALLY_START_SCAN_AFTER_SELECTION,
             enabled
         )
-        broadcastChanged(context)
     }
 
     /**
@@ -90,14 +76,12 @@ object ItemScanSettings {
     /**
      * Set pause on first item
      * @param enabled Whether to enable pause on first item
-     * @param context Context for broadcasting changes
      */
-    fun setPauseOnFirstItemEnabled(enabled: Boolean, context: Context) {
+    fun setPauseOnFirstItemEnabled(enabled: Boolean) {
         preferenceManager?.setBooleanValue(
             PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_ON_FIRST_ITEM,
             enabled
         )
-        broadcastChanged(context)
     }
 
     /**
@@ -116,14 +100,12 @@ object ItemScanSettings {
     /**
      * Set the pause on first item delay
      * @param delay The delay in milliseconds
-     * @param context Context for broadcasting changes
      */
-    fun setPauseOnFirstItemDelay(delay: Long, context: Context) {
+    fun setPauseOnFirstItemDelay(delay: Long) {
         preferenceManager?.setLongValue(
             PreferenceManager.Keys.PREFERENCE_KEY_PAUSE_ON_FIRST_ITEM_DELAY,
             delay
         )
-        broadcastChanged(context)
     }
 
     /**
@@ -138,14 +120,12 @@ object ItemScanSettings {
     /**
      * Set auto select enabled
      * @param enabled Whether to enable auto select
-     * @param context Context for broadcasting changes
      */
-    fun setAutoSelectEnabled(enabled: Boolean, context: Context) {
+    fun setAutoSelectEnabled(enabled: Boolean) {
         preferenceManager?.setBooleanValue(
             PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT,
             enabled
         )
-        broadcastChanged(context)
     }
 
     /**
@@ -164,14 +144,12 @@ object ItemScanSettings {
     /**
      * Set the auto select delay
      * @param delay The delay in milliseconds
-     * @param context Context for broadcasting changes
      */
-    fun setAutoSelectDelay(delay: Long, context: Context) {
+    fun setAutoSelectDelay(delay: Long) {
         preferenceManager?.setLongValue(
             PreferenceManager.Keys.PREFERENCE_KEY_AUTO_SELECT_DELAY,
             delay
         )
-        broadcastChanged(context)
     }
 
     /**
@@ -186,14 +164,12 @@ object ItemScanSettings {
     /**
      * Set directly select keyboard keys enabled
      * @param enabled Whether to enable direct keyboard key selection
-     * @param context Context for broadcasting changes
      */
-    fun setDirectlySelectKeyboardKeysEnabled(enabled: Boolean, context: Context) {
+    fun setDirectlySelectKeyboardKeysEnabled(enabled: Boolean) {
         preferenceManager?.setBooleanValue(
             PreferenceManager.Keys.PREFERENCE_KEY_DIRECTLY_SELECT_KEYBOARD_KEYS,
             enabled
         )
-        broadcastChanged(context)
     }
 
     /**
@@ -208,14 +184,12 @@ object ItemScanSettings {
     /**
      * Set row column scan enabled
      * @param enabled Whether to enable row column scan
-     * @param context Context for broadcasting changes
      */
-    fun setRowColumnScanEnabled(enabled: Boolean, context: Context) {
+    fun setRowColumnScanEnabled(enabled: Boolean) {
         preferenceManager?.setBooleanValue(
             PreferenceManager.Keys.PREFERENCE_KEY_ROW_COLUMN_SCAN,
             enabled
         )
-        broadcastChanged(context)
     }
 
     /**
@@ -230,14 +204,12 @@ object ItemScanSettings {
     /**
      * Set group scan enabled
      * @param enabled Whether to enable group scan
-     * @param context Context for broadcasting changes
      */
-    fun setGroupScanEnabled(enabled: Boolean, context: Context) {
+    fun setGroupScanEnabled(enabled: Boolean) {
         preferenceManager?.setBooleanValue(
             PreferenceManager.Keys.PREFERENCE_KEY_GROUP_SCAN,
             enabled
         )
-        broadcastChanged(context)
     }
 
     // Helper method to check scan mode - could be moved to a shared utility if needed

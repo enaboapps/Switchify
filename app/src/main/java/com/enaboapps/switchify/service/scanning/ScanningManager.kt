@@ -14,6 +14,8 @@ import com.enaboapps.switchify.service.gestures.visuals.GestureTargetIndicatorCo
 import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.remotebridge.SwitchifyRemoteLauncher
 import com.enaboapps.switchify.service.selection.SelectionHandler
+import com.enaboapps.switchify.service.scanning.preferences.ScanPreferenceEffect
+import com.enaboapps.switchify.service.scanning.preferences.ScanPreferenceUpdatePlan
 import com.enaboapps.switchify.service.techniques.AccessTechnique
 import com.enaboapps.switchify.service.techniques.AccessTechniqueInterface
 import com.enaboapps.switchify.service.techniques.ActiveAccessTechnique
@@ -143,8 +145,24 @@ class ScanningManager(
         appScanTechniqueOverrideCoordinator.refreshForegroundOverride()
     }
 
-    internal fun refreshItemScanConfiguration() {
-        activeScanMethod.refreshItemScanConfiguration()
+    internal fun applyPreferenceUpdate(plan: ScanPreferenceUpdatePlan) {
+        if (plan.contains(ScanPreferenceEffect.RESET_SCAN_MODE)) {
+            activeScanMethod.resetForScanModeChange()
+            return
+        }
+        if (plan.contains(ScanPreferenceEffect.REFRESH_ITEM_STRUCTURE)) {
+            activeScanMethod.refreshItemScanConfiguration()
+        } else if (plan.contains(ScanPreferenceEffect.REFRESH_ITEM_TIMING)) {
+            activeScanMethod.refreshItemScanTiming()
+        }
+        if (plan.contains(ScanPreferenceEffect.REFRESH_POINT_STRUCTURE)) {
+            activeScanMethod.refreshPointScanStructure()
+        } else if (plan.contains(ScanPreferenceEffect.REFRESH_POINT_TIMING)) {
+            activeScanMethod.refreshPointScanTiming()
+        }
+        if (plan.contains(ScanPreferenceEffect.RESET_RADAR_ORIGIN)) {
+            activeScanMethod.refreshRadarOrigin()
+        }
     }
 
     /**

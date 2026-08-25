@@ -21,10 +21,19 @@ import java.util.concurrent.atomic.AtomicReference
  * @property context The application context.
  * @property onScan A suspend function that gets executed during each scan.
  */
-class ScanningScheduler(
-    private val context: Context,
-    private val onScan: suspend () -> Unit
+class ScanningScheduler internal constructor(
+    private val onScan: suspend () -> Unit,
+    private val scanRateProvider: () -> Long,
+    private val firstItemPauseProvider: () -> Long,
+    private val coroutineScope: CoroutineScope
 ) {
+
+    constructor(context: Context, onScan: suspend () -> Unit) : this(
+        onScan = onScan,
+        scanRateProvider = ScanSettings(context)::getScanRate,
+        firstItemPauseProvider = ScanSettings(context)::getPauseOnFirstItemDelay,
+        coroutineScope = CoroutineScope(Dispatchers.IO + CoroutineName(UUID.randomUUID().toString()))
+    )
 
     /**
      * The unique identifier of the scanner.
@@ -34,8 +43,6 @@ class ScanningScheduler(
     /**
      * The CoroutineScope in which the scanning tasks are launched.
      */
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + CoroutineName(uniqueId))
-
     /**
      * The Job representing the currently running scanning task.
      */
@@ -62,19 +69,14 @@ class ScanningScheduler(
     private var scanState = AtomicReference(ScanState.STOPPED)
 
     /**
-     * The settings for the scanning tasks.
-     */
-    private val scanSettings = ScanSettings(context)
-
-    /**
      * Starts the scanning tasks.
      *
      * @param initialDelay The initial delay before the first scanning task is launched.
      * @param period The period between successive scanning tasks.
      */
     fun startScanning(
-        initialDelay: Long = scanSettings.getScanRate(),
-        period: Long = scanSettings.getScanRate()
+        initialDelay: Long = scanRateProvider(),
+        period: Long = scanRateProvider()
     ) {
         if (scanState.get() == ScanState.SCANNING) {
             println("[$uniqueId] Already scanning")
@@ -83,16 +85,27 @@ class ScanningScheduler(
 
         scanState.set(ScanState.SCANNING)
 
-        val initialDelayPlusPause = initialDelay + scanSettings.getPauseOnFirstItemDelay()
+        val initialDelayPlusPause = initialDelay + firstItemPauseProvider()
 
         this.initialDelay = initialDelay
         this.period = period
 
-        scanningJob?.cancel()
+        launchScanningJob(initialDelayPlusPause)
+    }
 
+    internal fun updateTiming(initialDelay: Long, period: Long) {
+        this.initialDelay = initialDelay
+        this.period = period
+        if (scanState.get() == ScanState.SCANNING) {
+            launchScanningJob(initialDelay)
+        }
+    }
+
+    private fun launchScanningJob(delayMillis: Long) {
+        scanningJob?.cancel()
         scanningJob = coroutineScope.launch {
             println("[$uniqueId] Starting scanning job")
-            delay(initialDelayPlusPause)
+            delay(delayMillis)
             while (isActive) {
                 if (isExecuting.compareAndSet(false, true)) {
                     try {

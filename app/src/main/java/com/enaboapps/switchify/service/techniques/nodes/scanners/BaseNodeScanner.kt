@@ -135,9 +135,16 @@ abstract class BaseNodeScanner(
     internal fun refreshConfiguration(): Boolean = refreshScannerConfiguration(
         nodes = lastUpdateNodes,
         isAutoScanning = scanTree::isAutoScanning,
-        rebuild = ::buildFromNodes,
+        rebuild = {
+            scanTree.reloadSpeed()
+            buildFromNodes(it)
+        },
         resumeAutoScanning = scanTree::startAutoScanning
     )
+
+    internal fun refreshTiming() {
+        scanTree.reloadSpeed()
+    }
 
     private fun isDuplicateUpdate(nodes: List<Node>): Boolean {
         return areDuplicateScanNodes(lastUpdateNodes, nodes)
