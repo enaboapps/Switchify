@@ -29,6 +29,21 @@ internal fun areDuplicateScanNodes(previous: List<Node>?, next: List<Node>): Boo
     return true
 }
 
+internal fun <T> refreshScannerConfiguration(
+    nodes: List<T>?,
+    isAutoScanning: () -> Boolean,
+    rebuild: (List<T>) -> Unit,
+    resumeAutoScanning: () -> Unit
+): Boolean {
+    val currentNodes = nodes ?: return false
+    val shouldResume = isAutoScanning()
+    rebuild(currentNodes)
+    if (shouldResume) {
+        resumeAutoScanning()
+    }
+    return true
+}
+
 /**
  * Base class for node scanners that provides common functionality for both system and keyboard scanners.
  * Implements improved handling of rapid updates using multiple detection windows.
@@ -111,6 +126,18 @@ abstract class BaseNodeScanner(
             stopTimeoutToRevertToCursor()
         }
     }
+
+    protected fun buildInitialNodes(nodes: List<Node>) {
+        buildFromNodes(nodes)
+        lastUpdateNodes = nodes
+    }
+
+    internal fun refreshConfiguration(): Boolean = refreshScannerConfiguration(
+        nodes = lastUpdateNodes,
+        isAutoScanning = scanTree::isAutoScanning,
+        rebuild = ::buildFromNodes,
+        resumeAutoScanning = scanTree::startAutoScanning
+    )
 
     private fun isDuplicateUpdate(nodes: List<Node>): Boolean {
         return areDuplicateScanNodes(lastUpdateNodes, nodes)

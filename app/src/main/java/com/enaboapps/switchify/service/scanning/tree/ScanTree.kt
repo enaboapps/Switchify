@@ -532,6 +532,8 @@ class ScanTree(
         scanningScheduler?.resumeScanning()
     }
 
+    internal fun isAutoScanning(): Boolean = scanningScheduler?.isScanning() == true
+
     /**
      * Resets the UI to its initial state.
      */

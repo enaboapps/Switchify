@@ -497,6 +497,11 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
                             ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
                         }
 
+                        PreferenceManager.Keys.PREFERENCE_KEY_GROUP_SCAN -> {
+                            ServiceCore.getScanningManager()?.refreshItemScanConfiguration()
+                            ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
+                        }
+
                         PreferenceManager.Keys.PREFERENCE_KEY_CURSOR_BLOCK_SCAN_RATE,
                         PreferenceManager.Keys.PREFERENCE_KEY_POINT_SCAN_LINE_SPEED_LEVEL,
                         PreferenceManager.Keys.PREFERENCE_KEY_RADAR_SPEED_LEVEL,

@@ -26,7 +26,7 @@ class SystemNodeScanner(
             handleNodeUpdate(nodes)
         }
         // Build initial tree from current nodes
-        buildFromNodes(SystemNodeHolder.getNodes())
+        buildInitialNodes(SystemNodeHolder.getNodes())
         NodeSpeaker.init(context)
     }
 

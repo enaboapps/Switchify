@@ -80,6 +80,7 @@ class SettingsMenuStructure(
                     userProvidedText = stateLabel,
                     descriptionResource = def.descriptionResource,
                     drawableId = def.drawableId,
+                    closeOnSelect = false,
                     action = {
                         val prefManager = PreferenceManager(accessibilityService)
                         prefManager.setBooleanValue(
