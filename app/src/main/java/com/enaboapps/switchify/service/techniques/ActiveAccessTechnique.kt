@@ -155,6 +155,11 @@ class ActiveAccessTechnique(private val context: Context) : AccessTechniqueObser
         getNodeScanner().scanTree.stopScanningAndReset()
     }
 
+    internal fun refreshItemScanConfiguration() {
+        systemNodeScanner?.refreshConfiguration()
+        keyboardScanner?.refreshConfiguration()
+    }
+
     fun cleanup(currentTechnique: String) {
         NodeScannerUI.instance.hideAll()
 
