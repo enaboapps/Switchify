@@ -107,6 +107,7 @@ fun GeneralSettingsTab(menuSettingsModel: MenuSettingsModel, navController: NavC
     val isSignedIn = authRepository.isUserSignedIn()
 
     ScrollableView {
+        InputSection(navController)
         Section(titleResId = R.string.settings_section_account) {
             NavRouteLink(
                 titleResId = if (isSignedIn) R.string.settings_title_account else R.string.settings_title_sign_in,
@@ -131,7 +132,6 @@ fun GeneralSettingsTab(menuSettingsModel: MenuSettingsModel, navController: NavC
                 route = NavigationRoute.AiModel.name
             )
         }
-        InputSection(navController)
         BehaviourSection(navController)
         GesturesSettingsSection(navController)
         MenuSection(menuSettingsModel, navController)
