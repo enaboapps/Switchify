@@ -79,6 +79,36 @@ class MenuHierarchy(
         }
     }
 
+    fun replaceTopMenu(menu: MenuView) {
+        val depthBefore = tree.size
+        val closedMenu = tree.lastOrNull()
+        closedMenu?.close()
+        if (tree.isNotEmpty()) tree = tree.dropLast(1)
+        addMenu(menu)
+        logStackChange("replace_top", depthBefore, tree.size, menu.menuId)
+        closedMenu?.let { MenuManager.getInstance().notifyMenuClosed(it) }
+        openReplacement(menu)
+    }
+
+    fun replaceAllMenus(menu: MenuView) {
+        val depthBefore = tree.size
+        val closedMenu = tree.lastOrNull()
+        closedMenu?.close()
+        tree = listOf(menu)
+        logStackChange("replace_all", depthBefore, tree.size, menu.menuId)
+        closedMenu?.let { MenuManager.getInstance().notifyMenuClosed(it) }
+        openReplacement(menu)
+    }
+
+    private fun openReplacement(menu: MenuView) {
+        menu.menuViewListener = this
+        Handler(Looper.getMainLooper()).postDelayed(100) {
+            if (getTopMenu() !== menu) return@postDelayed
+            menu.open(scanningManager)
+            MenuManager.getInstance().notifyMenuOpened(menu)
+        }
+    }
+
     fun removeAllMenus() {
         val depthBefore = tree.size
         // close the top menu

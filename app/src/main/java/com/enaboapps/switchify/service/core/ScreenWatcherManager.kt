@@ -4,6 +4,7 @@ import android.content.Context
 import com.enaboapps.switchify.service.remotebridge.SwitchifyRemoteBridgeCoordinator
 import com.enaboapps.switchify.service.gestures.GestureLockManager
 import com.enaboapps.switchify.service.gestures.GestureRepeatManager
+import com.enaboapps.switchify.service.menu.MenuManager
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.switches.external.ExternalSwitchListener
 import com.enaboapps.switchify.service.utils.ScreenWatcher
@@ -16,6 +17,7 @@ class ScreenWatcherManager(
     fun register(scanningManager: ScanningManager, externalSwitchListener: ExternalSwitchListener) {
         screenWatcher = ScreenWatcher(
             onScreenSleep = {
+                MenuManager.getInstance().cancelAccessibilityActionResolution()
                 ServiceCore.getSwitchProfileActivationCoordinator()?.cancel(
                     reason = "screen_sleep",
                     showMessage = false
