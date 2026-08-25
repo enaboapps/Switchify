@@ -22,6 +22,9 @@ import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GestureRepeatManager
 import com.enaboapps.switchify.service.remotebridge.SwitchifyRemoteBridgeCoordinator
 import com.enaboapps.switchify.service.scanning.ScanSettings
+import com.enaboapps.switchify.service.scanning.preferences.PreferenceManagerScanPreferenceChangeSource
+import com.enaboapps.switchify.service.scanning.preferences.ScanPreferenceChangeCoordinator
+import com.enaboapps.switchify.service.scanning.preferences.ScanPreferenceEffect
 import com.enaboapps.switchify.service.selection.SelectionHandler
 import com.enaboapps.switchify.service.stats.StatsCollector
 import com.enaboapps.switchify.service.switches.SwitchEventProvider
@@ -61,6 +64,7 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
     private lateinit var trialOverlay: ServiceTrialOverlay
     private lateinit var startupOrchestrator: StartupOrchestrator
     private lateinit var nodeUpdateCoordinator: NodeUpdateCoordinator
+    private lateinit var scanPreferenceChangeCoordinator: ScanPreferenceChangeCoordinator
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var protectedStorageMigrationAttempted = false
     private val adbTestingBridgeReceiver = AdbTestingBridgeReceiver()
@@ -134,6 +138,38 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
         )
 
         ServiceCore.setCameraManager(cameraManager)
+        scanPreferenceChangeCoordinator = ScanPreferenceChangeCoordinator(
+            source = PreferenceManagerScanPreferenceChangeSource(PreferenceManager(this)),
+            scope = serviceScope,
+            uiDispatcher = Dispatchers.Main.immediate,
+            applyPlan = { plan ->
+                if (plan.contains(ScanPreferenceEffect.RELOAD_TECHNIQUE)) {
+                    AccessTechnique.reloadFromPreferences()
+                    cameraManager.evaluateAndUpdateCameraState()
+                }
+                scanningManager.applyPreferenceUpdate(plan)
+            },
+            onApplied = {
+                ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
+            },
+            onApplyFailed = { error ->
+                Logger.log(
+                    LogEvent.ServiceCommandFailed,
+                    data = mapOf(
+                        "result" to "failure",
+                        "reason" to "exception",
+                        "command" to "ScanPreferenceChange",
+                        "key" to null
+                    ),
+                    throwable = error
+                )
+                logd("Failed to apply scan preference update")
+                ServiceBridge.emitEvent(
+                    ServiceBridge.ServiceEvent.ServiceError("Configuration update failed")
+                )
+            }
+        )
+        scanPreferenceChangeCoordinator.start()
         switchEventProvider.addCameraSwitchListener(this)
         eventPipeline =
             AccessibilityEventPipeline(serviceScope) { nodeUpdateCoordinator.processAccessibilityUpdate() }
@@ -319,6 +355,9 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
         deviceLockObserver.stopObserving()
         screenWatcherManager.unregister()
         unregisterAdbTestingBridgeIfNeeded()
+        if (::scanPreferenceChangeCoordinator.isInitialized) {
+            scanPreferenceChangeCoordinator.stop()
+        }
         serviceScope.coroutineContext.cancelChildren()
         if (::eventPipeline.isInitialized) {
             eventPipeline.stop()
@@ -353,6 +392,9 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
         // Unregister ScreenWatcher to prevent receiver leak
         screenWatcherManager.unregister()
         unregisterAdbTestingBridgeIfNeeded()
+        if (::scanPreferenceChangeCoordinator.isInitialized) {
+            scanPreferenceChangeCoordinator.stop()
+        }
         serviceScope.coroutineContext.cancelChildren()
         if (::eventPipeline.isInitialized) {
             eventPipeline.stop()
@@ -467,7 +509,6 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
                     // Handle access technique changes and camera state evaluation
                     logd("Access technique changed to: ${command.technique}")
                     cameraManager.evaluateAndUpdateCameraState()
-                    ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
                 }
 
                 is ServiceBridge.ServiceCommand.BeginSwitchProfileActivation -> {
@@ -485,37 +526,7 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
 
                 is ServiceBridge.ServiceCommand.UpdateConfiguration -> {
                     commandKey = command.key
-                    // Handle specific configuration updates
-                    when (command.key) {
-                        PreferenceManager.Keys.PREFERENCE_KEY_SCAN_MODE -> {
-                            ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
-                        }
-
-                        PreferenceManager.Keys.PREFERENCE_KEY_ACCESS_TECHNIQUE -> {
-                            AccessTechnique.reloadFromPreferences()
-                            cameraManager.evaluateAndUpdateCameraState()
-                            ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
-                        }
-
-                        PreferenceManager.Keys.PREFERENCE_KEY_GROUP_SCAN -> {
-                            ServiceCore.getScanningManager()?.refreshItemScanConfiguration()
-                            ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
-                        }
-
-                        PreferenceManager.Keys.PREFERENCE_KEY_CURSOR_BLOCK_SCAN_RATE,
-                        PreferenceManager.Keys.PREFERENCE_KEY_POINT_SCAN_LINE_SPEED_LEVEL,
-                        PreferenceManager.Keys.PREFERENCE_KEY_RADAR_SPEED_LEVEL,
-                        PreferenceManager.Keys.PREFERENCE_KEY_SCAN_RATE -> {
-                            // Scan rate settings changed - service will pick up new values automatically
-                            ServiceCore.getScanningManager()?.reset()
-                            ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
-                        }
-
-                        else -> {
-                            logd("Configuration updated: ${command.key}")
-                            ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
-                        }
-                    }
+                    scanPreferenceChangeCoordinator.enqueue(command.key)
                 }
 
                 is ServiceBridge.ServiceCommand.PerformSwitchActionForTesting -> {

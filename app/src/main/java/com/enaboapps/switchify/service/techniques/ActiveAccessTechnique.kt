@@ -160,6 +160,30 @@ class ActiveAccessTechnique(private val context: Context) : AccessTechniqueObser
         keyboardScanner?.refreshConfiguration()
     }
 
+    internal fun refreshItemScanTiming() {
+        systemNodeScanner?.refreshTiming()
+        keyboardScanner?.refreshTiming()
+    }
+
+    internal fun refreshPointScanStructure() {
+        pointScanManager?.refreshStructure()
+    }
+
+    internal fun refreshPointScanTiming() {
+        pointScanManager?.refreshBlockTiming()
+    }
+
+    internal fun refreshRadarOrigin() {
+        radarManager?.refreshOrigin()
+    }
+
+    internal fun resetForScanModeChange() {
+        pointScanManager?.stopScanningAndReset()
+        radarManager?.stopScanningAndReset()
+        systemNodeScanner?.scanTree?.stopScanningAndReset()
+        keyboardScanner?.scanTree?.stopScanningAndReset()
+    }
+
     fun cleanup(currentTechnique: String) {
         NodeScannerUI.instance.hideAll()
 

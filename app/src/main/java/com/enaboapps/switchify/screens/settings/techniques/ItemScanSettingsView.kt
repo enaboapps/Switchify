@@ -10,7 +10,6 @@ import com.enaboapps.switchify.components.Picker
 import com.enaboapps.switchify.components.PreferenceSwitch
 import com.enaboapps.switchify.components.Section
 import com.enaboapps.switchify.screens.settings.shared.ItemScanSpeedStepper
-import com.enaboapps.switchify.service.core.ServiceBridge
 import com.enaboapps.switchify.service.scanning.ScanHighlightStyle
 import com.enaboapps.switchify.utils.Resources
 
@@ -77,12 +76,6 @@ fun ItemScanSettingsView() {
                 preferenceManager.setBooleanValue(
                     PreferenceManager.PREFERENCE_KEY_GROUP_SCAN,
                     it
-                )
-                ServiceBridge.sendCommand(
-                    ServiceBridge.ServiceCommand.UpdateConfiguration(
-                        PreferenceManager.PREFERENCE_KEY_GROUP_SCAN,
-                        it
-                    )
                 )
             }
         )

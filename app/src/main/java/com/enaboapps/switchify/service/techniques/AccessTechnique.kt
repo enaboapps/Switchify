@@ -143,6 +143,8 @@ object AccessTechnique {
      * Loads the current technique from the preferences
      */
     internal fun loadCurrentTechnique() {
+        val previousTechnique = currentTechnique
+        val wasTemporaryTechniqueActive = temporaryTechniqueActive
         temporaryTechniqueActive = false
         preferenceManager?.let { preferenceManager ->
             var storedType = preferenceManager.getStringValue(
@@ -157,7 +159,9 @@ object AccessTechnique {
                 saveCurrentTechnique()
             }
         }
-        observer?.onAccessTechniqueChanged(currentTechnique)
+        if (previousTechnique != currentTechnique || wasTemporaryTechniqueActive) {
+            observer?.onAccessTechniqueChanged(currentTechnique)
+        }
     }
 
     /**

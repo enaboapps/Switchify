@@ -90,6 +90,11 @@ class ScanTree(
      */
     fun setSpeed(scanningSpeed: Long) {
         this.scanningSpeed = scanningSpeed
+        scanningScheduler?.updateTiming(scanningSpeed, scanningSpeed)
+    }
+
+    internal fun reloadSpeed() {
+        setSpeed(scanSettings.getScanRate())
     }
 
     /**

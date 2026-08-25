@@ -114,6 +114,14 @@ class PreferenceManager(context: Context) {
     private val sharedPreferences: SharedPreferences =
         appContext.getSharedPreferences(PREFERENCE_FILE_NAME, Context.MODE_PRIVATE)
 
+    internal fun registerChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    internal fun unregisterChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+    }
+
     fun migrateToProtectedStorage() {
         val defaultPrefs =
             defaultContext.getSharedPreferences(PREFERENCE_FILE_NAME, Context.MODE_PRIVATE)
