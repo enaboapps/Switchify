@@ -41,14 +41,16 @@ class TemporaryScanModeSession internal constructor(
     private var started = false
     private var overrideApplied = false
 
-    fun start() {
-        if (started) return
+    fun start(): Boolean {
+        if (started) return true
+        if (controller.currentTechnique() == AccessTechnique.Technique.MENU) return false
         started = true
         previousTechnique = controller.preferredTechnique()
         if (controller.currentTechnique() != targetTechnique) {
             controller.setTemporaryTechnique(targetTechnique)
             overrideApplied = true
         }
+        return true
     }
 
     fun close() {

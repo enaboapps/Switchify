@@ -133,7 +133,7 @@ class ScanningManager(
         setType(type, TechniqueChange.RESTORE)
     }
 
-    internal fun updateForegroundApplication(packageName: String?) {
+    internal suspend fun updateForegroundApplication(packageName: String?) {
         appScanTechniqueOverrideCoordinator.onForegroundApplicationChanged(packageName)
     }
 

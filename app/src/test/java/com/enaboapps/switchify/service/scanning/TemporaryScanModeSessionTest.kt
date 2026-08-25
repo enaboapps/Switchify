@@ -103,17 +103,18 @@ class TemporaryScanModeSessionTest {
     }
 
     @Test
-    fun menuEntryRestoresStoredUnderlyingTechnique() {
+    fun menuEntryDoesNotStartTemporarySession() {
         val controller = FakeScanModeController(
             initialTechnique = AccessTechnique.Technique.MENU,
             preferredTechnique = AccessTechnique.Technique.RADAR
         )
         val session = TemporaryScanModeSession(controller, AccessTechnique.Technique.ITEM_SCAN)
 
-        session.start()
+        assertFalse(session.start())
         session.close()
 
-        assertEquals(AccessTechnique.Technique.RADAR, controller.currentTechnique())
+        assertEquals(AccessTechnique.Technique.MENU, controller.currentTechnique())
+        assertEquals(0, controller.restoreCalls)
     }
 }
 
