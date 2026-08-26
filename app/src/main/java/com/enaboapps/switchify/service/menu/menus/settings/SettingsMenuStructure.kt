@@ -66,30 +66,34 @@ class SettingsMenuStructure(
                     )
                 }
             } else null,
-            MenuItemRegistry.getDefinition(
-                MenuConstants.MenuIds.SETTINGS_MENU,
-                MenuConstants.ItemIds.Settings.TOGGLE_GROUP_SCAN
-            )?.let { def ->
-                val currentlyEnabled = scanSettings.isGroupScanEnabled()
-                val stateLabel = accessibilityService.getString(
-                    if (currentlyEnabled) R.string.menu_item_turn_group_scan_off
-                    else R.string.menu_item_turn_group_scan_on
-                )
-                MenuItem(
-                    id = def.id,
-                    userProvidedText = stateLabel,
-                    descriptionResource = def.descriptionResource,
-                    drawableId = def.drawableId,
-                    closeOnSelect = false,
-                    action = {
-                        val prefManager = PreferenceManager(accessibilityService)
-                        prefManager.setBooleanValue(
-                            PreferenceManager.PREFERENCE_KEY_GROUP_SCAN,
-                            !currentlyEnabled
-                        )
-                        MenuManager.getInstance().closeMenuHierarchy()
-                    }
-                )
+            if (scanSettings.isRowColumnScanEnabled()) {
+                MenuItemRegistry.getDefinition(
+                    MenuConstants.MenuIds.SETTINGS_MENU,
+                    MenuConstants.ItemIds.Settings.TOGGLE_GROUP_SCAN
+                )?.let { def ->
+                    val currentlyEnabled = scanSettings.isGroupScanEnabled()
+                    val stateLabel = accessibilityService.getString(
+                        if (currentlyEnabled) R.string.menu_item_turn_group_scan_off
+                        else R.string.menu_item_turn_group_scan_on
+                    )
+                    MenuItem(
+                        id = def.id,
+                        userProvidedText = stateLabel,
+                        descriptionResource = def.descriptionResource,
+                        drawableId = def.drawableId,
+                        closeOnSelect = false,
+                        action = {
+                            val prefManager = PreferenceManager(accessibilityService)
+                            prefManager.setBooleanValue(
+                                PreferenceManager.PREFERENCE_KEY_GROUP_SCAN,
+                                !currentlyEnabled
+                            )
+                            MenuManager.getInstance().closeMenuHierarchy()
+                        }
+                    )
+                }
+            } else {
+                null
             },
             MenuItemRegistry.getDefinition(
                 MenuConstants.MenuIds.SETTINGS_MENU,

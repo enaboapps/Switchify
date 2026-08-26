@@ -383,7 +383,7 @@
     <string name="preference_title_row_column_scan">Row/Column Scan</string>
     <string name="preference_summary_row_column_scan">Scan items in rows and columns</string>
     <string name="preference_title_group_scan">Group Scan</string>
-    <string name="preference_summary_group_scan">Scan items in groups for faster selection</string>
+    <string name="preference_summary_group_scan">Split long rows into smaller groups to shorten scanning. Applies when Row-Column Scan is on.</string>
     <string name="preference_title_item_scan_speech">Item Scan Speech</string>
     <string name="preference_summary_item_scan_speech">Speak the item content description while scanning</string>
     <string name="preference_title_scan_cycles">Scan Cycles</string>

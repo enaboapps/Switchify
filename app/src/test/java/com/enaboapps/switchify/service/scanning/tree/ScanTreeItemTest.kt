@@ -43,7 +43,7 @@ class ScanTreeItemTest {
     @Test
     fun groupUnhighlightOnlyUnhighlightsActiveGroupAndClearsBounds() {
         val boundsUi = TestBoundsUi()
-        val nodes = nodes("a", "b", "c", "d")
+        val nodes = nodes("a", "b", "c", "d", "e", "f", "g", "h")
         val item = ScanTreeItem(
             children = nodes,
             y = 0,
@@ -53,7 +53,7 @@ class ScanTreeItemTest {
 
         item.unhighlight(groupIndex = 1)
 
-        assertEquals(listOf(0, 0, 1, 1), nodes.map { it.unhighlightCount })
+        assertEquals(listOf(0, 0, 0, 1, 1, 1, 0, 0), nodes.map { it.unhighlightCount })
         assertEquals(1, boundsUi.hideAllCount)
     }
 
