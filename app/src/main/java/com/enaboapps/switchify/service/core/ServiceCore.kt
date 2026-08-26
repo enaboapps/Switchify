@@ -127,6 +127,7 @@ object ServiceCore {
             switchEventProviderRef = WeakReference(null)
         }
         if (::externalSwitchListenerRef.isInitialized) {
+            externalSwitchListenerRef.get()?.shutdown()
             externalSwitchListenerRef = WeakReference(null)
         }
         if (::cameraManagerRef.isInitialized) {

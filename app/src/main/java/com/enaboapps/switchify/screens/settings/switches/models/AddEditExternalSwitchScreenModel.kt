@@ -12,6 +12,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.enaboapps.switchify.service.scanning.ScanSettings
+import com.enaboapps.switchify.backend.preferences.PreferenceManager
 import com.enaboapps.switchify.switches.SWITCH_EVENT_TYPE_EXTERNAL
 import com.enaboapps.switchify.switches.SupportedActionsPolicy
 import com.enaboapps.switchify.switches.SwitchAction
@@ -19,6 +20,7 @@ import com.enaboapps.switchify.switches.SwitchAction.Companion.ACTION_MOVE_TO_NE
 import com.enaboapps.switchify.switches.SwitchAction.Companion.ACTION_MOVE_TO_PREVIOUS_ITEM
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchEventStore
+import com.enaboapps.switchify.switches.SwitchHoldPolicy
 import kotlinx.coroutines.launch
 
 class AddEditExternalSwitchScreenModel : ViewModel() {
@@ -187,8 +189,8 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
         var pressAction = pressAction.value
         val isMoveRepeat = settings.isMoveRepeatEnabled()
         val isMoveAction = pressAction?.id == next || pressAction?.id == previous
-        allowLongPress.value = !(isMoveRepeat && isMoveAction)
-        println("Allow long press: ${allowLongPress.value}, isMoveRepeat: $isMoveRepeat, isMoveAction: $isMoveAction")
+        val holdEnabled = SwitchHoldPolicy.isEnabled(PreferenceManager(context))
+        allowLongPress.value = holdEnabled && !(isMoveRepeat && isMoveAction)
     }
 
     private fun validate() {

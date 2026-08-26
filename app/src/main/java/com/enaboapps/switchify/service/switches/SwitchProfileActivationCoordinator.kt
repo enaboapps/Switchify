@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.switches
 
 import android.content.Context
+import com.enaboapps.switchify.backend.preferences.PreferenceManager
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.camera.CameraPermissionManager
 import com.enaboapps.switchify.service.core.ServiceBridge
@@ -17,6 +18,7 @@ import com.enaboapps.switchify.switches.profiles.SwitchProfileActivationState
 import com.enaboapps.switchify.switches.profiles.SwitchProfileConfirmationMode
 import com.enaboapps.switchify.switches.profiles.SwitchProfileRepository
 import com.enaboapps.switchify.switches.profiles.SwitchProfileValidator
+import com.enaboapps.switchify.switches.SwitchHoldPolicy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -391,7 +393,8 @@ internal class SwitchProfileActivationCoordinator(
         SwitchProfileValidator.validate(
             profile.switches,
             RequiredActionsPolicy.requiredActionIds(context),
-            SupportedActionsPolicy.supportedActionIds(context) + SwitchAction.ACTION_NONE
+            SupportedActionsPolicy.supportedActionIds(context) + SwitchAction.ACTION_NONE,
+            SwitchHoldPolicy.isEnabled(PreferenceManager(context))
         )
 
     private fun showVerificationPrompt(verifying: SwitchProfileActivationState.Verifying) {

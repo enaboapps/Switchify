@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.switches.external
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import com.enaboapps.switchify.backend.preferences.PreferenceManager
 import com.enaboapps.switchify.service.core.ServiceCore
@@ -14,6 +15,7 @@ import com.enaboapps.switchify.service.stats.StatsCollector
 import com.enaboapps.switchify.service.switches.SwitchEventProvider
 import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEvent
+import com.enaboapps.switchify.switches.SwitchHoldPolicy
 import com.enaboapps.switchify.switches.isScanMovementAction
 
 /**
@@ -34,12 +36,24 @@ class ExternalSwitchListener(
     }
 
     private val preferenceManager = PreferenceManager(context)
+    private val switchHoldPreferenceListener =
+        SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_ENABLED &&
+                !SwitchHoldPolicy.isEnabled(preferenceManager)
+            ) {
+                disableCurrentHoldPicker()
+            }
+        }
 
     private var pressSession: ExternalSwitchPressSession = ExternalSwitchPressSession.None
     private val suppressedSwitchCodes = mutableSetOf<Int>()
     private var gestureLockHoldFired = false
     private val pauseSwitchHoldTracker = PauseSwitchHoldTracker()
     private val pcForwardingDiversion = ExternalSwitchRemoteDiversion()
+
+    init {
+        preferenceManager.registerChangeListener(switchHoldPreferenceListener)
+    }
 
     /** Timestamp of the last switch press for handling repeat events */
     private var lastSwitchPressedTime: Long = 0
@@ -195,6 +209,11 @@ class ExternalSwitchListener(
             }
 
             is ExternalSwitchPressSession.HoldPicker -> {
+                if (!SwitchHoldPolicy.isEnabled(preferenceManager)) {
+                    ExternalSwitchLongPressHandler.cancel()
+                    processSwitchReleasedActions(session.switchEvent, session.pressTime)
+                    return true
+                }
                 val performedLongPressAction =
                     ExternalSwitchLongPressHandler.stopAndPerformPending(scanningManager)
                 if (performedLongPressAction) {
@@ -267,7 +286,11 @@ class ExternalSwitchListener(
      */
     private fun handleLongPressAction(switchEvent: SwitchEvent) {
         val pressTime = System.currentTimeMillis()
-        if (switchEvent.holdActions.isEmpty()) {
+        val holdActions = SwitchHoldPolicy.effectiveHoldActions(
+            switchEvent,
+            SwitchHoldPolicy.isEnabled(preferenceManager)
+        )
+        if (holdActions.isEmpty()) {
             pressSession = ExternalSwitchPressSession.ShortPressCandidate(switchEvent, pressTime)
             ExternalSwitchLongPressHandler.cancel()
         } else {
@@ -275,7 +298,7 @@ class ExternalSwitchListener(
             ExternalSwitchLongPressHandler.startHoldPicker(
                 context,
                 switchEvent.name,
-                switchEvent.holdActions
+                holdActions
             )
         }
         scanningManager.pauseScanning()
@@ -302,15 +325,19 @@ class ExternalSwitchListener(
 
         val switchHoldTime =
             preferenceManager.getLongValue(PreferenceManager.PREFERENCE_KEY_SWITCH_HOLD_TIME)
+        val holdActions = SwitchHoldPolicy.effectiveHoldActions(
+            switchEvent,
+            SwitchHoldPolicy.isEnabled(preferenceManager)
+        )
 
         var performedPressAction = false
 
         when {
             SelectionHandler.isAutoSelectInProgress() &&
-                    switchEvent.holdActions.isNotEmpty() ->
+                    holdActions.isNotEmpty() ->
                 performAutoSelectionAction()
 
-            switchEvent.holdActions.isEmpty() -> {
+            holdActions.isEmpty() -> {
                 performReleasePressAction(switchEvent.pressAction)
                 performedPressAction = true
             }
@@ -391,6 +418,11 @@ class ExternalSwitchListener(
         ExternalSwitchLongPressHandler.cancel()
     }
 
+    fun shutdown() {
+        preferenceManager.unregisterChangeListener(switchHoldPreferenceListener)
+        reset()
+    }
+
     private fun ExternalSwitchPressSession.matches(switchEvent: SwitchEvent): Boolean {
         return when (this) {
             ExternalSwitchPressSession.None -> false
@@ -409,6 +441,15 @@ class ExternalSwitchListener(
     private fun cancelCurrentPressInteraction() {
         ExternalSwitchLongPressHandler.cancel()
         clearPressSession()
+    }
+
+    private fun disableCurrentHoldPicker() {
+        val session = pressSession as? ExternalSwitchPressSession.HoldPicker ?: return
+        ExternalSwitchLongPressHandler.cancel()
+        pressSession = ExternalSwitchPressSession.ShortPressCandidate(
+            session.switchEvent,
+            session.pressTime
+        )
     }
 
     private fun suppressCurrentSwitchInteraction(swallowRelease: Boolean) {

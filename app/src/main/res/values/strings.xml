@@ -567,6 +567,7 @@
     <string name="screen_title_authentication">Welcome</string>
     <string name="screen_title_stats">Usage Statistics</string>
     <string name="screen_title_switch_stability">Switch Stability</string>
+    <string name="screen_title_switch_hold">Switch Hold</string>
     <string name="screen_title_pause_settings">Pause Settings</string>
     <string name="screen_title_switches">Switches</string>
     <string name="screen_title_external_switches">External Switches</string>
@@ -758,6 +759,8 @@
     <string name="settings_section_input">Input</string>
     <string name="settings_title_switches">Switches</string>
     <string name="settings_summary_switches">Configure your switches</string>
+    <string name="settings_title_switch_hold">Switch Hold</string>
+    <string name="settings_summary_switch_hold">Configure long press actions</string>
     <string name="settings_title_switch_stability">Switch Stability</string>
     <string name="settings_summary_switch_stability">Configure switch stability settings</string>
 
@@ -873,6 +876,8 @@
     <string name="preference_summary_ignore_repeat_delay">The delay before ignoring repeated presses of the same switch</string>
     <string name="preference_title_switch_hold_time">Switch Hold Time</string>
     <string name="preference_summary_switch_hold_time">The time to hold a switch before performing an action</string>
+    <string name="preference_title_switch_hold_enabled">Enable Switch Hold</string>
+    <string name="preference_summary_switch_hold_enabled">Use long press actions for external switches</string>
     <string name="preference_title_pause_timeout">Pause Timeout</string>
     <string name="preference_summary_pause_timeout">How long before Switchify automatically resumes from pause</string>
     <string name="preference_title_hold_to_unpause_duration">Hold to Unpause Duration</string>

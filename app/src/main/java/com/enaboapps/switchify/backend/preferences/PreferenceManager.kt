@@ -20,6 +20,7 @@ class PreferenceManager(context: Context) {
         const val PREFERENCE_KEY_RADAR_SPEED_LEVEL = "radar_speed_level"
         const val PREFERENCE_KEY_RADAR_SLOW_DOWN_THEN_SELECT = "radar_slow_down_then_select"
         const val PREFERENCE_KEY_RADAR_STARTING_POSITION = "radar_starting_position"
+        const val PREFERENCE_KEY_SWITCH_HOLD_ENABLED = "switch_hold_enabled"
         const val PREFERENCE_KEY_SWITCH_HOLD_TIME = "switch_hold_time"
         const val PREFERENCE_KEY_HOLD_TO_UNPAUSE_DURATION = "hold_to_unpause_duration"
         const val PREFERENCE_KEY_PAUSE_TIMEOUT = "pause_timeout"
