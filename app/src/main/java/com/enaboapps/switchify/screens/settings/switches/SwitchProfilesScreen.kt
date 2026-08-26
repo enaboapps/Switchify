@@ -2,6 +2,7 @@ package com.enaboapps.switchify.screens.settings.switches
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,9 +13,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -23,14 +28,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.R
@@ -102,33 +110,35 @@ fun SwitchProfilesScreen(navController: NavController) {
                 descriptionResId = R.string.switch_profiles_guide_description
             )
             document.profiles.forEach { profile ->
-                val active = profile.id == document.activeProfileId
-                ProfileRow(
-                    profile = profile,
-                    active = active,
-                    onEdit = {
-                        navController.navigate(
-                            "${NavigationRoute.SwitchProfileDetail.name}/${profile.id}"
-                        )
-                    },
-                    onActivate = {
-                        if (ServiceUtils().isAccessibilityServiceEnabled(context)) {
-                            ServiceBridge.sendCommand(
-                                ServiceBridge.ServiceCommand.BeginSwitchProfileActivation(profile.id)
+                key(profile.id) {
+                    val active = profile.id == document.activeProfileId
+                    ProfileRow(
+                        profile = profile,
+                        active = active,
+                        onEdit = {
+                            navController.navigate(
+                                "${NavigationRoute.SwitchProfileDetail.name}/${profile.id}"
                             )
-                        } else {
-                            Toast.makeText(
-                                context,
-                                R.string.switch_profile_service_required,
-                                Toast.LENGTH_LONG
-                            ).show()
-                            navController.navigate(NavigationRoute.EnableAccessibilityService.name)
-                        }
-                    },
-                    onDuplicate = { dialog = ProfileDialog.Duplicate(profile) },
-                    onRename = { dialog = ProfileDialog.Rename(profile) },
-                    onDelete = { deleteTarget = profile }
-                )
+                        },
+                        onActivate = {
+                            if (ServiceUtils().isAccessibilityServiceEnabled(context)) {
+                                ServiceBridge.sendCommand(
+                                    ServiceBridge.ServiceCommand.BeginSwitchProfileActivation(profile.id)
+                                )
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    R.string.switch_profile_service_required,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                navController.navigate(NavigationRoute.EnableAccessibilityService.name)
+                            }
+                        },
+                        onDuplicate = { dialog = ProfileDialog.Duplicate(profile) },
+                        onRename = { dialog = ProfileDialog.Rename(profile) },
+                        onDelete = { deleteTarget = profile }
+                    )
+                }
             }
             Spacer(Modifier.height(72.dp))
         }
@@ -249,41 +259,80 @@ private fun ProfileRow(
 ) {
     val externalCount = profile.switches.count { it.type == SWITCH_EVENT_TYPE_EXTERNAL }
     val cameraCount = profile.switches.count { it.type == SWITCH_EVENT_TYPE_CAMERA }
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    fun selectAction(action: () -> Unit) {
+        menuExpanded = false
+        action()
+    }
+
     Panel(modifier = Modifier.fillMaxWidth(), onClick = onEdit) {
         Column(Modifier.padding(16.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(profile.name, style = MaterialTheme.typography.titleMedium)
-                if (active) Text(
-                    stringResource(R.string.switch_profile_active),
-                    color = MaterialTheme.colorScheme.primary
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = profile.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
+                if (active) {
+                    Text(
+                        text = stringResource(R.string.switch_profile_active),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Box {
+                    IconButton(onClick = { menuExpanded = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(
+                                R.string.switch_profile_more_options,
+                                profile.name
+                            )
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.switch_profile_edit)) },
+                            onClick = { selectAction(onEdit) }
+                        )
+                        if (!active) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.switch_profile_activate)) },
+                                onClick = { selectAction(onActivate) }
+                            )
+                        }
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.switch_profile_duplicate)) },
+                            onClick = { selectAction(onDuplicate) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.switch_profile_rename)) },
+                            onClick = { selectAction(onRename) }
+                        )
+                        if (!active) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = stringResource(R.string.button_delete),
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                },
+                                onClick = { selectAction(onDelete) }
+                            )
+                        }
+                    }
+                }
             }
             Text(stringResource(R.string.switch_profile_external_count, externalCount))
             Text(stringResource(R.string.switch_profile_camera_count, cameraCount))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onEdit) { Text(stringResource(R.string.switch_profile_edit)) }
-                if (!active) {
-                    TextButton(onClick = onActivate) {
-                        Text(stringResource(R.string.switch_profile_activate))
-                    }
-                }
-                TextButton(onClick = onDuplicate) {
-                    Text(stringResource(R.string.switch_profile_duplicate))
-                }
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onRename) {
-                    Text(stringResource(R.string.switch_profile_rename))
-                }
-                if (!active) {
-                    TextButton(onClick = onDelete) {
-                        Text(
-                            stringResource(R.string.button_delete),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-            }
         }
     }
 }
