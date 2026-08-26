@@ -48,9 +48,9 @@ import com.enaboapps.switchify.R
 import com.enaboapps.switchify.components.ActionButton
 import com.enaboapps.switchify.components.ActionButtonType
 import com.enaboapps.switchify.components.BaseView
+import com.enaboapps.switchify.components.LoadingIndicator
 import com.enaboapps.switchify.components.Panel
 import com.enaboapps.switchify.components.TextArea
-import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.screens.settings.switches.actions.SwitchActionField
 import com.enaboapps.switchify.screens.settings.switches.models.AddEditExternalSwitchScreenModel
 import com.enaboapps.switchify.service.core.ServiceBridge
@@ -64,24 +64,52 @@ fun AddEditExternalSwitchScreen(
     profileId: String? = null
 ) {
     val context = LocalContext.current
+    val profileContext = rememberSwitchProfileContext(profileId)
+    HandleMissingSwitchProfile(profileContext, navController)
+    val editing = code != null
+    val screenTitle =
+        if (editing) R.string.screen_title_edit_switch else R.string.screen_title_add_switch
+    val targetProfileId = profileContext.targetProfileId
+    if (targetProfileId == null) {
+        BaseView(
+            titleResId = screenTitle,
+            navController = navController,
+            enableScroll = false
+        ) {
+            LoadingIndicator()
+        }
+        return
+    }
     val scope = rememberCoroutineScope()
-    val addEditExternalSwitchScreenModel = remember {
+    val addEditExternalSwitchScreenModel = remember(code, targetProfileId) {
         AddEditExternalSwitchScreenModel().apply {
-            init(code, context, profileId)
+            init(code, context, targetProfileId)
         }
     }
     val shouldSave by addEditExternalSwitchScreenModel.shouldSave.observeAsState()
     val isValid by addEditExternalSwitchScreenModel.isValid.observeAsState()
-    val editing = code != null
+    val hasUnsavedChanges by addEditExternalSwitchScreenModel.hasUnsavedChanges.observeAsState(false)
     val captured by addEditExternalSwitchScreenModel.switchCaptured.observeAsState()
-    val screenTitle =
-        if (editing) R.string.screen_title_edit_switch else R.string.screen_title_add_switch
     val showDeleteConfirmation = remember { mutableStateOf(false) }
 
     if (!captured!!) {
-        SwitchListener(navController = navController, onKeyEvent = { keyEvent: KeyEvent ->
-            addEditExternalSwitchScreenModel.processKeyCode(keyEvent.key, context)
-        })
+        BaseView(
+            titleResId = screenTitle,
+            navController = navController,
+            navBarTrailingContent = {
+                SwitchProfileIndicator(
+                    profileContext,
+                    navController,
+                    confirmBeforeLeaving = hasUnsavedChanges
+                )
+            },
+            enableScroll = false,
+            padding = 0.dp
+        ) {
+            SwitchListener(navController = navController, onKeyEvent = { keyEvent: KeyEvent ->
+                addEditExternalSwitchScreenModel.processKeyCode(keyEvent.key, context)
+            })
+        }
     } else {
         var refresh by remember { mutableStateOf(0) }
         LaunchedEffect(Unit) {
@@ -103,6 +131,13 @@ fun AddEditExternalSwitchScreen(
         BaseView(
             titleResId = screenTitle,
             navController = navController,
+            navBarTrailingContent = {
+                SwitchProfileIndicator(
+                    profileContext,
+                    navController,
+                    confirmBeforeLeaving = hasUnsavedChanges
+                )
+            },
             bottomBar = {
                 val context = LocalContext.current
                 val scope = rememberCoroutineScope()
@@ -161,7 +196,7 @@ fun AddEditExternalSwitchScreen(
                         navController,
                         addEditExternalSwitchScreenModel,
                         code,
-                        profileId
+                        targetProfileId
                     )
                     Spacer(modifier = Modifier.padding(12.dp))
                 }
@@ -286,7 +321,7 @@ fun SwitchActionSection(
     navController: NavController,
     viewModel: AddEditExternalSwitchScreenModel,
     switchCode: String?,
-    profileId: String? = null
+    profileId: String
 ) {
     val allowLongPress = viewModel.allowLongPress.observeAsState()
     val longPressActions = viewModel.longPressActions.observeAsState()
@@ -297,6 +332,7 @@ fun SwitchActionSection(
         navController = navController,
         titleResId = R.string.section_title_press_action,
         switchAction = viewModel.pressAction.value!!,
+        profileId = profileId,
         onChange = {
             viewModel.setPressAction(it, context)
         }
@@ -312,11 +348,7 @@ fun SwitchActionSection(
             actionCount = actionCount,
             onClick = {
                 if (switchCode != null) {
-                    val route = if (profileId == null) {
-                        "${NavigationRoute.LongPressActions.name}/$switchCode"
-                    } else {
-                        "${NavigationRoute.LongPressActions.name}/$profileId/$switchCode"
-                    }
+                    val route = SwitchProfileRoutes.longPressActions(profileId, switchCode)
                     navController.navigate(route)
                 }
             },

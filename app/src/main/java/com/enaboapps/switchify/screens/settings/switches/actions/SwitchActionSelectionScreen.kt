@@ -47,6 +47,9 @@ import com.enaboapps.switchify.switches.SupportedActionsPolicy
 import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.switches.SwitchHoldPolicy
+import com.enaboapps.switchify.screens.settings.switches.HandleMissingSwitchProfile
+import com.enaboapps.switchify.screens.settings.switches.SwitchProfileIndicator
+import com.enaboapps.switchify.screens.settings.switches.rememberSwitchProfileContext
 import com.enaboapps.switchify.theme.Dimens
 
 /**
@@ -67,17 +70,22 @@ const val SELECTED_ACTION_ID_KEY = "selected_action_id"
 @Composable
 fun SwitchActionSelectionScreen(
     navController: NavController,
-    currentActionId: Int
+    currentActionId: Int,
+    profileId: String?
 ) {
     val context = LocalContext.current
+    val profileContext = rememberSwitchProfileContext(profileId)
+    val targetProfileId = profileContext.targetProfileId
+    HandleMissingSwitchProfile(profileContext, navController)
     val availableActions = remember { SupportedActionsPolicy.supportedActions(context) }
     var missingActions by remember { mutableStateOf(listOf<SwitchAction>()) }
 
     // Compute missing required actions
-    LaunchedEffect(currentActionId, availableActions) {
+    LaunchedEffect(currentActionId, availableActions, targetProfileId) {
+        val resolvedProfileId = targetProfileId ?: return@LaunchedEffect
         val required = RequiredActionsPolicy.requiredActionIds(context)
         val configured = SwitchHoldPolicy.configuredActionIds(
-            SwitchEventStore.getInstance().getSwitchEvents(),
+            SwitchEventStore.getInstance().getSwitchEvents(resolvedProfileId),
             SwitchHoldPolicy.isEnabled(PreferenceManager(context))
         )
         val current = setOf(currentActionId)
@@ -98,6 +106,9 @@ fun SwitchActionSelectionScreen(
     BaseView(
         titleResId = R.string.screen_title_select_action,
         navController = navController,
+        navBarTrailingContent = {
+            SwitchProfileIndicator(profileContext, navController)
+        },
         enableScroll = false
     ) {
         LazyColumn(

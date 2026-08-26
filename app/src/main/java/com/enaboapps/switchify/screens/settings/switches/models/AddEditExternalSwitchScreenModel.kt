@@ -39,6 +39,7 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
     val switchCaptured = MutableLiveData(false)
     val shouldSave = MutableLiveData(false)
     val isValid = MutableLiveData(false)
+    val hasUnsavedChanges = MutableLiveData(false)
     val allowLongPress = MutableLiveData(true)
     val refreshingLongPressActions = MutableLiveData(false)
 
@@ -109,6 +110,7 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
         }
 
         code = key.nativeKeyCode.toString()
+        hasUnsavedChanges.value = true
         validateIfInitialized()
         shouldSave.value = true
         switchCaptured.value = true
@@ -119,6 +121,7 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
         val currentActions = longPressActions.value?.toMutableList() ?: mutableListOf()
         currentActions.add(action)
         longPressActions.value = currentActions
+        hasUnsavedChanges.value = true
         validateIfInitialized()
     }
 
@@ -126,6 +129,7 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
         val currentActions = longPressActions.value?.toMutableList() ?: mutableListOf()
         currentActions.removeAt(index)
         longPressActions.value = currentActions
+        hasUnsavedChanges.value = true
         validateIfInitialized()
         refreshLongPressActions()
     }
@@ -136,6 +140,7 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
             val action = currentActions.removeAt(fromIndex)
             currentActions.add(toIndex, action)
             longPressActions.value = currentActions
+            hasUnsavedChanges.value = true
             validateIfInitialized()
         }
     }
@@ -167,18 +172,21 @@ class AddEditExternalSwitchScreenModel : ViewModel() {
         if (index != -1) {
             currentActions[index] = newAction
             longPressActions.value = currentActions
+            hasUnsavedChanges.value = true
         }
         validateIfInitialized()
     }
 
     fun setPressAction(action: SwitchAction, context: Context) {
         pressAction.value = action
+        hasUnsavedChanges.value = true
         updateAllowLongPress(context)
         validateIfInitialized()
     }
 
     fun updateName(name: String) {
         this.name = name
+        hasUnsavedChanges.value = true
         validateIfInitialized()
     }
 

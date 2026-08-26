@@ -48,6 +48,9 @@ fun LongPressActionsScreen(
     profileId: String? = null
 ) {
     val context = LocalContext.current
+    val profileContext = rememberSwitchProfileContext(profileId)
+    val targetProfileId = profileContext.targetProfileId
+    HandleMissingSwitchProfile(profileContext, navController)
     val switchHoldEnabled = remember {
         SwitchHoldPolicy.isEnabled(PreferenceManager(context))
     }
@@ -57,19 +60,20 @@ fun LongPressActionsScreen(
         }
         return
     }
+    val resolvedProfileId = targetProfileId ?: return
     val store = remember { SwitchEventStore.getInstance() }
 
     // Load actions from store - refresh key triggers reload
     var refreshKey by remember { mutableStateOf(0) }
-    val actions = remember(refreshKey) {
-        store.find(code, profileId)?.holdActions ?: emptyList()
+    val actions = remember(refreshKey, resolvedProfileId) {
+        store.find(code, resolvedProfileId)?.holdActions ?: emptyList()
     }
 
     // Save helper that updates store and refreshes UI
     fun saveAndRefresh(newActions: List<SwitchAction>) {
-        val event = store.find(code, profileId) ?: return
+        val event = store.find(code, resolvedProfileId) ?: return
         val updatedEvent = event.copy(holdActions = newActions)
-        store.update(updatedEvent, context, profileId) { success ->
+        store.update(updatedEvent, context, resolvedProfileId) { success ->
             if (success) {
                 refreshKey++
             }
@@ -79,6 +83,9 @@ fun LongPressActionsScreen(
     BaseView(
         titleResId = R.string.screen_title_long_press_actions,
         navController = navController,
+        navBarTrailingContent = {
+            SwitchProfileIndicator(profileContext, navController)
+        },
         enableScroll = false,
         floatingActionButton = {
             FloatingActionButton(
@@ -126,6 +133,7 @@ fun LongPressActionsScreen(
                         titleResId = R.string.section_title_long_press_action,
                         titleResIdArgs = arrayOf(index + 1),
                         switchAction = action,
+                        profileId = resolvedProfileId,
                         onChange = { newAction ->
                             val mutableList = actions.toMutableList()
                             mutableList[index] = newAction

@@ -22,6 +22,7 @@ class AddEditCameraSwitchScreenModel : ViewModel() {
     )
     val action = mutableStateOf(SwitchAction(SwitchAction.ACTION_SELECT))
     val isValid = mutableStateOf(false)
+    val hasUnsavedChanges = mutableStateOf(false)
     val showDeleteConfirmation = mutableStateOf(false)
 
     private lateinit var store: SwitchEventStore
@@ -52,17 +53,20 @@ class AddEditCameraSwitchScreenModel : ViewModel() {
 
     fun updateName(newName: String) {
         name = newName
+        hasUnsavedChanges.value = true
         validate()
     }
 
     fun setGesture(gesture: CameraSwitchFacialGesture) {
         selectedGesture.value = gesture
+        hasUnsavedChanges.value = true
         validate()
 
     }
 
     fun setAction(newAction: SwitchAction) {
         action.value = newAction
+        hasUnsavedChanges.value = true
         validate()
     }
 
