@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,6 +52,7 @@ import com.enaboapps.switchify.service.utils.ServiceUtils
 import com.enaboapps.switchify.switches.SWITCH_EVENT_TYPE_CAMERA
 import com.enaboapps.switchify.switches.SwitchConfigValidator
 import com.enaboapps.switchify.switches.SwitchEventStore
+import com.enaboapps.switchify.switches.profiles.SwitchProfileRepository
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.android.play.core.review.ReviewManagerFactory
 
@@ -65,9 +65,9 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
     var isPro by remember { mutableStateOf(false) }
     val switchEventStore = remember { SwitchEventStore.getInstance() }
     val switchConfigValidator = remember { SwitchConfigValidator(context) }
+    val switchProfileRepository = remember { SwitchProfileRepository.getInstance(context) }
+    val switchProfileDocument by switchProfileRepository.document.collectAsState()
     var isSwitchConfigValid by remember { mutableStateOf(true) }
-    var scanModeName by remember { mutableStateOf<String?>(null) }
-    var switchCount by remember { mutableIntStateOf(0) }
     var hasCameraSwitch by remember { mutableStateOf(false) }
     val proReminderManager = remember { ProReminderManager(context) }
     var showProReminder by remember { mutableStateOf(false) }
@@ -96,8 +96,6 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
 
         switchEventStore.initializeAsync(context)
         isSwitchConfigValid = switchConfigValidator.isConfigurationValid()
-        scanModeName = switchConfigValidator.getCurrentScanModeName()
-        switchCount = switchEventStore.getCount()
         hasCameraSwitch = switchEventStore.getSwitchEvents().any {
             it.type == SWITCH_EVENT_TYPE_CAMERA
         }
@@ -110,7 +108,6 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
                 hasCameraSwitch = switchEventStore.getSwitchEvents().any {
                     it.type == SWITCH_EVENT_TYPE_CAMERA
                 }
-                switchCount = switchEventStore.getCount()
             }
         }
     }
@@ -122,6 +119,10 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
     val hasCameraPermission =
         remember { CameraPermissionManager.getInstance(context).hasPermission() }
     val showCameraAlert = isAccessibilityServiceEnabled && hasCameraSwitch && !hasCameraPermission
+    val activeProfileName = switchProfileDocument.profiles
+        .firstOrNull { it.id == switchProfileDocument.activeProfileId }
+        ?.name
+        ?: switchProfileDocument.profiles.first().name
 
     BaseView(
         titleResId = R.string.screen_title_switchify,
@@ -143,12 +144,14 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
                     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                         HomeHeroCard(
                             isAccessibilityServiceEnabled = isAccessibilityServiceEnabled,
-                            scanModeName = scanModeName,
-                            switchCount = switchCount,
+                            activeProfileName = activeProfileName,
                             isConfigValid = isSwitchConfigValid,
                             shape = RectangleShape,
-                            onPrimaryAction = {
+                            onEnableService = {
                                 navController.navigate(NavigationRoute.EnableAccessibilityService.name)
+                            },
+                            onOpenProfiles = {
+                                navController.navigate(NavigationRoute.SwitchProfiles.name)
                             }
                         )
                         HomeToggleRow(
