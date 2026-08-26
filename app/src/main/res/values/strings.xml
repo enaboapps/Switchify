@@ -1400,7 +1400,10 @@
     <string name="switch_profile_unsupported_actions">These actions are unavailable in the current scan mode: %1$s</string>
     <string name="switch_profile_activation_failed">Could not activate this profile. Your previous profile is still active.</string>
     <string name="screen_title_switch_profiles">Switch Profiles</string>
-    <string name="switch_profiles_summary">Save and change external switch and camera gesture mappings</string>
+    <string name="switch_profiles_summary">Save switch mappings for different setups</string>
+    <string name="switch_profiles_entry_summary">Save switch mappings for different setups\nActive profile: %1$s</string>
+    <string name="switch_profiles_guide_title">How profiles work</string>
+    <string name="switch_profiles_guide_description">Switch profiles save different external-switch and camera-gesture mappings. Only the active profile controls Switchify. You can edit another profile without changing your current controls. Before activation, Switchify tests the new profile\'s Select action so you can still control the device.</string>
     <string name="switch_profile_active_summary">Active profile: %1$s</string>
     <string name="switch_profile_external_count">External switches: %1$d</string>
     <string name="switch_profile_camera_count">Camera gestures: %1$d</string>
