@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Switchify</string>
     
     <!-- Common UI -->
@@ -175,7 +175,10 @@
     <!-- Gesture Pattern Messages -->
     <string name="hud_gesture_pattern_stopped">Gesture Pattern Stopped</string>
     <string name="hud_gesture_pattern_manual_mode_started">Manual Pattern Started - Press switch to advance</string>
-    <string name="hud_gesture_pattern_step_completed">Step %1$d of %2$d completed - %3$d remaining</string>
+    <plurals name="hud_gesture_pattern_step_completed">
+        <item quantity="one">Step %1$d of %2$d completed - 1 remaining</item>
+        <item quantity="other">Step %1$d of %2$d completed - %3$d remaining</item>
+    </plurals>
     <string name="hud_gesture_pattern_completed">Gesture Pattern Completed</string>
     <string name="hud_gesture_pattern_error">Gesture Pattern Error</string>
 
@@ -184,7 +187,6 @@
     <string name="debug_trial_started_message">30-second DEBUG trial started. All features available!</string>
     <string name="trial_warning_message">10 minutes remaining in service trial. Restart service for fresh trial.</string>
     <string name="trial_expired_message">Service trial expired. Restart accessibility service for fresh 1-hour trial.</string>
-    <string name="pro_unlimited_access_message">Switchify Pro activated. Unlimited access to all features!</string>
     <string name="debug_trial_disabled_message">Debug mode: Trials disabled. Unlimited access!</string>
     <string name="trial_blocked_device_locked_message">Device locked. New trial start blocked for security.</string>
     <string name="service_startup_splash_title">Switchify</string>
@@ -288,277 +290,13 @@
     <string name="screen_title_advanced_gestures">Advanced Gestures</string>
     <string name="settings_summary_advanced_gestures">Advanced timing options</string>
     <string name="settings_section_advanced_gestures">Advanced Gestures</string>
-    <string name="pc_connection_title">Connect to PC</string>
-    <string name="pc_connection_home_summary">Find and connect to Switchify PC over Bluetooth.</string>
-    <string name="pc_connection_setup_section">Set up your computer</string>
-    <string name="pc_connection_download_pc_title">Download Switchify PC</string>
-    <string name="pc_connection_download_pc_summary">Install Switchify PC on your computer before connecting over Bluetooth.</string>
-    <string name="pc_connection_control_hint">Control your connected PC from Switchify.</string>
-    <string name="pc_connection_status_permission_title">Bluetooth permission needed</string>
-    <string name="pc_connection_status_permission_summary">Allow Bluetooth so Switchify can find nearby PCs.</string>
-    <string name="pc_connection_status_connected_title">Connected to %1$s</string>
-    <string name="pc_connection_status_connected_summary">Control your connected PC from Switchify.</string>
-    <string name="pc_connection_status_searching_title">Looking for PCs</string>
-    <string name="pc_connection_status_searching_summary">Keep Switchify PC open on your computer.</string>
-    <string name="pc_connection_status_ready_title">Ready to connect</string>
-    <string name="pc_connection_status_ready_summary">Choose a PC below.</string>
-    <string name="pc_connection_status_empty_title">No PCs found yet</string>
-    <string name="pc_connection_status_empty_summary">Open Switchify PC on your computer and keep Bluetooth enabled.</string>
-    <string name="pc_connection_status_failed_title">Could not start Bluetooth discovery</string>
-    <string name="pc_connection_status_failed_summary">Check Bluetooth and try reopening this screen.</string>
-    <string name="pc_connection_permission_section">Bluetooth permission</string>
-    <string name="pc_connection_permission_message">Switchify needs Bluetooth permission to find and connect to Switchify PC.</string>
-    <string name="pc_connection_permission_action">Allow Bluetooth</string>
-    <string name="pc_connection_nearby_section">Available PCs</string>
-    <string name="pc_connection_pcs_section">PCs</string>
-    <string name="pc_connection_nearby_empty_title">No PCs found yet</string>
-    <string name="pc_connection_nearby_empty_summary">Open Switchify PC on your computer and keep Bluetooth enabled.</string>
-    <string name="pc_connection_paired_section">Saved PCs</string>
-    <string name="pc_connection_connect">Connect</string>
-    <string name="pc_connection_open_control">Open Control PC</string>
-    <string name="pc_connection_not_nearby">Not nearby</string>
-    <string name="pc_connection_default">Default</string>
-    <string name="pc_connection_make_default">Make default</string>
-    <string name="pc_connection_default_set_message">Default PC set to %1$s.</string>
-    <string name="pc_connection_default_picker_title">Default PC</string>
-    <string name="pc_connection_default_last_connection">Use last connection</string>
-    <string name="pc_connection_default_last_connection_summary">Switchify will use the most recently connected PC.</string>
-    <string name="pc_connection_default_last_connection_current_summary">Currently: %1$s</string>
-    <string name="pc_connection_default_specific_summary">Always connect to this PC when it is available.</string>
-    <string name="pc_connection_default_last_set_message">Default set to last connection.</string>
-    <string name="pc_connection_status_connected">Connected</string>
-    <string name="pc_connection_status_waiting">Waiting</string>
-    <string name="pc_connection_status_connecting">Connecting</string>
-    <string name="pc_connection_status_failed">Failed</string>
-    <string name="pc_connection_status_saved">Saved</string>
-    <string name="pc_connection_status_not_nearby">Not nearby</string>
-    <string name="pc_connection_status_not_available">Not available</string>
-    <string name="pc_connection_unpair">Unpair</string>
-    <string name="pc_connection_unpair_title">Unpair PC?</string>
-    <string name="pc_connection_unpair_message">Switchify will forget %1$s. You will need to request access again before controlling this PC.</string>
-    <string name="pc_connection_unpaired_message">Unpaired from %1$s.</string>
-    <string name="pc_connection_message_title">PC connection</string>
-    <string name="pc_settings_title">PC Settings</string>
-    <string name="pc_settings_mouse_section">Mouse</string>
-    <string name="pc_settings_mouse_repeat_title">Mouse Repeat</string>
-    <string name="pc_settings_mouse_repeat_summary">Repeat PC mouse movement and scrolling until the next switch press.</string>
-    <string name="pc_settings_mouse_repeat_interval_title">Repeat Interval</string>
-    <string name="pc_settings_mouse_repeat_interval_summary">Time between repeated PC mouse actions.</string>
-    <string name="pc_settings_mouse_repeat_configured_on_pc">PC mouse repeat is configured in Switchify PC.</string>
-    <string name="pc_settings_switch_forwarding_section">PC Switch Forwarding</string>
-    <string name="pc_settings_switch_forwarding_hold_to_stop_title">Hold to stop</string>
-    <string name="pc_settings_switch_forwarding_hold_to_stop_summary">How long to hold and release a forwarded switch before PC Switch Forwarding stops.</string>
-    <string name="pc_settings_link_summary">Configure PC controls and connection settings.</string>
-    <string name="pc_mouse_repeat_started">Mouse Repeat Started</string>
-    <string name="pc_mouse_repeat_stopped">Mouse Repeat Stopped</string>
-    <string name="pc_pairing_code_title">Check your PC</string>
-    <string name="pc_pairing_code_pc_name">Connecting to %1$s</string>
-    <string name="pc_pairing_code_message">Confirm this code matches the one shown on your PC before accepting.</string>
-    <string name="pc_pairing_code_waiting">Waiting for approval on your PC...</string>
     <string name="menu_item_control_pc">Control PC</string>
     <string name="menu_item_pc_switch_forwarding">PC Switch Forwarding</string>
     <string name="switchify_remote_required_title">Install Switchify Remote?</string>
     <string name="switchify_remote_required_message">Control PC and PC Switch Forwarding now open in Switchify Remote.</string>
     <string name="install_switchify_remote">Install</string>
     <string name="menu_item_pc_switch_forwarding_description">Open PC Switch Forwarding in Switchify Remote</string>
-    <string name="pc_switch_forwarding_connected">Connected to %1$s.</string>
-    <string name="pc_switch_forwarding_reconnecting">Reconnecting to %1$s...</string>
-    <string name="pc_switch_forwarding_active_eyebrow">Active mode</string>
-    <string name="pc_switch_forwarding_summary">External switch presses are forwarded through the selected PC profile.</string>
-    <string name="pc_switch_forwarding_hold_to_stop_hint">Hold any forwarded switch for %1$s and release to stop</string>
-    <plurals name="pc_switch_forwarding_hold_seconds">
-        <item quantity="one">%1$d second</item>
-        <item quantity="other">%1$d seconds</item>
-    </plurals>
-    <string name="pc_switch_forwarding_hold_fractional_seconds">%1$.1f seconds</string>
-    <string name="pc_switch_forwarding_switch_mapping">Switch mapping</string>
-    <string name="pc_switch_forwarding_switch_key">Key %1$s</string>
-    <string name="pc_switch_forwarding_switch_tile_description">%1$s, switch slot %2$d, mapped to %3$s</string>
-    <string name="pc_switch_forwarding_switch_unassigned">Not assigned in this profile</string>
-    <string name="pc_switch_forwarding_switch_state_pressed">Pressed</string>
-    <string name="pc_switch_forwarding_switch_state_idle">Not pressed</string>
-    <string name="pc_switch_forwarding_pc_fallback_name">Switchify PC</string>
-    <string name="pc_switch_forwarding_overflow_title">Not forwarded</string>
-    <string name="pc_switch_forwarding_overflow_description">Only the first eight configured external switches are forwarded.</string>
-    <string name="pc_switch_forwarding_stop">Stop PC Switch Forwarding</string>
-    <string name="pc_switch_forwarding_no_external_switches">Configure at least one external switch before starting PC Switch Forwarding.</string>
-    <string name="pc_switch_forwarding_pc_unsupported">Update Switchify PC before starting PC Switch Forwarding.</string>
-    <string name="pc_switch_forwarding_title">PC Switch Forwarding</string>
-    <string name="pc_switch_choose_profile">Choose a profile, review its switch mappings, then select Start.</string>
-    <string name="pc_switch_loading_profiles">Loading PC switch profiles…</string>
-    <string name="pc_switch_starting">Starting PC Switch Forwarding…</string>
-    <string name="pc_switch_empty_catalog">No switch profiles are available. Create one in Switchify PC, then select Retry.</string>
-    <string name="pc_switch_previous_profile_unavailable">The previously selected profile is unavailable. %1$s has been selected.</string>
-    <string name="pc_switch_profile_changed">That profile changed or was removed. Select Retry to reload the profile list, then choose again.</string>
-    <string name="pc_switch_provider_grid3">Native Grid 3</string>
-    <string name="pc_switch_provider_windows">Windows input</string>
-    <string name="pc_switch_profiles_heading">Profiles</string>
-    <plurals name="pc_switch_profile_mapping_count">
-        <item quantity="one">%1$d switch mapping</item>
-        <item quantity="other">%1$d switch mappings</item>
-    </plurals>
-    <string name="pc_switch_selected_mapping">Mappings for %1$s</string>
-    <string name="pc_switch_mapping_preview_description">Mappings for %1$s: %2$s</string>
-    <string name="pc_switch_binding">%1$d. %2$s</string>
-    <string name="pc_switch_chooser_announcement">PC Switch Forwarding stopped. Choose a profile.</string>
-    <string name="pc_switch_inactivity_timeout">PC Switch Forwarding stopped after one minute without switch activity.</string>
-    <string name="pc_switch_start_failed">PC Switch Forwarding could not start.</string>
-    <string name="pc_switch_retry">Retry</string>
-    <string name="pc_switch_start">Start</string>
-    <string name="pc_switch_close">Close</string>
-    <string name="pc_switch_change_profile">Change profile</string>
-    <string name="pc_switch_active_profile">Profile: %1$s</string>
     <string name="menu_item_control_pc_description">Open mouse controls in Switchify Remote.</string>
-    <string name="menu_title_control_pc">Control PC</string>
-    <string name="menu_title_choose_pc">Choose PC</string>
-    <string name="menu_item_choose_pc_description">Connect to this PC.</string>
-    <string name="pc_control_connecting">Connecting to PC...</string>
-    <string name="pc_control_connect_first">Connect to PC from Switchify first.</string>
-    <string name="pc_control_waiting_approval">Waiting for approval on your PC...</string>
-    <string name="pc_control_pairing_code">Confirm code %1$s on your PC before accepting.</string>
-    <string name="pc_control_no_pc_found">No Switchify PC found.</string>
-    <string name="pc_control_could_not_connect">Could not connect to PC.</string>
-    <string name="pc_control_command_failed">Could not send command to PC.</string>
-    <string name="pc_control_current_pc">Current PC</string>
-    <string name="pc_control_no_pc_connected">No PC connected</string>
-    <string name="pc_control_switch_pc">Switch</string>
-    <string name="pc_control_switch_pc_title">Switch PC</string>
-    <string name="pc_control_switch_pc_searching">Searching for paired PCs...</string>
-    <string name="pc_control_switch_pc_empty">No paired PCs found nearby.</string>
-    <string name="pc_control_switch_pc_connected">Connected</string>
-    <string name="pc_control_switch_pc_refresh">Refresh</string>
-    <string name="pc_control_close">Close PC controls</string>
-    <string name="pc_control_close_confirm_title">Close Control PC?</string>
-    <string name="pc_control_close_confirm_message">Your PC controls will close.</string>
-    <string name="pc_control_close_confirm_action">Close</string>
-    <string name="pc_control_close_confirm_cancel">Stay</string>
-    <string name="pc_control_surface_mouse">Mouse</string>
-    <string name="pc_control_surface_typing">Typing</string>
-    <string name="pc_control_surface_window">Window</string>
-    <string name="pc_control_quick_input">Quick input</string>
-    <string name="pc_control_quick_type">Quick type</string>
-    <string name="pc_control_quick_input_close">Close quick input</string>
-    <string name="pc_control_quick_input_hide_keyboard">Hide keyboard</string>
-    <string name="pc_mouse_control_connected">Connected to %1$s.</string>
-    <string name="pc_mouse_pointer_speed">Pointer speed</string>
-    <string name="pc_mouse_pointer_speed_configured">Set in Switchify PC.</string>
-    <string name="pc_mouse_pointer_speed_unavailable">Update Switchify PC to set pointer speed.</string>
-    <string name="pc_mouse_pointer_speed_option_description">Set pointer speed to %1$s.</string>
-    <string name="pc_mouse_section_movement">Movement</string>
-    <string name="pc_mouse_section_clicks">Clicks</string>
-    <string name="request_rejected">Request rejected.</string>
-    <string name="request_expired_try_again">Request expired. Try again.</string>
-    <string name="pc_mouse_up_left">Up left</string>
-    <string name="pc_mouse_up">Up</string>
-    <string name="pc_mouse_up_right">Up right</string>
-    <string name="pc_mouse_left">Left</string>
-    <string name="pc_mouse_click">Click</string>
-    <string name="pc_mouse_right">Right</string>
-    <string name="pc_mouse_down_left">Down left</string>
-    <string name="pc_mouse_down">Down</string>
-    <string name="pc_mouse_down_right">Down right</string>
-    <string name="pc_mouse_right_click">Right click</string>
-    <string name="pc_mouse_double_click">Double click</string>
-    <string name="pc_mouse_scroll_up">Scroll up</string>
-    <string name="pc_mouse_scroll_down">Scroll down</string>
-    <string name="pc_typing_type_on_pc">Type on PC</string>
-    <string name="pc_typing_start_typing">Start typing</string>
-    <string name="pc_typing_live_status_line">Live · Sent as you type</string>
-    <string name="pc_typing_write_draft">Write a draft</string>
-    <string name="pc_typing_write_draft_instead">Write a draft instead</string>
-    <string name="pc_typing_type_live_instead">Type live instead</string>
-    <string name="pc_typing_pc_keys">PC keys</string>
-    <string name="pc_typing_back_to_typing">Back to typing</string>
-    <string name="pc_typing_draft_field_label">Draft</string>
-    <string name="pc_typing_nothing_sent">Nothing is sent until you choose Send.</string>
-    <string name="pc_typing_press_enter_after_sending">Press Enter after sending</string>
-    <string name="pc_typing_clear_draft">Clear draft</string>
-    <string name="pc_typing_paused">Typing paused</string>
-    <string name="pc_typing_text_safe">Your text is safe here.</string>
-    <string name="pc_typing_save_as_draft">Save as draft</string>
-    <string name="pc_typing_keep_typing">Keep typing</string>
-    <string name="pc_typing_live_clear_field">Clear field</string>
-    <string name="pc_typing_draft_review_warning">Some text may already be on your PC. Review this draft before sending.</string>
-    <string name="pc_typing_exit_title">Save unsent text?</string>
-    <string name="pc_typing_exit_retry">Retry</string>
-    <string name="pc_typing_exit_discard">Discard</string>
-    <string name="pc_typing_more_keys">More keys</string>
-    <string name="pc_typing_hide_more_keys">Hide more keys</string>
-    <string name="pc_control_quick_input_open_full">Open full typing controls</string>
-    <string name="pc_typing_live_field_paused">Typing is paused. Your text is safe here. Choose Retry to continue.</string>
-    <string name="pc_typing_live_unavailable">Update Switchify PC to use live typing. Draft mode remains available.</string>
-    <string name="pc_typing_send">Send</string>
-    <string name="pc_typing_send_failed">Could not send text to PC.</string>
-    <string name="pc_typing_key_failed">Could not send key to PC.</string>
-    <string name="pc_typing_text_too_long">Text is too long.</string>
-    <string name="pc_typing_text_unsupported">Text includes unsupported characters.</string>
-    <string name="pc_window_section_windows">Windows</string>
-    <string name="pc_window_section_monitors">Monitors</string>
-    <string name="pc_monitor_up">Monitor up</string>
-    <string name="pc_monitor_left">Monitor left</string>
-    <string name="pc_monitor_right">Monitor right</string>
-    <string name="pc_monitor_down">Monitor down</string>
-    <string name="pc_window_switch_next">Next app</string>
-    <string name="pc_window_switch_previous">Previous app</string>
-    <string name="pc_window_task_view">Task view</string>
-    <string name="pc_window_show_desktop">Show desktop</string>
-    <string name="pc_window_minimize">Minimize</string>
-    <string name="pc_window_maximize">Maximize</string>
-    <string name="pc_window_close">Close app</string>
-    <string name="pc_window_section_modifiers">Modifiers</string>
-    <string name="pc_window_section_shortcuts">Shortcuts</string>
-    <string name="pc_window_shortcuts_no_modifier">Choose Ctrl, Alt, Shift, or Start first.</string>
-    <string name="pc_window_shortcuts_no_modifier_macos">Choose Control, Option, Shift, or Command first.</string>
-    <string name="pc_window_shortcuts_no_modifier_generic">Choose Ctrl, Alt, Shift, or Meta first.</string>
-    <string name="pc_window_shortcuts_with_modifiers">Send with %1$s.</string>
-    <string name="pc_modifier_ctrl">Ctrl</string>
-    <string name="pc_modifier_alt">Alt</string>
-    <string name="pc_modifier_shift">Shift</string>
-    <string name="pc_modifier_start">Start</string>
-    <string name="pc_modifier_control">Control</string>
-    <string name="pc_modifier_option">Option</string>
-    <string name="pc_modifier_command">Command</string>
-    <string name="pc_modifier_meta">Meta</string>
-    <string name="pc_key_start">Start</string>
-    <string name="pc_key_backspace">Backspace</string>
-    <string name="pc_key_delete">Delete</string>
-    <string name="pc_key_enter">Enter</string>
-    <string name="pc_key_escape">Escape</string>
-    <string name="pc_key_space">Space</string>
-    <string name="pc_key_tab">Tab</string>
-    <string name="pc_key_arrow_up">Up</string>
-    <string name="pc_key_arrow_down">Down</string>
-    <string name="pc_key_arrow_left">Left</string>
-    <string name="pc_key_arrow_right">Right</string>
-    <string name="pc_key_home">Home</string>
-    <string name="pc_key_end">End</string>
-    <string name="pc_key_page_up">Page up</string>
-    <string name="pc_key_page_down">Page down</string>
-    <string name="pc_key_f1">F1</string>
-    <string name="pc_key_f2">F2</string>
-    <string name="pc_key_f3">F3</string>
-    <string name="pc_key_f4">F4</string>
-    <string name="pc_key_f5">F5</string>
-    <string name="pc_key_f6">F6</string>
-    <string name="pc_key_f7">F7</string>
-    <string name="pc_key_f8">F8</string>
-    <string name="pc_key_f9">F9</string>
-    <string name="pc_key_f10">F10</string>
-    <string name="pc_key_f11">F11</string>
-    <string name="pc_key_f12">F12</string>
-    <string name="pc_mouse_up_left_description">Move the PC pointer up and left.</string>
-    <string name="pc_mouse_up_description">Move the PC pointer up.</string>
-    <string name="pc_mouse_up_right_description">Move the PC pointer up and right.</string>
-    <string name="pc_mouse_left_description">Move the PC pointer left.</string>
-    <string name="pc_mouse_click_description">Click on the PC.</string>
-    <string name="pc_mouse_right_description">Move the PC pointer right.</string>
-    <string name="pc_mouse_down_left_description">Move the PC pointer down and left.</string>
-    <string name="pc_mouse_down_description">Move the PC pointer down.</string>
-    <string name="pc_mouse_down_right_description">Move the PC pointer down and right.</string>
-    <string name="pc_mouse_right_click_description">Right click on the PC.</string>
-    <string name="pc_mouse_double_click_description">Double click on the PC.</string>
-    <string name="pc_mouse_scroll_up_description">Scroll on the PC.</string>
-    <string name="pc_mouse_scroll_down_description">Scroll on the PC.</string>
     <string name="screen_title_accessibility_service">Accessibility Service ♿</string>
     <string name="screen_title_upgrade_pro">Unlock Pro Magic! ✨</string>
     <string name="screen_title_debug">Debug Settings</string>
@@ -609,7 +347,7 @@
 
     <!-- Update Messages -->
     <string name="update_downloaded_ready_to_install">Update downloaded and ready to install!</string>
-    <string name="update_installing_automatically">Installing update automatically...</string>
+    <string name="update_installing_automatically">Installing update automatically…</string>
     <string name="update_pending_install_reminder">Update pending: Tap to install the latest version.</string>
     <string name="update_installed_successfully">Update installed successfully!</string>
 
@@ -723,8 +461,6 @@
     <string name="camera_settings_title">Camera Settings</string>
     <string name="section_title_expression_testing">Expression Testing</string>
     <string name="no_face_detected">No face detected</string>
-    <string name="section_title_movement_speed">Movement Speed</string>
-    <string name="section_title_deadzone_settings">Deadzone Settings</string>
     
     <!-- Camera Settings Tab Titles -->
     <string name="tab_test_gestures">Test Gestures</string>
@@ -804,7 +540,7 @@
     <string name="debug_section_adb_testing">ADB Testing</string>
     <string name="debug_force_crash">Force Crash</string>
     <string name="debug_adb_testing_summary">Debug builds listen for %1$s while the accessibility service is running. Use it to perform Switchify actions and reload settings from ADB without relying on synthetic key events.</string>
-    <string name="debug_adb_testing_examples">adb shell am broadcast -a %1$s -p com.enaboapps.switchify --es action next\nadb shell am broadcast -a %1$s -p com.enaboapps.switchify --es action home\nadb shell am broadcast -a %1$s -p com.enaboapps.switchify --es action reload_settings</string>
+    <string name="debug_adb_testing_examples" tools:ignore="TypographyDashes">adb shell am broadcast -a %1$s -p com.enaboapps.switchify --es action next\nadb shell am broadcast -a %1$s -p com.enaboapps.switchify --es action home\nadb shell am broadcast -a %1$s -p com.enaboapps.switchify --es action reload_settings</string>
     <string name="debug_adb_test_next">Test Next</string>
     <string name="debug_adb_test_previous">Test Previous</string>
     <string name="debug_adb_test_select">Test Select</string>
@@ -846,7 +582,7 @@
     <string name="account_information">Account Information</string>
     <string name="subscription_status">Subscription Status</string>
     <string name="subscription_free">Free</string>
-    <string name="loading_status">Loading...</string>
+    <string name="loading_status">Loading…</string>
 
     <!-- App Paywall Screen -->
     <string name="pro_thank_you">Thank you for trying out Switchify Pro! You can now access all of Switchify\'s features.</string>
@@ -866,8 +602,10 @@
     <string name="long_press_actions_save_first">Save the switch first to configure long press actions.</string>
     <string name="section_title_long_press_actions">Long Press Actions</string>
     <string name="long_press_actions_none">No actions configured</string>
-    <string name="long_press_actions_count_one">1 action configured</string>
-    <string name="long_press_actions_count_other">%1$d actions configured</string>
+    <plurals name="long_press_actions_count">
+        <item quantity="one">%1$d action configured</item>
+        <item quantity="other">%1$d actions configured</item>
+    </plurals>
 
     <!-- Switch Stability Screen -->
     <string name="preference_title_ignore_repeat">Ignore Repeat</string>
@@ -899,9 +637,7 @@
     <string name="preference_title_stop_pattern_on_switch">Stop Pattern on Switch Press</string>
     <string name="preference_summary_stop_pattern_on_switch">When enabled, pressing any switch will stop the currently executing gesture pattern</string>
     <string name="preference_title_gesture_lock_auto_reenable">Re-arm Gesture Lock</string>
-    <string name="preference_summary_gesture_lock_auto_reenable">After gesture lock turns off, turn it back on ready to choose another gesture</string>
     <string name="preference_title_gesture_repeat">Gesture Repeat</string>
-    <string name="preference_summary_gesture_repeat">Repeat the selected gesture until a switch is pressed</string>
     <string name="preference_title_gesture_repeat_initial_delay">First Repeat Delay</string>
     <string name="preference_summary_gesture_repeat_initial_delay">The delay before the first repeated gesture</string>
     <string name="preference_title_gesture_repeat_delay">Gesture Repeat Delay</string>
@@ -1028,13 +764,16 @@
     <string name="welcome_to_switchify">Welcome to Switchify</string>
     <string name="enter_email_to_continue">Enter your email to continue</string>
     <string name="button_continue_with_email">Continue with Email</string>
-    <string name="please_wait">Please wait...</string>
+    <string name="please_wait">Please wait…</string>
     <string name="verification_code_sent">Verification Code Sent</string>
     <string name="enter_otp_sent_to">Enter the 6-digit code sent to %1$s</string>
     <string name="label_verification_code">Verification Code</string>
     <string name="button_verify">Verify</string>
     <string name="button_resend_otp">Resend Code</string>
-    <string name="resend_in_seconds">Resend in %1$d seconds</string>
+    <plurals name="resend_in_seconds">
+        <item quantity="one">Resend in %1$d second</item>
+        <item quantity="other">Resend in %1$d seconds</item>
+    </plurals>
     <string name="button_change_email">Change Email</string>
     
     <!-- User Feedback Screen -->
@@ -1046,7 +785,7 @@
     <string name="feedback_type_suggestion">Suggestion</string>
     <string name="feedback_type_other">Other</string>
     <string name="feedback_text_label">Your Feedback</string>
-    <string name="feedback_text_placeholder">Please describe your feedback in detail...</string>
+    <string name="feedback_text_placeholder">Please describe your feedback in detail…</string>
     <string name="feedback_email_label">Email (Optional)</string>
     <string name="feedback_email_placeholder">your.email@example.com</string>
     <string name="feedback_submit">Submit Feedback</string>
@@ -1075,7 +814,10 @@
     <string name="home_hero_eyebrow">ACCESSIBILITY SERVICE</string>
     <string name="home_hero_running_title">Switchify is on</string>
     <string name="home_hero_disabled_title">Switchify is off</string>
-    <string name="home_hero_running_summary">%1$s · %2$d switches</string>
+    <plurals name="home_hero_running_summary">
+        <item quantity="one">%1$s · %2$d switch</item>
+        <item quantity="other">%1$s · %2$d switches</item>
+    </plurals>
     <string name="home_hero_running_summary_no_switches">%1$s</string>
     <string name="home_hero_disabled_summary">Tap to enable in system settings</string>
     <string name="home_hero_config_attention_summary">Configuration needs attention</string>
@@ -1084,7 +826,10 @@
     
     <!-- Switch List Item -->
     <string name="switch_additional_actions">Additional Actions</string>
-    <string name="switch_more_actions">+%1$d more actions</string>
+    <plurals name="switch_more_actions">
+        <item quantity="one">+%1$d more action</item>
+        <item quantity="other">+%1$d more actions</item>
+    </plurals>
     <string name="switch_type_external">External Switch</string>
     <string name="switch_type_camera">Camera Switch</string>
     
@@ -1116,7 +861,6 @@
     <string name="menu_customization_info">Items appear in this order in the service menu. When more items are added than fit on a page, the rest move to the next page — the page markers show where each new page starts. Tap the eye icon to hide or show items.</string>
     <string name="menu_customization_no_items">No items to display</string>
     <string name="menu_customization_page_header">Page %1$d</string>
-    <string name="label_select_menu">Select Menu</string>
     <string name="filter_by_menu">Filter by menu</string>
     <string name="filter_all_menus">All menus</string>
     <string name="menu_title_main">Main Menu</string>
@@ -1310,7 +1054,6 @@
     <string name="menu_item_previous_menu_description">Go back to the previous menu</string>
     <string name="menu_item_previous_page_description">Show the previous page of menu items</string>
     <string name="menu_item_next_page_description">Show the next page of menu items</string>
-    <string name="menu_item_loading_description">Please wait while items load</string>
 
     <!-- AI submenu -->
     <string name="menu_title_ai">AI</string>
@@ -1319,8 +1062,8 @@
     <!-- Reply Drafter -->
     <string name="menu_item_reply_drafter">Reply Drafter</string>
     <string name="menu_item_reply_drafter_description">Capture the screen and suggest replies</string>
-    <string name="reply_drafter_starting">Capturing the screen for Reply Drafter...</string>
-    <string name="reply_drafter_processing">Drafting replies...</string>
+    <string name="reply_drafter_starting">Capturing the screen for Reply Drafter…</string>
+    <string name="reply_drafter_processing">Drafting replies…</string>
     <string name="reply_drafter_screenshot_failed">Could not capture the screen</string>
     <string name="reply_drafter_llm_failed">Could not draft replies</string>
     <string name="reply_drafter_model_not_ready">Download the AI model first in Settings</string>
@@ -1330,7 +1073,6 @@
     <string name="reply_drafter_pick_hint">Tap a reply to copy it to the clipboard</string>
     <string name="reply_drafter_copied">Copied to clipboard</string>
     <string name="reply_drafter_retry">Retry</string>
-    <string name="reply_drafter_close">Close</string>
     <string name="reply_drafter_guidance_placeholder">Guide the replies (optional) — e.g. \"be more formal\"</string>
     <string name="reply_drafter_regenerate_action">Regenerate suggestions</string>
 
@@ -1348,7 +1090,6 @@
     <string name="screen_highlights_pick_hint">Tap a highlight to copy it to the clipboard</string>
     <string name="screen_highlights_copied">Copied to clipboard</string>
     <string name="screen_highlights_retry">Retry</string>
-    <string name="screen_highlights_close">Close</string>
     <string name="screen_highlights_type_url">Link</string>
     <string name="screen_highlights_type_phone">Phone</string>
     <string name="screen_highlights_type_email">Email</string>
@@ -1380,7 +1121,7 @@
     <string name="ai_model_builtin_ready">Your device has built-in AI. No download needed.</string>
     <string name="ai_model_builtin_setup">Your device supports built-in AI. Set it up to power Switchify\'s AI features with no large download.</string>
     <string name="ai_model_builtin_setup_button">Set up built-in AI</string>
-    <string name="ai_model_builtin_preparing">Setting up built-in AI...</string>
+    <string name="ai_model_builtin_preparing">Setting up built-in AI…</string>
     <string name="screen_title_gemma_terms">Gemma Terms</string>
     <string name="gemma_terms_intro_title">Gemma Terms of Use</string>
     <string name="gemma_terms_intro">Switchify\'s AI features use Google\'s Gemma model, which runs entirely on your device. To download it you must agree to Google\'s Gemma Terms of Use and Prohibited Use Policy.</string>
@@ -1390,8 +1131,14 @@
     <string name="gemma_terms_review">Review Gemma terms</string>
     <string name="gemma_terms_link">Gemma terms</string>
     <string name="gemma_built_with">Built with Gemma</string>
-    <string name="switch_profile_verification_prompt">Use Select with %1$s within %2$d seconds</string>
-    <string name="switch_profile_menu_verification_prompt">Use %1$s to choose Activate profile within %2$d seconds</string>
+    <plurals name="switch_profile_verification_prompt">
+        <item quantity="one">Use Select with %1$s within %2$d second</item>
+        <item quantity="other">Use Select with %1$s within %2$d seconds</item>
+    </plurals>
+    <plurals name="switch_profile_menu_verification_prompt">
+        <item quantity="one">Use %1$s to choose Activate profile within %2$d second</item>
+        <item quantity="other">Use %1$s to choose Activate profile within %2$d seconds</item>
+    </plurals>
     <string name="switch_profile_verification_timed_out">Profile test timed out. Your previous profile is still active.</string>
     <string name="switch_profile_verification_cancelled">Profile test cancelled. Your previous profile is still active.</string>
     <string name="switch_profile_activated">%1$s is now active</string>
@@ -1400,11 +1147,9 @@
     <string name="switch_profile_unsupported_actions">These actions are unavailable in the current scan mode: %1$s</string>
     <string name="switch_profile_activation_failed">Could not activate this profile. Your previous profile is still active.</string>
     <string name="screen_title_switch_profiles">Switch Profiles</string>
-    <string name="switch_profiles_summary">Save switch mappings for different setups</string>
     <string name="switch_profiles_entry_summary">Save switch mappings for different setups\nActive profile: %1$s</string>
     <string name="switch_profiles_guide_title">How profiles work</string>
     <string name="switch_profiles_guide_description">Switch profiles save different external-switch and camera-gesture mappings. Only the active profile controls Switchify. You can edit another profile without changing your current controls. Before activation, Switchify tests the new profile\'s Select action so you can still control the device.</string>
-    <string name="switch_profile_active_summary">Active profile: %1$s</string>
     <string name="switch_profile_external_count">External switches: %1$d</string>
     <string name="switch_profile_camera_count">Camera gestures: %1$d</string>
     <string name="switch_profile_active">Active</string>
@@ -1421,7 +1166,6 @@
     <string name="switch_profile_more_options">More options for %1$s</string>
     <string name="switch_profile_name">Profile name</string>
     <string name="switch_profile_create">Create profile</string>
-    <string name="switch_profile_create_empty">Create empty</string>
     <string name="switch_profile_duplicate_title">Duplicate profile</string>
     <string name="switch_profile_rename_title">Rename profile</string>
     <string name="switch_profile_delete_title">Delete profile?</string>
@@ -1430,12 +1174,14 @@
     <string name="switch_profile_name_duplicate">A profile with this name already exists</string>
     <string name="switch_profile_service_required">Turn on Switchify before activating a profile</string>
     <string name="switch_profile_testing_title">Test %1$s</string>
-    <string name="switch_profile_testing_message">Use the Select action from this profile within %1$d seconds. Your current profile remains saved until the test succeeds.</string>
+    <plurals name="switch_profile_testing_message">
+        <item quantity="one">Use the Select action from this profile within %1$d second. Your current profile remains saved until the test succeeds.</item>
+        <item quantity="other">Use the Select action from this profile within %1$d seconds. Your current profile remains saved until the test succeeds.</item>
+    </plurals>
     <string name="switch_profile_confirmation_title">Confirm profile</string>
     <string name="switch_profile_confirmation_activate">Activate %1$s</string>
     <string name="switch_profile_confirmation_activate_description">Activate this profile using its Select action</string>
     <string name="switch_profile_confirmation_cancel_description">Keep the current profile and return to the profile list</string>
-    <string name="switch_profile_no_other_profiles">Create another profile before switching</string>
     <string name="menu_item_switch_profile">Switch profile</string>
     <string name="menu_item_switch_profile_description">Choose another switch mapping profile</string>
 </resources>

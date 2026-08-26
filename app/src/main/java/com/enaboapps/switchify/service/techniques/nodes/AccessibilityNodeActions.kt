@@ -253,53 +253,69 @@ internal object AndroidNodeActionLabels {
 
     fun isExcluded(actionId: Int): Boolean = actionId in excludedStandardActionIds
 
-    private fun standardLabelResource(actionId: Int): Int? = when (actionId) {
-        AccessibilityNodeInfo.ACTION_CLICK -> R.string.accessibility_action_click
-        AccessibilityNodeInfo.ACTION_LONG_CLICK -> R.string.accessibility_action_long_click
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_CONTEXT_CLICK.id -> R.string.accessibility_action_context_click
-        AccessibilityNodeInfo.ACTION_SELECT -> R.string.accessibility_action_select
-        AccessibilityNodeInfo.ACTION_CLEAR_SELECTION -> R.string.accessibility_action_clear_selection
-        AccessibilityNodeInfo.ACTION_EXPAND -> R.string.accessibility_action_expand
-        AccessibilityNodeInfo.ACTION_COLLAPSE -> R.string.accessibility_action_collapse
-        AccessibilityNodeInfo.ACTION_DISMISS -> R.string.accessibility_action_dismiss
-        AccessibilityNodeInfo.ACTION_SCROLL_FORWARD -> R.string.accessibility_action_scroll_forward
-        AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD -> R.string.accessibility_action_scroll_backward
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_UP.id -> R.string.accessibility_action_scroll_up
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN.id -> R.string.accessibility_action_scroll_down
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_LEFT.id -> R.string.accessibility_action_scroll_left
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_RIGHT.id -> R.string.accessibility_action_scroll_right
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_PAGE_UP.id -> R.string.accessibility_action_page_up
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_PAGE_DOWN.id -> R.string.accessibility_action_page_down
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_PAGE_LEFT.id -> R.string.accessibility_action_page_left
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_PAGE_RIGHT.id -> R.string.accessibility_action_page_right
-        AccessibilityNodeInfo.ACTION_COPY -> R.string.accessibility_action_copy
-        AccessibilityNodeInfo.ACTION_CUT -> R.string.accessibility_action_cut
-        AccessibilityNodeInfo.ACTION_PASTE -> R.string.accessibility_action_paste
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_IME_ENTER.id -> R.string.accessibility_action_ime_enter
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_SHOW_TOOLTIP.id -> R.string.accessibility_action_show_tooltip
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_HIDE_TOOLTIP.id -> R.string.accessibility_action_hide_tooltip
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_SHOW_ON_SCREEN.id -> R.string.accessibility_action_show_on_screen
-        else -> null
+    private fun standardLabelResource(actionId: Int): Int? {
+        val resource = when (actionId) {
+            AccessibilityNodeInfo.ACTION_CLICK -> R.string.accessibility_action_click
+            AccessibilityNodeInfo.ACTION_LONG_CLICK -> R.string.accessibility_action_long_click
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_CONTEXT_CLICK.id -> R.string.accessibility_action_context_click
+            AccessibilityNodeInfo.ACTION_SELECT -> R.string.accessibility_action_select
+            AccessibilityNodeInfo.ACTION_CLEAR_SELECTION -> R.string.accessibility_action_clear_selection
+            AccessibilityNodeInfo.ACTION_EXPAND -> R.string.accessibility_action_expand
+            AccessibilityNodeInfo.ACTION_COLLAPSE -> R.string.accessibility_action_collapse
+            AccessibilityNodeInfo.ACTION_DISMISS -> R.string.accessibility_action_dismiss
+            AccessibilityNodeInfo.ACTION_SCROLL_FORWARD -> R.string.accessibility_action_scroll_forward
+            AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD -> R.string.accessibility_action_scroll_backward
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_UP.id -> R.string.accessibility_action_scroll_up
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN.id -> R.string.accessibility_action_scroll_down
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_LEFT.id -> R.string.accessibility_action_scroll_left
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_RIGHT.id -> R.string.accessibility_action_scroll_right
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_PAGE_UP.id -> R.string.accessibility_action_page_up
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_PAGE_DOWN.id -> R.string.accessibility_action_page_down
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_PAGE_LEFT.id -> R.string.accessibility_action_page_left
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_PAGE_RIGHT.id -> R.string.accessibility_action_page_right
+            AccessibilityNodeInfo.ACTION_COPY -> R.string.accessibility_action_copy
+            AccessibilityNodeInfo.ACTION_CUT -> R.string.accessibility_action_cut
+            AccessibilityNodeInfo.ACTION_PASTE -> R.string.accessibility_action_paste
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_SHOW_TOOLTIP.id -> R.string.accessibility_action_show_tooltip
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_HIDE_TOOLTIP.id -> R.string.accessibility_action_hide_tooltip
+            AccessibilityNodeInfo.AccessibilityAction.ACTION_SHOW_ON_SCREEN.id -> R.string.accessibility_action_show_on_screen
+            else -> null
+        }
+        if (resource != null) return resource
+        return if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+            actionId == AccessibilityNodeInfo.AccessibilityAction.ACTION_IME_ENTER.id
+        ) {
+            R.string.accessibility_action_ime_enter
+        } else {
+            null
+        }
     }
 
-    private val excludedStandardActionIds = setOf(
-        AccessibilityNodeInfo.ACTION_FOCUS,
-        AccessibilityNodeInfo.ACTION_CLEAR_FOCUS,
-        AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS,
-        AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS,
-        AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY,
-        AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY,
-        AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT,
-        AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT,
-        AccessibilityNodeInfo.ACTION_SET_SELECTION,
-        AccessibilityNodeInfo.ACTION_SET_TEXT,
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_SET_PROGRESS.id,
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_TO_POSITION.id,
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_IN_DIRECTION.id,
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_MOVE_WINDOW.id,
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_PRESS_AND_HOLD.id,
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_DRAG_START.id,
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_DRAG_DROP.id,
-        AccessibilityNodeInfo.AccessibilityAction.ACTION_DRAG_CANCEL.id
-    )
+    private val excludedStandardActionIds = buildSet {
+        add(AccessibilityNodeInfo.ACTION_FOCUS)
+        add(AccessibilityNodeInfo.ACTION_CLEAR_FOCUS)
+        add(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)
+        add(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS)
+        add(AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY)
+        add(AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY)
+        add(AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT)
+        add(AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT)
+        add(AccessibilityNodeInfo.ACTION_SET_SELECTION)
+        add(AccessibilityNodeInfo.ACTION_SET_TEXT)
+        add(AccessibilityNodeInfo.AccessibilityAction.ACTION_SET_PROGRESS.id)
+        add(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_TO_POSITION.id)
+        add(AccessibilityNodeInfo.AccessibilityAction.ACTION_MOVE_WINDOW.id)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            add(AccessibilityNodeInfo.AccessibilityAction.ACTION_PRESS_AND_HOLD.id)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
+            add(AccessibilityNodeInfo.AccessibilityAction.ACTION_DRAG_START.id)
+            add(AccessibilityNodeInfo.AccessibilityAction.ACTION_DRAG_DROP.id)
+            add(AccessibilityNodeInfo.AccessibilityAction.ACTION_DRAG_CANCEL.id)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            add(AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_IN_DIRECTION.id)
+        }
+    }
 }

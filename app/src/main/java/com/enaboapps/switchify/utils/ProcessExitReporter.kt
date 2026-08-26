@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.utils
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.ApplicationExitInfo
 import android.content.Context
@@ -54,6 +55,7 @@ internal object ProcessExitReporter {
         return isActionableReason(reason, Build.VERSION.SDK_INT)
     }
 
+    @SuppressLint("InlinedApi")
     internal fun isActionableReason(reason: Int, sdkInt: Int): Boolean {
         return if (sdkInt >= Build.VERSION_CODES.R) {
             reason == ApplicationExitInfo.REASON_ANR ||
@@ -71,6 +73,7 @@ internal object ProcessExitReporter {
         return reasonName(reason, Build.VERSION.SDK_INT)
     }
 
+    @SuppressLint("InlinedApi")
     internal fun reasonName(reason: Int, sdkInt: Int): String {
         if (sdkInt < Build.VERSION_CODES.R) return "UNSUPPORTED"
         return when (reason) {

@@ -1,6 +1,8 @@
 package com.enaboapps.switchify.service.core
 
+import android.annotation.SuppressLint
 import com.enaboapps.switchify.service.camera.CameraManager
+import com.enaboapps.switchify.service.gestures.PinchGesturePerformer
 import com.enaboapps.switchify.service.gestures.visuals.AndroidGestureTargetIndicatorRenderer
 import com.enaboapps.switchify.service.gestures.visuals.GestureTargetIndicatorController
 import com.enaboapps.switchify.service.remotebridge.SwitchifyRemoteBridgeCoordinator
@@ -17,6 +19,7 @@ object ServiceCore {
     private lateinit var externalSwitchListenerRef: WeakReference<ExternalSwitchListener>
     private lateinit var switchEventProviderRef: WeakReference<SwitchEventProvider>
     private lateinit var cameraManagerRef: WeakReference<CameraManager>
+    @SuppressLint("StaticFieldLeak")
     private var switchProfileActivationCoordinator: SwitchProfileActivationCoordinator? = null
     private var gestureTargetIndicator: GestureTargetIndicatorController? = null
 
@@ -119,6 +122,7 @@ object ServiceCore {
         SwitchifyRemoteBridgeCoordinator.detach()
         gestureTargetIndicator?.release()
         gestureTargetIndicator = null
+        PinchGesturePerformer.cleanup()
         if (::scanningManagerRef.isInitialized) {
             scanningManagerRef.get()?.shutdown()
             scanningManagerRef = WeakReference(null)

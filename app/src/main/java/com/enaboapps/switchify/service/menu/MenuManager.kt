@@ -308,11 +308,6 @@ class MenuManager {
     }
 
     /**
-     * This function opens the PC chooser menu listing the given discovered PCs
-     * @param pcs The PCs discovered on the local network
-     * @param onSelect Invoked with the chosen PC after the menu closes
-     */
-    /**
      * This function opens the menu
      * @param menu The menu to open
      */

@@ -400,14 +400,16 @@ internal class SwitchProfileActivationCoordinator(
     private fun showVerificationPrompt(verifying: SwitchProfileActivationState.Verifying) {
         val remainingSeconds = ((verifying.expiresAtMillis - now()).coerceAtLeast(0L) + 999L) / 1000L
         val message = if (verifying.confirmationMode == SwitchProfileConfirmationMode.MENU) {
-            context.getString(
-                R.string.switch_profile_menu_verification_prompt,
+            context.resources.getQuantityString(
+                R.plurals.switch_profile_menu_verification_prompt,
+                remainingSeconds.toInt(),
                 verifying.profile.name,
                 remainingSeconds
             )
         } else {
-            context.getString(
-                R.string.switch_profile_verification_prompt,
+            context.resources.getQuantityString(
+                R.plurals.switch_profile_verification_prompt,
+                remainingSeconds.toInt(),
                 verifying.profile.name,
                 remainingSeconds
             )

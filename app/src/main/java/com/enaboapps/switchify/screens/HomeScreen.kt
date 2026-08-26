@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -66,7 +67,7 @@ fun HomeScreen(navController: NavController, serviceUtils: ServiceUtils = Servic
     val switchConfigValidator = remember { SwitchConfigValidator(context) }
     var isSwitchConfigValid by remember { mutableStateOf(true) }
     var scanModeName by remember { mutableStateOf<String?>(null) }
-    var switchCount by remember { mutableStateOf(0) }
+    var switchCount by remember { mutableIntStateOf(0) }
     var hasCameraSwitch by remember { mutableStateOf(false) }
     val proReminderManager = remember { ProReminderManager(context) }
     var showProReminder by remember { mutableStateOf(false) }

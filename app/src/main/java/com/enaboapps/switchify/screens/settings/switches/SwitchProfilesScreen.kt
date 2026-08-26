@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -395,7 +396,15 @@ private fun VerificationDialog(
     AlertDialog(
         onDismissRequest = onCancel,
         title = { Text(stringResource(R.string.switch_profile_testing_title, verification.name)) },
-        text = { Text(stringResource(R.string.switch_profile_testing_message, remaining)) },
+        text = {
+            Text(
+                pluralStringResource(
+                    R.plurals.switch_profile_testing_message,
+                    remaining.toInt(),
+                    remaining
+                )
+            )
+        },
         confirmButton = {},
         dismissButton = {
             TextButton(onClick = onCancel) { Text(stringResource(R.string.button_cancel)) }
