@@ -27,6 +27,7 @@ import com.enaboapps.switchify.R
 import com.enaboapps.switchify.components.ActionButton
 import com.enaboapps.switchify.components.ActionButtonType
 import com.enaboapps.switchify.components.BaseView
+import com.enaboapps.switchify.components.LoadingIndicator
 import com.enaboapps.switchify.components.Picker
 import com.enaboapps.switchify.screens.settings.switches.actions.SwitchActionField
 import com.enaboapps.switchify.screens.settings.switches.models.AddEditCameraSwitchScreenModel
@@ -42,13 +43,35 @@ fun AddEditCameraSwitchScreen(
     profileId: String? = null
 ) {
     val context = LocalContext.current
-    val viewModel = remember {
-        AddEditCameraSwitchScreenModel().apply { init(code, context, profileId) }
+    val profileContext = rememberSwitchProfileContext(profileId)
+    HandleMissingSwitchProfile(profileContext, navController)
+    val targetProfileId = profileContext.targetProfileId
+    val titleResId =
+        if (code == null) R.string.screen_title_add_switch else R.string.screen_title_edit_switch
+    if (targetProfileId == null) {
+        BaseView(
+            titleResId = titleResId,
+            navController = navController,
+            enableScroll = false
+        ) {
+            LoadingIndicator()
+        }
+        return
+    }
+    val viewModel = remember(code, targetProfileId) {
+        AddEditCameraSwitchScreenModel().apply { init(code, context, targetProfileId) }
     }
 
     BaseView(
-        titleResId = if (code == null) R.string.screen_title_add_switch else R.string.screen_title_edit_switch,
+        titleResId = titleResId,
         navController = navController,
+        navBarTrailingContent = {
+            SwitchProfileIndicator(
+                profileContext,
+                navController,
+                confirmBeforeLeaving = viewModel.hasUnsavedChanges.value
+            )
+        },
         bottomBar = {
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
@@ -103,7 +126,7 @@ fun AddEditCameraSwitchScreen(
             }
         }
         key(refresh) {
-            MainContent(code, viewModel, navController)
+            MainContent(code, viewModel, navController, targetProfileId)
         }
     }
 }
@@ -112,7 +135,8 @@ fun AddEditCameraSwitchScreen(
 private fun MainContent(
     code: String?,
     viewModel: AddEditCameraSwitchScreenModel,
-    navController: NavController
+    navController: NavController,
+    profileId: String
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -161,6 +185,7 @@ private fun MainContent(
             navController = navController,
             titleResId = R.string.section_title_action,
             switchAction = viewModel.action.value,
+            profileId = profileId,
             onChange = { viewModel.setAction(it) }
         )
 

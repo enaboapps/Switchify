@@ -27,7 +27,6 @@ import com.enaboapps.switchify.components.Section
 import com.enaboapps.switchify.components.SwitchAction
 import com.enaboapps.switchify.components.SwitchListItem
 import com.enaboapps.switchify.components.SwitchType
-import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.screens.settings.switches.models.CameraSwitchesScreenModel
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -38,6 +37,9 @@ import com.google.accompanist.permissions.rememberPermissionState
 @Composable
 fun CameraSwitchesScreen(navController: NavController, profileId: String? = null) {
     val context = LocalContext.current
+    val profileContext = rememberSwitchProfileContext(profileId)
+    val targetProfileId = profileContext.targetProfileId
+    HandleMissingSwitchProfile(profileContext, navController)
     val cameraSwitchesScreenModel = remember {
         CameraSwitchesScreenModel()
     }
@@ -47,22 +49,24 @@ fun CameraSwitchesScreen(navController: NavController, profileId: String? = null
         android.Manifest.permission.CAMERA
     )
 
-    LaunchedEffect(Unit) {
-        cameraSwitchesScreenModel.setup(context, profileId)
+    LaunchedEffect(targetProfileId) {
+        targetProfileId?.let { cameraSwitchesScreenModel.setup(context, it) }
     }
 
     BaseView(
         titleResId = R.string.screen_title_camera_switches,
         navController = navController,
+        navBarTrailingContent = {
+            SwitchProfileIndicator(profileContext, navController)
+        },
         padding = 0.dp,
         enableScroll = false,
         floatingActionButton = {
-            if (cameraPermissionState.status.isGranted) {
+            if (cameraPermissionState.status.isGranted && targetProfileId != null) {
                 FloatingActionButton(
                     onClick = {
                         navController.navigate(
-                            profileId?.let { "${NavigationRoute.AddNewCameraSwitch.name}/$it" }
-                                ?: NavigationRoute.AddNewCameraSwitch.name
+                            SwitchProfileRoutes.addCameraSwitch(targetProfileId)
                         )
                     }
                 ) {
@@ -84,14 +88,14 @@ fun CameraSwitchesScreen(navController: NavController, profileId: String? = null
                 }
             }
 
-            else -> {
+            targetProfileId != null -> {
                 CameraPermissionHandler(
                     permissionState = cameraPermissionState,
                     onPermissionGranted = {
                         CameraSwitchesContent(
                     cameraSwitches = uiState.cameraSwitches,
                     navController = navController,
-                    profileId = profileId
+                    profileId = targetProfileId
                         )
                     },
                     onNavigateBack = { navController.popBackStack() }
@@ -106,7 +110,7 @@ fun CameraSwitchesScreen(navController: NavController, profileId: String? = null
 private fun CameraSwitchesContent(
     cameraSwitches: List<SwitchEvent>,
     navController: NavController,
-    profileId: String?
+    profileId: String
 ) {
     if (cameraSwitches.isEmpty()) {
         Box(
@@ -139,7 +143,7 @@ private fun CameraSwitchesContent(
 private fun SwitchEventItem(
     navController: NavController,
     switchEvent: SwitchEvent,
-    profileId: String?
+    profileId: String
 ) {
     val gestureName =
         com.enaboapps.switchify.switches.CameraSwitchFacialGesture(switchEvent.code).getName()
@@ -157,9 +161,7 @@ private fun SwitchEventItem(
         hasConfigurationIssues = false,
         onClick = {
             navController.navigate(
-                profileId?.let {
-                    "${NavigationRoute.EditCameraSwitch.name}/$it/${switchEvent.code}"
-                } ?: "${NavigationRoute.EditCameraSwitch.name}/${switchEvent.code}"
+                SwitchProfileRoutes.editCameraSwitch(profileId, switchEvent.code)
             )
         }
     )

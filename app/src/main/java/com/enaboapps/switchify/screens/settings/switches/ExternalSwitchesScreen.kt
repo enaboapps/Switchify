@@ -27,7 +27,6 @@ import com.enaboapps.switchify.components.Section
 import com.enaboapps.switchify.components.SwitchAction
 import com.enaboapps.switchify.components.SwitchListItem
 import com.enaboapps.switchify.components.SwitchType
-import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.screens.settings.switches.models.ExternalSwitchesScreenModel
 import com.enaboapps.switchify.switches.SwitchEvent
 import com.enaboapps.switchify.switches.SwitchHoldPolicy
@@ -35,6 +34,9 @@ import com.enaboapps.switchify.switches.SwitchHoldPolicy
 @Composable
 fun ExternalSwitchesScreen(navController: NavController, profileId: String? = null) {
     val context = LocalContext.current
+    val profileContext = rememberSwitchProfileContext(profileId)
+    val targetProfileId = profileContext.targetProfileId
+    HandleMissingSwitchProfile(profileContext, navController)
     val switchHoldEnabled = remember {
         SwitchHoldPolicy.isEnabled(PreferenceManager(context))
     }
@@ -43,28 +45,32 @@ fun ExternalSwitchesScreen(navController: NavController, profileId: String? = nu
     }
     val uiState by externalSwitchesScreenModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        externalSwitchesScreenModel.setup(context, profileId)
+    LaunchedEffect(targetProfileId) {
+        targetProfileId?.let { externalSwitchesScreenModel.setup(context, it) }
     }
 
     BaseView(
         titleResId = R.string.screen_title_external_switches,
         navController = navController,
+        navBarTrailingContent = {
+            SwitchProfileIndicator(profileContext, navController)
+        },
         padding = 0.dp,
         enableScroll = false,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate(
-                        profileId?.let { "${NavigationRoute.AddNewExternalSwitch.name}/$it" }
-                            ?: NavigationRoute.AddNewExternalSwitch.name
+            targetProfileId?.let { resolvedProfileId ->
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate(
+                            SwitchProfileRoutes.addExternalSwitch(resolvedProfileId)
+                        )
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_baseline_add_24),
+                        contentDescription = "Add"
                     )
                 }
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_add_24),
-                    contentDescription = "Add"
-                )
             }
         }
     ) {
@@ -78,11 +84,11 @@ fun ExternalSwitchesScreen(navController: NavController, profileId: String? = nu
                 }
             }
 
-            else -> {
+            targetProfileId != null -> {
                 ExternalSwitchesContent(
                     externalSwitches = uiState.externalSwitches,
                     navController = navController,
-                    profileId = profileId,
+                    profileId = targetProfileId,
                     switchHoldEnabled = switchHoldEnabled
                 )
             }
@@ -95,7 +101,7 @@ fun ExternalSwitchesScreen(navController: NavController, profileId: String? = nu
 private fun ExternalSwitchesContent(
     externalSwitches: List<SwitchEvent>,
     navController: NavController,
-    profileId: String?,
+    profileId: String,
     switchHoldEnabled: Boolean
 ) {
     if (externalSwitches.isEmpty()) {
@@ -130,7 +136,7 @@ private fun ExternalSwitchesContent(
 private fun SwitchEventItem(
     navController: NavController,
     switchEvent: SwitchEvent,
-    profileId: String?,
+    profileId: String,
     switchHoldEnabled: Boolean
 ) {
     val primaryAction = SwitchAction(
@@ -157,9 +163,7 @@ private fun SwitchEventItem(
         hasConfigurationIssues = false,
         onClick = {
             navController.navigate(
-                profileId?.let {
-                    "${NavigationRoute.EditExternalSwitch.name}/$it/${switchEvent.code}"
-                } ?: "${NavigationRoute.EditExternalSwitch.name}/${switchEvent.code}"
+                SwitchProfileRoutes.editExternalSwitch(profileId, switchEvent.code)
             )
         }
     )

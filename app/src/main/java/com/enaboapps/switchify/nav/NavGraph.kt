@@ -243,7 +243,14 @@ fun NavGraph(navController: NavHostController) {
         }
         composable("${NavigationRoute.SwitchActionSelection.name}/{currentActionId}") {
             it.arguments?.getString("currentActionId")?.toIntOrNull()?.let { actionId ->
-                SwitchActionSelectionScreen(navController, actionId)
+                SwitchActionSelectionScreen(navController, actionId, null)
+            }
+        }
+        composable("${NavigationRoute.SwitchActionSelection.name}/{profileId}/{currentActionId}") {
+            val profileId = it.arguments?.getString("profileId")
+            val actionId = it.arguments?.getString("currentActionId")?.toIntOrNull()
+            if (profileId != null && actionId != null) {
+                SwitchActionSelectionScreen(navController, actionId, profileId)
             }
         }
         composable("${NavigationRoute.LongPressActions.name}/{code}") {

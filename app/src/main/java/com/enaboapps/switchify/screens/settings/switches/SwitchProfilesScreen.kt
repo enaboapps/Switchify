@@ -196,12 +196,17 @@ fun SwitchProfileDetailScreen(navController: NavController, profileId: String) {
     val repository = remember { SwitchProfileRepository.getInstance(context) }
     val document by repository.document.collectAsState()
     val profile = document.profiles.firstOrNull { it.id == profileId }
+    val profileContext = rememberSwitchProfileContext(profileId)
 
     LaunchedEffect(Unit) { repository.initialize() }
+    HandleMissingSwitchProfile(profileContext, navController)
 
     BaseView(
         titleResId = R.string.screen_title_switch_profiles,
-        navController = navController
+        navController = navController,
+        navBarTrailingContent = {
+            SwitchProfileIndicator(profileContext, navController)
+        }
     ) {
         profile?.let {
             Text(
@@ -215,13 +220,13 @@ fun SwitchProfileDetailScreen(navController: NavController, profileId: String) {
                 titleResId = R.string.screen_title_external_switches,
                 summaryResId = R.string.external_switches_summary,
                 navController = navController,
-                route = "${NavigationRoute.ExternalSwitches.name}/$profileId"
+                route = SwitchProfileRoutes.externalSwitches(profileId)
             )
             NavRouteLink(
                 titleResId = R.string.screen_title_camera_switches,
                 summaryResId = R.string.camera_switches_summary,
                 navController = navController,
-                route = "${NavigationRoute.CameraSwitches.name}/$profileId"
+                route = SwitchProfileRoutes.cameraSwitches(profileId)
             )
         }
     }

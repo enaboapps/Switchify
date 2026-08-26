@@ -22,11 +22,16 @@ fun SwitchesScreen(navController: NavController) {
     val context = LocalContext.current
     val repository = remember { SwitchProfileRepository.getInstance(context) }
     val document by repository.document.collectAsState()
+    val profileContext = rememberSwitchProfileContext(null)
     LaunchedEffect(Unit) { repository.initialize() }
+    HandleMissingSwitchProfile(profileContext, navController)
 
     BaseView(
         titleResId = R.string.screen_title_switches,
         navController = navController,
+        navBarTrailingContent = {
+            SwitchProfileIndicator(profileContext, navController)
+        },
         enableScroll = false
     ) {
         ScrollableView {
@@ -41,19 +46,21 @@ fun SwitchesScreen(navController: NavController) {
                     onClick = { navController.navigate(NavigationRoute.SwitchProfiles.name) }
                 )
             }
-            Section(titleResId = R.string.section_title_switches) {
-                NavRouteLink(
-                    titleResId = R.string.screen_title_external_switches,
-                    summaryResId = R.string.external_switches_summary,
-                    navController = navController,
-                    route = NavigationRoute.ExternalSwitches.name
-                )
-                NavRouteLink(
-                    titleResId = R.string.screen_title_camera_switches,
-                    summaryResId = R.string.camera_switches_summary,
-                    navController = navController,
-                    route = NavigationRoute.CameraSwitches.name
-                )
+            profileContext.targetProfileId?.let { targetProfileId ->
+                Section(titleResId = R.string.section_title_switches) {
+                    NavRouteLink(
+                        titleResId = R.string.screen_title_external_switches,
+                        summaryResId = R.string.external_switches_summary,
+                        navController = navController,
+                        route = SwitchProfileRoutes.externalSwitches(targetProfileId)
+                    )
+                    NavRouteLink(
+                        titleResId = R.string.screen_title_camera_switches,
+                        summaryResId = R.string.camera_switches_summary,
+                        navController = navController,
+                        route = SwitchProfileRoutes.cameraSwitches(targetProfileId)
+                    )
+                }
             }
         }
     }

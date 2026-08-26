@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.components.Panel
-import com.enaboapps.switchify.nav.NavigationRoute
+import com.enaboapps.switchify.screens.settings.switches.SwitchProfileRoutes
 import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.theme.Dimens
 
@@ -53,6 +53,7 @@ fun SwitchActionField(
     titleResId: Int,
     titleResIdArgs: Array<Any>? = null,
     switchAction: SwitchAction,
+    profileId: String,
     onChange: (SwitchAction) -> Unit,
     onDelete: (() -> Unit)? = null,
     reorderControls: (@Composable () -> Unit)? = null
@@ -87,7 +88,7 @@ fun SwitchActionField(
         onClick = {
             waitingForResult = true
             navController.navigate(
-                "${NavigationRoute.SwitchActionSelection.name}/${switchAction.id}"
+                SwitchProfileRoutes.actionSelection(profileId, switchAction.id)
             )
         }
     ) {
