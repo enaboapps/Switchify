@@ -326,11 +326,13 @@ class SwitchEventStore private constructor() {
             preferenceManager.getStringValue(PreferenceManager.PREFERENCE_KEY_SCAN_MODE)
         )
 
-        val containsSelect = switchEvents.any { it.containsAction(SwitchAction.ACTION_SELECT) }
-        val containsNext =
-            switchEvents.any { it.containsAction(SwitchAction.ACTION_MOVE_TO_NEXT_ITEM) }
-        val containsPrevious =
-            switchEvents.any { it.containsAction(SwitchAction.ACTION_MOVE_TO_PREVIOUS_ITEM) }
+        val configuredActions = SwitchHoldPolicy.configuredActionIds(
+            switchEvents,
+            SwitchHoldPolicy.isEnabled(preferenceManager)
+        )
+        val containsSelect = configuredActions.contains(SwitchAction.ACTION_SELECT)
+        val containsNext = configuredActions.contains(SwitchAction.ACTION_MOVE_TO_NEXT_ITEM)
+        val containsPrevious = configuredActions.contains(SwitchAction.ACTION_MOVE_TO_PREVIOUS_ITEM)
 
         return when (mode.id) {
             ScanMode.Modes.MODE_AUTO -> {

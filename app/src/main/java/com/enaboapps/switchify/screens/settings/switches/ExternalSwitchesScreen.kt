@@ -19,6 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.R
+import com.enaboapps.switchify.backend.preferences.PreferenceManager
 import com.enaboapps.switchify.components.BaseView
 import com.enaboapps.switchify.components.LoadingIndicator
 import com.enaboapps.switchify.components.ScrollableView
@@ -29,10 +30,14 @@ import com.enaboapps.switchify.components.SwitchType
 import com.enaboapps.switchify.nav.NavigationRoute
 import com.enaboapps.switchify.screens.settings.switches.models.ExternalSwitchesScreenModel
 import com.enaboapps.switchify.switches.SwitchEvent
+import com.enaboapps.switchify.switches.SwitchHoldPolicy
 
 @Composable
 fun ExternalSwitchesScreen(navController: NavController, profileId: String? = null) {
     val context = LocalContext.current
+    val switchHoldEnabled = remember {
+        SwitchHoldPolicy.isEnabled(PreferenceManager(context))
+    }
     val externalSwitchesScreenModel = remember {
         ExternalSwitchesScreenModel()
     }
@@ -77,7 +82,8 @@ fun ExternalSwitchesScreen(navController: NavController, profileId: String? = nu
                 ExternalSwitchesContent(
                     externalSwitches = uiState.externalSwitches,
                     navController = navController,
-                    profileId = profileId
+                    profileId = profileId,
+                    switchHoldEnabled = switchHoldEnabled
                 )
             }
         }
@@ -89,7 +95,8 @@ fun ExternalSwitchesScreen(navController: NavController, profileId: String? = nu
 private fun ExternalSwitchesContent(
     externalSwitches: List<SwitchEvent>,
     navController: NavController,
-    profileId: String?
+    profileId: String?,
+    switchHoldEnabled: Boolean
 ) {
     if (externalSwitches.isEmpty()) {
         Box(
@@ -110,7 +117,8 @@ private fun ExternalSwitchesContent(
                     SwitchEventItem(
                         navController = navController,
                         switchEvent = event,
-                        profileId = profileId
+                        profileId = profileId,
+                        switchHoldEnabled = switchHoldEnabled
                     )
                 }
             }
@@ -122,14 +130,18 @@ private fun ExternalSwitchesContent(
 private fun SwitchEventItem(
     navController: NavController,
     switchEvent: SwitchEvent,
-    profileId: String?
+    profileId: String?,
+    switchHoldEnabled: Boolean
 ) {
     val primaryAction = SwitchAction(
         trigger = "Press",
         actionName = switchEvent.pressAction.getActionName()
     )
 
-    val secondaryActions = switchEvent.holdActions.map { holdAction ->
+    val secondaryActions = SwitchHoldPolicy.effectiveHoldActions(
+        switchEvent,
+        switchHoldEnabled
+    ).map { holdAction ->
         SwitchAction(
             trigger = "Hold",
             actionName = holdAction.getActionName()

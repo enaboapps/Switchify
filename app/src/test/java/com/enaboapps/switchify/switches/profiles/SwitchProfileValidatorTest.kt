@@ -13,7 +13,8 @@ class SwitchProfileValidatorTest {
         val invalid = SwitchProfileValidator.validate(
             listOf(event("next", SwitchAction.ACTION_MOVE_TO_NEXT_ITEM)),
             setOf(SwitchAction.ACTION_SELECT),
-            setOf(SwitchAction.ACTION_SELECT, SwitchAction.ACTION_MOVE_TO_NEXT_ITEM)
+            setOf(SwitchAction.ACTION_SELECT, SwitchAction.ACTION_MOVE_TO_NEXT_ITEM),
+            true
         )
 
         assertFalse(invalid.isValid)
@@ -40,7 +41,8 @@ class SwitchProfileValidatorTest {
                 SwitchAction.ACTION_SELECT,
                 SwitchAction.ACTION_MOVE_TO_NEXT_ITEM,
                 SwitchAction.ACTION_MOVE_TO_PREVIOUS_ITEM
-            )
+            ),
+            true
         )
 
         assertTrue(result.isValid)
@@ -51,11 +53,38 @@ class SwitchProfileValidatorTest {
         val result = SwitchProfileValidator.validate(
             listOf(event("unsupported", 999)),
             emptySet(),
-            setOf(SwitchAction.ACTION_SELECT)
+            setOf(SwitchAction.ACTION_SELECT),
+            true
         )
 
         assertFalse(result.isValid)
         assertEquals(setOf(999), result.unsupportedActionIds)
+    }
+
+    @Test
+    fun disabledHoldActionsDoNotSatisfyRequirements() {
+        val result = SwitchProfileValidator.validate(
+            listOf(event("select", SwitchAction.ACTION_NONE, SwitchAction.ACTION_SELECT)),
+            setOf(SwitchAction.ACTION_SELECT),
+            setOf(SwitchAction.ACTION_NONE, SwitchAction.ACTION_SELECT),
+            false
+        )
+
+        assertFalse(result.isValid)
+        assertEquals(setOf(SwitchAction.ACTION_SELECT), result.missingActionIds)
+    }
+
+    @Test
+    fun disabledUnsupportedHoldActionsAreIgnored() {
+        val result = SwitchProfileValidator.validate(
+            listOf(event("select", SwitchAction.ACTION_SELECT, 999)),
+            setOf(SwitchAction.ACTION_SELECT),
+            setOf(SwitchAction.ACTION_SELECT),
+            false
+        )
+
+        assertTrue(result.isValid)
+        assertTrue(result.unsupportedActionIds.isEmpty())
     }
 
     private fun event(code: String, pressAction: Int, vararg holdActions: Int) = SwitchEvent(

@@ -38,6 +38,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.R
+import com.enaboapps.switchify.backend.preferences.PreferenceManager
 import com.enaboapps.switchify.components.BaseView
 import com.enaboapps.switchify.components.animatedPressContainerColor
 import com.enaboapps.switchify.components.springPressScale
@@ -45,6 +46,7 @@ import com.enaboapps.switchify.switches.RequiredActionsPolicy
 import com.enaboapps.switchify.switches.SupportedActionsPolicy
 import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEventStore
+import com.enaboapps.switchify.switches.SwitchHoldPolicy
 import com.enaboapps.switchify.theme.Dimens
 
 /**
@@ -74,9 +76,10 @@ fun SwitchActionSelectionScreen(
     // Compute missing required actions
     LaunchedEffect(currentActionId, availableActions) {
         val required = RequiredActionsPolicy.requiredActionIds(context)
-        val configured = SwitchEventStore.getInstance().getSwitchEvents()
-            .flatMap { listOf(it.pressAction.id) + it.holdActions.map { a -> a.id } }
-            .toSet()
+        val configured = SwitchHoldPolicy.configuredActionIds(
+            SwitchEventStore.getInstance().getSwitchEvents(),
+            SwitchHoldPolicy.isEnabled(PreferenceManager(context))
+        )
         val current = setOf(currentActionId)
         val allowedIds = availableActions.map { it.id }.toSet()
         val missingIds = required - (configured + current)

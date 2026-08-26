@@ -12,6 +12,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,12 +25,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.height
 import androidx.navigation.NavController
 import com.enaboapps.switchify.R
+import com.enaboapps.switchify.backend.preferences.PreferenceManager
 import com.enaboapps.switchify.components.BaseView
 import com.enaboapps.switchify.components.ReorderMode
 import com.enaboapps.switchify.components.ReorderableList
 import com.enaboapps.switchify.screens.settings.switches.actions.SwitchActionField
 import com.enaboapps.switchify.switches.SwitchAction
 import com.enaboapps.switchify.switches.SwitchEventStore
+import com.enaboapps.switchify.switches.SwitchHoldPolicy
 
 /**
  * A dedicated screen for managing long press actions for an external switch.
@@ -45,6 +48,15 @@ fun LongPressActionsScreen(
     profileId: String? = null
 ) {
     val context = LocalContext.current
+    val switchHoldEnabled = remember {
+        SwitchHoldPolicy.isEnabled(PreferenceManager(context))
+    }
+    if (!switchHoldEnabled) {
+        LaunchedEffect(Unit) {
+            navController.popBackStack()
+        }
+        return
+    }
     val store = remember { SwitchEventStore.getInstance() }
 
     // Load actions from store - refresh key triggers reload

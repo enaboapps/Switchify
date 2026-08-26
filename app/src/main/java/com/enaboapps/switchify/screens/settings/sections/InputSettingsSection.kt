@@ -17,6 +17,12 @@ fun InputSection(navController: NavController) {
             route = NavigationRoute.Switches.name
         )
         NavRouteLink(
+            titleResId = R.string.settings_title_switch_hold,
+            summaryResId = R.string.settings_summary_switch_hold,
+            navController = navController,
+            route = NavigationRoute.SwitchHold.name
+        )
+        NavRouteLink(
             titleResId = R.string.settings_title_switch_stability,
             summaryResId = R.string.settings_summary_switch_stability,
             navController = navController,
