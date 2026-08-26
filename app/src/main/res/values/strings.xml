@@ -1405,7 +1405,6 @@
     <string name="switch_profile_external_count">External switches: %1$d</string>
     <string name="switch_profile_camera_count">Camera gestures: %1$d</string>
     <string name="switch_profile_active">Active</string>
-    <string name="switch_profile_inactive">Inactive</string>
     <string name="switch_profile_status_active">Active profile</string>
     <string name="switch_profile_status_inactive">Inactive profile</string>
     <string name="switch_profile_indicator_description">Editing profile %1$s, %2$s</string>

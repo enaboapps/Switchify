@@ -1,11 +1,15 @@
 package com.enaboapps.switchify.screens.settings.switches
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -129,13 +133,6 @@ internal fun SwitchProfileIndicator(
             R.string.switch_profile_status_inactive
         }
     )
-    val compactStatus = stringResource(
-        if (profileContext.isActive) {
-            R.string.switch_profile_active
-        } else {
-            R.string.switch_profile_inactive
-        }
-    )
     val description = stringResource(
         R.string.switch_profile_indicator_description,
         profileName,
@@ -151,7 +148,7 @@ internal fun SwitchProfileIndicator(
 
     Surface(
         modifier = Modifier
-            .widthIn(max = 144.dp)
+            .widthIn(max = 132.dp)
             .padding(end = 4.dp)
             .semantics {
                 contentDescription = description
@@ -165,21 +162,33 @@ internal fun SwitchProfileIndicator(
         contentColor = MaterialTheme.colorScheme.onPrimary
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
+            modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = profileName,
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.weight(1f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .then(
+                        if (profileContext.isActive) {
+                            Modifier.background(
+                                MaterialTheme.colorScheme.onPrimary,
+                                CircleShape
+                            )
+                        } else {
+                            Modifier.border(
+                                1.5.dp,
+                                MaterialTheme.colorScheme.onPrimary,
+                                CircleShape
+                            )
+                        }
+                    )
             )
             Spacer(Modifier.width(6.dp))
             Text(
-                text = compactStatus,
-                style = MaterialTheme.typography.labelSmall,
-                maxLines = 1
+                text = profileName,
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
