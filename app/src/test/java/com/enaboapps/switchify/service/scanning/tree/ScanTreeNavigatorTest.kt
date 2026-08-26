@@ -105,7 +105,7 @@ class ScanTreeNavigatorTest {
         assertTrue(navigator.isInGroup)
 
         navigator.currentCycle = 2
-        navigator.currentColumn = 1
+        navigator.currentColumn = 2
         navigator.moveSelectionToNext()
         navigator.confirmEscape()
 
@@ -228,7 +228,11 @@ class ScanTreeNavigatorTest {
     @Test
     fun newlyEnteredGroupReceivesFullAutomaticCycleAllowance() {
         val navigator = navigatorForRows(
-            row("first", "second", "third", "fourth", groupScan = true),
+            row(
+                "first", "second", "third", "fourth",
+                "fifth", "sixth", "seventh", "eighth",
+                groupScan = true
+            ),
             settings = TestNavigatorSettings(groupScan = true, autoScan = true)
         ).apply {
             isInTreeItem = true
@@ -239,11 +243,23 @@ class ScanTreeNavigatorTest {
 
         assertFalse(navigator.isAutoScanCycleLimitReached())
         repeat(3) {
-            navigator.currentColumn = 1
+            navigator.currentColumn = 2
             navigator.moveSelectionToNext()
             navigator.denyEscape()
         }
         assertTrue(navigator.isAutoScanCycleLimitReached())
+    }
+
+    @Test
+    fun currentNodeUsesTheSelectedGroup() {
+        val navigator = navigatorForGroupedRow().apply {
+            isInTreeItem = true
+            currentGroup = 1
+        }
+
+        navigator.selectGroup()
+
+        assertEquals("fourth", navigator.getCurrentNode()?.getContentDescription())
     }
 
     private fun navigatorForRow(
@@ -252,7 +268,11 @@ class ScanTreeNavigatorTest {
     ): ScanTreeNavigator = navigatorForRows(row(*ids), settings = settings)
 
     private fun navigatorForGroupedRow(): ScanTreeNavigator = navigatorForRows(
-        row("first", "second", "third", "fourth", groupScan = true),
+        row(
+            "first", "second", "third", "fourth",
+            "fifth", "sixth", "seventh", "eighth",
+            groupScan = true
+        ),
         settings = TestNavigatorSettings(groupScan = true),
     )
 

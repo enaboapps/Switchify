@@ -55,7 +55,11 @@ class BaseNodeScannerTest {
             testNode("first"),
             testNode("second"),
             testNode("third"),
-            testNode("fourth")
+            testNode("fourth"),
+            testNode("fifth"),
+            testNode("sixth"),
+            testNode("seventh"),
+            testNode("eighth")
         )
         var groupScanEnabled = false
         var rebuiltItem: ScanTreeItem? = null
@@ -68,7 +72,7 @@ class BaseNodeScannerTest {
 
         groupScanEnabled = true
         refreshScannerConfiguration(nodes, { false }, rebuild, {})
-        assertEquals(2, rebuiltItem?.getGroupCount())
+        assertEquals(3, rebuiltItem?.getGroupCount())
 
         groupScanEnabled = false
         refreshScannerConfiguration(nodes, { false }, rebuild, {})

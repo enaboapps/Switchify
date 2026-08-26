@@ -274,11 +274,6 @@ class ScanTree(
                     currentItem.speakNodes(false)
                 }
 
-                // Speak the row if group scan is enabled but the item is not grouped
-                groupsEnabled && !currentItem.isGrouped() && inItem -> {
-                    currentItem.speakNodes(false)
-                }
-
                 // Speak the group
                 !inGroup && groupsEnabled -> {
                     currentItem.speakGroup(navigator.currentGroup)

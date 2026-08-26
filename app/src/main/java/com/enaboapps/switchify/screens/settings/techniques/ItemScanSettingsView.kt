@@ -16,6 +16,14 @@ import com.enaboapps.switchify.utils.Resources
 @Composable
 fun ItemScanSettingsView() {
     val preferenceManager = PreferenceManager(LocalContext.current)
+    val rowColumnScanEnabled = remember {
+        mutableStateOf(
+            preferenceManager.getBooleanValue(
+                PreferenceManager.PREFERENCE_KEY_ROW_COLUMN_SCAN,
+                false
+            )
+        )
+    }
     var currentScanCycles = remember {
         mutableStateOf(
             preferenceManager.getStringValue(
@@ -53,11 +61,9 @@ fun ItemScanSettingsView() {
         PreferenceSwitch(
             titleResId = R.string.preference_title_row_column_scan,
             summaryResId = R.string.preference_summary_row_column_scan,
-            checked = preferenceManager.getBooleanValue(
-                PreferenceManager.PREFERENCE_KEY_ROW_COLUMN_SCAN,
-                false
-            ),
+            checked = rowColumnScanEnabled.value,
             onCheckedChange = {
+                rowColumnScanEnabled.value = it
                 preferenceManager.setBooleanValue(
                     PreferenceManager.PREFERENCE_KEY_ROW_COLUMN_SCAN,
                     it
@@ -72,6 +78,7 @@ fun ItemScanSettingsView() {
                 PreferenceManager.PREFERENCE_KEY_GROUP_SCAN,
                 false
             ),
+            enabled = rowColumnScanEnabled.value,
             onCheckedChange = {
                 preferenceManager.setBooleanValue(
                     PreferenceManager.PREFERENCE_KEY_GROUP_SCAN,

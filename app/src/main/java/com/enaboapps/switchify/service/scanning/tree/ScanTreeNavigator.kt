@@ -528,7 +528,11 @@ class ScanTreeNavigator internal constructor(
      */
     fun getCurrentNode(): ScanNodeInterface? {
         return if (isRowColumnScanEnabled) {
-            getCurrentItem().children.getOrNull(currentColumn)
+            if (isInGroup) {
+                getCurrentItem().getNode(currentGroup, currentColumn)
+            } else {
+                getCurrentItem().children.getOrNull(currentColumn)
+            }
         } else {
             flattenedNodes.getOrNull(currentColumn)
         }
