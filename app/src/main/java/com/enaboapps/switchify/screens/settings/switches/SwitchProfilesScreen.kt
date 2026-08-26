@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.enaboapps.switchify.R
 import com.enaboapps.switchify.components.BaseView
+import com.enaboapps.switchify.components.InfoCard
 import com.enaboapps.switchify.components.NavRouteLink
 import com.enaboapps.switchify.components.Panel
 import com.enaboapps.switchify.components.Section
@@ -96,6 +97,10 @@ fun SwitchProfilesScreen(navController: NavController) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            InfoCard(
+                titleResId = R.string.switch_profiles_guide_title,
+                descriptionResId = R.string.switch_profiles_guide_description
+            )
             document.profiles.forEach { profile ->
                 val active = profile.id == document.activeProfileId
                 ProfileRow(

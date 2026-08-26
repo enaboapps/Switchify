@@ -39,7 +39,7 @@ fun SwitchesScreen(navController: NavController) {
                 PanelListRow(
                     titleResId = R.string.screen_title_switch_profiles,
                     runtimeSummary = stringResource(
-                        R.string.switch_profile_active_summary,
+                        R.string.switch_profiles_entry_summary,
                         document.profiles.firstOrNull { it.id == document.activeProfileId }?.name
                             ?: "Default"
                     ),
