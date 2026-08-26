@@ -11,16 +11,16 @@ import com.enaboapps.switchify.nav.NavigationRoute
 fun InputSection(navController: NavController) {
     Section(titleResId = R.string.settings_section_input) {
         NavRouteLink(
-            titleResId = R.string.settings_title_switch_hold,
-            summaryResId = R.string.settings_summary_switch_hold,
-            navController = navController,
-            route = NavigationRoute.SwitchHold.name
-        )
-        NavRouteLink(
             titleResId = R.string.settings_title_switches,
             summaryResId = R.string.settings_summary_switches,
             navController = navController,
             route = NavigationRoute.Switches.name
+        )
+        NavRouteLink(
+            titleResId = R.string.settings_title_switch_hold,
+            summaryResId = R.string.settings_summary_switch_hold,
+            navController = navController,
+            route = NavigationRoute.SwitchHold.name
         )
         NavRouteLink(
             titleResId = R.string.settings_title_switch_stability,
