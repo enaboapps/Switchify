@@ -11,7 +11,6 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.hardware.camera2.CameraManager
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
@@ -680,20 +679,18 @@ class CameraForegroundService : Service(), CameraLifecycle {
      * Create notification channel for foreground service
      */
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = "Camera processing for accessibility features"
-                setShowBadge(false)
-            }
-
-            val notificationManager =
-                getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = "Camera processing for accessibility features"
+            setShowBadge(false)
         }
+
+        val notificationManager =
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
 
     /**

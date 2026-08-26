@@ -40,7 +40,8 @@ internal interface NodeScannerOverlayWindow {
 }
 
 private object SwitchifyNodeScannerOverlayWindow : NodeScannerOverlayWindow {
-    private val window = SwitchifyAccessibilityWindow.instance
+    private val window: SwitchifyAccessibilityWindow
+        get() = SwitchifyAccessibilityWindow.instance
 
     override fun getContext(): Context? = window.getContext()
 

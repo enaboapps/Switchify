@@ -2,7 +2,7 @@ package com.enaboapps.switchify.service.remotebridge
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
+import androidx.core.net.toUri
 
 class SwitchifyRemoteLauncher(private val context: Context) {
     fun openMouse() = open("mouse")
@@ -17,6 +17,6 @@ class SwitchifyRemoteLauncher(private val context: Context) {
     companion object {
         const val REMOTE_PACKAGE = "com.enaboapps.switchify.remote"
         internal fun remoteUri(surface: String) = "switchify-remote://remote?surface=$surface"
-        internal fun remoteIntent(surface: String) = Intent(Intent.ACTION_VIEW, Uri.parse(remoteUri(surface))).setPackage(REMOTE_PACKAGE)
+        internal fun remoteIntent(surface: String) = Intent(Intent.ACTION_VIEW, remoteUri(surface).toUri()).setPackage(REMOTE_PACKAGE)
     }
 }

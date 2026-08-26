@@ -8,9 +8,6 @@ plugins {
 
 }
 
-composeCompiler {
-}
-
 android {
     namespace = "com.enaboapps.switchify"
     compileSdk = 37
@@ -165,10 +162,8 @@ dependencies {
     implementation(libs.supabase.realtime)
     implementation(libs.ktor.client.android)
     implementation(libs.gson)
-    implementation(libs.androidx.material3.android)
     implementation(libs.app.update)
     implementation(libs.play.services.reviews)
-    implementation(libs.play.services.reviews.ktx)
     implementation(libs.revenuecat)
     implementation(libs.revenuecat.ui)
     implementation(libs.androidx.camera.camera2)
@@ -192,11 +187,7 @@ dependencies {
     testImplementation(libs.coroutines.test)
     testImplementation(libs.json)
     androidTestImplementation(libs.androidx.test.ext.junit)
-    androidTestImplementation(libs.espresso.core)
-    androidTestImplementation(platform(libs.compose.bom))
-    androidTestImplementation(libs.compose.ui.test.junit4)
     debugImplementation(libs.compose.ui.tooling)
-    debugImplementation(libs.compose.ui.test.manifest)
 }
 
 val verifyPcSwitchForwardingNaming by tasks.registering {

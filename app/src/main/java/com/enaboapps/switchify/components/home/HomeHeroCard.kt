@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.enaboapps.switchify.R
@@ -169,7 +170,12 @@ private fun supportingLine(
     }
     val mode = scanModeName ?: return stringResource(R.string.home_hero_disabled_summary)
     return if (switchCount > 0) {
-        stringResource(R.string.home_hero_running_summary, mode, switchCount)
+        pluralStringResource(
+            R.plurals.home_hero_running_summary,
+            switchCount,
+            mode,
+            switchCount
+        )
     } else {
         stringResource(R.string.home_hero_running_summary_no_switches, mode)
     }

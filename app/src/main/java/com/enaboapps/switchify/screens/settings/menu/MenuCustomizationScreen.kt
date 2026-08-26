@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -90,6 +91,7 @@ fun MenuCustomizationScreen(navController: NavController, menuId: String) {
 @Composable
 fun MenuCustomizationContent(screenModel: MenuCustomizationScreenModel, menuId: String) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val menuItems by screenModel.menuItems.collectAsState()
     val visibilityMap by screenModel.visibilityMap.collectAsState()
     val paletteDialogVisible by screenModel.paletteDialogVisible.collectAsState()
@@ -101,9 +103,9 @@ fun MenuCustomizationContent(screenModel: MenuCustomizationScreenModel, menuId: 
     // Resolves a MenuItem to its display label using the same fallback chain as
     // MenuItemRow. Captured here so the SelectModeState callbacks can pass labels
     // into accessibility content descriptions from non-Composable scope.
-    val itemLabelOf: (MenuItem) -> String = remember(context) {
+    val itemLabelOf: (MenuItem) -> String = remember(resources) {
         { item ->
-            item.labelResource?.let { context.getString(it) }
+            item.labelResource?.let { resources.getString(it) }
                 ?: item.userProvidedText
                 ?: item.id
         }

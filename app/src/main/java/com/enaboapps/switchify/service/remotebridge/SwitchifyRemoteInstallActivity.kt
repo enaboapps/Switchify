@@ -3,8 +3,8 @@ package com.enaboapps.switchify.service.remotebridge
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
+import androidx.core.net.toUri
 import com.enaboapps.switchify.R
 
 class SwitchifyRemoteInstallActivity : Activity() {
@@ -19,8 +19,8 @@ class SwitchifyRemoteInstallActivity : Activity() {
             .show()
     }
     private fun openStore() {
-        val market = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${SwitchifyRemoteLauncher.REMOTE_PACKAGE}"))
-        val web = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${SwitchifyRemoteLauncher.REMOTE_PACKAGE}"))
+        val market = Intent(Intent.ACTION_VIEW, "market://details?id=${SwitchifyRemoteLauncher.REMOTE_PACKAGE}".toUri())
+        val web = Intent(Intent.ACTION_VIEW, "https://play.google.com/store/apps/details?id=${SwitchifyRemoteLauncher.REMOTE_PACKAGE}".toUri())
         runCatching { startActivity(market) }.getOrElse { startActivity(web) }
         finish()
     }

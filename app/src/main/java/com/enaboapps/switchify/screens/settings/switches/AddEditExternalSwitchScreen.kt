@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,6 +40,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -111,7 +113,7 @@ fun AddEditExternalSwitchScreen(
             })
         }
     } else {
-        var refresh by remember { mutableStateOf(0) }
+        var refresh by remember { mutableIntStateOf(0) }
         LaunchedEffect(Unit) {
             try {
                 ServiceBridge.serviceEvents.collect { event ->
@@ -398,8 +400,11 @@ private fun LongPressActionsCard(
                 Text(
                     text = when (actionCount) {
                         0 -> stringResource(R.string.long_press_actions_none)
-                        1 -> stringResource(R.string.long_press_actions_count_one)
-                        else -> stringResource(R.string.long_press_actions_count_other, actionCount)
+                        else -> pluralStringResource(
+                            R.plurals.long_press_actions_count,
+                            actionCount,
+                            actionCount
+                        )
                     },
                     style = MaterialTheme.typography.bodySmall
                 )
