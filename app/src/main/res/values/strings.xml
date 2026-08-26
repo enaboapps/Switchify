@@ -1418,6 +1418,7 @@
     <string name="switch_profile_edit">Edit</string>
     <string name="switch_profile_duplicate">Duplicate</string>
     <string name="switch_profile_rename">Rename</string>
+    <string name="switch_profile_more_options">More options for %1$s</string>
     <string name="switch_profile_name">Profile name</string>
     <string name="switch_profile_create">Create profile</string>
     <string name="switch_profile_create_empty">Create empty</string>
