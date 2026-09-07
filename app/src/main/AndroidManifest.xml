@@ -36,17 +36,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Switchify">
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="merge">
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup"
-                tools:node="remove" />
-        </provider>
-
         <activity
             android:name=".activities.MainActivity"
             android:exported="true"
@@ -106,6 +95,23 @@
             android:exported="false"
             android:foregroundServiceType="camera"></service>
 
+
+        <meta-data
+            android:name="io.sentry.auto-init"
+            android:value="false" />
+
+        <meta-data
+            android:name="io.sentry.traces.user-interaction.enable"
+            android:value="false" />
+        <meta-data
+            android:name="io.sentry.attach-screenshot"
+            android:value="false" />
+        <meta-data
+            android:name="io.sentry.attach-view-hierarchy"
+            android:value="false" />
+        <meta-data
+            android:name="io.sentry.traces.sample-rate"
+            android:value="0.0" />
     </application>
 
 </manifest>

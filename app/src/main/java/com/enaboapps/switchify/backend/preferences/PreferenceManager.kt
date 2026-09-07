@@ -56,7 +56,6 @@ class PreferenceManager(context: Context) {
         const val PREFERENCE_KEY_SETTINGS_TAB = "settings_tab"
         const val PREFERENCE_KEY_TELEMETRY_ENABLED = "telemetry_enabled"
         const val PREFERENCE_KEY_DEVICE_ID = "device_id"
-        const val PREFERENCE_KEY_LAST_PROCESS_EXIT_TIMESTAMP = "last_process_exit_timestamp"
         const val PREFERENCE_KEY_OVERLAY_SERVICE_EPOCH = "overlay_service_epoch"
         const val PREFERENCE_KEY_ONBOARDING_CURRENT_STEP = "onboarding_current_step"
         const val PREFERENCE_KEY_ONBOARDING_USER_TYPE = "onboarding_user_type"
@@ -104,7 +103,6 @@ class PreferenceManager(context: Context) {
             PREFERENCE_KEY_REVIEW_LAST_SHOWN,
             PREFERENCE_KEY_TELEMETRY_ENABLED,
             PREFERENCE_KEY_DEVICE_ID,
-            PREFERENCE_KEY_LAST_PROCESS_EXIT_TIMESTAMP,
             PREFERENCE_KEY_OVERLAY_SERVICE_EPOCH,
             PREFERENCE_KEY_GEMMA_TERMS_ACCEPTED
         )
@@ -177,7 +175,7 @@ class PreferenceManager(context: Context) {
 
     /**
      * Sets whether the user has opted in to sending telemetry (analytics events and
-     * crash reports) to the Timberlogs ingest worker. Device-local; not synced.
+     * crash reports) to Timberlogs and Sentry. Device-local; not synced.
      */
     fun setTelemetryEnabled(enabled: Boolean) {
         setBooleanValue(PREFERENCE_KEY_TELEMETRY_ENABLED, enabled)

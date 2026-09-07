@@ -8,6 +8,7 @@ import com.enaboapps.switchify.service.utils.ServiceUtils
 import com.enaboapps.switchify.switches.SwitchEventStore
 import com.enaboapps.switchify.utils.LogEvent
 import com.enaboapps.switchify.utils.Logger
+import com.enaboapps.switchify.utils.SentryReporter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -116,6 +117,7 @@ class OnboardingViewModel(context: Context) : ViewModel() {
      */
     fun setTelemetryConsent(enabled: Boolean) {
         preferenceManager.setTelemetryEnabled(enabled)
+        SentryReporter.setEnabled(enabled)
     }
 
     fun setUserType(userType: UserType) {
