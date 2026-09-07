@@ -77,7 +77,7 @@ fun SwitchActionSelectionScreen(
     val profileContext = rememberSwitchProfileContext(profileId)
     val targetProfileId = profileContext.targetProfileId
     HandleMissingSwitchProfile(profileContext, navController)
-    val availableActions = remember { SupportedActionsPolicy.supportedActions(context) }
+    val availableActions = remember { SupportedActionsPolicy.selectableActions(context) }
     var missingActions by remember { mutableStateOf(listOf<SwitchAction>()) }
 
     // Compute missing required actions

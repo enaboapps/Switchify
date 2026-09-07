@@ -16,6 +16,10 @@ class SwitchifyRemoteLauncher(private val context: Context) {
 
     companion object {
         const val REMOTE_PACKAGE = "com.enaboapps.switchify.remote"
+
+        fun isInstalled(context: Context): Boolean =
+            remoteIntent("mouse").resolveActivity(context.packageManager) != null
+
         internal fun remoteUri(surface: String) = "switchify-remote://remote?surface=$surface"
         internal fun remoteIntent(surface: String) = Intent(Intent.ACTION_VIEW, remoteUri(surface).toUri()).setPackage(REMOTE_PACKAGE)
     }
