@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.sentry.android)
 
 }
 
@@ -70,6 +71,11 @@ android {
             "String",
             "AI_MODEL_URL",
             "\"${configValue("AI_MODEL_URL", "aiModel.url")}\""
+        )
+        buildConfigField(
+            "String",
+            "SENTRY_DSN",
+            "\"${configValue("SENTRY_DSN", "sentry.dsn")}\""
         )
     }
 
@@ -182,7 +188,7 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
-    implementation(libs.work.runtime.ktx)
+    implementation(libs.sentry.android)
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.json)
@@ -253,3 +259,19 @@ java {
     }
 }
 
+
+sentry {
+    org.set("switchify")
+    projectName.set("android")
+
+    val isCI = System.getenv("CI") != null
+    includeSourceContext.set(isCI)
+    autoUploadProguardMapping.set(isCI)
+
+    tracingInstrumentation {
+        enabled.set(false)
+    }
+    autoInstallation {
+        enabled.set(false)
+    }
+}

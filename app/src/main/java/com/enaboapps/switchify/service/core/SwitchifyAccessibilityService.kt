@@ -36,9 +36,9 @@ import com.enaboapps.switchify.service.window.ServiceMessageHUD
 import com.enaboapps.switchify.service.window.ServiceStartupSplash
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.switches.SwitchAction
-import com.enaboapps.switchify.utils.CrashReporter
 import com.enaboapps.switchify.utils.LogEvent
 import com.enaboapps.switchify.utils.Logger
+import com.enaboapps.switchify.utils.SentryReporter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -211,7 +211,7 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
         if (deviceLockObserver.isUserUnlocked()) {
             logd("Device unlocked, initializing protected components")
             migrateToProtectedStorageIfUnlocked()
-            CrashReporter.enqueueUpload(this)
+            SentryReporter.onDeviceUnlocked(this)
             IAPHandler.connect(context = this)
             startTrialOverlayIfNeeded()
             cameraManager.evaluateAndUpdateCameraState()
