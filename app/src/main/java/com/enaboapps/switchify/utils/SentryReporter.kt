@@ -3,6 +3,7 @@ package com.enaboapps.switchify.utils
 import android.content.Context
 import android.util.Log
 import com.enaboapps.switchify.BuildConfig
+import com.enaboapps.switchify.service.utils.DeviceLockObserver
 import io.sentry.Breadcrumb
 import io.sentry.ScopeCallback
 import io.sentry.Sentry
@@ -22,6 +23,10 @@ object SentryReporter {
         appContext = context.applicationContext
         if (!Logger.isTelemetryEnabled()) return
         start()
+    }
+
+    fun onDeviceUnlocked(context: Context) {
+        init(context)
     }
 
     fun setEnabled(enabled: Boolean) {
@@ -48,7 +53,7 @@ object SentryReporter {
     }
 
     internal fun isCapturable(level: String): Boolean {
-        return sentryLevel(level) >= SentryLevel.WARNING
+        return sentryLevel(level) >= SentryLevel.ERROR
     }
 
     internal fun sentryLevel(level: String): SentryLevel {
@@ -69,6 +74,7 @@ object SentryReporter {
         synchronized(lock) {
             val context = appContext ?: return
             if (Sentry.isEnabled()) return
+            if (!isUserUnlocked(context)) return
             val dsn = BuildConfig.SENTRY_DSN
             if (dsn.isBlank()) return
             try {
@@ -141,6 +147,10 @@ object SentryReporter {
             level = sentryLevel(event.level)
             data.forEach { (key, value) -> setData(key, stringifyExtra(value)) }
         }
+    }
+
+    private fun isUserUnlocked(context: Context): Boolean {
+        return runCatching { DeviceLockObserver.isUserUnlocked(context) }.getOrDefault(false)
     }
 
     private fun currentUser(): User {

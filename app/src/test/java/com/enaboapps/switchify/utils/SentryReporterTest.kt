@@ -23,10 +23,10 @@ class SentryReporterTest {
     }
 
     @Test
-    fun capturesWarnAndAboveOnly() {
+    fun capturesErrorAndAboveOnly() {
         assertFalse(SentryReporter.isCapturable("debug"))
         assertFalse(SentryReporter.isCapturable("info"))
-        assertTrue(SentryReporter.isCapturable("warn"))
+        assertFalse(SentryReporter.isCapturable("warn"))
         assertTrue(SentryReporter.isCapturable("error"))
         assertTrue(SentryReporter.isCapturable("fatal"))
     }
@@ -38,10 +38,17 @@ class SentryReporterTest {
     }
 
     @Test
+    fun warnLevelProductEventsStayBreadcrumbs() {
+        assertFalse(SentryReporter.isCapturable(LogEvent.TrialExpired.level))
+        assertFalse(SentryReporter.isCapturable(LogEvent.TrialWarningShown.level))
+        assertFalse(SentryReporter.isCapturable(LogEvent.ScanTargetMissing.level))
+    }
+
+    @Test
     fun errorEventsAreCaptured() {
         assertTrue(SentryReporter.isCapturable(LogEvent.GoogleSignInSupabaseError.level))
         assertTrue(SentryReporter.isCapturable(LogEvent.ScanCycleFailed.level))
-        assertTrue(SentryReporter.isCapturable(LogEvent.TrialExpired.level))
+        assertTrue(SentryReporter.isCapturable(LogEvent.CameraBindFailed.level))
     }
 
     @Test
