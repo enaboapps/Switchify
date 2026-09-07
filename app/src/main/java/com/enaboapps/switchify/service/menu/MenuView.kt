@@ -1,9 +1,9 @@
 package com.enaboapps.switchify.service.menu
 
 import android.content.Context
+import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.view.ViewTreeObserver
 import android.widget.LinearLayout
 import com.enaboapps.switchify.backend.preferences.PreferenceManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
@@ -12,6 +12,7 @@ import com.enaboapps.switchify.service.menu.structure.MenuConstants
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.scanning.ScanningManager
 import com.enaboapps.switchify.service.scanning.tree.ScanTree
+import com.enaboapps.switchify.service.utils.ScreenUtils
 import com.enaboapps.switchify.service.window.MenuHighlightHud
 import com.enaboapps.switchify.utils.LogEvent
 import com.enaboapps.switchify.utils.Logger
@@ -69,6 +70,12 @@ class MenuView(
 
     /** Flag to track if setup has been completed */
     private var isSetupComplete = false
+
+    /** Listener that repositions the menu whenever its laid-out size changes */
+    private var layoutChangeListener: View.OnLayoutChangeListener? = null
+
+    /** Size the menu was last positioned for, used to skip redundant repositioning */
+    private var lastPositionedSize: Pair<Int, Int>? = null
 
     /**
      * Sets up the menu by retrieving menu items and creating menu pages.
@@ -171,7 +178,7 @@ class MenuView(
     /**
      * Inflates the current menu page and sets up the scan tree.
      * This method is responsible for adding the current page's layout to the base layout
-     * and setting up a ViewTreeObserver to handle layout changes.
+     * and observing layout changes so the menu is repositioned as it settles.
      */
     private fun inflateMenu() {
         scanTree.clearTree()
@@ -191,13 +198,7 @@ class MenuView(
                 )
             )
 
-            pageLayout.viewTreeObserver.addOnGlobalLayoutListener(object :
-                ViewTreeObserver.OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    pageLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    resizeAndRepositionMenu()
-                }
-            })
+            observeLayoutForRepositioning()
         }
 
         // Use coroutine for delayed tree building after layout completion. The delay
@@ -237,10 +238,34 @@ class MenuView(
      * handling both larger and smaller page transitions.
      * It also ensures the menu is positioned correctly on the screen.
      */
+    /**
+     * Watches [baseLayout] for size changes and repositions on each one.
+     *
+     * The menu is positioned from its laid-out height, but that height is not final
+     * on the first layout pass when returning to a previous menu: popMenu reopens a
+     * MenuView whose setup already completed, so inflateMenu runs synchronously into
+     * a container that has not attached yet, and the page's Compose content settles a
+     * frame later. A one-shot listener read the height too early and left a tall menu
+     * positioned below its anchor, clipped at the bottom of the screen.
+     */
+    private fun observeLayoutForRepositioning() {
+        layoutChangeListener?.let { baseLayout.removeOnLayoutChangeListener(it) }
+        lastPositionedSize = null
+        val listener = View.OnLayoutChangeListener { _, left, top, right, bottom, _, _, _, _ ->
+            val size = (right - left) to (bottom - top)
+            if (size != lastPositionedSize) {
+                lastPositionedSize = size
+                resizeAndRepositionMenu()
+            }
+        }
+        layoutChangeListener = listener
+        baseLayout.addOnLayoutChangeListener(listener)
+    }
+
     private fun resizeAndRepositionMenu() {
         baseLayout.post {
-            val screenWidth = context.resources.displayMetrics.widthPixels
-            val screenHeight = context.resources.displayMetrics.heightPixels
+            val screenWidth = ScreenUtils.getWidth(context)
+            val screenHeight = ScreenUtils.getHeight(context)
             val menuWidth = baseLayout.width
             val menuHeight = baseLayout.height
 
@@ -260,24 +285,22 @@ class MenuView(
                 menuWidth = menuWidth,
                 screenWidth = screenWidth
             )
-            var y = if (gesturePoint.y + menuHeight + offset > screenHeight) {
-                GesturePoint.y - menuHeight.toFloat() - offset
+            val preferredY = if (gesturePoint.y + menuHeight + offset > screenHeight) {
+                gesturePoint.y - menuHeight - offset
             } else {
                 gesturePoint.y + offset
             }
-
-            // Clamp to the HUD-reserved top zone instead of 0, then to the
-            // bottom of the screen.
-            if (y < topReserved) {
-                y = topReserved.toFloat()
-            } else if (y + menuHeight > screenHeight) {
-                y = (screenHeight - menuHeight).toFloat()
-            }
+            val y = MenuVerticalPositionCalculator.clamp(
+                preferredY = preferredY.toInt(),
+                menuHeight = menuHeight,
+                screenHeight = screenHeight,
+                topReserved = topReserved
+            )
 
             MenuViewHandler.instance.updateView(
                 baseLayout,
                 x,
-                y.toInt(),
+                y,
                 WRAP_CONTENT,
                 WRAP_CONTENT
             )
@@ -333,6 +356,9 @@ class MenuView(
      * notifies the listener, and resets the max dimensions.
      */
     fun close() {
+        layoutChangeListener?.let { baseLayout.removeOnLayoutChangeListener(it) }
+        layoutChangeListener = null
+        lastPositionedSize = null
         baseLayout.removeAllViews()
         MenuViewHandler.instance.kill()
         MenuHighlightHud.instance.hide()
