@@ -55,6 +55,9 @@ class ScanningManager(
         DefaultAppScanTechniquePolicy
     )
 
+    @Volatile
+    private var foregroundPackageName: String? = null
+
     private var moveRepeatManager: MoveRepeatManager? = MoveRepeatManager(accessibilityService)
 
     // Scan settings
@@ -134,10 +137,14 @@ class ScanningManager(
     }
 
     internal suspend fun updateForegroundApplication(packageName: String?) {
+        foregroundPackageName = packageName
         appScanTechniqueOverrideCoordinator.onForegroundApplicationChanged(packageName)
     }
 
+    fun currentForegroundPackage(): String? = foregroundPackageName
+
     internal fun clearAppScanTechniqueOverride() {
+        foregroundPackageName = null
         appScanTechniqueOverrideCoordinator.clear()
     }
 
