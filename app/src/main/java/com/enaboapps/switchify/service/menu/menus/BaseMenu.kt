@@ -31,6 +31,8 @@ open class BaseMenu(
 ) {
     // Lazy-initialized repository to avoid repeated instantiation
     private val configRepository by lazy { MenuConfigurationRepository(accessibilityService) }
+
+    internal fun contextualItemIds(): Set<String> = leadingItems.map { it.id }.toSet()
     /**
      * Get the menu items with automatic previous menu button when applicable.
      * Loads user-added items and merges them with static items in the correct order

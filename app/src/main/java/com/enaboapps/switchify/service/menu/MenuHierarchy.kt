@@ -15,6 +15,7 @@ class MenuHierarchy(
     private val TAG = "SwitchifyMenuHierarchy"
 
     private var tree: List<MenuView> = mutableListOf()
+    private var openGeneration = 0L
 
     private fun addMenu(menu: MenuView) {
         tree += menu
@@ -48,13 +49,7 @@ class MenuHierarchy(
             // Notify observers of menu closure
             closedMenu?.let { MenuManager.getInstance().notifyMenuClosed(it) }
 
-            Handler(Looper.getMainLooper()).postDelayed(100) {
-                tree.lastOrNull()?.let {
-                    it.menuViewListener = this
-                    it.open(scanningManager)
-                    // MenuView will handle nodes change notification after inflating
-                }
-            }
+            tree.lastOrNull()?.let { openReplacement(it, notifyOpened = false) }
         }
     }
 
@@ -70,13 +65,7 @@ class MenuHierarchy(
             StatsCollector.getInstance().recordMenuOpen(menuId)
         }
 
-        menu.menuViewListener = this
-        Handler(Looper.getMainLooper()).postDelayed(100) {
-            menu.open(scanningManager)
-            // Notify observers that menu was opened
-            MenuManager.getInstance().notifyMenuOpened(menu)
-            // MenuView will handle nodes change notification after inflating
-        }
+        openReplacement(menu)
     }
 
     fun replaceTopMenu(menu: MenuView) {
@@ -100,16 +89,18 @@ class MenuHierarchy(
         openReplacement(menu)
     }
 
-    private fun openReplacement(menu: MenuView) {
+    private fun openReplacement(menu: MenuView, notifyOpened: Boolean = true) {
+        val generation = ++openGeneration
         menu.menuViewListener = this
         Handler(Looper.getMainLooper()).postDelayed(100) {
-            if (getTopMenu() !== menu) return@postDelayed
+            if (generation != openGeneration || getTopMenu() !== menu) return@postDelayed
             menu.open(scanningManager)
-            MenuManager.getInstance().notifyMenuOpened(menu)
+            if (notifyOpened) MenuManager.getInstance().notifyMenuOpened(menu)
         }
     }
 
     fun removeAllMenus() {
+        openGeneration++
         val depthBefore = tree.size
         // close the top menu
         getTopMenu()?.close()
