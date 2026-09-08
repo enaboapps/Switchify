@@ -7,6 +7,8 @@ import android.os.Build
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import com.enaboapps.switchify.R
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 internal data class ReportedNodeAction(val id: Int, val label: String?)
 
@@ -176,26 +178,33 @@ internal sealed interface NodeActionResolution {
 }
 
 internal fun interface NodeActionResolver {
-    fun resolve(locator: NodeActionLocator, excludedActionIds: Set<Int>): NodeActionResolution
+    suspend fun resolve(locator: NodeActionLocator, excludedActionIds: Set<Int>): NodeActionResolution
 }
 
 internal class AndroidNodeActionResolver(
     private val service: AccessibilityService,
     private val context: Context
 ) : NodeActionResolver {
-    override fun resolve(
+    override suspend fun resolve(
         locator: NodeActionLocator,
         excludedActionIds: Set<Int>
     ): NodeActionResolution {
+        val coroutineContext = currentCoroutineContext()
+        val budget = NodeProcessingBudget(checkCancellation = { coroutineContext.ensureActive() })
         val window = service.windows.firstOrNull { candidate ->
             candidate.type == AccessibilityWindowInfo.TYPE_APPLICATION &&
                 candidate.id == locator.identity.windowId &&
                 candidate.root?.packageName?.toString() == locator.identity.packageName
         } ?: return NodeActionResolution.SourceMissing
         val root = window.root ?: return NodeActionResolution.SourceMissing
-        val candidates = flatten(root).map { (node, path) -> identity(node, path) to node }
+        val candidates = traverseNodes(root, budget, { it.childCount }, { node, index -> node.getChild(index) })
+            .map { (node, path) ->
+                budget.check()
+                identity(node, path, budget) to node
+            }
         val node = NodeActionLocatorMatcher.find(locator, candidates)
             ?: return NodeActionResolution.TargetMissing
+        budget.check()
         val actions = NodeActionPolicy.resolve(
             actions = reportedActions(node),
             standardLabel = { AndroidNodeActionLabels.standardLabel(context, it) },
@@ -203,33 +212,19 @@ internal class AndroidNodeActionResolver(
         )
         return NodeActionResolution.Resolved(
             ResolvedNodeActionTarget(actions) { actionId ->
+                coroutineContext.ensureActive()
                 node.actionList.any { it.id == actionId } && node.performAction(actionId)
             }
         )
     }
 
-    private fun flatten(root: AccessibilityNodeInfo): List<Pair<AccessibilityNodeInfo, List<Int>>> {
-        val result = ArrayList<Pair<AccessibilityNodeInfo, List<Int>>>(64)
-        val queue = ArrayDeque<Pair<AccessibilityNodeInfo, List<Int>>>()
-        queue.add(root to emptyList())
-        while (queue.isNotEmpty() && result.size < MAX_NODE_COUNT) {
-            val current = queue.removeFirst()
-            result.add(current)
-            for (index in 0 until current.first.childCount) {
-                current.first.getChild(index)?.let { child ->
-                    queue.add(child to (current.second + index))
-                }
-            }
-        }
-        return result
-    }
-
-    private companion object {
-        const val MAX_NODE_COUNT = 1000
-    }
 }
 
-internal fun identity(node: AccessibilityNodeInfo, childPath: List<Int>): NodeActionIdentity {
+internal fun identity(
+    node: AccessibilityNodeInfo,
+    childPath: List<Int>,
+    budget: NodeProcessingBudget = NodeProcessingBudget()
+): NodeActionIdentity {
     val bounds = Rect().also(node::getBoundsInScreen)
     return NodeActionIdentity(
         packageName = node.packageName?.toString(),
@@ -237,8 +232,8 @@ internal fun identity(node: AccessibilityNodeInfo, childPath: List<Int>): NodeAc
         childPath = childPath,
         bounds = NodeActionBounds(bounds.left, bounds.top, bounds.right, bounds.bottom),
         className = node.className?.toString(),
-        text = node.text?.toString(),
-        contentDescription = node.contentDescription?.toString(),
+        text = budget.identityText(node.text),
+        contentDescription = budget.identityText(node.contentDescription),
         viewIdResourceName = node.viewIdResourceName,
         uniqueId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) node.uniqueId else null
     )

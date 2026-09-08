@@ -578,5 +578,6 @@ class ScanTree(
         super.cleanup()
         scanningScheduler?.shutdown()
         scanningScheduler = null
+        tree.clear()
     }
 }

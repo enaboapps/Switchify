@@ -1,4 +1,5 @@
 import java.util.Properties
+import com.android.build.api.variant.BuildConfigField
 
 plugins {
     alias(libs.plugins.compose.compiler)
@@ -72,11 +73,6 @@ android {
             "AI_MODEL_URL",
             "\"${configValue("AI_MODEL_URL", "aiModel.url")}\""
         )
-        buildConfigField(
-            "String",
-            "SENTRY_DSN",
-            "\"${configValue("SENTRY_DSN", "sentry.dsn")}\""
-        )
     }
 
     // CI-only release signing: activates when UPLOAD_KEYSTORE_PATH points at
@@ -127,6 +123,24 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+val sentryLocalConfig = Properties()
+val sentryLocalConfigFile = rootProject.file("local.properties")
+if (sentryLocalConfigFile.exists()) sentryLocalConfigFile.inputStream().use(sentryLocalConfig::load)
+val sentryDsn = providers.environmentVariable("SENTRY_DSN")
+    .orElse(sentryLocalConfig.getProperty("sentry.dsn", ""))
+
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        val requiresSentryDsn = variant.buildType == "release"
+        checkNotNull(variant.buildConfigFields).put("SENTRY_DSN", sentryDsn.map { dsn ->
+            check(!requiresSentryDsn || dsn.isNotBlank()) {
+                "Missing config: set SENTRY_DSN env var or 'sentry.dsn' in local.properties for release builds"
+            }
+            BuildConfigField("String", "\"$dsn\"", null)
+        })
     }
 }
 

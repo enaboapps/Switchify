@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityWindowInfo
 import com.enaboapps.switchify.service.gestures.GestureManager
 import com.enaboapps.switchify.service.gestures.GesturePoint
 import com.enaboapps.switchify.service.gestures.placement.FingerMode
@@ -78,7 +79,8 @@ class Node(
          */
         fun fromAccessibilityNodeInfo(
             nodeInfo: AccessibilityNodeInfo,
-            childPath: List<Int> = emptyList()
+            childPath: List<Int> = emptyList(),
+            contentDescription: String? = null
         ): Node {
             val node = Node()
             val rect = Rect()
@@ -93,13 +95,16 @@ class Node(
             node.childPath = childPath
             node.x = rect.left
             node.y = rect.top
-            node.contentDescription = nodeInfo.contentDescription?.toString() ?: ""
+            node.contentDescription = contentDescription ?: nodeInfo.contentDescription?.toString().orEmpty()
             node.centerX = rect.centerX()
             node.centerY = rect.centerY()
             node.width = rect.width()
             node.height = rect.height()
             node.overlayNodeBounds = overlayBounds
-            node.capabilities = NodeCapabilityClassifier.classify(nodeInfo, rect, boundsInWindow)
+            node.capabilities = NodeCapabilityClassifier.classify(
+                nodeInfo, rect, boundsInWindow,
+                overlayBounds.windowType == AccessibilityWindowInfo.TYPE_INPUT_METHOD
+            )
             return node
         }
 

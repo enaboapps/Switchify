@@ -1,6 +1,9 @@
 package com.enaboapps.switchify.service.techniques.nodes
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 
 internal interface AccessibilityActionMenuActions {
@@ -18,13 +21,14 @@ internal class AccessibilityActionCoordinator(
     private val stateLock = Any()
     private var generation = 0L
     private var resolving = false
+    private var resolutionJob: Job? = null
 
     fun open(locator: NodeActionLocator) {
         val operationGeneration = beginOperation() ?: return
-        scope.launch {
+        launchOperation(operationGeneration) {
             try {
                 val resolution = resolveSafely(locator, emptySet())
-                if (!isCurrent(operationGeneration)) return@launch
+                if (!isCurrent(operationGeneration)) return@launchOperation
                 when (resolution) {
                     NodeActionResolution.SourceMissing -> close(operationGeneration)
                     NodeActionResolution.TargetMissing -> showMain(operationGeneration)
@@ -45,10 +49,10 @@ internal class AccessibilityActionCoordinator(
 
     fun select(target: NodeActionTarget, actionId: Int) {
         val operationGeneration = beginOperation() ?: return
-        scope.launch {
+        launchOperation(operationGeneration) {
             try {
                 val resolution = resolveSafely(target.locator, target.excludedActionIds)
-                if (!isCurrent(operationGeneration)) return@launch
+                if (!isCurrent(operationGeneration)) return@launchOperation
                 when (resolution) {
                     NodeActionResolution.SourceMissing -> close(operationGeneration)
                     NodeActionResolution.TargetMissing -> showMain(operationGeneration)
@@ -69,10 +73,24 @@ internal class AccessibilityActionCoordinator(
         synchronized(stateLock) {
             generation += 1
             resolving = false
+            resolutionJob?.cancel()
+            resolutionJob = null
         }
     }
 
     internal fun isResolving(): Boolean = synchronized(stateLock) { resolving }
+
+    private fun launchOperation(operationGeneration: Long, block: suspend () -> Unit) {
+        val job = scope.launch(start = CoroutineStart.LAZY) { block() }
+        synchronized(stateLock) {
+            if (generation == operationGeneration && resolving) {
+                resolutionJob = job
+            } else {
+                job.cancel()
+            }
+        }
+        job.start()
+    }
 
     private suspend fun handleResolvedSelection(
         target: NodeActionTarget,
@@ -87,7 +105,14 @@ internal class AccessibilityActionCoordinator(
             )
             return
         }
-        if (resolvedTarget.perform(actionId)) {
+        val performed = try {
+            resolvedTarget.perform(actionId)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (_: Exception) {
+            false
+        }
+        if (performed) {
             close(operationGeneration)
             return
         }
@@ -130,7 +155,10 @@ internal class AccessibilityActionCoordinator(
 
     private fun finishOperation(operationGeneration: Long) {
         synchronized(stateLock) {
-            if (generation == operationGeneration) resolving = false
+            if (generation == operationGeneration) {
+                resolving = false
+                resolutionJob = null
+            }
         }
     }
 
@@ -138,12 +166,14 @@ internal class AccessibilityActionCoordinator(
         generation == operationGeneration && resolving
     }
 
-    private fun resolveSafely(
+    private suspend fun resolveSafely(
         locator: NodeActionLocator,
         excludedActionIds: Set<Int>
     ): NodeActionResolution = runCatching {
         resolver.resolve(locator, excludedActionIds)
     }.getOrElse {
+        if (it is CancellationException) throw it
+        if (it is NodeTraversalLimitException) return@getOrElse NodeActionResolution.TargetMissing
         NodeActionResolution.SourceMissing
     }
 }

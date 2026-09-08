@@ -157,6 +157,8 @@ abstract class BaseNodeScanner(
         longWindowUpdates.clear()
         warningCount = 0
         _scanTree?.cleanup()
+        _scanTree = null
+        lastUpdateNodes = null
     }
 
     private fun recordUpdateTimestamp() {

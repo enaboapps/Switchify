@@ -9,6 +9,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -29,7 +30,7 @@ class ScanningScheduler internal constructor(
 ) {
 
     constructor(context: Context, onScan: suspend () -> Unit) : this(
-        onScan = onScan,
+        onScan = { withContext(Dispatchers.Main.immediate) { onScan() } },
         scanRateProvider = ScanSettings(context)::getScanRate,
         firstItemPauseProvider = ScanSettings(context)::getPauseOnFirstItemDelay,
         coroutineScope = CoroutineScope(Dispatchers.IO + CoroutineName(UUID.randomUUID().toString()))
