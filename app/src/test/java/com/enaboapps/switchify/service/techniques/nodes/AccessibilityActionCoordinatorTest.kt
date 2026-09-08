@@ -4,6 +4,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -11,6 +12,42 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccessibilityActionCoordinatorTest {
+    @Test
+    fun cancellingMenuCancelsResolverWork() = runTest {
+        var stopped = false
+        val menu = FakeMenuActions()
+        val coordinator = AccessibilityActionCoordinator(
+            this,
+            NodeActionResolver { _, _ ->
+                try {
+                    awaitCancellation()
+                } finally {
+                    stopped = true
+                }
+            },
+            menu
+        )
+        coordinator.open(locator())
+        runCurrent()
+        coordinator.cancel()
+        runCurrent()
+        assertTrue(stopped)
+        assertTrue(menu.events.isEmpty())
+        assertFalse(coordinator.isResolving())
+    }
+
+    @Test
+    fun traversalLimitRemovesActionsWithoutExecuting() = runTest {
+        val menu = FakeMenuActions()
+        val coordinator = AccessibilityActionCoordinator(
+            this, NodeActionResolver { _, _ -> throw NodeTraversalLimitException() }, menu
+        )
+        coordinator.open(locator())
+        runCurrent()
+        assertEquals(listOf("main"), menu.events)
+        assertFalse(coordinator.isResolving())
+    }
+
     @Test
     fun opensFreshActionsWithoutExecuting() = runTest {
         val menu = FakeMenuActions()

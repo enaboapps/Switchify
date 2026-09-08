@@ -172,7 +172,11 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
         scanPreferenceChangeCoordinator.start()
         switchEventProvider.addCameraSwitchListener(this)
         eventPipeline =
-            AccessibilityEventPipeline(serviceScope) { nodeUpdateCoordinator.processAccessibilityUpdate() }
+            AccessibilityEventPipeline(
+                serviceScope,
+                minimumRefreshIntervalMs = 50L,
+                onError = { error -> Logger.log(LogEvent.NodeExaminerFailed, throwable = error) }
+            ) { isCurrent -> nodeUpdateCoordinator.processAccessibilityUpdate(isCurrent) }
         eventPipeline.start()
 
         setupServiceBridge()
@@ -312,9 +316,21 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
     }
 
     fun refreshAccessibilityNodes() {
-        serviceScope.launch {
-            nodeUpdateCoordinator.processAccessibilityUpdate()
+        if (::eventPipeline.isInitialized) eventPipeline.requestRefresh()
+    }
+
+    private fun clearAccessibilityNodeSnapshots(removeCallback: Boolean = true) {
+        com.enaboapps.switchify.service.techniques.nodes.NodeExaminer.clear()
+        if (removeCallback) {
+            com.enaboapps.switchify.service.techniques.nodes.scanners.system.SystemNodeHolder.clear()
+        } else {
+            com.enaboapps.switchify.service.techniques.nodes.scanners.system.SystemNodeHolder.updateNodes(emptyList())
         }
+    }
+
+    internal fun setNodeProcessingSuspended(suspended: Boolean) {
+        if (::eventPipeline.isInitialized) eventPipeline.setSuspended(suspended)
+        if (suspended) clearAccessibilityNodeSnapshots(removeCallback = false)
     }
 
 
@@ -342,7 +358,7 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
 
         // Stagger initialization to prevent overwhelming main thread
         serviceScope.launch {
-            startupOrchestrator.executeStartupTasks { nodeUpdateCoordinator.processAccessibilityUpdate() }
+            startupOrchestrator.executeStartupTasks { refreshAccessibilityNodes() }
         }
     }
 
@@ -363,6 +379,7 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
             eventPipeline.stop()
         }
         ServiceCore.cleanup()
+        clearAccessibilityNodeSnapshots()
         SwitchifyAccessibilityWindow.instance.onServiceDestroy()
         GestureRepeatManager.instance.clearServiceState()
         GestureLockManager.instance.clearServiceState()
@@ -400,6 +417,8 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
             eventPipeline.stop()
         }
 
+        ServiceCore.cleanup()
+        clearAccessibilityNodeSnapshots()
         SwitchifyAccessibilityWindow.instance.onServiceDestroy()
         GestureRepeatManager.instance.clearServiceState()
         GestureLockManager.instance.clearServiceState()
@@ -491,9 +510,7 @@ class SwitchifyAccessibilityService : AccessibilityService(), LifecycleOwner,
 
                 ServiceBridge.ServiceCommand.ClearCache -> {
                     // Clear any relevant caches
-                    serviceScope.launch {
-                        nodeUpdateCoordinator.processAccessibilityUpdate()
-                    }
+                    refreshAccessibilityNodes()
                     ServiceBridge.emitEvent(ServiceBridge.ServiceEvent.ConfigurationUpdated)
                 }
 

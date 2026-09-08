@@ -16,7 +16,11 @@ class ScreenWatcherManager(
 
     fun register(scanningManager: ScanningManager, externalSwitchListener: ExternalSwitchListener) {
         screenWatcher = ScreenWatcher(
+            onScreenWake = {
+                (context as? SwitchifyAccessibilityService)?.setNodeProcessingSuspended(false)
+            },
             onScreenSleep = {
+                (context as? SwitchifyAccessibilityService)?.setNodeProcessingSuspended(true)
                 MenuManager.getInstance().cancelAccessibilityActionResolution()
                 ServiceCore.getSwitchProfileActivationCoordinator()?.cancel(
                     reason = "screen_sleep",
