@@ -74,6 +74,7 @@
     <string name="menu_item_next_page">Next page</string>
     <string name="menu_item_previous_page">Previous page</string>
     <string name="menu_item_close_menu">Close menu</string>
+    <string name="menu_item_dismiss_message">Dismiss message</string>
     <string name="menu_item_previous_menu">Previous menu</string>
 
     <!-- Gesture Menu Items -->
@@ -1048,6 +1049,7 @@
     <string name="menu_item_reselect_description">Pick a new endpoint for this gesture</string>
     <string name="menu_item_cancel_description">Cancel and close this menu</string>
     <string name="menu_item_close_menu_description">Close this menu without picking anything</string>
+    <string name="menu_item_dismiss_message_description">Hide the message at the bottom of the screen</string>
     <string name="menu_item_previous_menu_description">Go back to the previous menu</string>
     <string name="menu_item_previous_page_description">Show the previous page of menu items</string>
     <string name="menu_item_next_page_description">Show the next page of menu items</string>

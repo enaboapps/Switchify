@@ -84,6 +84,7 @@ object MenuConstants {
          */
         object Navigation {
             const val CLOSE_MENU = "close_menu"
+            const val DISMISS_MESSAGE = "dismiss_message"
             const val PREV_PAGE = "prevPage"
             const val NEXT_PAGE = "nextPage"
         }

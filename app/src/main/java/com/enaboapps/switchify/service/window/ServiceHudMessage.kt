@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.window
 
+import com.enaboapps.switchify.service.scanning.ScanInterval
 import com.enaboapps.switchify.service.window.overlay.OverlayTarget
 import com.enaboapps.switchify.service.window.overlay.OverlayTargets
 
@@ -20,14 +21,21 @@ enum class MessageSeverity {
  * to a chip after a while so it stops covering content.
  *
  * @property key Messages sharing a key replace each other in place instead
- * of queueing, so a stream of progress updates never piles up.
+ * of queueing, so a stream of progress updates never piles up. A status can
+ * also be dismissed by key so one feature never drops another's banner.
+ * @property countdown Optional timer drawn as a draining bar under the text,
+ * for statuses that end on their own such as a pause timeout.
+ * @property speak Whether to read the text aloud when item-scan speech is on.
+ * Turn off for repeated re-shows of the same status.
  */
 data class ServiceHudMessage(
     val text: String,
     val severity: MessageSeverity = MessageSeverity.Info,
     val durationMillis: Long? = ServiceMessageHUD.Time.MEDIUM.milliseconds,
     val target: OverlayTarget.Display = OverlayTargets.defaultDisplay(),
-    val key: String? = null
+    val key: String? = null,
+    val countdown: ScanInterval? = null,
+    val speak: Boolean = true
 ) {
     val isStatus: Boolean get() = durationMillis == null
 

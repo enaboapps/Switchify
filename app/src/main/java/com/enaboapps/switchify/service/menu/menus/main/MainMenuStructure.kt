@@ -1,6 +1,7 @@
 package com.enaboapps.switchify.service.menu.menus.main
 
 import com.enaboapps.switchify.R
+import com.enaboapps.switchify.service.window.ServiceMessageHUD
 import com.enaboapps.switchify.backend.iap.IAPHandler
 import com.enaboapps.switchify.backend.preferences.PreferenceManager
 import com.enaboapps.switchify.service.actions.GlobalActionManager
@@ -188,7 +189,25 @@ class MainMenuStructure(
             }
     )
 
-    val menuManipulatorItems = listOfNotNull(
+    /**
+     * Fixed navigation shown on every page. Rebuilt on each access so the
+     * dismiss entry tracks whether a HUD status message is on screen.
+     */
+    val menuManipulatorItems: List<MenuItem>
+        get() = listOfNotNull(
+        if (ServiceMessageHUD.instance.hasStatus()) {
+            MenuItem(
+                id = MenuConstants.ItemIds.Navigation.DISMISS_MESSAGE,
+                drawableId = R.drawable.ic_cancel,
+                labelResource = R.string.menu_item_dismiss_message,
+                descriptionResource = R.string.menu_item_dismiss_message_description,
+                isMenuHierarchyManipulator = true,
+                action = {
+                    ServiceMessageHUD.instance.dismissStatus()
+                    MenuManager.getInstance().closeMenuHierarchy()
+                }
+            )
+        } else null,
         MenuItem(
             id = MenuConstants.ItemIds.Navigation.CLOSE_MENU,
             drawableId = R.drawable.ic_close_menu,
