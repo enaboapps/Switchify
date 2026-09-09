@@ -3,9 +3,11 @@ package com.enaboapps.switchify.service.window
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -53,9 +55,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.enaboapps.switchify.activities.ui.theme.SwitchifyTheme
@@ -71,11 +76,16 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * Bottom-of-screen overlay for short service messages, drawn with Compose.
+ * Bottom-of-screen overlay for service messages, drawn with Compose.
  *
  * Visual style mirrors [MenuHighlightHud]: a rounded surface-container card
- * with a severity-tinted accent edge and icon. Motion uses the shared overlay
+ * with a severity-tinted accent and icon. Motion uses the shared overlay
  * timings and collapses to instant changes when animations are disabled.
+ *
+ * Which message is on screen, and in what form, is decided by
+ * [ServiceHudMessageController]: toasts queue with a minimum display time,
+ * a status message sits underneath them and collapses to a chip once it has
+ * been seen. This class owns the clock, the view, and the drawing.
  *
  * Usage:
  * 1. `setup(applicationContext)` from the accessibility service's `onCreate`.
@@ -87,19 +97,21 @@ class ServiceMessageHUD private constructor() {
     companion object {
         val instance: ServiceMessageHUD by lazy { ServiceMessageHUD() }
         private const val TAG = "ServiceMessageHUD"
-        private const val MAX_WIDTH_DP = 600
-        private const val MAX_LINES = 5
+        private val CARD_MAX_WIDTH = 600.dp
+        private val CHIP_MAX_WIDTH = 320.dp
+        private val CARD_SHAPE = RoundedCornerShape(28.dp)
     }
 
     private var applicationCtx: Context? = null
     private var composeView: AccessibilityComposeView? = null
     private var attachedTarget: OverlayTarget.Display? = null
     private val handler = Handler(Looper.getMainLooper())
-    private val hideRunnable = Runnable { hideMessage() }
+    private val controller = ServiceHudMessageController()
+    private val tickRunnable = Runnable { apply(controller.tick(now())) }
 
-    // Compose state. The message is kept through the exit animation so the
-    // card does not blank while fading out; only visibility toggles.
-    private val messageState = mutableStateOf<ServiceHudMessage?>(null)
+    // Compose state. The last shown frame is kept through the exit animation
+    // so the card does not blank while fading out; only visibility toggles.
+    private val contentState = mutableStateOf(HudFrame.HIDDEN)
     private val visibleState = mutableStateOf(false)
 
     /** Legacy message kinds, kept for the resource-based overloads. */
@@ -123,20 +135,16 @@ class ServiceMessageHUD private constructor() {
         Log.d(TAG, "ServiceMessageHUD setup")
     }
 
-    /** Shows [message], replacing whatever is currently on screen. */
+    /** Shows [message]; toasts queue behind the current one, a status replaces the previous status. */
     fun show(message: ServiceHudMessage) {
         if (applicationCtx == null) {
             Log.e(TAG, "ApplicationContext is null, cannot show message. Call setup() first.")
             return
         }
         handler.post {
-            handler.removeCallbacks(hideRunnable)
             ensureComposeViewIsCreated()
-            if (!attachIfNeeded(message.target)) return@post
             Log.d(TAG, "Showing message: \"${message.text}\" severity=${message.severity} duration=${message.durationMillis}")
-            messageState.value = message
-            visibleState.value = true
-            message.durationMillis?.let { handler.postDelayed(hideRunnable, it) }
+            apply(controller.show(message, now()))
         }
     }
 
@@ -192,18 +200,15 @@ class ServiceMessageHUD private constructor() {
         )
     }
 
+    /** Removes every message, including any status and queued toasts. */
     fun clearMessage() {
-        handler.post { hideMessage() }
-    }
-
-    private fun hideMessage() {
-        handler.removeCallbacks(hideRunnable)
-        visibleState.value = false
+        handler.post { apply(controller.clear(now())) }
     }
 
     fun dispose() {
         Log.d(TAG, "Disposing ServiceMessageHUD")
         handler.removeCallbacksAndMessages(null)
+        controller.clear(now())
         composeView?.let { view ->
             try {
                 SwitchifyAccessibilityWindow.instance.removeView(
@@ -216,9 +221,25 @@ class ServiceMessageHUD private constructor() {
         }
         composeView = null
         attachedTarget = null
-        messageState.value = null
+        contentState.value = HudFrame.HIDDEN
         visibleState.value = false
         applicationCtx = null
+    }
+
+    private fun now(): Long = SystemClock.uptimeMillis()
+
+    /** Renders [frame] and schedules the controller's next tick. Main thread only. */
+    private fun apply(frame: HudFrame) {
+        handler.removeCallbacks(tickRunnable)
+        val message = frame.message
+        if (message != null) {
+            if (!attachIfNeeded(message.target)) return
+            contentState.value = frame
+        }
+        visibleState.value = message != null
+        frame.nextTickAt?.let { at ->
+            handler.postDelayed(tickRunnable, (at - now()).coerceAtLeast(0L))
+        }
     }
 
     private fun ensureComposeViewIsCreated() {
@@ -226,9 +247,9 @@ class ServiceMessageHUD private constructor() {
         if (composeView == null) {
             composeView = AccessibilityComposeView(ctx) {
                 ServiceMessageUi(
-                    message = messageState.value,
+                    frame = contentState.value,
                     isVisible = visibleState.value,
-                    onDismiss = { hideMessage() }
+                    onDismiss = { apply(controller.dismiss(now())) }
                 )
             }
         }
@@ -258,11 +279,13 @@ class ServiceMessageHUD private constructor() {
 
     @Composable
     private fun ServiceMessageUi(
-        message: ServiceHudMessage?,
+        frame: HudFrame,
         isVisible: Boolean,
         onDismiss: () -> Unit
     ) {
         val motion = rememberOverlayMotionEnabled()
+        val message = frame.message
+        val presentation = frame.presentation
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -272,21 +295,21 @@ class ServiceMessageHUD private constructor() {
             contentAlignment = Alignment.BottomCenter
         ) {
             AnimatedVisibility(
-                visible = isVisible && message != null,
+                visible = isVisible && message != null && presentation != null,
                 enter = fadeIn(overlayTween(ScanVisualConstants.SHOW_DURATION_MS, motion)) +
                     slideInVertically(overlayTween(ScanVisualConstants.SHOW_DURATION_MS, motion)) { it / 4 },
                 exit = fadeOut(overlayTween(ScanVisualConstants.HIDE_DURATION_MS, motion))
             ) {
-                val current = message ?: return@AnimatedVisibility
+                if (message == null || presentation == null) return@AnimatedVisibility
                 SwipeableMessageCard(
                     modifier = Modifier
-                        .widthIn(max = MAX_WIDTH_DP.dp)
+                        .widthIn(max = CARD_MAX_WIDTH)
                         .fillMaxWidth()
                         .padding(16.dp),
-                    message = current,
+                    message = message,
                     onDismiss = onDismiss
                 ) {
-                    MessageCard(message = current, motionEnabled = motion)
+                    MessageCard(message = message, presentation = presentation, motionEnabled = motion)
                 }
             }
         }
@@ -344,66 +367,114 @@ class ServiceMessageHUD private constructor() {
                             }
                         }
                     )
-                }
+                },
+            contentAlignment = Alignment.Center
         ) {
             content()
         }
     }
 
     @Composable
-    private fun MessageCard(message: ServiceHudMessage, motionEnabled: Boolean) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.96f),
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-        ) {
-            // Cross-fade the whole row when one message replaces another so
-            // the card stays put and only its content changes.
-            Crossfade(
-                targetState = message,
-                animationSpec = overlayTween(ScanVisualConstants.SHOW_DURATION_MS, motionEnabled),
-                label = "ServiceMessageContent"
-            ) { current ->
-                val accent = current.severity.accentColor()
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(IntrinsicSize.Min)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(4.dp)
-                            .fillMaxHeight()
-                            .background(accent, RoundedCornerShape(2.dp))
+    private fun MessageCard(
+        message: ServiceHudMessage,
+        presentation: HudPresentation,
+        motionEnabled: Boolean
+    ) {
+        // Cross-fade the whole card when the message or its form changes so
+        // the surface stays put and only its content and size move.
+        Crossfade(
+            targetState = message to presentation,
+            animationSpec = overlayTween(ScanVisualConstants.SHOW_DURATION_MS, motionEnabled),
+            label = "ServiceMessageContent"
+        ) { (current, form) ->
+            val widthModifier = when (form) {
+                HudPresentation.CHIP -> Modifier.widthIn(max = CHIP_MAX_WIDTH)
+                else -> Modifier.fillMaxWidth()
+            }
+            Card(
+                modifier = widthModifier.animateContentSize(
+                    overlayTween<IntSize>(ScanVisualConstants.SHOW_DURATION_MS, motionEnabled)
+                ),
+                shape = CARD_SHAPE,
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.96f),
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+            ) {
+                when (form) {
+                    HudPresentation.BANNER -> MessageRow(
+                        message = current,
+                        iconSize = 24.dp,
+                        textStyle = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, lineHeight = 26.sp),
+                        maxLines = 5,
+                        verticalPadding = 12.dp,
+                        showAccentEdge = true
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Icon(
-                        imageVector = current.severity.icon(),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = accent
+                    HudPresentation.TOAST -> MessageRow(
+                        message = current,
+                        iconSize = 20.dp,
+                        textStyle = MaterialTheme.typography.titleMedium,
+                        maxLines = 3,
+                        verticalPadding = 8.dp,
+                        showAccentEdge = true
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = current.text,
-                        modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontSize = 18.sp,
-                            lineHeight = 26.sp
-                        ),
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = MAX_LINES,
-                        overflow = TextOverflow.Ellipsis
+                    HudPresentation.CHIP -> MessageRow(
+                        message = current,
+                        iconSize = 20.dp,
+                        textStyle = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        verticalPadding = 8.dp,
+                        showAccentEdge = false,
+                        fillWidth = false
                     )
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun MessageRow(
+        message: ServiceHudMessage,
+        iconSize: Dp,
+        textStyle: TextStyle,
+        maxLines: Int,
+        verticalPadding: Dp,
+        showAccentEdge: Boolean,
+        fillWidth: Boolean = true
+    ) {
+        val accent = message.severity.accentColor()
+        Row(
+            modifier = (if (fillWidth) Modifier.fillMaxWidth() else Modifier)
+                .height(IntrinsicSize.Min)
+                .padding(horizontal = 16.dp, vertical = verticalPadding),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (showAccentEdge) {
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .fillMaxHeight()
+                        .background(accent, RoundedCornerShape(2.dp))
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            }
+            Icon(
+                imageVector = message.severity.icon(),
+                contentDescription = null,
+                modifier = Modifier.size(iconSize),
+                tint = accent
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = message.text,
+                modifier = if (fillWidth) Modifier.weight(1f) else Modifier,
+                style = textStyle,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = maxLines,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 
