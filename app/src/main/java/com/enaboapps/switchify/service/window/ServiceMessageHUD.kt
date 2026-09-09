@@ -99,9 +99,9 @@ import kotlin.math.roundToInt
  * timings and collapses to instant changes when animations are disabled.
  *
  * Which message is on screen, and in what form, is decided by
- * [ServiceHudMessageController]: toasts queue with a minimum display time,
- * a status message sits underneath them and collapses to a chip once it has
- * been seen. This class owns the clock, the view, and the drawing.
+ * [ServiceHudMessageController]: a toast shows the instant it is sent, and a
+ * status message sits underneath it and collapses to a chip once it has been
+ * seen. This class owns the clock, the view, and the drawing.
  *
  * Messages are announced to accessibility services as a live region and,
  * when item-scan speech is on, read aloud through [NodeSpeaker]. A tap on the
@@ -159,7 +159,7 @@ class ServiceMessageHUD private constructor() {
         Log.d(TAG, "ServiceMessageHUD setup")
     }
 
-    /** Shows [message]; toasts queue behind the current one, a status replaces the previous status. */
+    /** Shows [message] at once; a toast replaces the current toast, a status replaces the previous status. */
     fun show(message: ServiceHudMessage) {
         if (applicationCtx == null) {
             Log.e(TAG, "ApplicationContext is null, cannot show message. Call setup() first.")
