@@ -5,7 +5,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -16,8 +18,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -135,12 +141,30 @@ internal class MenuPage(
                     }
                     AndroidView(factory = { content })
                     if (maxPageIndex > 0) {
-                        Text(
-                            text = stringResource(R.string.menu_grid_page_count, pageIndex + 1, maxPageIndex + 1),
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1,
-                            modifier = Modifier.height(with(density) { metrics.pageCountHeightPx.toDp() })
+                        val pageDescription = stringResource(
+                            R.string.menu_grid_page_count, pageIndex + 1, maxPageIndex + 1
                         )
+                        val dotColor = MaterialTheme.colorScheme.onSurface
+                        Canvas(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(with(density) { metrics.pageCountHeightPx.toDp() })
+                                .semantics { contentDescription = pageDescription }
+                        ) {
+                            val pageCount = maxPageIndex + 1
+                            val spacing = minOf(18.dp.toPx(), this.size.width / pageCount)
+                            val radius = minOf(4.dp.toPx(), spacing / 3f)
+                            val startX = (this.size.width - (pageCount - 1) * spacing) / 2f
+                            repeat(pageCount) { index ->
+                                val center = Offset(startX + index * spacing, this.size.height / 2f)
+                                if (index == pageIndex) {
+                                    drawCircle(dotColor, radius, center)
+                                } else {
+                                    drawCircle(dotColor, radius, center,
+                                        style = Stroke(width = minOf(1.5.dp.toPx(), radius)))
+                                }
+                            }
+                        }
                     }
                     if (navigationSlots.isNotEmpty()) {
                         AndroidView(factory = { navigation }, modifier = Modifier.padding(top = 8.dp))
@@ -168,6 +192,7 @@ private fun GridPageSurface(isTransparent: Boolean, content: @Composable () -> U
     Surface(
         shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = if (isTransparent) 0.84f else 0.98f),
+        contentColor = MaterialTheme.colorScheme.onSurface,
         tonalElevation = 3.dp,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
     ) {
