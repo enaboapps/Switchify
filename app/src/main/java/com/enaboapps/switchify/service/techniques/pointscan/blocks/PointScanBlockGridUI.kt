@@ -1,5 +1,6 @@
 package com.enaboapps.switchify.service.techniques.pointscan.blocks
 
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.view.View
@@ -10,85 +11,50 @@ import com.enaboapps.switchify.service.techniques.pointscan.PointScanSettings
 import com.enaboapps.switchify.service.utils.HighlightAnimations
 import com.enaboapps.switchify.service.utils.ScreenUtils
 
-/**
- * Owns the single [PointScanGridView] shown while blocks are being scanned.
- *
- * During the line phase the grid is held at a low alpha instead of removed,
- * so the user keeps the spatial context of where the chosen block sits.
- * [holdForLinePhase] arms that behaviour before the block tree stops;
- * [reset] releases it and tears the grid down.
- */
-class PointScanBlockGridUI(private val context: android.content.Context) : AccessTechniqueUIBase() {
+class PointScanBlockGridUI(private val context: Context) : AccessTechniqueUIBase() {
     private val handler = Handler(Looper.getMainLooper())
     private var gridView: PointScanGridView? = null
-    private var heldForLinePhase = false
-
-    fun showGrid() {
-        handler.post {
-            heldForLinePhase = false
-            val gridSize = PointScanSettings.getCursorBlockCount()
-            val existing = gridView
-            if (existing != null) {
-                existing.gridSize = gridSize
-                fadeTo(existing, 1f)
-                return@post
-            }
-            val view = PointScanGridView(context).apply { this.gridSize = gridSize }
-            addViewDirectly(
-                view,
-                0,
-                0,
-                ScreenUtils.getWidth(context),
-                ScreenUtils.getHeight(context)
-            )
-            gridView = view
-            if (GestureVisualMotionPolicy.animationsEnabled()) {
-                HighlightAnimations.fadeIn(view)
-            } else {
-                view.alpha = 1f
+    private val visibility = PointScanGridVisibility(
+        post = { handler.post(it) },
+        render = { phase ->
+            when (phase) {
+                PointScanGridPhase.HIDDEN -> removeGridNow()
+                PointScanGridPhase.SCANNING -> showGridNow(1f)
+                PointScanGridPhase.LINE -> showGridNow(ScanVisualConstants.GRID_DIMMED_ALPHA)
             }
         }
-    }
+    )
 
-    /** Keeps the grid on screen, dimmed, when the block tree stops for the line phase. */
-    fun holdForLinePhase() {
-        handler.post {
-            heldForLinePhase = true
-            gridView?.let { fadeTo(it, ScanVisualConstants.GRID_DIMMED_ALPHA) }
+    fun showGrid() = visibility.show()
+
+    fun holdForLinePhase() = visibility.holdForLinePhase()
+
+    fun hideGrid() = visibility.hide()
+
+    fun reset() = visibility.reset()
+
+    private fun showGridNow(alpha: Float) {
+        val gridSize = PointScanSettings.getCursorBlockCount()
+        val existing = gridView
+        if (existing != null) {
+            existing.gridSize = gridSize
+            fadeTo(existing, alpha)
+            return
         }
-    }
-
-    fun hideGrid() {
-        handler.post {
-            val view = gridView
-            if (heldForLinePhase && view != null) {
-                fadeTo(view, ScanVisualConstants.GRID_DIMMED_ALPHA)
-            } else {
-                removeGridNow()
-            }
-        }
-    }
-
-    fun reset() {
-        handler.post {
-            heldForLinePhase = false
-            removeGridNow()
+        val view = PointScanGridView(context).apply { this.gridSize = gridSize }
+        addViewDirectly(view, 0, 0, ScreenUtils.getWidth(context), ScreenUtils.getHeight(context))
+        gridView = view
+        if (alpha == 1f && GestureVisualMotionPolicy.animationsEnabled()) {
+            HighlightAnimations.fadeIn(view)
+        } else {
+            view.alpha = alpha
         }
     }
 
     private fun removeGridNow() {
-        gridView?.let { view ->
-            view.animate().cancel()
-            try {
-                if (view.parent != null) {
-                    super.removeView(view)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        gridView?.animate()?.cancel()
         gridView = null
-        super.hide()
+        hideDirectly()
     }
 
     private fun fadeTo(view: View, alpha: Float) {
