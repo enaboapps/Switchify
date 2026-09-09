@@ -145,6 +145,7 @@ internal class MenuPage(
                             R.string.menu_grid_page_count, pageIndex + 1, maxPageIndex + 1
                         )
                         val dotColor = MaterialTheme.colorScheme.onSurface
+                        val inactiveDotColor = dotColor.copy(alpha = 0.4f)
                         Canvas(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -160,7 +161,7 @@ internal class MenuPage(
                                 if (index == pageIndex) {
                                     drawCircle(dotColor, radius, center)
                                 } else {
-                                    drawCircle(dotColor, radius, center,
+                                    drawCircle(inactiveDotColor, radius, center,
                                         style = Stroke(width = minOf(1.5.dp.toPx(), radius)))
                                 }
                             }

@@ -100,15 +100,9 @@ class MenuHierarchy(
     }
 
     fun removeAllMenus() {
-        openGeneration++
         val depthBefore = tree.size
-        // close the top menu
-        getTopMenu()?.close()
-        tree = mutableListOf()
+        dispose()
         logStackChange("clear", depthBefore, tree.size)
-
-        // remove the menu view
-        MenuViewHandler.instance.kill()
 
         // Notify observers that all menus were closed
         MenuManager.getInstance().notifyAllMenusClosed()
@@ -121,6 +115,11 @@ class MenuHierarchy(
         return tree.lastOrNull()
     }
 
+    /**
+     * Invalidates pending opens, closes the top menu, clears the stack, and
+     * releases the menu container. Does not notify observers or reload the
+     * access technique; [removeAllMenus] layers those on top for normal closes.
+     */
     fun dispose() {
         openGeneration++
         getTopMenu()?.close()
