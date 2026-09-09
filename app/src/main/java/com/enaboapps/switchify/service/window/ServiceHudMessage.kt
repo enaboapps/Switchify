@@ -14,15 +14,23 @@ enum class MessageSeverity {
 /**
  * One message for [ServiceMessageHUD].
  *
- * @property durationMillis How long to show the message before it hides
- * itself, or null to keep it until it is cleared or replaced.
+ * A message with a [durationMillis] is a toast: it queues behind whatever is
+ * showing and hides itself. A message without one is a status banner: it
+ * stays until cleared or replaced, sits underneath any toasts, and collapses
+ * to a chip after a while so it stops covering content.
+ *
+ * @property key Messages sharing a key replace each other in place instead
+ * of queueing, so a stream of progress updates never piles up.
  */
 data class ServiceHudMessage(
     val text: String,
     val severity: MessageSeverity = MessageSeverity.Info,
     val durationMillis: Long? = ServiceMessageHUD.Time.MEDIUM.milliseconds,
-    val target: OverlayTarget.Display = OverlayTargets.defaultDisplay()
+    val target: OverlayTarget.Display = OverlayTargets.defaultDisplay(),
+    val key: String? = null
 ) {
+    val isStatus: Boolean get() = durationMillis == null
+
     companion object {
         /** Maps the legacy type and time pair onto a duration; permanent messages have none. */
         fun durationFor(type: ServiceMessageHUD.MessageType, time: ServiceMessageHUD.Time): Long? =
