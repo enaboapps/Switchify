@@ -5,7 +5,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class ServiceHudMessageControllerTest {
-    private val controller = ServiceHudMessageController(minDisplayMillis = 1000, collapseAfterMillis = 5000)
+    private val controller = ServiceHudMessageController(collapseAfterMillis = 5000)
 
     private fun toast(text: String, duration: Long = 3000, key: String? = null) =
         ServiceHudMessage(text, durationMillis = duration, key = key)
@@ -25,39 +25,18 @@ class ServiceHudMessageControllerTest {
     }
 
     @Test
-    fun rapidToastsQueueUntilMinimumDisplayThenAdvance() {
-        controller.show(toast("a"), now = 0)
-        val frame = controller.show(toast("b"), now = 200)
-        assertEquals("a", frame.message?.text)
-        assertEquals(1000L, frame.nextTickAt)
+    fun newToastReplacesTheCurrentOneImmediatelyHoweverSoonItArrives() {
+        controller.show(toast("release to perform back"), now = 0)
+        val second = controller.show(toast("release to perform home"), now = 200)
+        assertEquals("release to perform home", second.message?.text)
+        assertEquals(3200L, second.nextTickAt)
 
-        assertEquals("a", controller.tick(999).message?.text)
-        val advanced = controller.tick(1000)
-        assertEquals("b", advanced.message?.text)
-        assertEquals(4000L, advanced.nextTickAt)
-    }
+        val third = controller.show(toast("release to perform recents", duration = 1500), now = 400)
+        assertEquals("release to perform recents", third.message?.text)
+        assertEquals(1900L, third.nextTickAt)
 
-    @Test
-    fun toastArrivingAfterMinimumDisplayReplacesTheCurrentOne() {
-        controller.show(toast("a"), now = 0)
-        val frame = controller.show(toast("b"), now = 1500)
-        assertEquals("b", frame.message?.text)
-        assertEquals(4500L, frame.nextTickAt)
-    }
-
-    @Test
-    fun sameKeyReplacesOnScreenAndInQueue() {
-        controller.show(toast("step 1", key = "pattern"), now = 0)
-        val replaced = controller.show(toast("step 2", key = "pattern"), now = 100)
-        assertEquals("step 2", replaced.message?.text)
-
-        controller.show(toast("other"), now = 200)
-        controller.show(toast("queued 1", key = "q"), now = 300)
-        controller.show(toast("queued 2", key = "q"), now = 400)
-        controller.tick(1100)
-        assertEquals("other", controller.tick(1100).message?.text)
-        assertEquals("queued 2", controller.tick(2100).message?.text)
-        assertEquals(HudFrame.HIDDEN, controller.tick(6000))
+        assertEquals("release to perform recents", controller.tick(1899).message?.text)
+        assertEquals(HudFrame.HIDDEN, controller.tick(1900))
     }
 
     @Test
@@ -106,7 +85,7 @@ class ServiceHudMessageControllerTest {
     }
 
     @Test
-    fun statusShownWithNothingElseDoesNotStartCollapseUntilVisible() {
+    fun statusShownUnderAToastDoesNotStartCollapseUntilVisible() {
         controller.show(toast("busy"), now = 0)
         controller.show(status("paused"), now = 100)
         val restored = controller.tick(3000)
@@ -115,15 +94,13 @@ class ServiceHudMessageControllerTest {
     }
 
     @Test
-    fun dismissAdvancesToastsAndDropsStatus() {
+    fun dismissEndsTheToastThenDropsTheStatus() {
         controller.show(status("paused"), now = 0)
         controller.show(toast("a"), now = 100)
-        controller.show(toast("b"), now = 200)
-        val afterFirst = controller.dismiss(300)
-        assertEquals("b", afterFirst.message?.text)
-        val afterSecond = controller.dismiss(400)
-        assertEquals("paused", afterSecond.message?.text)
-        assertEquals(HudFrame.HIDDEN, controller.dismiss(500))
+        val afterToast = controller.dismiss(200)
+        assertEquals("paused", afterToast.message?.text)
+        assertEquals(HudPresentation.BANNER, afterToast.presentation)
+        assertEquals(HudFrame.HIDDEN, controller.dismiss(300))
     }
 
     @Test
@@ -156,10 +133,9 @@ class ServiceHudMessageControllerTest {
     }
 
     @Test
-    fun clearHidesEverythingIncludingQueue() {
+    fun clearHidesEverything() {
         controller.show(status("paused"), now = 0)
         controller.show(toast("a"), now = 100)
-        controller.show(toast("b"), now = 200)
         assertEquals(HudFrame.HIDDEN, controller.clear(300))
         assertEquals(HudFrame.HIDDEN, controller.tick(10000))
     }

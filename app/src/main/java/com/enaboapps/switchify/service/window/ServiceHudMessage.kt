@@ -15,14 +15,13 @@ enum class MessageSeverity {
 /**
  * One message for [ServiceMessageHUD].
  *
- * A message with a [durationMillis] is a toast: it queues behind whatever is
- * showing and hides itself. A message without one is a status banner: it
- * stays until cleared or replaced, sits underneath any toasts, and collapses
+ * A message with a [durationMillis] is a toast: it replaces whatever toast is
+ * showing at once and hides itself. A message without one is a status banner:
+ * it stays until cleared or replaced, sits underneath any toast, and collapses
  * to a chip after a while so it stops covering content.
  *
- * @property key Messages sharing a key replace each other in place instead
- * of queueing, so a stream of progress updates never piles up. A status can
- * also be dismissed by key so one feature never drops another's banner.
+ * @property key Lets a status be dismissed by key so one feature never drops
+ * another's banner.
  * @property countdown Optional timer drawn as a draining bar under the text,
  * for statuses that end on their own such as a pause timeout.
  * @property speak Whether to read the text aloud when item-scan speech is on.

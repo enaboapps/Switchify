@@ -30,31 +30,25 @@ internal data class HudFrame(
  * milliseconds on one monotonic clock, so the rules can be unit tested.
  *
  * Rules:
- * - A toast shows immediately if nothing is showing, or if the current toast
- *   has been up for at least [minDisplayMillis] and nothing is queued.
- *   Otherwise it queues. A toast whose key matches the one on screen replaces
- *   it in place; a key match in the queue replaces that entry.
+ * - A toast shows immediately, replacing any toast already on screen. Prompts
+ *   such as "release to perform" must land the instant they are sent, so
+ *   nothing is ever held back or queued.
  * - A status message replaces any previous status. It shows as a banner when
  *   no toast is up, collapses to a chip after [collapseAfterMillis], and
- *   returns after toasts finish.
- * - [dismiss] ends whatever is on screen: a toast advances to the next, a
- *   status is dropped.
+ *   returns after the toast finishes.
+ * - [dismiss] ends whatever is on screen: a toast, or otherwise the status.
  */
 internal class ServiceHudMessageController(
-    private val minDisplayMillis: Long = MIN_DISPLAY_MS,
     private val collapseAfterMillis: Long = COLLAPSE_AFTER_MS
 ) {
     companion object {
-        const val MIN_DISPLAY_MS = 1200L
         const val COLLAPSE_AFTER_MS = 8000L
     }
 
     private var status: ServiceHudMessage? = null
     private var statusShownAt: Long? = null
     private var statusCollapsed = false
-    private val queue = ArrayDeque<ServiceHudMessage>()
     private var toast: ServiceHudMessage? = null
-    private var toastShownAt = 0L
     private var toastHideAt = 0L
 
     fun show(message: ServiceHudMessage, now: Long): HudFrame {
@@ -62,26 +56,16 @@ internal class ServiceHudMessageController(
             status = message
             statusCollapsed = false
             statusShownAt = if (toast == null) now else null
-            return frame(now)
-        }
-        val current = toast
-        when {
-            current == null -> display(message, now)
-            message.key != null && message.key == current.key -> display(message, now)
-            queue.isEmpty() && now - toastShownAt >= minDisplayMillis -> display(message, now)
-            else -> enqueue(message)
+        } else {
+            toast = message
+            toastHideAt = now + (message.durationMillis ?: 0L)
         }
         return frame(now)
     }
 
     fun tick(now: Long): HudFrame {
-        val current = toast
-        if (current != null) {
-            if (queue.isNotEmpty() && now - toastShownAt >= minDisplayMillis) {
-                display(queue.removeFirst(), now)
-            } else if (now >= toastHideAt) {
-                endToast(now)
-            }
+        if (toast != null) {
+            if (now >= toastHideAt) endToast(now)
         } else if (status != null && !statusCollapsed) {
             val shownAt = statusShownAt
             if (shownAt != null && now - shownAt >= collapseAfterMillis) statusCollapsed = true
@@ -102,8 +86,8 @@ internal class ServiceHudMessageController(
     fun hasStatus(): Boolean = status != null
 
     /**
-     * Drops the status message without touching toasts. With a [key], only a
-     * status carrying that key is dropped, so features cannot clear each
+     * Drops the status message without touching the toast. With a [key], only
+     * a status carrying that key is dropped, so features cannot clear each
      * other's banners.
      */
     fun dismissStatus(now: Long, key: String? = null): HudFrame {
@@ -112,53 +96,26 @@ internal class ServiceHudMessageController(
         return frame(now)
     }
 
-    private fun dropStatus() {
-        status = null
-        statusShownAt = null
-        statusCollapsed = false
-    }
-
     fun clear(now: Long): HudFrame {
         dropStatus()
-        queue.clear()
         toast = null
         return frame(now)
     }
 
     private fun endToast(now: Long) {
         toast = null
-        if (queue.isNotEmpty()) {
-            display(queue.removeFirst(), now)
-        } else if (status != null && !statusCollapsed) {
-            statusShownAt = now
-        }
+        if (status != null && !statusCollapsed) statusShownAt = now
     }
 
-    private fun display(message: ServiceHudMessage, now: Long) {
-        toast = message
-        toastShownAt = now
-        toastHideAt = now + (message.durationMillis ?: 0L)
-    }
-
-    private fun enqueue(message: ServiceHudMessage) {
-        if (message.key != null) {
-            val index = queue.indexOfFirst { it.key == message.key }
-            if (index >= 0) {
-                queue[index] = message
-                return
-            }
-        }
-        queue.addLast(message)
+    private fun dropStatus() {
+        status = null
+        statusShownAt = null
+        statusCollapsed = false
     }
 
     private fun frame(now: Long): HudFrame {
         toast?.let { current ->
-            val next = if (queue.isNotEmpty()) {
-                minOf(toastHideAt, toastShownAt + minDisplayMillis)
-            } else {
-                toastHideAt
-            }
-            return HudFrame(current, HudPresentation.TOAST, next)
+            return HudFrame(current, HudPresentation.TOAST, toastHideAt)
         }
         val banner = status ?: return HudFrame.HIDDEN
         if (statusCollapsed) return HudFrame(banner, HudPresentation.CHIP, null)
