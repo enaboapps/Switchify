@@ -134,7 +134,12 @@ class ScanningScheduler internal constructor(
                         try {
                             onScan()
                         } catch (cancelled: CancellationException) {
-                            throw cancelled
+                            // Only our own cancellation ends the loop. A foreign
+                            // cancellation (e.g. a timeout inside a step) is an
+                            // ordinary step failure; ending the loop here would
+                            // leave scanState at SCANNING with no job behind it.
+                            if (!isActive) throw cancelled
+                            println("[$uniqueId] Scan step cancelled: ${cancelled.message}")
                         } catch (e: Exception) {
                             println("[$uniqueId] Error during scan: ${e.message}")
                             e.printStackTrace()

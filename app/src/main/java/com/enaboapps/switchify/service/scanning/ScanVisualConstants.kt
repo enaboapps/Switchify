@@ -53,6 +53,17 @@ object ScanVisualConstants {
     /** Alpha for structural overlays — grid, screen outline (~63%). */
     const val STRUCTURAL_ALPHA = 160
 
+    // ---- Countdown ring (dp) ----
+
+    /** Gap between the highlight stroke (plus halo) and the countdown ring. */
+    const val COUNTDOWN_INSET_DP = 5
+
+    /** Coloured countdown ring stroke. */
+    const val COUNTDOWN_STROKE_DP = 2
+
+    /** Contrast outline drawn under the countdown ring. */
+    const val COUNTDOWN_HALO_STROKE_DP = 4
+
     // ---- Alphas (0-1) ----
 
     /** Alpha for radar swept-line and indicator circle (70%). */

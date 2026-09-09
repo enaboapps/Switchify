@@ -2,11 +2,11 @@ package com.enaboapps.switchify.service.techniques.nodes.scanners
 
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.widget.RelativeLayout
 import androidx.core.graphics.toColorInt
+import com.enaboapps.switchify.service.gestures.visuals.GestureVisualMotionPolicy
 import com.enaboapps.switchify.service.scanning.ScanColorManager
 import com.enaboapps.switchify.service.scanning.ScanHighlightDrawable
 import com.enaboapps.switchify.service.scanning.ScanHighlightStyle
@@ -18,6 +18,7 @@ import com.enaboapps.switchify.service.window.MenuHighlightHud
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.service.window.overlay.OverlayTarget
 import com.enaboapps.switchify.service.window.overlay.OverlayTargets
+import java.util.EnumMap
 import java.util.concurrent.atomic.AtomicLong
 
 internal fun interface NodeScannerUiDispatcher {
@@ -35,6 +36,9 @@ private object MainNodeScannerUiDispatcher : NodeScannerUiDispatcher {
 internal interface NodeScannerOverlayWindow {
     fun getContext(): Context?
     fun getDisplaySize(target: OverlayTarget): Pair<Int, Int>?
+
+    /** Whether [addView] for [target] would attach right now. Main thread only. */
+    fun canAttach(target: OverlayTarget): Boolean
     fun addView(
         target: OverlayTarget,
         view: RelativeLayout,
@@ -56,6 +60,8 @@ private object SwitchifyNodeScannerOverlayWindow : NodeScannerOverlayWindow {
         val metrics = window.getDisplayMetrics(target) ?: return null
         return metrics.width to metrics.height
     }
+
+    override fun canAttach(target: OverlayTarget): Boolean = window.canAttachOverlay(target)
 
     override fun addView(
         target: OverlayTarget,
@@ -93,6 +99,22 @@ class NodeScannerUI internal constructor(
         val spec: NodeScannerHighlightSpec
     )
 
+    /**
+     * Snapshot of every preference a render needs. Rebuilt lazily after
+     * [refreshPreferences] so scan ticks never touch SharedPreferences.
+     */
+    private class HighlightPrefs(
+        val spotlight: Boolean,
+        val fill: Boolean,
+        val movement: Boolean,
+        val countdown: Boolean,
+        val primaryColor: String,
+        val secondaryColor: String
+    ) {
+        fun colorFor(role: NodeScannerHighlightRole): String =
+            if (role == NodeScannerHighlightRole.ITEM) secondaryColor else primaryColor
+    }
+
     private val commandLock = Any()
     private val rendererEpoch = AtomicLong(0L)
 
@@ -101,7 +123,9 @@ class NodeScannerUI internal constructor(
     private var movementGeneration = 0L
     private val intervalSequence = AtomicLong()
     private val intervals = ScanIntervalStore()
-    private var spotlightUnavailable: OverlayTarget? = null
+    private var prefs: HighlightPrefs? = null
+    private val drawables =
+        EnumMap<NodeScannerHighlightRole, ScanHighlightDrawable>(NodeScannerHighlightRole::class.java)
 
     internal fun withScanVisuals(owner: String?, block: () -> Unit) {
         if (owner == null || visualBatch.get()?.owner == owner) {
@@ -135,12 +159,12 @@ class NodeScannerUI internal constructor(
 
     fun refreshPreferences() {
         submitCurrentEpoch {
-            val active = activeHighlight ?: return@submitCurrentEpoch
-            render(active.spec)
+            prefs = null
+            drawables.clear()
+            activeHighlight?.let { render(it.spec) }
         }
     }
 
-    private var style: ScanHighlightStyle? = null
     private var baseLayout: RelativeLayout? = null
     private var activeHighlight: ActiveHighlight? = null
     private var overlayTarget: OverlayTarget = OverlayTargets.defaultDisplay()
@@ -264,17 +288,42 @@ class NodeScannerUI internal constructor(
         }
     }
 
+    private fun highlightPrefs(context: Context): HighlightPrefs = prefs ?: run {
+        val style = ScanHighlightStyle(context)
+        val colors = ScanColorManager.getScanColorSetFromPreferences(context)
+        HighlightPrefs(
+            spotlight = style.isSpotlight(),
+            // Spotlight keeps the user's border/fill choice for the highlight itself.
+            fill = style.isLegacyFill(),
+            movement = style.isMovementEnabled(),
+            countdown = style.isCountdownEnabled(),
+            primaryColor = colors.primaryColor,
+            secondaryColor = colors.secondaryColor
+        ).also { prefs = it }
+    }
+
+    private fun drawableFor(
+        context: Context,
+        prefs: HighlightPrefs,
+        role: NodeScannerHighlightRole
+    ): ScanHighlightDrawable = drawables.getOrPut(role) {
+        ScanHighlightDrawable(
+            context,
+            prefs.fill,
+            prefs.colorFor(role),
+            isDashed = role == NodeScannerHighlightRole.ESCAPE
+        )
+    }
+
     private fun render(spec: NodeScannerHighlightSpec) {
         val context = window.getContext() ?: return
-        val highlightStyle = style ?: ScanHighlightStyle(context).also { style = it }
-        val spotlight = spec.usesSpotlight(highlightStyle.isSpotlight(), spotlightUnavailable)
-        val effectiveTarget = if (spotlight) {
-            when (val target = spec.target) {
-                is OverlayTarget.Display -> target.copy(forceSurface = target.displayId != OverlayTargets.DEFAULT_DISPLAY_ID)
-                is OverlayTarget.Window -> OverlayTarget.Display(target.displayId,
-                    forceSurface = target.displayId != OverlayTargets.DEFAULT_DISPLAY_ID)
-            }
-        } else spec.target
+        val prefs = highlightPrefs(context)
+        // Decide synchronously whether the spotlight overlay can attach. The
+        // window layer posts attaches, so checking after the fact would race
+        // the first traversal on surface-backed displays.
+        val spotlightTarget = spec.spotlightTarget()
+        val spotlight = spec.usesSpotlight(prefs.spotlight) && window.canAttach(spotlightTarget)
+        val effectiveTarget = if (spotlight) spotlightTarget else spec.target
         val current = activeHighlight
         val replace = current != null && (!NodeScannerHighlightTransitions.sameCoordinateSpace(current.state.target, effectiveTarget) ||
             current.spec.owner != spec.owner)
@@ -287,34 +336,26 @@ class NodeScannerUI internal constructor(
             } else RelativeLayout(context)
             activeHighlight = ActiveHighlight(NodeScannerHighlightState(spec.role, effectiveTarget), view, spec)
             base.addView(view)
-            applySpec(view, spec, spotlight, animate = false)
+            applySpec(view, spec, prefs, spotlight, animate = false)
             if (spec.owner == null) HighlightAnimations.fadeIn(view)
-            if (spotlight) {
-                MenuHighlightHud.instance.bringToFront()
-                dispatcher.post {
-                    if (baseLayout === base && !base.isAttachedToWindow && activeHighlight?.spec == spec) {
-                        spotlightUnavailable = spec.target
-                        removeBaseLayoutNow()
-                        render(spec)
-                    }
-                }
-            }
+            if (spotlight) MenuHighlightHud.instance.bringToFront()
         } else {
             activeHighlight = ActiveHighlight(NodeScannerHighlightState(spec.role, effectiveTarget), active.view, spec)
-            applySpec(active.view, spec, spotlight,
-                animate = spec.animatesFrom(active.spec, highlightStyle.isMovementEnabled(), ValueAnimator.areAnimatorsEnabled()))
+            applySpec(active.view, spec, prefs, spotlight,
+                animate = spec.animatesFrom(active.spec, prefs.movement, GestureVisualMotionPolicy.animationsEnabled()))
         }
         updateCountdown()
     }
 
-    private fun applySpec(view: RelativeLayout, spec: NodeScannerHighlightSpec, spotlight: Boolean, animate: Boolean) {
+    private fun applySpec(
+        view: RelativeLayout,
+        spec: NodeScannerHighlightSpec,
+        prefs: HighlightPrefs,
+        spotlight: Boolean,
+        animate: Boolean
+    ) {
         val context = window.getContext() ?: return
-        val highlightStyle = style ?: ScanHighlightStyle(context).also { style = it }
-        val colors = ScanColorManager.getScanColorSetFromPreferences(context)
-        val color = if (spec.role == NodeScannerHighlightRole.ITEM) colors.secondaryColor else colors.primaryColor
-        val drawable = ScanHighlightDrawable(context,
-            if (spec.owner == null) highlightStyle.isLegacyFill() else highlightStyle.isFill(), color,
-            isDashed = spec.role == NodeScannerHighlightRole.ESCAPE)
+        val drawable = drawableFor(context, prefs, spec.role)
         if (view !is ScanHighlightView) {
             normalize(view)
             view.layoutParams = RelativeLayout.LayoutParams(spec.width, spec.height).apply {
@@ -324,13 +365,9 @@ class NodeScannerUI internal constructor(
             view.background = drawable
             return
         }
-        view.layoutParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-            RelativeLayout.LayoutParams.MATCH_PARENT)
         view.highlightDrawable = drawable
+        view.highlightColor = prefs.colorFor(spec.role).toColorInt()
         view.spotlight = spotlight
-        val colorInt = color.toColorInt()
-        view.progressColor = if (Color.red(colorInt) * 0.299 + Color.green(colorInt) * 0.587 +
-            Color.blue(colorInt) * 0.114 > 127.5) Color.BLACK else Color.WHITE
         val bounds = if (spotlight) spec.screenBounds!! else
             ScanHighlightBounds(spec.x.toFloat(), spec.y.toFloat(), spec.width.toFloat(), spec.height.toFloat())
         val from = view.highlightBounds
@@ -356,8 +393,7 @@ class NodeScannerUI internal constructor(
     private fun updateCountdown() {
         val active = activeHighlight ?: return
         val view = active.view as? ScanHighlightView ?: return
-        view.interval = if (active.spec.role != NodeScannerHighlightRole.ESCAPE &&
-            style?.isCountdownEnabled() == true) {
+        view.interval = if (active.spec.role != NodeScannerHighlightRole.ESCAPE && prefs?.countdown == true) {
             intervals.intervalFor(active.spec.owner, active.spec.intervalAfterSequence)
         } else null
     }
@@ -423,7 +459,6 @@ class NodeScannerUI internal constructor(
 
     private fun hideAllNow() {
         intervals.clear()
-        spotlightUnavailable = null
         removeBaseLayoutNow()
     }
 

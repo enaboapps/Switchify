@@ -20,6 +20,7 @@ class ScanTreeItemTest {
         item.unhighlight()
 
         assertEquals(1, node.unhighlightCount)
+        assertEquals(0, boundsUi.hideRowBoundsCount)
         assertEquals(0, boundsUi.hideAllCount)
     }
 
@@ -37,7 +38,7 @@ class ScanTreeItemTest {
         item.unhighlight()
 
         assertEquals(listOf(1, 1, 1), nodes.map { it.unhighlightCount })
-        assertEquals(1, boundsUi.hideAllCount)
+        assertEquals(1, boundsUi.hideRowBoundsCount)
     }
 
     @Test
@@ -54,7 +55,7 @@ class ScanTreeItemTest {
         item.unhighlight(groupIndex = 1)
 
         assertEquals(listOf(0, 0, 0, 1, 1, 1, 0, 0), nodes.map { it.unhighlightCount })
-        assertEquals(1, boundsUi.hideAllCount)
+        assertEquals(1, boundsUi.hideRowBoundsCount)
     }
 
     @Test
@@ -71,7 +72,7 @@ class ScanTreeItemTest {
         item.unhighlightEscape()
 
         assertEquals(listOf(1, 1), nodes.map { it.unhighlightCount })
-        assertEquals(1, boundsUi.hideAllCount)
+        assertEquals(1, boundsUi.hideRowBoundsCount)
     }
 
     private fun nodes(vararg ids: String): List<TestScanNode> {
@@ -81,6 +82,7 @@ class ScanTreeItemTest {
     }
 
     private class TestBoundsUi : ScanTreeBoundsUi {
+        var hideRowBoundsCount = 0
         var hideAllCount = 0
 
         override fun showRowBounds(
@@ -100,6 +102,10 @@ class ScanTreeItemTest {
             target: OverlayTarget,
             screenBounds: com.enaboapps.switchify.service.techniques.nodes.scanners.ScanHighlightBounds
         ) = Unit
+
+        override fun hideRowBounds() {
+            hideRowBoundsCount++
+        }
 
         override fun hideAll() {
             hideAllCount++

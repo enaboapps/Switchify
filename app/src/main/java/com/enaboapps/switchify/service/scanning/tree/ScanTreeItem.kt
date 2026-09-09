@@ -214,7 +214,7 @@ class ScanTreeItem(
 
     private fun unhighlightAggregate(nodes: List<ScanNodeInterface>) {
         nodes.forEach { it.unhighlight() }
-        boundsUi.hideAll()
+        boundsUi.hideRowBounds()
     }
 
     /**
@@ -311,6 +311,10 @@ interface ScanTreeBoundsUi {
         screenBounds: ScanHighlightBounds
     )
 
+    /** Removes the row or escape highlight; a node's own item highlight is left alone. */
+    fun hideRowBounds()
+
+    /** Removes every highlight; used when the tree's indices no longer match its nodes. */
     fun hideAll()
 }
 
@@ -337,7 +341,11 @@ private object NodeScannerBoundsUi : ScanTreeBoundsUi {
         NodeScannerUI.instance.showEscapeBounds(x, y, width, height, target, screenBounds)
     }
 
-    override fun hideAll() {
+    override fun hideRowBounds() {
         NodeScannerUI.instance.hideRowBounds()
+    }
+
+    override fun hideAll() {
+        NodeScannerUI.instance.hideAll()
     }
 }

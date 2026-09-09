@@ -69,12 +69,20 @@ class ScanHighlightVisualsTest {
         val window = OverlayTarget.Window(1, 12, 1)
         val item = spec(NodeScannerHighlightRole.ITEM).copy(target = window,
             screenBounds = ScanHighlightBounds(10f, 80f, 40f, 20f))
-        assertTrue(item.usesSpotlight(true, null))
-        assertFalse(item.usesSpotlight(false, null))
-        assertFalse(item.usesSpotlight(true, window))
-        assertFalse(item.copy(screenBounds = null).usesSpotlight(true, null))
-        assertFalse(item.copy(owner = null).usesSpotlight(true, null))
-        assertTrue(item.copy(target = window.copy(displayId = 2)).usesSpotlight(true, window))
+        assertTrue(item.usesSpotlight(true))
+        assertFalse(item.usesSpotlight(false))
+        assertFalse(item.copy(screenBounds = null).usesSpotlight(true))
+        assertFalse(item.copy(owner = null).usesSpotlight(true))
+    }
+
+    @Test fun spotlightTargetsTheWholeDisplayAndOnlySurfacesOffTheDefaultDisplay() {
+        val window = OverlayTarget.Window(1, 12, 1)
+        val item = spec(NodeScannerHighlightRole.ITEM).copy(target = window)
+        assertEquals(OverlayTarget.Display(1, forceSurface = true), item.spotlightTarget())
+        assertEquals(OverlayTarget.Display(0), item.copy(target = window.copy(displayId = 0)).spotlightTarget())
+        assertEquals(OverlayTarget.Display(0), item.copy(target = OverlayTarget.Display(0)).spotlightTarget())
+        assertEquals(OverlayTarget.Display(2, forceSurface = true),
+            item.copy(target = OverlayTarget.Display(2)).spotlightTarget())
     }
 
     @Test fun batchedTargetCarriesCountdownBoundaryDuringRapidTicks() {

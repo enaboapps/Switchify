@@ -51,7 +51,7 @@ internal object ScanPreferencePolicy {
         PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_TYPE to ScanPreferenceEffect.REFRESH_HIGHLIGHT,
         PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_MOVEMENT to ScanPreferenceEffect.REFRESH_HIGHLIGHT,
         PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_COUNTDOWN to ScanPreferenceEffect.REFRESH_HIGHLIGHT,
-        PreferenceManager.PREFERENCE_KEY_SCAN_COLOR_SET to ScanPreferenceEffect.LIVE_READ
+        PreferenceManager.PREFERENCE_KEY_SCAN_COLOR_SET to ScanPreferenceEffect.REFRESH_HIGHLIGHT
     )
 
     val supportedKeys: Set<String> = effectsByKey.keys

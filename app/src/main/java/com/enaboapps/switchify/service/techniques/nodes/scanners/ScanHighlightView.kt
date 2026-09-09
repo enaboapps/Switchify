@@ -14,11 +14,24 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.widget.RelativeLayout
+import com.enaboapps.switchify.service.scanning.ScanHighlightDrawable
 import com.enaboapps.switchify.service.scanning.ScanInterval
 import com.enaboapps.switchify.service.scanning.ScanVisualConstants
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.min
 import kotlin.math.roundToInt
 
+/**
+ * Draws one scan highlight in screen coordinates: the optional spotlight dim,
+ * the highlight drawable, and the auto-scan countdown ring.
+ *
+ * The view sizes itself: full-display while the spotlight is on (it has to
+ * dim everything), otherwise just the highlight plus ring margin so the
+ * per-frame countdown redraw only damages that small region. Geometry that
+ * does not change between frames (cutout, ring outline, path length) is
+ * rebuilt only when the bounds or spotlight flag change.
+ */
 internal class ScanHighlightView(
     context: Context,
     private val targetDisplayId: Int,
@@ -55,25 +68,70 @@ internal class ScanHighlightView(
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        onDisplayInvalidated(this@ScanHighlightView)
+        // Only a geometry change moves the scanned bounds. Theme, locale, font
+        // scale and keyboard changes must leave the highlight where it is.
+        if (geometry != displayGeometry()) onDisplayInvalidated(this)
     }
 
     var highlightBounds = ScanHighlightBounds(0f, 0f, 0f, 0f)
-        set(value) { field = value; invalidate() }
+        set(value) {
+            if (field == value) return
+            field = value
+            geometryDirty = true
+            syncFrame()
+            invalidate()
+        }
     var highlightDrawable: Drawable? = null
-        set(value) { field = value; invalidate() }
+        set(value) {
+            if (field === value) return
+            field = value
+            invalidate()
+        }
     var spotlight = false
-        set(value) { field = value; invalidate() }
+        set(value) {
+            if (field == value) return
+            field = value
+            geometryDirty = true
+            syncFrame()
+            invalidate()
+        }
     var interval: ScanInterval? = null
-        set(value) { field = value; invalidate() }
-    var progressColor = Color.WHITE
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidate()
+        }
+
+    /** The highlight's own colour; the ring picks contrasting tones from it. */
+    var highlightColor = Color.WHITE
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidate()
+        }
+
     private val density = resources.displayMetrics.density
+    private val ringInset = ScanVisualConstants.COUNTDOWN_INSET_DP * density
+    private val ringStroke = ScanVisualConstants.COUNTDOWN_STROKE_DP * density
+    private val ringHaloStroke = ScanVisualConstants.COUNTDOWN_HALO_STROKE_DP * density
+
+    /** How far the ring and the drawable's halo may extend past the bounds. */
+    private val frameMargin = ringInset + ringHaloStroke
+    private val dimColor = Color.argb(ScanVisualConstants.SPOTLIGHT_ALPHA, 0, 0, 0)
+
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val cutout = Path()
     private val outline = Path()
     private val segment = Path()
-    private val mask = Path()
     private val measure = PathMeasure()
     private val target = RectF()
+    private val ring = RectF()
+    private var outlineLength = 0f
+    private var geometryDirty = true
+
+    /** Screen-space position of this view's top-left corner. */
+    private var originX = 0f
+    private var originY = 0f
 
     init {
         setWillNotDraw(false)
@@ -82,48 +140,85 @@ internal class ScanHighlightView(
         isFocusable = false
     }
 
+    private fun syncFrame() {
+        val bounds = highlightBounds
+        if (spotlight || !bounds.isUsable) {
+            originX = 0f
+            originY = 0f
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+            return
+        }
+        val left = floor(bounds.x - frameMargin).toInt()
+        val top = floor(bounds.y - frameMargin).toInt()
+        val right = ceil(bounds.x + bounds.width + frameMargin).toInt()
+        val bottom = ceil(bounds.y + bounds.height + frameMargin).toInt()
+        originX = left.toFloat()
+        originY = top.toFloat()
+        layoutParams = LayoutParams(right - left, bottom - top).apply {
+            leftMargin = left
+            topMargin = top
+        }
+    }
+
+    private fun rebuildGeometry(bounds: ScanHighlightBounds) {
+        target.set(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height)
+        val radius = min(
+            ScanVisualConstants.CORNER_RADIUS_DP * density,
+            min(bounds.width, bounds.height) / 2f
+        )
+        cutout.reset()
+        cutout.addRoundRect(target, radius, radius, Path.Direction.CW)
+        ring.set(target)
+        ring.inset(-ringInset, -ringInset)
+        perimeter(ring, radius + ringInset)
+        measure.setPath(outline, false)
+        outlineLength = measure.length
+        geometryDirty = false
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val bounds = highlightBounds
         if (!bounds.isUsable) return
-        target.set(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height)
-        val radius = min(ScanVisualConstants.CORNER_RADIUS_DP * density,
-            min(bounds.width, bounds.height) / 2f)
-        if (spotlight) {
-            mask.reset()
-            mask.fillType = Path.FillType.EVEN_ODD
-            mask.addRect(0f, 0f, width.toFloat(), height.toFloat(), Path.Direction.CW)
-            mask.addRoundRect(target, radius, radius, Path.Direction.CW)
-            paint.style = Paint.Style.FILL
-            paint.color = Color.argb(ScanVisualConstants.SPOTLIGHT_ALPHA, 0, 0, 0)
-            canvas.drawPath(mask, paint)
-        }
+        if (geometryDirty) rebuildGeometry(bounds)
         canvas.save()
-        canvas.translate(bounds.x, bounds.y)
-        highlightDrawable?.apply {
-            setBounds(0, 0, bounds.width.roundToInt(), bounds.height.roundToInt())
-            draw(canvas)
+        canvas.translate(-originX, -originY)
+        if (spotlight) {
+            canvas.save()
+            canvas.clipOutPath(cutout)
+            canvas.drawColor(dimColor)
+            canvas.restore()
         }
+        highlightDrawable?.let { drawable ->
+            canvas.save()
+            canvas.translate(bounds.x, bounds.y)
+            drawable.setBounds(0, 0, bounds.width.roundToInt(), bounds.height.roundToInt())
+            drawable.draw(canvas)
+            canvas.restore()
+        }
+        drawCountdown(canvas)
         canvas.restore()
+    }
+
+    private fun drawCountdown(canvas: Canvas) {
         val timing = interval ?: return
         val remaining = timing.remainingFraction(SystemClock.uptimeMillis())
-        if (remaining <= 0f) return
-        target.inset(-5f * density, -5f * density)
-        perimeter(target, radius + 5f * density)
-        measure.setPath(outline, false)
+        if (remaining <= 0f || outlineLength <= 0f) return
         segment.reset()
-        measure.getSegment(measure.length * (1f - remaining), measure.length, segment, true)
+        measure.getSegment(outlineLength * (1f - remaining), outlineLength, segment, true)
+        val ringColor = ScanHighlightDrawable.contrastTone(highlightColor)
         paint.style = Paint.Style.STROKE
         paint.strokeCap = Paint.Cap.ROUND
-        paint.strokeWidth = 4f * density
-        paint.color = if (progressColor == Color.WHITE) Color.BLACK else Color.WHITE
+        paint.strokeWidth = ringHaloStroke
+        paint.color = ScanHighlightDrawable.contrastTone(ringColor)
         canvas.drawPath(segment, paint)
-        paint.strokeWidth = 2f * density
-        paint.color = progressColor
+        paint.strokeWidth = ringStroke
+        paint.color = ringColor
         canvas.drawPath(segment, paint)
         postInvalidateOnAnimation()
     }
 
+    /** Builds [outline] clockwise from the top centre so the ring drains from twelve o'clock. */
     private fun perimeter(rect: RectF, radius: Float) {
         val r = min(radius, min(rect.width(), rect.height()) / 2f)
         outline.reset()
