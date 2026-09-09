@@ -34,8 +34,7 @@ import com.enaboapps.switchify.components.switchifyTextFieldColors
 import com.enaboapps.switchify.screens.settings.menu.models.MenuCustomizationScreenModel
 import com.enaboapps.switchify.screens.settings.menu.models.PaletteItem
 import com.enaboapps.switchify.service.menu.MenuItem
-import com.enaboapps.switchify.service.menu.MenuSizeManager
-import com.enaboapps.switchify.service.menu.MenuSurfaceBudget
+import com.enaboapps.switchify.service.menu.MenuGridMeasurer
 import com.enaboapps.switchify.service.menu.structure.MenuConstants
 
 /**
@@ -166,15 +165,13 @@ fun MenuCustomizationContent(screenModel: MenuCustomizationScreenModel, menuId: 
                 // budget the runtime uses so the headers match what the user
                 // will actually see. Hidden items are skipped when numbering
                 // pages.
-                val itemSize = MenuSizeManager.getItemSize(context)
-                val smallItemSize = MenuSizeManager.getSmallItemSize(context)
-                val pageSize = MenuSurfaceBudget.rowsPerPage(
+                val pageSize = MenuGridMeasurer.measure(
                     context = context,
-                    itemSize = itemSize,
-                    smallItemSize = smallItemSize,
-                    hasTitle = MenuConstants.getTitleResource(menuId) != null,
-                    willShowNavRow = true
-                )
+                    items = menuItems.filter { visibilityMap[it.id] ?: true },
+                    contextualCount = 0,
+                    hasTitle = MenuGridMeasurer.showsTitle(context, menuId),
+                    hasNavigation = true
+                ).grid.pageCapacity
                 val visibleIndexById = remember(menuItems, visibilityMap) {
                     var idx = 0
                     buildMap {

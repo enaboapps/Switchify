@@ -109,6 +109,13 @@ class ScanTree(
         initializeComponents() // Reinitialize components with the new tree
     }
 
+    internal fun buildMenuRows(rows: List<List<ScanNodeInterface>>) {
+        clearTree()
+        tree.addAll(ExplicitScanRows.build(rows,
+            scanSettings.isRowColumnScanEnabled() && scanSettings.isGroupScanEnabled()))
+        initializeComponents()
+    }
+
     /**
      * Checks if the manual scan setup is valid.
      *

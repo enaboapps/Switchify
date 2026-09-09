@@ -120,7 +120,7 @@ class MenuManager {
      * This function opens the main menu
      */
     fun openMainMenu() {
-        val mainMenu = MainMenu(accessibilityService!!)
+        val mainMenu = MainMenu(serviceOrNull() ?: return)
         openMenu(mainMenu.build())
 
     }
@@ -129,7 +129,7 @@ class MenuManager {
      * This function opens the device menu
      */
     fun openDeviceMenu() {
-        val deviceMenu = DeviceMenu(accessibilityService!!)
+        val deviceMenu = DeviceMenu(serviceOrNull() ?: return)
         openMenu(deviceMenu.build())
     }
 
@@ -137,7 +137,7 @@ class MenuManager {
      * This function opens the AI menu
      */
     fun openAiMenu() {
-        val aiMenu = AiMenu(accessibilityService!!)
+        val aiMenu = AiMenu(serviceOrNull() ?: return)
         openMenu(aiMenu.build())
     }
 
@@ -150,17 +150,17 @@ class MenuManager {
     }
 
     private fun openResolvedAccessibilityActionsMenu(target: NodeActionTarget) {
-        val actionsMenu = AccessibilityActionsMenu(accessibilityService!!, target)
+        val actionsMenu = AccessibilityActionsMenu(serviceOrNull() ?: return, target)
         openMenu(actionsMenu.build())
     }
 
     private fun replaceResolvedAccessibilityActionsMenu(target: NodeActionTarget) {
-        val actionsMenu = AccessibilityActionsMenu(accessibilityService!!, target)
+        val actionsMenu = AccessibilityActionsMenu(serviceOrNull() ?: return, target)
         menuHierarchy?.replaceTopMenu(actionsMenu.build())
     }
 
     private fun rebuildMainMenuWithoutAccessibilityActions() {
-        val mainMenu = MainMenu(accessibilityService!!, includeAccessibilityActions = false)
+        val mainMenu = MainMenu(serviceOrNull() ?: return, includeAccessibilityActions = false)
         menuHierarchy?.replaceAllMenus(mainMenu.build())
     }
 
@@ -173,11 +173,31 @@ class MenuManager {
         accessibilityActionCoordinator = null
     }
 
+    internal fun cleanup() {
+        cleanupAccessibilityActions()
+        menuHierarchy?.dispose()
+        menuHierarchy = null
+        scanningManager = null
+        accessibilityService = null
+    }
+
+    /**
+     * Returns the bound accessibility service, or null once [cleanup] has run so
+     * late menu requests no-op instead of crashing the service process.
+     */
+    private fun serviceOrNull(): SwitchifyAccessibilityService? {
+        val service = accessibilityService
+        if (service == null) {
+            android.util.Log.w("MenuManager", "Ignoring menu request: accessibility service is not bound")
+        }
+        return service
+    }
+
     /**
      * This function opens the edit menu
      */
     fun openEditMenu() {
-        val editMenu = EditMenu(accessibilityService!!)
+        val editMenu = EditMenu(serviceOrNull() ?: return)
         openMenu(editMenu.build())
     }
 
@@ -185,7 +205,7 @@ class MenuManager {
      * This function opens the settings menu
      */
     fun openSettingsMenu() {
-        val settingsMenu = SettingsMenu(accessibilityService!!)
+        val settingsMenu = SettingsMenu(serviceOrNull() ?: return)
         openMenu(settingsMenu.build())
     }
 
@@ -193,7 +213,7 @@ class MenuManager {
      * This function opens the volume control menu
      */
     fun openVolumeControlMenu() {
-        val volumeControlMenu = VolumeControlMenu(accessibilityService!!)
+        val volumeControlMenu = VolumeControlMenu(serviceOrNull() ?: return)
         openMenu(volumeControlMenu.build())
     }
 
@@ -201,7 +221,7 @@ class MenuManager {
      * This function opens the gestures menu
      */
     fun openGesturesMenu() {
-        val gesturesMenu = GesturesMenu(accessibilityService!!)
+        val gesturesMenu = GesturesMenu(serviceOrNull() ?: return)
         openMenu(gesturesMenu.build())
     }
 
@@ -209,7 +229,7 @@ class MenuManager {
      * This function opens the gesture patterns menu
      */
     fun openGesturePatternsMenu() {
-        val gesturePatternsMenu = GesturePatternsMenu(accessibilityService!!)
+        val gesturePatternsMenu = GesturePatternsMenu(serviceOrNull() ?: return)
         openMenu(gesturePatternsMenu.build())
     }
 
@@ -217,7 +237,7 @@ class MenuManager {
      * This function opens the media control menu
      */
     fun openMediaControlMenu() {
-        val mediaControlMenu = MediaControlMenu(accessibilityService!!)
+        val mediaControlMenu = MediaControlMenu(serviceOrNull() ?: return)
         openMenu(mediaControlMenu.build())
     }
 
@@ -225,7 +245,7 @@ class MenuManager {
      * This function opens the scroll menu
      */
     fun openScrollMenu() {
-        val scrollMenu = ScrollMenu(accessibilityService!!)
+        val scrollMenu = ScrollMenu(serviceOrNull() ?: return)
         openMenu(scrollMenu.build())
     }
 
@@ -233,7 +253,7 @@ class MenuManager {
      * This function opens the tap menu
      */
     fun openTapMenu() {
-        val tapGesturesMenu = TapGesturesMenu(accessibilityService!!)
+        val tapGesturesMenu = TapGesturesMenu(serviceOrNull() ?: return)
         openMenu(tapGesturesMenu.build())
     }
 
@@ -241,7 +261,7 @@ class MenuManager {
      * This function opens the tap and hold gestures menu
      */
     fun openTapAndHoldMenu() {
-        val tapAndHoldGesturesMenu = TapAndHoldGesturesMenu(accessibilityService!!)
+        val tapAndHoldGesturesMenu = TapAndHoldGesturesMenu(serviceOrNull() ?: return)
         openMenu(tapAndHoldGesturesMenu.build())
     }
 
@@ -249,7 +269,7 @@ class MenuManager {
      * This function opens the swipe gestures menu
      */
     fun openSwipeMenu() {
-        val swipeGesturesMenu = SwipeGesturesMenu(accessibilityService!!)
+        val swipeGesturesMenu = SwipeGesturesMenu(serviceOrNull() ?: return)
         openMenu(swipeGesturesMenu.build())
     }
 
@@ -257,7 +277,7 @@ class MenuManager {
      * This function opens the pinch gestures menu
      */
     fun openPinchGesturesMenu() {
-        val pinchGesturesMenu = PinchGesturesMenu(accessibilityService!!)
+        val pinchGesturesMenu = PinchGesturesMenu(serviceOrNull() ?: return)
         openMenu(pinchGesturesMenu.build())
     }
 
@@ -265,7 +285,7 @@ class MenuManager {
      * This function opens the custom gesture confirmation menu
      */
     fun openCustomGestureConfirmationMenu() {
-        val customGestureConfirmationMenu = CustomGestureConfirmationMenu(accessibilityService!!)
+        val customGestureConfirmationMenu = CustomGestureConfirmationMenu(serviceOrNull() ?: return)
         openMenu(customGestureConfirmationMenu.build())
     }
 
@@ -273,7 +293,7 @@ class MenuManager {
      * This function opens the finger mode selection menu
      */
     fun openFingerModeMenu() {
-        val fingerModeMenu = FingerModeMenu(accessibilityService!!)
+        val fingerModeMenu = FingerModeMenu(serviceOrNull() ?: return)
         openMenu(fingerModeMenu.build())
     }
 
@@ -282,18 +302,18 @@ class MenuManager {
      * This function opens the favourite apps menu with dynamic loading
      */
     fun openFavouriteAppsMenu() {
-        val favouriteAppsMenu = FavouriteAppsMenu(accessibilityService!!)
+        val favouriteAppsMenu = FavouriteAppsMenu(serviceOrNull() ?: return)
         openMenu(favouriteAppsMenu.build())
     }
 
     fun openSwitchProfilesMenu() {
-        val switchProfilesMenu = SwitchProfilesMenu(accessibilityService!!)
+        val switchProfilesMenu = SwitchProfilesMenu(serviceOrNull() ?: return)
         openMenu(switchProfilesMenu.build())
     }
 
     fun openSwitchProfileConfirmationMenu(profileName: String) {
         val confirmationMenu = SwitchProfileConfirmationMenu(
-            accessibilityService!!,
+            serviceOrNull() ?: return,
             profileName
         )
         openMenu(confirmationMenu.build())
