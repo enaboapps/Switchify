@@ -91,6 +91,7 @@ class MenuView(val context: Context, private val menu: BaseMenu) {
         val content = items.filterNot { it.id in contextualIds || it === back }
         val close = if (menu.shouldShowNavMenuItems()) menu.buildCloseItem() else null
         val title = MenuConstants.getTitleResource(menu.menuId)
+            ?.takeIf { MenuGridMeasurer.showsTitle(context, menu.menuId) }
         var metrics = MenuGridMeasurer.measure(context, content, contextual.size,
             title != null, close != null || back != null)
         if (metrics.grid.pages(content).size > 1 && close == null && back == null) {
@@ -167,8 +168,10 @@ class MenuView(val context: Context, private val menu: BaseMenu) {
     }
 
     private fun resizeAndRepositionMenu() {
-        val screenWidth = ScreenUtils.getWidth(context)
-        val screenHeight = ScreenUtils.getHeight(context)
+        // Clamp within the area the overlay window can draw into, which
+        // excludes the navigation bar.
+        val screenWidth = MenuSurfaceBudget.usableWidthPx(context)
+        val screenHeight = MenuSurfaceBudget.usableHeightPx(context)
         val menuWidth = baseLayout.width
         val menuHeight = baseLayout.height
 

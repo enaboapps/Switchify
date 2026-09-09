@@ -18,6 +18,13 @@ internal data class MenuGridLayout(
 }
 
 internal object MenuGridLayoutPolicy {
+    /**
+     * Upper bound on content columns. Width-limited screens land well below
+     * this; it only engages on landscape phones and tablets, where rows are
+     * the scarce dimension.
+     */
+    const val MAX_COLUMNS = 5
+
     fun calculate(
         widthPx: Int,
         heightPx: Int,
@@ -29,12 +36,40 @@ internal object MenuGridLayoutPolicy {
     ): MenuGridLayout {
         val width = widthPx.coerceAtLeast(1)
         val minimumWidth = maxOf(minimumCellWidthPx, minimumTouchPx, 1)
-        var columns = minOf(3, itemCount.coerceAtLeast(1), (width / minimumWidth).coerceAtLeast(1))
+        var columns = minOf(MAX_COLUMNS, itemCount.coerceAtLeast(1), (width / minimumWidth).coerceAtLeast(1))
         while (columns > 1 && !labelsFit(width / columns)) columns--
         val cellHeight = preferredCellHeightPx.coerceAtLeast(minimumTouchPx)
             .coerceAtMost(heightPx.coerceAtLeast(minimumTouchPx))
         val rows = (heightPx / cellHeight.coerceAtLeast(1)).coerceAtLeast(1)
         return MenuGridLayout(columns, rows, width / columns, cellHeight)
+    }
+}
+
+internal object MenuLabelBreaks {
+    /**
+     * True when a line break placed at [end] splits a word in two, i.e. there
+     * is a word character on both sides of the break. Breaks at whitespace,
+     * punctuation, hyphens, or between characters of scripts that legitimately
+     * break anywhere (CJK, Thai, and similar) are not mid-word.
+     */
+    fun isMidWordBreak(text: CharSequence, end: Int): Boolean {
+        if (end <= 0 || end >= text.length) return false
+        return isWordChar(text[end - 1]) && isWordChar(text[end])
+    }
+
+    private fun isWordChar(c: Char): Boolean {
+        if (!c.isLetterOrDigit()) return false
+        return when (Character.UnicodeScript.of(c.code)) {
+            Character.UnicodeScript.HAN,
+            Character.UnicodeScript.HIRAGANA,
+            Character.UnicodeScript.KATAKANA,
+            Character.UnicodeScript.HANGUL,
+            Character.UnicodeScript.THAI,
+            Character.UnicodeScript.LAO,
+            Character.UnicodeScript.KHMER,
+            Character.UnicodeScript.MYANMAR -> false
+            else -> true
+        }
     }
 }
 

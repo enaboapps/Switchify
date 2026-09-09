@@ -169,7 +169,7 @@ fun MenuCustomizationContent(screenModel: MenuCustomizationScreenModel, menuId: 
                     context = context,
                     items = menuItems.filter { visibilityMap[it.id] ?: true },
                     contextualCount = 0,
-                    hasTitle = MenuConstants.getTitleResource(menuId) != null,
+                    hasTitle = MenuGridMeasurer.showsTitle(context, menuId),
                     hasNavigation = true
                 ).grid.pageCapacity
                 val visibleIndexById = remember(menuItems, visibilityMap) {

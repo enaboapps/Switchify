@@ -15,7 +15,7 @@ class MenuGridLayoutTest {
         fits: (Int) -> Boolean = { true }
     ) = MenuGridLayoutPolicy.calculate(width, height, count, minimumWidth, cellHeight, 52, fits)
 
-    @Test fun usesAtMostThreeColumnsAndFitsRows() {
+    @Test fun columnsFollowMinimumWidthAndFitRows() {
         val grid = layout()
         assertEquals(3, grid.columns)
         assertEquals(3, grid.rows)
@@ -27,6 +27,13 @@ class MenuGridLayoutTest {
         assertEquals(1, layout(count = 1).columns)
         assertEquals(2, layout(count = 2).columns)
         assertEquals(1, layout(count = 0).columns)
+    }
+
+    @Test fun wideScreensUseUpToFiveColumns() {
+        assertEquals(4, layout(width = 350).columns)
+        assertEquals(5, layout(width = 400).columns)
+        assertEquals(5, layout(width = 800).columns)
+        assertEquals(4, layout(width = 800, count = 4).columns)
     }
 
     @Test fun narrowOrScaledMenusReduceColumns() {

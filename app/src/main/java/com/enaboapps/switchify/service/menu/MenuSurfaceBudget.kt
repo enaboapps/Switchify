@@ -29,7 +29,7 @@ object MenuSurfaceBudget {
      * the device edge.
      */
     fun surfaceMaxWidthPx(context: Context): Int {
-        val screenWidthPx = ScreenUtils.getWidth(context)
+        val screenWidthPx = usableWidthPx(context)
         val marginPx = ScreenUtils.dpToPx(context, SCREEN_HORIZONTAL_MARGIN_DP)
         return (screenWidthPx - marginPx).coerceAtLeast(0)
     }
@@ -40,10 +40,28 @@ object MenuSurfaceBudget {
      * margin.
      */
     fun surfaceMaxHeightPx(context: Context): Int {
-        val screenHeightPx = ScreenUtils.getHeight(context)
+        val screenHeightPx = usableHeightPx(context)
         val hudReservedPx = MenuHighlightHud.reservedTopPx(context)
         val marginPx = ScreenUtils.dpToPx(context, SCREEN_VERTICAL_MARGIN_DP)
         return (screenHeightPx - hudReservedPx - marginPx).coerceAtLeast(0)
+    }
+
+    /**
+     * Window width the overlay can actually draw into: full bounds minus any
+     * side-mounted navigation bar (landscape three-button nav).
+     */
+    fun usableWidthPx(context: Context): Int {
+        val insets = ScreenUtils.getNavigationBarInsets(context)
+        return (ScreenUtils.getWidth(context) - insets.left - insets.right).coerceAtLeast(0)
+    }
+
+    /**
+     * Window height the overlay can actually draw into: full bounds minus the
+     * bottom navigation bar, which the overlay window is inset by.
+     */
+    fun usableHeightPx(context: Context): Int {
+        val insets = ScreenUtils.getNavigationBarInsets(context)
+        return (ScreenUtils.getHeight(context) - insets.bottom).coerceAtLeast(0)
     }
 
     /**
