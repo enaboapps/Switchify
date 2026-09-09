@@ -93,17 +93,33 @@ internal class ServiceHudMessageController(
         if (toast != null) {
             endToast(now)
         } else {
-            status = null
-            statusShownAt = null
-            statusCollapsed = false
+            dropStatus()
         }
         return frame(now)
     }
 
-    fun clear(now: Long): HudFrame {
+    /** Whether a status message is held, shown or not. */
+    fun hasStatus(): Boolean = status != null
+
+    /**
+     * Drops the status message without touching toasts. With a [key], only a
+     * status carrying that key is dropped, so features cannot clear each
+     * other's banners.
+     */
+    fun dismissStatus(now: Long, key: String? = null): HudFrame {
+        val current = status
+        if (current != null && (key == null || current.key == key)) dropStatus()
+        return frame(now)
+    }
+
+    private fun dropStatus() {
         status = null
         statusShownAt = null
         statusCollapsed = false
+    }
+
+    fun clear(now: Long): HudFrame {
+        dropStatus()
         queue.clear()
         toast = null
         return frame(now)

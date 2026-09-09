@@ -15,8 +15,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -47,14 +49,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,14 +73,20 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.enaboapps.switchify.R
 import com.enaboapps.switchify.activities.ui.theme.SwitchifyTheme
 import com.enaboapps.switchify.service.components.AccessibilityComposeView
 import com.enaboapps.switchify.service.components.overlayTween
 import com.enaboapps.switchify.service.components.rememberOverlayMotionEnabled
+import com.enaboapps.switchify.service.scanning.ScanInterval
+import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanVisualConstants
+import com.enaboapps.switchify.service.techniques.nodes.NodeSpeaker
 import com.enaboapps.switchify.service.window.overlay.OverlayTarget
 import com.enaboapps.switchify.service.window.overlay.OverlayTargets
 import com.enaboapps.switchify.utils.Resources
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -87,6 +103,10 @@ import kotlin.math.roundToInt
  * a status message sits underneath them and collapses to a chip once it has
  * been seen. This class owns the clock, the view, and the drawing.
  *
+ * Messages are announced to accessibility services as a live region and,
+ * when item-scan speech is on, read aloud through [NodeSpeaker]. A tap on the
+ * card, a sideways swipe, or the menu's dismiss entry ends the message.
+ *
  * Usage:
  * 1. `setup(applicationContext)` from the accessibility service's `onCreate`.
  * 2. `show(ServiceHudMessage(...))`, or the resource-based convenience
@@ -100,9 +120,11 @@ class ServiceMessageHUD private constructor() {
         private val CARD_MAX_WIDTH = 600.dp
         private val CHIP_MAX_WIDTH = 320.dp
         private val CARD_SHAPE = RoundedCornerShape(28.dp)
+        private const val COUNTDOWN_IDLE_REFRESH_MS = 1000L
     }
 
     private var applicationCtx: Context? = null
+    private var scanSettings: ScanSettings? = null
     private var composeView: AccessibilityComposeView? = null
     private var attachedTarget: OverlayTarget.Display? = null
     private val handler = Handler(Looper.getMainLooper())
@@ -131,7 +153,9 @@ class ServiceMessageHUD private constructor() {
     }
 
     fun setup(appCtx: Context) {
-        applicationCtx = appCtx.applicationContext
+        val app = appCtx.applicationContext
+        applicationCtx = app
+        scanSettings = ScanSettings(app)
         Log.d(TAG, "ServiceMessageHUD setup")
     }
 
@@ -145,6 +169,9 @@ class ServiceMessageHUD private constructor() {
             ensureComposeViewIsCreated()
             Log.d(TAG, "Showing message: \"${message.text}\" severity=${message.severity} duration=${message.durationMillis}")
             apply(controller.show(message, now()))
+            if (message.speak && scanSettings?.isItemScanSpeechEnabled() == true) {
+                NodeSpeaker.speakText(message.text)
+            }
         }
     }
 
@@ -153,14 +180,16 @@ class ServiceMessageHUD private constructor() {
         messageType: MessageType,
         time: Time = Time.MEDIUM,
         severity: MessageSeverity = MessageSeverity.Info,
-        target: OverlayTarget.Display = OverlayTargets.defaultDisplay()
+        target: OverlayTarget.Display = OverlayTargets.defaultDisplay(),
+        key: String? = null
     ) {
         show(
             ServiceHudMessage(
                 text = Resources.getString(messageResId),
                 severity = severity,
                 durationMillis = ServiceHudMessage.durationFor(messageType, time),
-                target = target
+                target = target,
+                key = key
             )
         )
     }
@@ -171,14 +200,16 @@ class ServiceMessageHUD private constructor() {
         messageType: MessageType,
         time: Time = Time.MEDIUM,
         severity: MessageSeverity = MessageSeverity.Info,
-        target: OverlayTarget.Display = OverlayTargets.defaultDisplay()
+        target: OverlayTarget.Display = OverlayTargets.defaultDisplay(),
+        key: String? = null
     ) {
         show(
             ServiceHudMessage(
                 text = Resources.getString(messageResId, *messageArgs),
                 severity = severity,
                 durationMillis = ServiceHudMessage.durationFor(messageType, time),
-                target = target
+                target = target,
+                key = key
             )
         )
     }
@@ -188,16 +219,26 @@ class ServiceMessageHUD private constructor() {
         messageType: MessageType,
         time: Time = Time.MEDIUM,
         severity: MessageSeverity = MessageSeverity.Info,
-        target: OverlayTarget.Display = OverlayTargets.defaultDisplay()
+        target: OverlayTarget.Display = OverlayTargets.defaultDisplay(),
+        key: String? = null
     ) {
         show(
             ServiceHudMessage(
                 text = message,
                 severity = severity,
                 durationMillis = ServiceHudMessage.durationFor(messageType, time),
-                target = target
+                target = target,
+                key = key
             )
         )
+    }
+
+    /** Whether a status message is held, whether or not a toast is covering it. Main thread only. */
+    fun hasStatus(): Boolean = controller.hasStatus()
+
+    /** Drops the status message, or only the one carrying [key], leaving toasts alone. */
+    fun dismissStatus(key: String? = null) {
+        handler.post { apply(controller.dismissStatus(now(), key)) }
     }
 
     /** Removes every message, including any status and queued toasts. */
@@ -223,6 +264,7 @@ class ServiceMessageHUD private constructor() {
         attachedTarget = null
         contentState.value = HudFrame.HIDDEN
         visibleState.value = false
+        scanSettings = null
         applicationCtx = null
     }
 
@@ -277,6 +319,13 @@ class ServiceMessageHUD private constructor() {
         }
     }
 
+    /** What the cross-fade keys on: the countdown is deliberately left out so timer refreshes do not re-animate. */
+    private data class ContentKey(
+        val text: String,
+        val severity: MessageSeverity,
+        val form: HudPresentation
+    )
+
     @Composable
     private fun ServiceMessageUi(
         frame: HudFrame,
@@ -309,13 +358,18 @@ class ServiceMessageHUD private constructor() {
                     message = message,
                     onDismiss = onDismiss
                 ) {
-                    MessageCard(message = message, presentation = presentation, motionEnabled = motion)
+                    MessageCard(
+                        message = message,
+                        presentation = presentation,
+                        motionEnabled = motion,
+                        onDismiss = onDismiss
+                    )
                 }
             }
         }
     }
 
-    /** Horizontal swipe-to-dismiss wrapper. Kept for carers; switch users get other dismissal paths. */
+    /** Horizontal swipe-to-dismiss wrapper. Kept for carers; switch users use tap or the menu entry. */
     @Composable
     private fun SwipeableMessageCard(
         modifier: Modifier = Modifier,
@@ -326,7 +380,7 @@ class ServiceMessageHUD private constructor() {
         val offsetX = remember { Animatable(0f) }
         val scope = rememberCoroutineScope()
 
-        LaunchedEffect(message) {
+        LaunchedEffect(message.text, message.severity) {
             offsetX.snapTo(0f)
         }
 
@@ -378,23 +432,26 @@ class ServiceMessageHUD private constructor() {
     private fun MessageCard(
         message: ServiceHudMessage,
         presentation: HudPresentation,
-        motionEnabled: Boolean
+        motionEnabled: Boolean,
+        onDismiss: () -> Unit
     ) {
-        // Cross-fade the whole card when the message or its form changes so
-        // the surface stays put and only its content and size move.
+        val dismissLabel = stringResource(R.string.menu_item_dismiss_message)
+        // Cross-fade the whole card when the text, severity, or form changes
+        // so the surface stays put and only its content and size move.
         Crossfade(
-            targetState = message to presentation,
+            targetState = ContentKey(message.text, message.severity, presentation),
             animationSpec = overlayTween(ScanVisualConstants.SHOW_DURATION_MS, motionEnabled),
             label = "ServiceMessageContent"
-        ) { (current, form) ->
-            val widthModifier = when (form) {
+        ) { key ->
+            val widthModifier = when (key.form) {
                 HudPresentation.CHIP -> Modifier.widthIn(max = CHIP_MAX_WIDTH)
                 else -> Modifier.fillMaxWidth()
             }
+            val accent = key.severity.accentColor()
             Card(
-                modifier = widthModifier.animateContentSize(
-                    overlayTween<IntSize>(ScanVisualConstants.SHOW_DURATION_MS, motionEnabled)
-                ),
+                modifier = widthModifier
+                    .animateContentSize(overlayTween<IntSize>(ScanVisualConstants.SHOW_DURATION_MS, motionEnabled))
+                    .clickable(onClickLabel = dismissLabel, onClick = onDismiss),
                 shape = CARD_SHAPE,
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.96f),
@@ -402,32 +459,43 @@ class ServiceMessageHUD private constructor() {
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
             ) {
-                when (form) {
-                    HudPresentation.BANNER -> MessageRow(
-                        message = current,
-                        iconSize = 24.dp,
-                        textStyle = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, lineHeight = 26.sp),
-                        maxLines = 5,
-                        verticalPadding = 12.dp,
-                        showAccentEdge = true
-                    )
-                    HudPresentation.TOAST -> MessageRow(
-                        message = current,
-                        iconSize = 20.dp,
-                        textStyle = MaterialTheme.typography.titleMedium,
-                        maxLines = 3,
-                        verticalPadding = 8.dp,
-                        showAccentEdge = true
-                    )
-                    HudPresentation.CHIP -> MessageRow(
-                        message = current,
-                        iconSize = 20.dp,
-                        textStyle = MaterialTheme.typography.bodySmall,
-                        maxLines = 1,
-                        verticalPadding = 8.dp,
-                        showAccentEdge = false,
-                        fillWidth = false
-                    )
+                Column {
+                    when (key.form) {
+                        HudPresentation.BANNER -> MessageRow(
+                            text = key.text,
+                            severity = key.severity,
+                            accent = accent,
+                            iconSize = 24.dp,
+                            textStyle = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, lineHeight = 26.sp),
+                            maxLines = 5,
+                            verticalPadding = 12.dp,
+                            showAccentEdge = true
+                        )
+                        HudPresentation.TOAST -> MessageRow(
+                            text = key.text,
+                            severity = key.severity,
+                            accent = accent,
+                            iconSize = 20.dp,
+                            textStyle = MaterialTheme.typography.titleMedium,
+                            maxLines = 3,
+                            verticalPadding = 8.dp,
+                            showAccentEdge = true
+                        )
+                        HudPresentation.CHIP -> MessageRow(
+                            text = key.text,
+                            severity = key.severity,
+                            accent = accent,
+                            iconSize = 20.dp,
+                            textStyle = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            verticalPadding = 8.dp,
+                            showAccentEdge = false,
+                            fillWidth = false
+                        )
+                    }
+                    message.countdown?.let { countdown ->
+                        CountdownBar(countdown = countdown, color = accent, motionEnabled = motionEnabled)
+                    }
                 }
             }
         }
@@ -435,7 +503,9 @@ class ServiceMessageHUD private constructor() {
 
     @Composable
     private fun MessageRow(
-        message: ServiceHudMessage,
+        text: String,
+        severity: MessageSeverity,
+        accent: Color,
         iconSize: Dp,
         textStyle: TextStyle,
         maxLines: Int,
@@ -443,7 +513,7 @@ class ServiceMessageHUD private constructor() {
         showAccentEdge: Boolean,
         fillWidth: Boolean = true
     ) {
-        val accent = message.severity.accentColor()
+        val liveRegion = if (severity == MessageSeverity.Error) LiveRegionMode.Assertive else LiveRegionMode.Polite
         Row(
             modifier = (if (fillWidth) Modifier.fillMaxWidth() else Modifier)
                 .height(IntrinsicSize.Min)
@@ -460,20 +530,50 @@ class ServiceMessageHUD private constructor() {
                 Spacer(modifier = Modifier.width(12.dp))
             }
             Icon(
-                imageVector = message.severity.icon(),
+                imageVector = severity.icon(),
                 contentDescription = null,
                 modifier = Modifier.size(iconSize),
                 tint = accent
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = message.text,
-                modifier = if (fillWidth) Modifier.weight(1f) else Modifier,
+                text = text,
+                modifier = (if (fillWidth) Modifier.weight(1f) else Modifier)
+                    .semantics { this.liveRegion = liveRegion },
                 style = textStyle,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = maxLines,
                 overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+
+    /** Thin bar that drains as [countdown] runs out, e.g. the pause timeout. */
+    @Composable
+    private fun CountdownBar(countdown: ScanInterval, color: Color, motionEnabled: Boolean) {
+        var fraction by remember(countdown) {
+            mutableFloatStateOf(countdown.remainingFraction(SystemClock.uptimeMillis()))
+        }
+        LaunchedEffect(countdown, motionEnabled) {
+            while (isActive) {
+                fraction = countdown.remainingFraction(SystemClock.uptimeMillis())
+                if (fraction <= 0f) break
+                if (motionEnabled) withFrameMillis { } else delay(COUNTDOWN_IDLE_REFRESH_MS)
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
+                .height(3.dp)
+                .background(color.copy(alpha = 0.2f), RoundedCornerShape(2.dp))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(fraction.coerceIn(0f, 1f))
+                    .fillMaxHeight()
+                    .background(color, RoundedCornerShape(2.dp))
             )
         }
     }

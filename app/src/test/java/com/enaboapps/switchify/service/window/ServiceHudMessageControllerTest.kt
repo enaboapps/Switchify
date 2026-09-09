@@ -127,6 +127,35 @@ class ServiceHudMessageControllerTest {
     }
 
     @Test
+    fun dismissStatusByKeyLeavesOtherStatusesAndToastsAlone() {
+        controller.show(status("trial ending", key = "trial"), now = 0)
+        controller.show(toast("saved"), now = 100)
+        assertEquals("saved", controller.dismissStatus(200, key = "pause").message?.text)
+        assertEquals(true, controller.hasStatus())
+
+        controller.dismissStatus(300, key = "trial")
+        assertEquals(false, controller.hasStatus())
+        assertEquals("saved", controller.tick(300).message?.text)
+        assertEquals(HudFrame.HIDDEN, controller.tick(3100))
+    }
+
+    @Test
+    fun dismissStatusWithoutKeyDropsAnyStatus() {
+        controller.show(status("paused", key = "pause"), now = 0)
+        assertEquals(HudFrame.HIDDEN, controller.dismissStatus(100))
+        assertEquals(false, controller.hasStatus())
+    }
+
+    @Test
+    fun statusReshowWithSameKeyReplacesInPlaceAndRestartsCollapse() {
+        controller.show(status("paused", key = "pause"), now = 0)
+        controller.tick(4000)
+        val refreshed = controller.show(status("paused", key = "pause"), now = 4000)
+        assertEquals(HudPresentation.BANNER, refreshed.presentation)
+        assertEquals(9000L, refreshed.nextTickAt)
+    }
+
+    @Test
     fun clearHidesEverythingIncludingQueue() {
         controller.show(status("paused"), now = 0)
         controller.show(toast("a"), now = 100)
