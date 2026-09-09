@@ -117,7 +117,7 @@ object ServiceCore {
      * Cleans up the service core.
      */
     fun cleanup() {
-        MenuManager.getInstance().cleanupAccessibilityActions()
+        MenuManager.getInstance().cleanup()
         getSwitchProfileActivationCoordinator()?.cancel(showMessage = false)
         SwitchifyRemoteBridgeCoordinator.detach()
         gestureTargetIndicator?.release()

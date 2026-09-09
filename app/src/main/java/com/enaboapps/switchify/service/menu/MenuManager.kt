@@ -173,6 +173,14 @@ class MenuManager {
         accessibilityActionCoordinator = null
     }
 
+    internal fun cleanup() {
+        cleanupAccessibilityActions()
+        menuHierarchy?.dispose()
+        menuHierarchy = null
+        scanningManager = null
+        accessibilityService = null
+    }
+
     /**
      * This function opens the edit menu
      */

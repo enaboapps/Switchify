@@ -121,6 +121,13 @@ class MenuHierarchy(
         return tree.lastOrNull()
     }
 
+    fun dispose() {
+        openGeneration++
+        getTopMenu()?.close()
+        tree = emptyList()
+        MenuViewHandler.instance.kill()
+    }
+
     fun isAtFirstMenu(): Boolean {
         return tree.size == 1
     }
