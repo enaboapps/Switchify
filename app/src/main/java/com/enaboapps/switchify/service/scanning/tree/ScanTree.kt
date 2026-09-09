@@ -2,6 +2,8 @@ package com.enaboapps.switchify.service.scanning.tree
 
 import android.content.Context
 import android.util.Log
+import java.util.UUID
+import com.enaboapps.switchify.service.techniques.nodes.scanners.NodeScannerUI
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
@@ -30,8 +32,14 @@ class ScanTree(
     private val context: Context,
     private var stopScanningOnSelect: Boolean = false,
     private val hasCycleBreak: () -> Boolean = { false },
-    private var callback: ScanTreeCallback? = null
+    private var callback: ScanTreeCallback? = null,
+    visualEffectsEnabled: Boolean = false
 ) : AccessTechniqueInterface {
+
+    private val visualOwner = if (visualEffectsEnabled) UUID.randomUUID().toString() else null
+
+    /** Batches the highlight changes made by [block] into one render; a no-op wrapper when this tree has no visuals. */
+    private fun withVisuals(block: () -> Unit) = NodeScannerUI.instance.withScanVisuals(visualOwner, block)
 
     companion object {
         private const val TAG = "ScanTree"
@@ -135,7 +143,9 @@ class ScanTree(
      * Performs the selection action based on the current scanning state.
      * This method handles the main logic flow of the scanning process.
      */
-    override fun performSelectionAction() {
+    override fun performSelectionAction() = withVisuals { performSelectionActionNow() }
+
+    private fun performSelectionActionNow() {
         try {
             if (checkManualScanSetup()) {
                 return
@@ -328,7 +338,9 @@ class ScanTree(
      * Steps through the scanning tree automatically.
      * This method is called by the scanning scheduler during automatic scanning.
      */
-    private fun stepAutoScanning() {
+    private fun stepAutoScanning() = withVisuals { stepAutoScanningNow() }
+
+    private fun stepAutoScanningNow() {
         if (!handlePreMovement()) {
             val movementSuccessful = navigator.moveSelectionToNextOrPrevious()
             handlePostMovement(movementSuccessful)
@@ -372,7 +384,9 @@ class ScanTree(
      * Manually steps forward in the scanning tree.
      * This method is used for manual navigation through the tree.
      */
-    override fun stepScanningForward() {
+    override fun stepScanningForward() = withVisuals { stepScanningForwardNow() }
+
+    private fun stepScanningForwardNow() {
         if (checkManualScanSetup()) {
             return
         }
@@ -387,7 +401,9 @@ class ScanTree(
      * Manually steps backward in the scanning tree.
      * This method is used for manual navigation through the tree.
      */
-    override fun stepScanningBackward() {
+    override fun stepScanningBackward() = withVisuals { stepScanningBackwardNow() }
+
+    private fun stepScanningBackwardNow() {
         if (checkManualScanSetup()) {
             return
         }
@@ -406,7 +422,9 @@ class ScanTree(
      * Manually steps left in the scanning tree.
      * This method is used for manual navigation through the tree.
      */
-    override fun stepScanningLeft() {
+    override fun stepScanningLeft() = withVisuals { stepScanningLeftNow() }
+
+    private fun stepScanningLeftNow() {
         if (checkManualScanSetup()) {
             return
         }
@@ -421,7 +439,9 @@ class ScanTree(
      * Manually steps right in the scanning tree.
      * This method is used for manual navigation through the tree.
      */
-    override fun stepScanningRight() {
+    override fun stepScanningRight() = withVisuals { stepScanningRightNow() }
+
+    private fun stepScanningRightNow() {
         if (checkManualScanSetup()) {
             return
         }
@@ -436,7 +456,9 @@ class ScanTree(
      * Swaps the scanning direction between vertical and horizontal.
      * This method is called when the user wants to change the scanning direction.
      */
-    override fun swapScanDirection() {
+    override fun swapScanDirection() = withVisuals { swapScanDirectionNow() }
+
+    private fun swapScanDirectionNow() {
         navigator.swapScanDirection()
         if (scanSettings.isAutoScanMode()) {
             resumeAutoScanning()
@@ -460,7 +482,10 @@ class ScanTree(
             highlighter.unhighlightAll()
             navigator.reset()
             isManualScanActive = false
-            scanningScheduler = ScanningScheduler(context) {
+            scanningScheduler = ScanningScheduler(context,
+                intervalOwner = visualOwner ?: UUID.randomUUID().toString(),
+                onInterval = { event -> if (visualOwner != null) NodeScannerUI.instance.updateInterval(event) }
+            ) {
                 stepAutoScanning()
             }
         }
@@ -506,7 +531,9 @@ class ScanTree(
     /**
      * Starts the scanning process.
      */
-    override fun startAutoScanning() {
+    override fun startAutoScanning() = withVisuals { startAutoScanningNow() }
+
+    private fun startAutoScanningNow() {
         setup()
         if (tree.isNotEmpty()) {
             scanningScheduler?.stopScanning()
@@ -544,7 +571,9 @@ class ScanTree(
     /**
      * Resets the UI to its initial state.
      */
-    override fun resetUI() {
+    override fun resetUI() = withVisuals { resetUINow() }
+
+    private fun resetUINow() {
         highlighter.unhighlightAll()
     }
 
@@ -560,7 +589,9 @@ class ScanTree(
     /**
      * Resets the scanning tree to its initial state.
      */
-    override fun resetForNextUse() {
+    override fun resetForNextUse() = withVisuals { resetForNextUseNow() }
+
+    private fun resetForNextUseNow() {
         scanningScheduler?.stopScanning()
         callback?.onScanTreeStopped()
         callback?.onScanTreeCycleBreakSkipped()

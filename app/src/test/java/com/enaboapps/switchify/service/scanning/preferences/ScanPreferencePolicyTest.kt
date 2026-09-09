@@ -35,12 +35,23 @@ class ScanPreferencePolicyTest {
             PreferenceManager.PREFERENCE_KEY_MOVE_REPEAT_DELAY,
             PreferenceManager.PREFERENCE_KEY_ITEM_SCAN_SPEECH,
             PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_TYPE,
+            PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_MOVEMENT,
+            PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_COUNTDOWN,
             PreferenceManager.PREFERENCE_KEY_SCAN_COLOR_SET
         )
 
         assertEquals(expected, ScanPreferencePolicy.supportedKeys)
         assertTrue(expected.all { ScanPreferencePolicy.effectFor(it) != null })
         assertNull(ScanPreferencePolicy.effectFor("unrelated"))
+    }
+
+    @Test
+    fun visualChangesDoNotResetScanningOrTiming() {
+        val plan = ScanPreferencePolicy.reduce(setOf(
+            PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_TYPE,
+            PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_MOVEMENT,
+            PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_COUNTDOWN))
+        assertEquals(setOf(ScanPreferenceEffect.REFRESH_HIGHLIGHT), plan.effects)
     }
 
     @Test

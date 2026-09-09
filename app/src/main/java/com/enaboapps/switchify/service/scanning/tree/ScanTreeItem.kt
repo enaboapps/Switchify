@@ -5,6 +5,7 @@ import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.techniques.nodes.Node
 import com.enaboapps.switchify.service.techniques.nodes.NodeSpeaker
 import com.enaboapps.switchify.service.techniques.nodes.scanners.NodeScannerUI
+import com.enaboapps.switchify.service.techniques.nodes.scanners.ScanHighlightBounds
 import com.enaboapps.switchify.service.window.overlay.OverlayTarget
 import com.enaboapps.switchify.service.window.overlay.OverlayTargets
 
@@ -78,13 +79,17 @@ class ScanTreeItem(
     private fun showRowBoundsFor(nodes: List<ScanNodeInterface>, isEscape: Boolean) {
         val target = commonOverlayTarget(nodes)
         val bounds = aggregateBounds(nodes, target)
+        val screenRect = aggregateBounds(nodes, OverlayTargets.displayFallback(target))
+        val screenBounds = ScanHighlightBounds(screenRect.left.toFloat(), screenRect.top.toFloat(),
+            screenRect.width().toFloat(), screenRect.height().toFloat())
         if (isEscape) {
             boundsUi.showEscapeBounds(
                 bounds.left,
                 bounds.top,
                 bounds.width(),
                 bounds.height(),
-                target
+                target,
+                screenBounds
             )
         } else {
             boundsUi.showRowBounds(
@@ -92,7 +97,8 @@ class ScanTreeItem(
                 bounds.top,
                 bounds.width(),
                 bounds.height(),
-                target
+                target,
+                screenBounds
             )
         }
     }
@@ -208,7 +214,7 @@ class ScanTreeItem(
 
     private fun unhighlightAggregate(nodes: List<ScanNodeInterface>) {
         nodes.forEach { it.unhighlight() }
-        boundsUi.hideAll()
+        boundsUi.hideRowBounds()
     }
 
     /**
@@ -292,7 +298,8 @@ interface ScanTreeBoundsUi {
         y: Int,
         width: Int,
         height: Int,
-        target: OverlayTarget
+        target: OverlayTarget,
+        screenBounds: ScanHighlightBounds
     )
 
     fun showEscapeBounds(
@@ -300,9 +307,14 @@ interface ScanTreeBoundsUi {
         y: Int,
         width: Int,
         height: Int,
-        target: OverlayTarget
+        target: OverlayTarget,
+        screenBounds: ScanHighlightBounds
     )
 
+    /** Removes the row or escape highlight; a node's own item highlight is left alone. */
+    fun hideRowBounds()
+
+    /** Removes every highlight; used when the tree's indices no longer match its nodes. */
     fun hideAll()
 }
 
@@ -312,9 +324,10 @@ private object NodeScannerBoundsUi : ScanTreeBoundsUi {
         y: Int,
         width: Int,
         height: Int,
-        target: OverlayTarget
+        target: OverlayTarget,
+        screenBounds: ScanHighlightBounds
     ) {
-        NodeScannerUI.instance.showRowBounds(x, y, width, height, target)
+        NodeScannerUI.instance.showRowBounds(x, y, width, height, target, screenBounds)
     }
 
     override fun showEscapeBounds(
@@ -322,9 +335,14 @@ private object NodeScannerBoundsUi : ScanTreeBoundsUi {
         y: Int,
         width: Int,
         height: Int,
-        target: OverlayTarget
+        target: OverlayTarget,
+        screenBounds: ScanHighlightBounds
     ) {
-        NodeScannerUI.instance.showEscapeBounds(x, y, width, height, target)
+        NodeScannerUI.instance.showEscapeBounds(x, y, width, height, target, screenBounds)
+    }
+
+    override fun hideRowBounds() {
+        NodeScannerUI.instance.hideRowBounds()
     }
 
     override fun hideAll() {

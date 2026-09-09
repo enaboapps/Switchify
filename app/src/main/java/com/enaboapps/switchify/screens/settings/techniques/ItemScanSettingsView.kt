@@ -55,6 +55,29 @@ fun ItemScanSettingsView() {
             itemToString = { scanHighlightStyle.getName(it) },
             itemDescription = { scanHighlightStyle.getDescription(it) }
         )
+
+        val movementEnabled = remember { mutableStateOf(scanHighlightStyle.isMovementEnabled()) }
+        PreferenceSwitch(
+            titleResId = R.string.preference_title_scan_highlight_movement,
+            summaryResId = R.string.preference_summary_scan_highlight_movement,
+            checked = movementEnabled.value,
+            onCheckedChange = {
+                movementEnabled.value = it
+                preferenceManager.setBooleanValue(PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_MOVEMENT, it)
+            }
+        )
+
+        val countdownEnabled = remember { mutableStateOf(scanHighlightStyle.isCountdownEnabled()) }
+        PreferenceSwitch(
+            titleResId = R.string.preference_title_scan_highlight_countdown,
+            summaryResId = R.string.preference_summary_scan_highlight_countdown,
+            checked = countdownEnabled.value,
+            onCheckedChange = {
+                countdownEnabled.value = it
+                preferenceManager.setBooleanValue(PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_COUNTDOWN, it)
+            }
+        )
+
     }
 
     Section(titleResId = R.string.section_title_scan_pattern) {

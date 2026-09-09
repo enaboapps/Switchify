@@ -183,6 +183,10 @@ class MenuHighlightHud private constructor() {
         }
     }
 
+    fun bringToFront() {
+        handler.post { composeView?.bringToFront() }
+    }
+
     fun hide() {
         handler.post {
             visibleState.value = false
