@@ -39,8 +39,16 @@ object ScanVisualConstants {
     /** Outward offset of the contrast halo from the main highlight stroke. */
     const val HALO_OFFSET_DP = 2
 
-    /** Padding between adjacent point-scan grid blocks so strokes overlap cleanly. */
-    const val GRID_OVERLAP_PADDING_DP = 2
+    // ---- Point-scan grid ----
+
+    /** Hairline for point-scan grid lines and outline. */
+    const val GRID_LINE_DP = 1
+
+    /** Contrast halo on each side of a grid line so it reads over dark apps. */
+    const val GRID_LINE_HALO_DP = 1
+
+    /** Grid alpha while the crosshair scans inside a chosen block. */
+    const val GRID_DIMMED_ALPHA = 0.35f
 
     // ---- Alphas (0-255) ----
 

@@ -1,94 +1,84 @@
 package com.enaboapps.switchify.service.techniques.pointscan.blocks
 
-import android.content.Context
-import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
-import android.widget.RelativeLayout
-import com.enaboapps.switchify.backend.preferences.PreferenceManager
+import android.view.View
+import com.enaboapps.switchify.service.gestures.visuals.GestureVisualMotionPolicy
 import com.enaboapps.switchify.service.scanning.ScanVisualConstants
 import com.enaboapps.switchify.service.techniques.AccessTechniqueUIBase
+import com.enaboapps.switchify.service.techniques.pointscan.PointScanSettings
 import com.enaboapps.switchify.service.utils.HighlightAnimations
 import com.enaboapps.switchify.service.utils.ScreenUtils
 
-class PointScanBlockGridUI(private val context: Context) : AccessTechniqueUIBase() {
-    private val preferenceManager = PreferenceManager(context)
+/**
+ * Owns the single [PointScanGridView] shown while blocks are being scanned.
+ *
+ * During the line phase the grid is held at a low alpha instead of removed,
+ * so the user keeps the spatial context of where the chosen block sits.
+ * [holdForLinePhase] arms that behaviour before the block tree stops;
+ * [reset] releases it and tears the grid down.
+ */
+class PointScanBlockGridUI(private val context: android.content.Context) : AccessTechniqueUIBase() {
     private val handler = Handler(Looper.getMainLooper())
-    private var gridViews: List<RelativeLayout> = emptyList()
-    private var screenOutline: RelativeLayout? = null
-
-    private fun structuralOutline(): GradientDrawable {
-        return GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = ScreenUtils.dpToPxFloat(context, ScanVisualConstants.CORNER_RADIUS_DP)
-            setStroke(
-                ScreenUtils.dpToPx(context, ScanVisualConstants.STRUCTURAL_STROKE_DP),
-                ScanVisualConstants.STRUCTURAL_COLOR
-            )
-        }
-    }
+    private var gridView: PointScanGridView? = null
+    private var heldForLinePhase = false
 
     fun showGrid() {
         handler.post {
-            if (gridViews.isNotEmpty() || screenOutline != null) {
-                removeGridViewsSafely()
-                removeScreenOutlineSafely()
+            heldForLinePhase = false
+            val gridSize = PointScanSettings.getCursorBlockCount()
+            val existing = gridView
+            if (existing != null) {
+                existing.gridSize = gridSize
+                fadeTo(existing, 1f)
+                return@post
             }
-
-            val screenWidth = ScreenUtils.getWidth(context)
-            val screenHeight = ScreenUtils.getHeight(context)
-
-            val gridSize = preferenceManager.getStringValue(
-                PreferenceManager.Keys.PREFERENCE_KEY_CURSOR_BLOCK_COUNT,
-                "4"
-            ).toInt()
-
-            val blockWidth = screenWidth / gridSize
-            val blockHeight = screenHeight / gridSize
-            val strokePx = ScreenUtils.dpToPx(context, ScanVisualConstants.STRUCTURAL_STROKE_DP)
-            val overlap =
-                strokePx + ScreenUtils.dpToPx(context, ScanVisualConstants.GRID_OVERLAP_PADDING_DP)
-
-            val newGridViews = mutableListOf<RelativeLayout>()
-
-            for (index in 0 until gridSize * gridSize) {
-                val row = index / gridSize
-                val column = index % gridSize
-
-                val left = column * blockWidth - if (column > 0) overlap else 0
-                val top = row * blockHeight - if (row > 0) overlap else 0
-                val width = blockWidth + if (column > 0) overlap else 0
-                val height = blockHeight + if (row > 0) overlap else 0
-
-                val view = RelativeLayout(context).apply {
-                    background = structuralOutline()
-                }
-
-                addViewDirectly(view, left, top, width, height)
+            val view = PointScanGridView(context).apply { this.gridSize = gridSize }
+            addViewDirectly(
+                view,
+                0,
+                0,
+                ScreenUtils.getWidth(context),
+                ScreenUtils.getHeight(context)
+            )
+            gridView = view
+            if (GestureVisualMotionPolicy.animationsEnabled()) {
                 HighlightAnimations.fadeIn(view)
-                newGridViews.add(view)
+            } else {
+                view.alpha = 1f
             }
+        }
+    }
 
-            val newScreenOutline = RelativeLayout(context).apply {
-                background = structuralOutline()
-            }
-            addViewDirectly(newScreenOutline, 0, 0, screenWidth, screenHeight)
-            HighlightAnimations.fadeIn(newScreenOutline)
-
-            gridViews = newGridViews
-            screenOutline = newScreenOutline
+    /** Keeps the grid on screen, dimmed, when the block tree stops for the line phase. */
+    fun holdForLinePhase() {
+        handler.post {
+            heldForLinePhase = true
+            gridView?.let { fadeTo(it, ScanVisualConstants.GRID_DIMMED_ALPHA) }
         }
     }
 
     fun hideGrid() {
         handler.post {
-            removeGridViewsSafely()
-            removeScreenOutlineSafely()
+            val view = gridView
+            if (heldForLinePhase && view != null) {
+                fadeTo(view, ScanVisualConstants.GRID_DIMMED_ALPHA)
+            } else {
+                removeGridNow()
+            }
         }
     }
 
-    private fun removeGridViewsSafely() {
-        gridViews.forEach { view ->
+    fun reset() {
+        handler.post {
+            heldForLinePhase = false
+            removeGridNow()
+        }
+    }
+
+    private fun removeGridNow() {
+        gridView?.let { view ->
+            view.animate().cancel()
             try {
                 if (view.parent != null) {
                     super.removeView(view)
@@ -97,37 +87,22 @@ class PointScanBlockGridUI(private val context: Context) : AccessTechniqueUIBase
                 e.printStackTrace()
             }
         }
-        gridViews = emptyList()
-    }
-
-    private fun removeScreenOutlineSafely() {
-        screenOutline?.let { outline ->
-            try {
-                if (outline.parent != null) {
-                    super.removeView(outline)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-        screenOutline = null
-    }
-
-    fun reset() {
-        handler.post {
-            try {
-                removeGridViewsSafely()
-                removeScreenOutlineSafely()
-                super.hide()
-            } catch (e: Exception) {
-                forceCleanup()
-            }
-        }
-    }
-
-    private fun forceCleanup() {
-        gridViews = emptyList()
-        screenOutline = null
+        gridView = null
         super.hide()
+    }
+
+    private fun fadeTo(view: View, alpha: Float) {
+        view.animate().cancel()
+        view.scaleX = 1f
+        view.scaleY = 1f
+        if (!GestureVisualMotionPolicy.animationsEnabled()) {
+            view.alpha = alpha
+            return
+        }
+        view.animate()
+            .alpha(alpha)
+            .setDuration(ScanVisualConstants.SHOW_DURATION_MS)
+            .setInterpolator(ScanVisualConstants.SHOW_INTERPOLATOR)
+            .start()
     }
 }

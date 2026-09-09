@@ -47,7 +47,7 @@ class PointScanManager(private val context: Context) : AccessTechniqueInterface 
      */
     private fun setBlock(position: Int) {
         val block = blockManager.getBlock(position)
-        blockManager.resetForNextUse()
+        blockManager.enterLinePhase()
         lineManager.setBlock(block)
         lineManager.startAutoScanning()
     }
