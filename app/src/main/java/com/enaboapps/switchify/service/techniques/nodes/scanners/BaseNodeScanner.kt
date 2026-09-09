@@ -65,6 +65,7 @@ abstract class BaseNodeScanner(
                 context = context,
                 stopScanningOnSelect = true,
                 hasCycleBreak = { KeyboardManager.shouldEnableCycleBreak() },
+                visualEffectsEnabled = true,
                 callback = this
             )
             _scanTree = created

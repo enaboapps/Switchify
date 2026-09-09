@@ -1,6 +1,12 @@
 package com.enaboapps.switchify.service.scanning
 
 import android.content.Context
+import android.os.SystemClock
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -10,9 +16,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.UUID
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
 
 /**
  * ScanningScheduler is a class that manages the scheduling of scanning tasks.
@@ -26,14 +29,29 @@ class ScanningScheduler internal constructor(
     private val onScan: suspend () -> Unit,
     private val scanRateProvider: () -> Long,
     private val firstItemPauseProvider: () -> Long,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val intervalOwner: String = UUID.randomUUID().toString(),
+    private val clock: () -> Long = { System.nanoTime() / 1_000_000L },
+    private val onInterval: (ScanIntervalEvent) -> Unit = {}
 ) {
 
     constructor(context: Context, onScan: suspend () -> Unit) : this(
+        context, UUID.randomUUID().toString(), {}, onScan
+    )
+
+    constructor(
+        context: Context,
+        intervalOwner: String = UUID.randomUUID().toString(),
+        onInterval: (ScanIntervalEvent) -> Unit = {},
+        onScan: suspend () -> Unit
+    ) : this(
         onScan = { withContext(Dispatchers.Main.immediate) { onScan() } },
         scanRateProvider = ScanSettings(context)::getScanRate,
         firstItemPauseProvider = ScanSettings(context)::getPauseOnFirstItemDelay,
-        coroutineScope = CoroutineScope(Dispatchers.IO + CoroutineName(UUID.randomUUID().toString()))
+        coroutineScope = CoroutineScope(Dispatchers.IO + CoroutineName(UUID.randomUUID().toString())),
+        intervalOwner = intervalOwner,
+        clock = SystemClock::uptimeMillis,
+        onInterval = onInterval
     )
 
     /**
@@ -48,6 +66,7 @@ class ScanningScheduler internal constructor(
      * The Job representing the currently running scanning task.
      */
     private var scanningJob: Job? = null
+    private val intervalGeneration = AtomicLong()
 
     /**
      * A flag indicating whether a scanning task is currently executing.
@@ -103,24 +122,48 @@ class ScanningScheduler internal constructor(
     }
 
     private fun launchScanningJob(delayMillis: Long) {
+        val generation = intervalGeneration.incrementAndGet()
         scanningJob?.cancel()
         scanningJob = coroutineScope.launch {
-            println("[$uniqueId] Starting scanning job")
-            delay(delayMillis)
-            while (isActive) {
-                if (isExecuting.compareAndSet(false, true)) {
-                    try {
-                        onScan()
-                    } catch (e: Exception) {
-                        println("[$uniqueId] Error during scan: ${e.message}")
-                        e.printStackTrace()
-                    } finally {
-                        isExecuting.set(false)
+            try {
+                println("[$uniqueId] Starting scanning job")
+                publishInterval(generation, delayMillis)
+                delay(delayMillis)
+                while (isActive) {
+                    if (isExecuting.compareAndSet(false, true)) {
+                        try {
+                            onScan()
+                        } catch (cancelled: CancellationException) {
+                            throw cancelled
+                        } catch (e: Exception) {
+                            println("[$uniqueId] Error during scan: ${e.message}")
+                            e.printStackTrace()
+                        } finally {
+                            isExecuting.set(false)
+                        }
                     }
+                    if (isActive && generation == intervalGeneration.get()) {
+                        publishInterval(generation, period)
+                    }
+                    delay(period)
                 }
-                delay(period)
+            } finally {
+                if (intervalGeneration.compareAndSet(generation, generation + 1)) {
+                    onInterval(ScanIntervalEvent(intervalOwner, generation + 1, null))
+                }
             }
         }
+    }
+
+    private fun publishInterval(generation: Long, durationMillis: Long) {
+        if (generation == intervalGeneration.get()) {
+            onInterval(ScanIntervalEvent(intervalOwner, generation,
+                ScanInterval(clock(), durationMillis.coerceAtLeast(0L))))
+        }
+    }
+
+    private fun clearInterval() {
+        onInterval(ScanIntervalEvent(intervalOwner, intervalGeneration.incrementAndGet(), null))
     }
 
     /**
@@ -152,6 +195,7 @@ class ScanningScheduler internal constructor(
         try {
             if (scanState.get() == ScanState.SCANNING || scanState.get() == ScanState.PAUSED) {
                 scanState.set(ScanState.STOPPED)
+                clearInterval()
                 scanningJob?.cancel()
             }
         } catch (e: Exception) {
@@ -167,6 +211,7 @@ class ScanningScheduler internal constructor(
         println("[$uniqueId] Attempting to pause scanning... $scanState")
         try {
             if (scanState.compareAndSet(ScanState.SCANNING, ScanState.PAUSED)) {
+                clearInterval()
                 scanningJob?.cancel()
             }
         } catch (e: Exception) {
@@ -196,6 +241,8 @@ class ScanningScheduler internal constructor(
     fun shutdown() {
         println("[$uniqueId] Shutting down scope")
         try {
+            scanState.set(ScanState.STOPPED)
+            clearInterval()
             coroutineScope.cancel() // Cancel all coroutines started by this scope
         } catch (e: Exception) {
             println("[$uniqueId] Error while shutting down: ${e.message}")

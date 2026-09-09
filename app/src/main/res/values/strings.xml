@@ -1181,4 +1181,10 @@
     <string name="switch_profile_confirmation_cancel_description">Keep the current profile and return to the profile list</string>
     <string name="menu_item_switch_profile">Switch profile</string>
     <string name="menu_item_switch_profile_description">Choose another switch mapping profile</string>
+    <string name="scan_highlight_type_spotlight">Spotlight</string>
+    <string name="scan_highlight_type_spotlight_desc">Dim the display around the active item or row, keeping its content clear.</string>
+    <string name="preference_title_scan_highlight_movement">Animate highlight movement</string>
+    <string name="preference_title_scan_highlight_countdown">Show auto-scan countdown</string>
+    <string name="preference_summary_scan_highlight_movement">Smoothly move between items in apps, keyboards, and menus.</string>
+    <string name="preference_summary_scan_highlight_countdown">Show the time remaining before scanning advances in apps, keyboards, and menus.</string>
 </resources>

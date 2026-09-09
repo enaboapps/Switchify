@@ -34,7 +34,7 @@ interface MenuViewListener {
 class MenuView(val context: Context, private val menu: BaseMenu) {
     val menuId: String? get() = menu.menuId
     var menuViewListener: MenuViewListener? = null
-    val scanTree = ScanTree(context)
+    val scanTree = ScanTree(context, visualEffectsEnabled = true)
     private val preferenceManager = PreferenceManager(context)
     private var baseLayout = LinearLayout(context)
     private var currentPage = 0

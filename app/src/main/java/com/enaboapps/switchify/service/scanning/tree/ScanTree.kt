@@ -2,6 +2,8 @@ package com.enaboapps.switchify.service.scanning.tree
 
 import android.content.Context
 import android.util.Log
+import java.util.UUID
+import com.enaboapps.switchify.service.techniques.nodes.scanners.NodeScannerUI
 import com.enaboapps.switchify.service.scanning.ScanNodeInterface
 import com.enaboapps.switchify.service.scanning.ScanSettings
 import com.enaboapps.switchify.service.scanning.ScanningScheduler
@@ -30,8 +32,11 @@ class ScanTree(
     private val context: Context,
     private var stopScanningOnSelect: Boolean = false,
     private val hasCycleBreak: () -> Boolean = { false },
-    private var callback: ScanTreeCallback? = null
+    private var callback: ScanTreeCallback? = null,
+    visualEffectsEnabled: Boolean = false
 ) : AccessTechniqueInterface {
+
+    private val visualOwner = if (visualEffectsEnabled) UUID.randomUUID().toString() else null
 
     companion object {
         private const val TAG = "ScanTree"
@@ -136,6 +141,11 @@ class ScanTree(
      * This method handles the main logic flow of the scanning process.
      */
     override fun performSelectionAction() {
+        if (visualOwner == null) performSelectionActionNow() else
+            NodeScannerUI.instance.withScanVisuals(visualOwner) { performSelectionActionNow() }
+    }
+
+    private fun performSelectionActionNow() {
         try {
             if (checkManualScanSetup()) {
                 return
@@ -329,6 +339,11 @@ class ScanTree(
      * This method is called by the scanning scheduler during automatic scanning.
      */
     private fun stepAutoScanning() {
+        if (visualOwner == null) stepAutoScanningNow() else
+            NodeScannerUI.instance.withScanVisuals(visualOwner) { stepAutoScanningNow() }
+    }
+
+    private fun stepAutoScanningNow() {
         if (!handlePreMovement()) {
             val movementSuccessful = navigator.moveSelectionToNextOrPrevious()
             handlePostMovement(movementSuccessful)
@@ -373,6 +388,11 @@ class ScanTree(
      * This method is used for manual navigation through the tree.
      */
     override fun stepScanningForward() {
+        if (visualOwner == null) stepScanningForwardNow() else
+            NodeScannerUI.instance.withScanVisuals(visualOwner) { stepScanningForwardNow() }
+    }
+
+    private fun stepScanningForwardNow() {
         if (checkManualScanSetup()) {
             return
         }
@@ -388,6 +408,11 @@ class ScanTree(
      * This method is used for manual navigation through the tree.
      */
     override fun stepScanningBackward() {
+        if (visualOwner == null) stepScanningBackwardNow() else
+            NodeScannerUI.instance.withScanVisuals(visualOwner) { stepScanningBackwardNow() }
+    }
+
+    private fun stepScanningBackwardNow() {
         if (checkManualScanSetup()) {
             return
         }
@@ -407,6 +432,11 @@ class ScanTree(
      * This method is used for manual navigation through the tree.
      */
     override fun stepScanningLeft() {
+        if (visualOwner == null) stepScanningLeftNow() else
+            NodeScannerUI.instance.withScanVisuals(visualOwner) { stepScanningLeftNow() }
+    }
+
+    private fun stepScanningLeftNow() {
         if (checkManualScanSetup()) {
             return
         }
@@ -422,6 +452,11 @@ class ScanTree(
      * This method is used for manual navigation through the tree.
      */
     override fun stepScanningRight() {
+        if (visualOwner == null) stepScanningRightNow() else
+            NodeScannerUI.instance.withScanVisuals(visualOwner) { stepScanningRightNow() }
+    }
+
+    private fun stepScanningRightNow() {
         if (checkManualScanSetup()) {
             return
         }
@@ -437,6 +472,11 @@ class ScanTree(
      * This method is called when the user wants to change the scanning direction.
      */
     override fun swapScanDirection() {
+        if (visualOwner == null) swapScanDirectionNow() else
+            NodeScannerUI.instance.withScanVisuals(visualOwner) { swapScanDirectionNow() }
+    }
+
+    private fun swapScanDirectionNow() {
         navigator.swapScanDirection()
         if (scanSettings.isAutoScanMode()) {
             resumeAutoScanning()
@@ -460,7 +500,10 @@ class ScanTree(
             highlighter.unhighlightAll()
             navigator.reset()
             isManualScanActive = false
-            scanningScheduler = ScanningScheduler(context) {
+            scanningScheduler = ScanningScheduler(context,
+                intervalOwner = visualOwner ?: UUID.randomUUID().toString(),
+                onInterval = { event -> if (visualOwner != null) NodeScannerUI.instance.updateInterval(event) }
+            ) {
                 stepAutoScanning()
             }
         }
@@ -507,6 +550,11 @@ class ScanTree(
      * Starts the scanning process.
      */
     override fun startAutoScanning() {
+        if (visualOwner == null) startAutoScanningNow() else
+            NodeScannerUI.instance.withScanVisuals(visualOwner) { startAutoScanningNow() }
+    }
+
+    private fun startAutoScanningNow() {
         setup()
         if (tree.isNotEmpty()) {
             scanningScheduler?.stopScanning()
@@ -545,6 +593,11 @@ class ScanTree(
      * Resets the UI to its initial state.
      */
     override fun resetUI() {
+        if (visualOwner == null) resetUINow() else
+            NodeScannerUI.instance.withScanVisuals(visualOwner) { resetUINow() }
+    }
+
+    private fun resetUINow() {
         highlighter.unhighlightAll()
     }
 
@@ -561,6 +614,11 @@ class ScanTree(
      * Resets the scanning tree to its initial state.
      */
     override fun resetForNextUse() {
+        if (visualOwner == null) resetForNextUseNow() else
+            NodeScannerUI.instance.withScanVisuals(visualOwner) { resetForNextUseNow() }
+    }
+
+    private fun resetForNextUseNow() {
         scanningScheduler?.stopScanning()
         callback?.onScanTreeStopped()
         callback?.onScanTreeCycleBreakSkipped()

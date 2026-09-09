@@ -17,6 +17,7 @@ import com.enaboapps.switchify.service.scanning.tree.CollectionRowHint
 import com.enaboapps.switchify.service.scanning.tree.CollectionRowHintProvider
 import com.enaboapps.switchify.service.selection.SelectionHandler
 import com.enaboapps.switchify.service.techniques.nodes.scanners.NodeScannerUI
+import com.enaboapps.switchify.service.techniques.nodes.scanners.ScanHighlightBounds
 import com.enaboapps.switchify.service.techniques.pointscan.blocks.PointScanBlock
 import com.enaboapps.switchify.service.window.SwitchifyAccessibilityWindow
 import com.enaboapps.switchify.service.window.overlay.OverlayTarget
@@ -322,10 +323,15 @@ class Node(
                 bounds.top,
                 bounds.width(),
                 bounds.height(),
-                target
+                target,
+                ScanHighlightBounds(
+                    overlayBounds.boundsInScreen.left.toFloat(), overlayBounds.boundsInScreen.top.toFloat(),
+                    overlayBounds.boundsInScreen.width().toFloat(), overlayBounds.boundsInScreen.height().toFloat())
             )
         } else {
-            NodeScannerUI.Companion.instance.showItemBounds(x, y, width, height)
+            NodeScannerUI.Companion.instance.showItemBounds(x, y, width, height,
+                screenBounds = ScanHighlightBounds(
+                    x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat()))
         }
         highlighted = true
         onHighlight?.invoke(this)

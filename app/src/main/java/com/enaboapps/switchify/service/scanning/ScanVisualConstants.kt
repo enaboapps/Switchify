@@ -66,6 +66,8 @@ object ScanVisualConstants {
 
     // ---- Animation ----
 
+    const val SPOTLIGHT_ALPHA = 89
+
     const val SHOW_DURATION_MS = 120L
     const val HIDE_DURATION_MS = 80L
     const val INITIAL_SCALE = 0.96f

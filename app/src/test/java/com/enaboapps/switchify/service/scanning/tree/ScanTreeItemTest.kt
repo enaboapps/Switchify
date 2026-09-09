@@ -88,7 +88,8 @@ class ScanTreeItemTest {
             y: Int,
             width: Int,
             height: Int,
-            target: OverlayTarget
+            target: OverlayTarget,
+            screenBounds: com.enaboapps.switchify.service.techniques.nodes.scanners.ScanHighlightBounds
         ) = Unit
 
         override fun showEscapeBounds(
@@ -96,7 +97,8 @@ class ScanTreeItemTest {
             y: Int,
             width: Int,
             height: Int,
-            target: OverlayTarget
+            target: OverlayTarget,
+            screenBounds: com.enaboapps.switchify.service.techniques.nodes.scanners.ScanHighlightBounds
         ) = Unit
 
         override fun hideAll() {

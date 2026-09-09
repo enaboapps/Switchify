@@ -153,6 +153,9 @@ class ScanningManager(
     }
 
     internal fun applyPreferenceUpdate(plan: ScanPreferenceUpdatePlan) {
+        if (plan.contains(ScanPreferenceEffect.REFRESH_HIGHLIGHT)) {
+            NodeScannerUI.instance.refreshPreferences()
+        }
         if (plan.contains(ScanPreferenceEffect.RESET_SCAN_MODE)) {
             activeScanMethod.resetForScanModeChange()
             return

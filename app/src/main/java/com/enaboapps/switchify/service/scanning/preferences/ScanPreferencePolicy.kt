@@ -10,6 +10,7 @@ internal enum class ScanPreferenceEffect {
     REFRESH_POINT_STRUCTURE,
     REFRESH_POINT_TIMING,
     RESET_RADAR_ORIGIN,
+    REFRESH_HIGHLIGHT,
     LIVE_READ
 }
 
@@ -47,7 +48,9 @@ internal object ScanPreferencePolicy {
         PreferenceManager.PREFERENCE_KEY_MOVE_REPEAT to ScanPreferenceEffect.LIVE_READ,
         PreferenceManager.PREFERENCE_KEY_MOVE_REPEAT_DELAY to ScanPreferenceEffect.LIVE_READ,
         PreferenceManager.PREFERENCE_KEY_ITEM_SCAN_SPEECH to ScanPreferenceEffect.LIVE_READ,
-        PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_TYPE to ScanPreferenceEffect.LIVE_READ,
+        PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_TYPE to ScanPreferenceEffect.REFRESH_HIGHLIGHT,
+        PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_MOVEMENT to ScanPreferenceEffect.REFRESH_HIGHLIGHT,
+        PreferenceManager.PREFERENCE_KEY_SCAN_HIGHLIGHT_COUNTDOWN to ScanPreferenceEffect.REFRESH_HIGHLIGHT,
         PreferenceManager.PREFERENCE_KEY_SCAN_COLOR_SET to ScanPreferenceEffect.LIVE_READ
     )
 
