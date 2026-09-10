@@ -393,7 +393,7 @@ class NodeScannerUI internal constructor(
     private fun updateCountdown() {
         val active = activeHighlight ?: return
         val view = active.view as? ScanHighlightView ?: return
-        view.interval = if (active.spec.role != NodeScannerHighlightRole.ESCAPE && prefs?.countdown == true) {
+        view.interval = if (prefs?.countdown == true) {
             intervals.intervalFor(active.spec.owner, active.spec.intervalAfterSequence)
         } else null
     }
