@@ -32,6 +32,7 @@ object MenuItemRegistry {
             MenuItemDefinition(MenuConstants.ItemIds.Main.PC_SWITCH_FORWARDING, labelResource = R.string.menu_item_pc_switch_forwarding, descriptionResource = R.string.menu_item_pc_switch_forwarding_description, drawableId = R.drawable.ic_control_pc),
             MenuItemDefinition(MenuConstants.ItemIds.Main.EDIT, labelResource = R.string.menu_title_edit, descriptionResource = R.string.menu_item_edit_description, drawableId = R.drawable.ic_edit),
             MenuItemDefinition(MenuConstants.ItemIds.Main.AI, labelResource = R.string.menu_title_ai, descriptionResource = R.string.menu_item_ai_description, drawableId = R.drawable.ic_ai),
+            MenuItemDefinition(MenuConstants.ItemIds.Main.MEDIA_PLAY_PAUSE, labelResource = R.string.menu_item_media_play_pause, descriptionResource = R.string.menu_item_media_play_pause_description, drawableId = R.drawable.ic_play_pause),
             MenuItemDefinition(MenuConstants.ItemIds.Main.PAUSE, labelResource = R.string.menu_item_pause, descriptionResource = R.string.menu_item_pause_description, drawableId = R.drawable.ic_pause)
         )
     }

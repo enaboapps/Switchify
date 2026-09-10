@@ -169,6 +169,8 @@
     <string name="hud_switches_loaded">Switches Loaded</string>
     <string name="hud_pause">Switchify is paused. You can now use your switches with other apps. To resume, don\'t press any switches for %1$s.</string>
     <string name="hud_pause_resume">Switchify has been resumed.</string>
+    <string name="hud_media_paused">Media paused</string>
+    <string name="hud_media_playing">Media playing</string>
 
     <!-- Auto Scroll Messages -->
     <string name="hud_auto_scroll_started">Auto-Scroll Started</string>
@@ -1007,6 +1009,12 @@
     <string name="menu_item_half_volume_description">Set the system volume to halfway</string>
     <string name="menu_item_mute_description">Silence the system volume</string>
     <string name="menu_item_media_control_description">Open media playback controls</string>
+    <string name="menu_item_media_play_pause">Play/Pause media</string>
+    <string name="menu_item_media_play_pause_description">Pause or resume what is playing</string>
+    <string name="menu_item_media_pause">Pause media</string>
+    <string name="menu_item_media_pause_description">Pause what is playing</string>
+    <string name="menu_item_media_play">Play media</string>
+    <string name="menu_item_media_play_description">Resume what was playing</string>
     <string name="menu_item_play_pause_description">Toggle media playback</string>
     <string name="menu_item_previous_track_description">Skip back to the previous track</string>
     <string name="menu_item_next_track_description">Skip forward to the next track</string>

@@ -110,6 +110,7 @@ object MenuConstants {
             const val EDIT = "edit"
             const val AI = "ai"
             const val PAUSE = "pause"
+            const val MEDIA_PLAY_PAUSE = "media_play_pause"
             const val ACCESSIBILITY_ACTIONS = "accessibility_actions"
         }
 
