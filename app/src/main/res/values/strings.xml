@@ -205,7 +205,8 @@
 
     
     
-    <string name="keyboard_escape_prompt_press_to_escape">Press to escape keyboard</string>
+    <string name="keyboard_escape_prompt_title">Leave the keyboard?</string>
+    <string name="keyboard_escape_prompt_body">Press your switch now to escape</string>
     
     <!-- Keyboard Menu Items -->
     <string name="menu_item_scan_keyboard">Scan Keyboard</string>
