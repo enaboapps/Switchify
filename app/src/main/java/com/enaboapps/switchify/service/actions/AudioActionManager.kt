@@ -2,9 +2,14 @@ package com.enaboapps.switchify.service.actions
 
 import android.content.Context
 import android.media.AudioManager
+import android.os.Build
+import android.os.SystemClock
 import android.util.Log
 import android.view.KeyEvent
+import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.core.SwitchifyAccessibilityService
+import com.enaboapps.switchify.service.window.MessageSeverity
+import com.enaboapps.switchify.service.window.ServiceMessageHUD
 
 /**
  * Centralized manager for performing audio-related actions.
@@ -14,6 +19,7 @@ object AudioActionManager {
     private const val TAG = "AudioActionManager"
     private var accessibilityService: SwitchifyAccessibilityService? = null
     private var audioManager: AudioManager? = null
+    private val playbackPolicy = MediaPlaybackPolicy()
 
     /**
      * Initialize the AudioActionManager with the accessibility service.
@@ -24,6 +30,38 @@ object AudioActionManager {
         accessibilityService = service
         audioManager = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         Log.d(TAG, "AudioActionManager initialized")
+    }
+
+    fun isMusicActive(): Boolean = audioManager?.isMusicActive == true
+
+    /** Whether media controls belong in the main menu right now. */
+    fun playbackState(): MediaPlaybackState {
+        if (audioManager == null) return MediaPlaybackState.NONE
+        return playbackPolicy.observe(
+            isMusicActive = isMusicActive(),
+            supported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+            now = SystemClock.uptimeMillis()
+        )
+    }
+
+    /**
+     * Toggles media playback and confirms the outcome on the HUD.
+     *
+     * @param wasActive Whether audio was playing when the user chose the action,
+     * which decides the confirmation wording.
+     */
+    fun togglePlayback(wasActive: Boolean): Boolean {
+        val toggled = GlobalActionManager.toggleMediaPlayback()
+        if (toggled) {
+            playbackPolicy.noteToggled(SystemClock.uptimeMillis())
+            ServiceMessageHUD.instance.showMessage(
+                if (wasActive) R.string.hud_media_paused else R.string.hud_media_playing,
+                ServiceMessageHUD.MessageType.DISAPPEARING,
+                ServiceMessageHUD.Time.SHORT,
+                severity = MessageSeverity.Info
+            )
+        }
+        return toggled
     }
 
     /**

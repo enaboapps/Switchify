@@ -4,7 +4,9 @@ import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.window.ServiceMessageHUD
 import com.enaboapps.switchify.backend.iap.IAPHandler
 import com.enaboapps.switchify.backend.preferences.PreferenceManager
+import com.enaboapps.switchify.service.actions.AudioActionManager
 import com.enaboapps.switchify.service.actions.GlobalActionManager
+import com.enaboapps.switchify.service.actions.MediaPlaybackState
 import com.enaboapps.switchify.service.core.ServiceCore
 import com.enaboapps.switchify.service.core.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.gestures.GesturePoint
@@ -58,6 +60,25 @@ class MainMenuStructure(
         context = accessibilityService,
         coroutineScope = coroutineScope
     )
+
+    /**
+     * Contextual media control: pause while audio is playing, play for a
+     * while after it stops, absent otherwise.
+     */
+    private fun mediaPlayPauseItem(): MenuItem? {
+        val state = AudioActionManager.playbackState()
+        if (state == MediaPlaybackState.NONE) return null
+        val definition = MenuItemRegistry.getMainMenuDefinition(MenuConstants.ItemIds.Main.MEDIA_PLAY_PAUSE)
+            ?: return null
+        val active = state == MediaPlaybackState.ACTIVE
+        return MenuItem(
+            id = definition.id,
+            labelResource = if (active) R.string.menu_item_media_pause else R.string.menu_item_media_play,
+            descriptionResource = if (active) R.string.menu_item_media_pause_description else R.string.menu_item_media_play_description,
+            drawableId = if (active) R.drawable.ic_pause else R.drawable.ic_play,
+            action = { AudioActionManager.togglePlayback(wasActive = active) }
+        )
+    }
 
     /**
      * Builds the default menu items for the main menu.
@@ -143,6 +164,7 @@ class MainMenuStructure(
                     action = { MenuManager.getInstance().openMediaControlMenu() }
                 )
             },
+            mediaPlayPauseItem(),
             if (deviceLockObserver.isUserUnlocked() == true &&
                 !DeviceLockObserver.isKeyguardLocked(accessibilityService)
             ) {
