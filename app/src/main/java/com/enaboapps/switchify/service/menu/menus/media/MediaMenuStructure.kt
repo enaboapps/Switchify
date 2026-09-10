@@ -34,7 +34,7 @@ class MediaMenuStructure(
                     labelResource = if (active) R.string.menu_item_media_pause else R.string.menu_item_media_play,
                     descriptionResource = def.descriptionResource,
                     drawableId = if (active) R.drawable.ic_pause else R.drawable.ic_play,
-                    action = { AudioActionManager.togglePlayback(wasActive = active) }
+                    action = { AudioActionManager.togglePlayback() }
                 )
             },
             MenuItemRegistry.getDefinition(MenuConstants.MenuIds.MEDIA_CONTROL_MENU, MenuConstants.ItemIds.Media.PREVIOUS_TRACK)?.let { def ->

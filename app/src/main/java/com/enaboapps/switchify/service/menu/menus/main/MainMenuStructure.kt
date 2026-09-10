@@ -76,7 +76,7 @@ class MainMenuStructure(
             labelResource = if (active) R.string.menu_item_media_pause else R.string.menu_item_media_play,
             descriptionResource = if (active) R.string.menu_item_media_pause_description else R.string.menu_item_media_play_description,
             drawableId = if (active) R.drawable.ic_pause else R.drawable.ic_play,
-            action = { AudioActionManager.togglePlayback(wasActive = active) }
+            action = { AudioActionManager.togglePlayback() }
         )
     }
 

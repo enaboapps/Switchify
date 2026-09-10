@@ -10,6 +10,9 @@ import com.enaboapps.switchify.R
 import com.enaboapps.switchify.service.core.SwitchifyAccessibilityService
 import com.enaboapps.switchify.service.window.MessageSeverity
 import com.enaboapps.switchify.service.window.ServiceMessageHUD
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 /**
  * Centralized manager for performing audio-related actions.
@@ -20,6 +23,7 @@ object AudioActionManager {
     private var accessibilityService: SwitchifyAccessibilityService? = null
     private var audioManager: AudioManager? = null
     private val playbackPolicy = MediaPlaybackPolicy()
+    private var playbackToggleJob: Job? = null
 
     /**
      * Initialize the AudioActionManager with the accessibility service.
@@ -44,24 +48,22 @@ object AudioActionManager {
         )
     }
 
-    /**
-     * Toggles media playback and confirms the outcome on the HUD.
-     *
-     * @param wasActive Whether audio was playing when the user chose the action,
-     * which decides the confirmation wording.
-     */
-    fun togglePlayback(wasActive: Boolean): Boolean {
-        val toggled = GlobalActionManager.toggleMediaPlayback()
-        if (toggled) {
+    fun togglePlayback() {
+        val service = accessibilityService ?: return
+        playbackToggleJob?.cancel()
+        playbackToggleJob = service.getServiceScope().launch(Dispatchers.Main.immediate) {
+            val active = MediaPlaybackToggle(
+                isMusicActive = ::isMusicActive,
+                dispatchToggle = GlobalActionManager::toggleMediaPlayback
+            ).toggle() ?: return@launch
             playbackPolicy.noteToggled(SystemClock.uptimeMillis())
             ServiceMessageHUD.instance.showMessage(
-                if (wasActive) R.string.hud_media_paused else R.string.hud_media_playing,
+                if (active) R.string.hud_media_playing else R.string.hud_media_paused,
                 ServiceMessageHUD.MessageType.DISAPPEARING,
                 ServiceMessageHUD.Time.SHORT,
                 severity = MessageSeverity.Info
             )
         }
-        return toggled
     }
 
     /**
@@ -182,6 +184,8 @@ object AudioActionManager {
      * Clear the references when the service is destroyed.
      */
     fun cleanup() {
+        playbackToggleJob?.cancel()
+        playbackToggleJob = null
         accessibilityService = null
         audioManager = null
         Log.d(TAG, "AudioActionManager cleaned up")
